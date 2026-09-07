@@ -29,6 +29,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "bin": {
+    "omsk": "src/cli.ts",
     "ohms": "src/cli.ts"
   },
   "scripts": {

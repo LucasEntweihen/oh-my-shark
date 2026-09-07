@@ -17,20 +17,18 @@ import * as path from "node:path";
 import { engines, version } from "../package.json" with { type: "json" };
 import { isEnoent, isEnotdir } from "./fs-error";
 
-/** App name (e.g. "ohms") */
-export const APP_NAME: string = "ohms";
-
+/** App name (e.g. "omsk") */
+export const APP_NAME: string = "omsk";
 /** Display name shown in TUI surfaces (e.g. "ohmyshark") */
 export const DISPLAY_NAME: string = "ohmyshark";
 
 /** Downstream product version, independent of the upstream technical VERSION. */
-export const PRODUCT_VERSION: string = "0.0.6";
+export const PRODUCT_VERSION: string = "0.0.7";
 /** Product byline shown in TUI titles and splash surfaces. */
 export const PRODUCT_BYLINE: string = "made by LucasEntweihen";
 
-/** Config directory name (e.g. ".ohms") */
-export const CONFIG_DIR_NAME: string = ".ohms";
-/** Ordered main settings filenames: canonical write target first, legacy-compatible YAML fallback second. */
+/** Config directory name (e.g. ".omsk") */
+export const CONFIG_DIR_NAME: string = ".omsk";
 export const MAIN_CONFIG_FILENAMES = ["config.yml", "config.yaml"] as const;
 
 /** Version (e.g. "1.0.0") */

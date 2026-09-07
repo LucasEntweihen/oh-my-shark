@@ -15,6 +15,7 @@ name: OhMyShark Release
   push:
     tags:
       - "ohms-v*"
+      - "omsk-v*"
   workflow_dispatch:
     inputs:
       tag:
@@ -52,10 +53,10 @@ jobs:
             *) TAG="${{ inputs.tag }}" ;;
           esac
           case "$TAG" in
-            ohms-v*) ;;
-            *) echo "refusing to release: $TAG is not an ohms-v* tag" >&2; exit 1 ;;
+            ohms-v*) VERSION="${TAG#ohms-v}" ;;
+            omsk-v*) VERSION="${TAG#omsk-v}" ;;
+            *) echo "refusing to release: $TAG is not an ohms-v* or omsk-v* tag" >&2; exit 1 ;;
           esac
-          VERSION="${TAG#ohms-v}"
           case "$VERSION" in
             [0-9]*.[0-9]*.[0-9]*) ;;
             *) echo "refusing to release: $VERSION is not a plain semver version" >&2; exit 1 ;;
