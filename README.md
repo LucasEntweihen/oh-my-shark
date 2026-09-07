@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://ohmyshark.vercel.app"><img src="https://img.shields.io/badge/website-ohmyshark.vercel.app-39A7FF?style=flat&colorA=222222" alt="Website"></a>
-  <a href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/ohms-v0.0.3"><img src="https://img.shields.io/github/v/release/LucasEntweihen/oh-my-shark?label=ohms&color=8FE6FF&style=flat&colorA=222222" alt="OhMyShark release"></a>
+  <a href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/ohms-v0.0.4"><img src="https://img.shields.io/github/v/release/LucasEntweihen/oh-my-shark?label=ohms&color=8FE6FF&style=flat&colorA=222222" alt="OhMyShark release"></a>
   <a href="https://github.com/LucasEntweihen/oh-my-shark/actions/workflows/ohms-ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/LucasEntweihen/oh-my-shark/ohms-ci.yml?label=OhMyShark%20CI&color=3FB950&style=flat&colorA=222222" alt="OhMyShark CI"></a>
   <a href="https://github.com/LucasEntweihen/oh-my-shark/blob/main/LICENSE"><img src="https://img.shields.io/github/license/LucasEntweihen/oh-my-shark?style=flat&colorA=222222&colorB=58A6FF" alt="License"></a>
 </p>
@@ -31,20 +31,20 @@ LucasEntweihen
 **macOS / Linux**
 
 ```sh
-curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/ohms-v0.0.3/install.sh
+curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/ohms-v0.0.4/install.sh
 gh attestation verify install.sh --repo LucasEntweihen/oh-my-shark \
   --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml \
-  --source-ref refs/tags/ohms-v0.0.3 --deny-self-hosted-runners
+  --source-ref refs/tags/ohms-v0.0.4 --deny-self-hosted-runners
 sh install.sh
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
-irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/ohms-v0.0.3/install.ps1 -OutFile install.ps1
+irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/ohms-v0.0.4/install.ps1 -OutFile install.ps1
 gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark `
   --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml `
-  --source-ref refs/tags/ohms-v0.0.3 --deny-self-hosted-runners
+  --source-ref refs/tags/ohms-v0.0.4 --deny-self-hosted-runners
 & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw)))
 ```
 
@@ -60,7 +60,7 @@ curl -fsSL https://ohmyshark.vercel.app/install | sh
 irm https://ohmyshark.vercel.app/install.ps1 | iex
 ```
 
-Both paths pin the protected `ohms-v0.0.3` release, check every asset against
+Both paths pin the protected `ohms-v0.0.4` release, check every asset against
 `SHA256SUMS.txt` before touching your system, and smoke-test the result.
 
 ## Your setup, safe by default
