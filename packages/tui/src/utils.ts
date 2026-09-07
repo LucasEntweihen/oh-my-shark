@@ -197,6 +197,7 @@ const TAB_SPACES = " ".repeat(DEFAULT_TAB_WIDTH);
  * Replace tabs with the fixed display tab width for consistent rendering.
  */
 export function replaceTabs(text: string): string {
+	if (text.indexOf("\t") === -1) return text;
 	return text.replaceAll("\t", TAB_SPACES);
 }
 

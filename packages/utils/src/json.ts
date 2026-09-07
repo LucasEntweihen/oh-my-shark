@@ -25,8 +25,10 @@ export function stringifyJson(value: unknown, space?: string | number): string |
 function stableJsonClone(value: unknown): unknown {
 	if (Array.isArray(value)) return value.map(stableJsonClone);
 	if (value !== null && typeof value === "object") {
+		const keys = Object.keys(value);
+		if (keys.length > 1) keys.sort();
 		const sorted = Object.create(null) as Record<string, unknown>;
-		for (const key of Object.keys(value).sort()) {
+		for (const key of keys) {
 			sorted[key] = stableJsonClone(Reflect.get(value, key));
 		}
 		return sorted;

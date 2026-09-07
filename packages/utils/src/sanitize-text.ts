@@ -54,14 +54,20 @@ export function escapeXmlText(input: string): string {
 	}
 	if (firstEscapable === -1) return input;
 
-	let output = input.slice(0, firstEscapable);
+	let output = "";
+	let lastIndex = 0;
 	for (let index = firstEscapable; index < input.length; index++) {
-		const char = input[index];
-		if (char === "&") output += "&amp;";
-		else if (char === "<") output += "&lt;";
-		else if (char === ">") output += "&gt;";
-		else output += char;
+		const char = input.charCodeAt(index);
+		let replacement: string | undefined;
+		if (char === 38) replacement = "&amp;";
+		else if (char === 60) replacement = "&lt;";
+		else if (char === 62) replacement = "&gt;";
+		if (replacement !== undefined) {
+			output += input.slice(lastIndex, index) + replacement;
+			lastIndex = index + 1;
+		}
 	}
+	output += input.slice(lastIndex);
 	return output;
 }
 
@@ -83,14 +89,20 @@ export function escapeXmlAttribute(input: string): string {
 	}
 	if (firstEscapable === -1) return input;
 
-	let output = input.slice(0, firstEscapable);
+	let output = "";
+	let lastIndex = 0;
 	for (let index = firstEscapable; index < input.length; index++) {
-		const char = input[index];
-		if (char === "&") output += "&amp;";
-		else if (char === "<") output += "&lt;";
-		else if (char === ">") output += "&gt;";
-		else if (char === '"') output += "&quot;";
-		else output += char;
+		const char = input.charCodeAt(index);
+		let replacement: string | undefined;
+		if (char === 38) replacement = "&amp;";
+		else if (char === 60) replacement = "&lt;";
+		else if (char === 62) replacement = "&gt;";
+		else if (char === 34) replacement = "&quot;";
+		if (replacement !== undefined) {
+			output += input.slice(lastIndex, index) + replacement;
+			lastIndex = index + 1;
+		}
 	}
+	output += input.slice(lastIndex);
 	return output;
 }
