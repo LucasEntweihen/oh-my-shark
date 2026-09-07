@@ -2239,7 +2239,8 @@ export const SETTINGS_SCHEMA = {
 			tab: "interaction",
 			group: "Magic Keywords",
 			label: "Magic Keywords",
-			description: "Enable hidden notices for standalone ultrathink, orchestrate, workflowz, and promaxthink keywords",
+			description:
+				"Enable hidden notices for standalone ultrathink, orchestrate, workflowz, and promaxthink keywords",
 		},
 	},
 

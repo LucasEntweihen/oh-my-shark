@@ -606,8 +606,7 @@ export class ModelControls {
 
 		let resolved: Effort | undefined;
 		const ultrathinkRequested = this.#host.magicKeywordEnabled("ultrathink") && containsUltrathink(promptText);
-		const promaxthinkRequested =
-			this.#host.magicKeywordEnabled("promaxthink") && containsPromaxthink(promptText);
+		const promaxthinkRequested = this.#host.magicKeywordEnabled("promaxthink") && containsPromaxthink(promptText);
 		if (ultrathinkRequested || promaxthinkRequested) {
 			// The user explicitly asked for maximum thinking (via ultrathink or the
 			// heavier promaxthink contract); bypass the classifier (and the

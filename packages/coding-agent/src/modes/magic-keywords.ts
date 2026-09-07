@@ -49,7 +49,5 @@ export function hasMagicKeyword(text: string): boolean {
 	) {
 		return false;
 	}
-	return (
-		containsUltrathink(text) || containsOrchestrate(text) || containsWorkflow(text) || containsPromaxthink(text)
-	);
+	return containsUltrathink(text) || containsOrchestrate(text) || containsWorkflow(text) || containsPromaxthink(text);
 }
