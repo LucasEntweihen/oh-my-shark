@@ -1,0 +1,24 @@
+{
+  "name": "ohms-release-tags",
+  "target": "tag",
+  "source_type": "Repository",
+  "enforcement": "active",
+  "_comment": "Apply via POST /repos/LucasEntweihen/oh-my-shark/rulesets after the first green OhMyShark CI / verify. Protects release tags: no delete, no retag.",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "refs/tags/ohms-v*"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "update"
+    }
+  ],
+  "applied_via": "POST /repos/LucasEntweihen/oh-my-shark/rulesets (ruleset id 22244892)"
+}

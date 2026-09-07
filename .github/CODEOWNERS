@@ -1,0 +1,9 @@
+# OhMyShark downstream-owned paths. All reviews route to @LucasEntweihen.
+/.github/	@LucasEntweihen
+/scripts/install.sh	@LucasEntweihen
+/scripts/install.ps1	@LucasEntweihen
+/packages/coding-agent/src/cli/update-cli.ts	@LucasEntweihen
+/packages/coding-agent/scripts/build-binary.ts	@LucasEntweihen
+/scripts/ci-release-build-binaries.ts	@LucasEntweihen
+/packaging/	@LucasEntweihen
+/packages/natives/package.json	@LucasEntweihen
