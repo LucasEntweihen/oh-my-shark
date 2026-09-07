@@ -1,4 +1,4 @@
-import { LogOut, PanelRight } from "lucide-react";
+import { LogOut, PanelRight, Volume2, VolumeX } from "lucide-react";
 import type { ReactNode } from "react";
 import type { GuestSnapshot } from "../../lib/client";
 import { fmtPercent, shortenPath } from "../../lib/format";
@@ -8,11 +8,24 @@ export interface HeaderBarProps {
 	snapshot: GuestSnapshot;
 	subCount: number;
 	railOpen: boolean;
+	sharkOpen?: boolean;
+	ttsEnabled?: boolean;
 	onToggleRail(): void;
+	onToggleShark?(): void;
+	onToggleTts?(): void;
 	onLeave(): void;
 }
-
-export function HeaderBar({ snapshot, subCount, railOpen, onToggleRail, onLeave }: HeaderBarProps): ReactNode {
+export function HeaderBar({
+	snapshot,
+	subCount,
+	railOpen,
+	sharkOpen,
+	ttsEnabled,
+	onToggleRail,
+	onToggleShark,
+	onToggleTts,
+	onLeave,
+}: HeaderBarProps): ReactNode {
 	const { header, state, phase, readOnly } = snapshot;
 	const title = header?.title ?? state?.sessionName ?? "session";
 	const usage = state?.contextUsage;
@@ -70,6 +83,26 @@ export function HeaderBar({ snapshot, subCount, railOpen, onToggleRail, onLeave 
 					</span>
 				)}
 				<span className={`sh-dot sh-dot-${phase}`} title={phase} />
+				{onToggleTts && (
+					<button
+						type="button"
+						className={ttsEnabled ? "sh-btn sh-btn-icon sh-btn-on" : "sh-btn sh-btn-icon"}
+						onClick={onToggleTts}
+						title={ttsEnabled ? "Voz / TTS Ativo" : "Ativar Voz / TTS"}
+					>
+						{ttsEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+					</button>
+				)}
+				{onToggleShark && (
+					<button
+						type="button"
+						className={sharkOpen ? "sh-btn sh-btn-icon sh-btn-on" : "sh-btn sh-btn-icon"}
+						onClick={onToggleShark}
+						title={sharkOpen ? "Ocultar Tubarão 3D" : "Mostrar Tubarão 3D"}
+					>
+						🦈
+					</button>
+				)}
 				<ThemeToggle />
 				<button
 					type="button"

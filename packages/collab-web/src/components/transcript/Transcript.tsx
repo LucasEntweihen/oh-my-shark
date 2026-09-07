@@ -1,7 +1,7 @@
 import type { AssistantMessage, ImageContent, SessionEntry, TextContent, ToolResultMessage } from "@oh-my-pi/pi-wire";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Volume2 } from "lucide-react";
 import type { ReactNode } from "react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ActiveTool, ConnectionPhase } from "../../lib/client";
 import { fmtTokens } from "../../lib/format";
 import type { ToolRenderHost } from "../../tool-render";
@@ -117,6 +117,39 @@ function AssistantBody({
 	pending: boolean;
 	host?: ToolRenderHost;
 }): ReactNode {
+	const [speaking, setSpeaking] = useState(false);
+
+	const textContent = useMemo(() => {
+		return message.content
+			.filter(b => b.type === "text")
+			.map(b => (b.type === "text" ? b.text : ""))
+			.join(" ");
+	}, [message.content]);
+
+	const handleSpeak = useCallback(() => {
+		if (!("speechSynthesis" in window) || !textContent) return;
+		window.speechSynthesis.cancel();
+		if (speaking) {
+			setSpeaking(false);
+			return;
+		}
+		const cleanText = textContent
+			.replace(/\[.*?\]/g, "")
+			.replace(/<[^>]*>/g, "")
+			.replace(/[⠀-⣿]/g, "")
+			.trim();
+		if (!cleanText) return;
+
+		const utterance = new SpeechSynthesisUtterance(cleanText);
+		utterance.lang = "pt-BR";
+		utterance.rate = 1.05;
+		utterance.pitch = 0.85;
+		utterance.onstart = () => setSpeaking(true);
+		const stop = () => setSpeaking(false);
+		utterance.onend = stop;
+		utterance.onerror = stop;
+		window.speechSynthesis.speak(utterance);
+	}, [speaking, textContent]);
 	const blocks = message.content.map((block, i) => {
 		switch (block.type) {
 			case "thinking":
@@ -152,6 +185,17 @@ function AssistantBody({
 	return (
 		<>
 			{blocks}
+			{!pending && textContent.length > 0 && (
+				<button
+					type="button"
+					className={`tr-tts-btn${speaking ? " tr-tts-btn--active" : ""}`}
+					onClick={handleSpeak}
+					title={speaking ? "Parar leitura" : "Ouvir esta resposta"}
+				>
+					<Volume2 size={12} />
+					<span>{speaking ? "Lendo áudio..." : "Ouvir resposta"}</span>
+				</button>
+			)}
 			{failed && (
 				<div className="tr-stop">
 					<span className={`tr-chip ${stop === "error" ? "tr-chip--err" : "tr-chip--warn"}`}>{stop}</span>

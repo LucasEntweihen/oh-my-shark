@@ -6,6 +6,7 @@ import { Banners } from "./components/shell/Banners";
 import { Composer } from "./components/shell/Composer";
 import { ConnectScreen } from "./components/shell/ConnectScreen";
 import { HeaderBar } from "./components/shell/HeaderBar";
+import { SharkViewer } from "./components/shark/SharkViewer";
 import { Toasts } from "./components/shell/Toasts";
 import { Transcript } from "./components/transcript/Transcript";
 import { GuestClient } from "./lib/client";
@@ -122,6 +123,8 @@ interface SessionProps {
 function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 	const snap = useGuestSnapshot(client);
 	const [railOpen, setRailOpen] = useState(false);
+	const [sharkOpen, setSharkOpen] = useState(true);
+	const [ttsEnabled, setTtsEnabled] = useState(false);
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const autoOpenedRef = useRef(false);
 
@@ -154,13 +157,39 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 
 	const drawerAgent = selectedId != null ? snap.agents.find(a => a.id === selectedId) : undefined;
 
+	// Extrai texto da última mensagem de streaming ou entrada do transcript para TTS
+	const lastText = useMemo(() => {
+		if (snap.stream && "content" in snap.stream && Array.isArray(snap.stream.content)) {
+			return snap.stream.content
+				.filter(c => c.type === "text")
+				.map(c => ("text" in c ? c.text : ""))
+				.join(" ");
+		}
+		if (snap.entries.length > 0) {
+			const last = snap.entries[snap.entries.length - 1];
+			if ("content" in last) {
+				if (typeof last.content === "string") return last.content;
+				if (Array.isArray(last.content)) {
+					return last.content
+						.filter(c => typeof c === "object" && c !== null && "type" in c && c.type === "text")
+						.map(c => ("text" in c && typeof c.text === "string" ? c.text : ""))
+						.join(" ");
+				}
+			}
+		}
+		return undefined;
+	}, [snap.stream, snap.entries]);
 	return (
 		<div className="sh-app">
 			<HeaderBar
 				snapshot={snap}
 				subCount={subCount}
 				railOpen={railOpen}
+				sharkOpen={sharkOpen}
+				ttsEnabled={ttsEnabled}
 				onToggleRail={() => setRailOpen(open => !open)}
+				onToggleShark={() => setSharkOpen(open => !open)}
+				onToggleTts={() => setTtsEnabled(enabled => !enabled)}
 				onLeave={onLeave}
 			/>
 			<main className="sh-main">
@@ -177,6 +206,20 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 						/>
 					</div>
 				</section>
+				{sharkOpen && (
+					<div
+						style={{
+							width: "420px",
+							minWidth: "320px",
+							height: "100%",
+							display: "flex",
+							flexDirection: "column",
+							borderLeft: "1px solid var(--sh-border, rgba(255,255,255,0.1))",
+						}}
+					>
+						<SharkViewer lastMessage={lastText} ttsEnabled={ttsEnabled} />
+					</div>
+				)}
 				{railOpen && (
 					<>
 						<div className="sh-rail-backdrop" onClick={() => setRailOpen(false)} />

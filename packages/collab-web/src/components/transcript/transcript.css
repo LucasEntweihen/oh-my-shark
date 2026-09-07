@@ -60,6 +60,35 @@
 	align-self: stretch;
 }
 
+.tr-tts-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: 4px;
+	padding: 4px 8px;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	color: var(--fg-muted);
+	background: var(--bg-card, rgba(255, 255, 255, 0.05));
+	border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.tr-tts-btn:hover {
+	color: var(--accent, #82ccdd);
+	border-color: var(--accent, #82ccdd);
+	background: rgba(130, 204, 221, 0.1);
+}
+
+.tr-tts-btn--active {
+	color: #fff;
+	background: #eb2f06;
+	border-color: #ff5252;
+	box-shadow: 0 0 8px rgba(235, 47, 6, 0.5);
+}
+
 
 .tr-row--custom .tr-body {
 	color: var(--fg-muted);
