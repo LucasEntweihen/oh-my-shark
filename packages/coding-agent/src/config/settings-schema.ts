@@ -2240,7 +2240,7 @@ export const SETTINGS_SCHEMA = {
 			group: "Magic Keywords",
 			label: "Magic Keywords",
 			description:
-				"Enable hidden notices for standalone ultrathink, orchestrate, workflowz, and promaxthink keywords",
+				"Enable hidden notices for standalone ultrathink, orchestrate, workflowz, promaxthink, doomania, and deepseaneuron keywords",
 		},
 	},
 
@@ -2286,6 +2286,28 @@ export const SETTINGS_SCHEMA = {
 			label: "Promaxthink Keyword",
 			description:
 				"Let standalone promaxthink request maximum automatic thinking and append its hidden adversarial-verification notice",
+		},
+	},
+	"magicKeywords.doomania": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "interaction",
+			group: "Magic Keywords",
+			label: "Doomania Keyword",
+			description: "Enable gradient highlighting and support for /doomania deliberation command",
+		},
+	},
+
+	"magicKeywords.deepseaneuron": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "interaction",
+			group: "Magic Keywords",
+			label: "Deepseaneuron Keyword",
+			description:
+				"Let standalone deepseaneuron dynamically optimize and rationalize token consumption and append its hidden notice",
 		},
 	},
 

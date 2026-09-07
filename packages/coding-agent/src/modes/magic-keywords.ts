@@ -1,8 +1,9 @@
+import { containsDeepseaneuron, highlightDeepseaneuron } from "./deepseaneuron";
+import { containsDoomania, highlightDoomania } from "./doomania";
 import { containsOrchestrate, highlightOrchestrate } from "./orchestrate";
 import { containsPromaxthink, highlightPromaxthink } from "./promaxthink";
 import { containsUltrathink, highlightUltrathink } from "./ultrathink";
 import { containsWorkflow, highlightWorkflow } from "./workflow";
-
 /**
  * Gradient-highlight every magic keyword ("ultrathink", "orchestrate",
  * "workflowz", "promaxthink") that appears as standalone prose, skipping any
@@ -23,9 +24,17 @@ import { containsWorkflow, highlightWorkflow } from "./workflow";
  * to keep the static gradient.
  */
 export function highlightMagicKeywords(text: string, resetTo?: string, phase?: number): string {
-	return highlightPromaxthink(
-		highlightWorkflow(
-			highlightOrchestrate(highlightUltrathink(text, resetTo, phase), resetTo, phase),
+	return highlightDeepseaneuron(
+		highlightDoomania(
+			highlightPromaxthink(
+				highlightWorkflow(
+					highlightOrchestrate(highlightUltrathink(text, resetTo, phase), resetTo, phase),
+					resetTo,
+					phase,
+				),
+				resetTo,
+				phase,
+			),
 			resetTo,
 			phase,
 		),
@@ -45,9 +54,18 @@ export function hasMagicKeyword(text: string): boolean {
 		!text.includes("ultrathink") &&
 		!text.includes("orchestrate") &&
 		!text.includes("workflowz") &&
-		!text.includes("promaxthink")
+		!text.includes("promaxthink") &&
+		!text.includes("doomania") &&
+		!text.includes("deepseaneuron")
 	) {
 		return false;
 	}
-	return containsUltrathink(text) || containsOrchestrate(text) || containsWorkflow(text) || containsPromaxthink(text);
+	return (
+		containsUltrathink(text) ||
+		containsOrchestrate(text) ||
+		containsWorkflow(text) ||
+		containsPromaxthink(text) ||
+		containsDoomania(text) ||
+		containsDeepseaneuron(text)
+	);
 }

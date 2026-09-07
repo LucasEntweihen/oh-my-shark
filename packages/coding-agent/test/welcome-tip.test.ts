@@ -124,7 +124,7 @@ describe("renderWelcomeTip", () => {
 		}
 
 		const narrow = frames[0]!.lines.map(line => Bun.stripANSI(line));
-		expect(narrow.join("\n")).toContain("O h   M y   G o a t");
+		expect(narrow.join("\n")).toContain("O h   M y   S h a r k");
 		expect(narrow.join("\n")).not.toContain(SHARK_LOGO[6].trim());
 
 		const stacked = frames[1]!.lines.map(line => Bun.stripANSI(line));

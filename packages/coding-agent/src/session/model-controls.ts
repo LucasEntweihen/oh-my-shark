@@ -57,7 +57,9 @@ export interface ModelControlsHost {
 	setModelWithProviderSessionReset(model: Model): Promise<void>;
 	clearActiveRetryFallback(): void;
 	clearInheritedProviderPromptCacheKey(): void;
-	magicKeywordEnabled(keyword: "orchestrate" | "ultrathink" | "workflow" | "promaxthink"): boolean;
+	magicKeywordEnabled(
+		keyword: "orchestrate" | "ultrathink" | "workflow" | "promaxthink" | "doomania" | "deepseaneuron",
+	): boolean;
 	emit(event: AgentSessionEvent): void;
 	emitSessionEvent(event: AgentSessionEvent): Promise<void>;
 	emitNotice(level: "info" | "warning" | "error", message: string, source?: string): void;

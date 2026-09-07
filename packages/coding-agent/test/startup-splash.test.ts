@@ -92,7 +92,7 @@ describe("startup splash", () => {
 			expect(plain.at(-2)?.trim()).toBe("made by LucasEntweihen");
 			expect(plain.at(-1)?.trim()).toBe("press enter to skip");
 			expect(plain.join("\n").includes(SHARK_LOGO[6].trim())).toBe(expectArt);
-			if (!expectArt) expect(plain.join("\n")).toContain("O h   M y   G o a t");
+			if (!expectArt) expect(plain.join("\n")).toContain("O h   M y   S h a r k");
 		}
 	});
 

@@ -10,7 +10,8 @@ Magic keywords are standalone prose words in a user prompt that can add hidden, 
 | `orchestrate`   | Adds the multi-agent orchestration contract: scope the full task, delegate substantial independent work in parallel, verify each phase, and continue until the request is complete.                                                                                                                                       |
 | `workflowz`     | Adds a deterministic multi-subagent workflow contract centered on the persistent `eval` kernel's `agent()`, `completion()`, handle, `wait()`, and `workpool()` helpers. It is intended for broad research, reviews, migrations, and adversarial coverage. The notice is injected only when both `eval` and `task` are active. |
 | `promaxthink`   | Adds everything `ultrathink` adds (including the maximum-auto-thinking override) plus a mandatory adversarial self-verification pass before the answer is presented. Heavier than `ultrathink`; reserve it for genuinely hard problems.                                                                                    |
-
+| `doomania`      | Invokes the 3-agent deliberation panel (doomania) and high-rigor multi-persona evaluation, highlighted with a vibrant green gradient.                                                                                                                                                                                     |
+| `deepseaneuron` | Dynamically optimizes and rationalizes token consumption and usage without compromising correctness or depth, highlighted with a light-blue to dark-blue/purple gradient.                                                                                                                                              |
 Use the keyword anywhere in the prose of the prompt:
 
 ```text
@@ -22,6 +23,8 @@ workflowz an adversarial review of the authentication changes
 
 promaxthink this architecture decision before I commit to it
 ```
+
+deepseaneuron optimize the refactoring steps to reduce token spend
 
 ## Matching rules
 
@@ -46,6 +49,8 @@ ohms config set magicKeywords.ultrathink false
 ohms config set magicKeywords.orchestrate false
 ohms config set magicKeywords.workflow false
 ohms config set magicKeywords.promaxthink false
+ohms config set magicKeywords.doomania false
+ohms config set magicKeywords.deepseaneuron false
 ```
 
 The global switch and four per-keyword switches default to `true`. The global switch gates every hidden notice; a per-keyword switch gates only that notice (and ultrathink's/promaxthink's maximum-auto-thinking override). These settings do not currently disable the editor/message gradient. Run `ohms config list` to inspect every setting and its current value. See [Settings](./settings.md) for configuration scopes, precedence, and project-local overrides.

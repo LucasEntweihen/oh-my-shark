@@ -157,6 +157,7 @@ import type { IrcMessage } from "../irc/bus";
 import type { DaemonCompletionNotification } from "../launch/protocol";
 import { shutdownMnemopiEmbedClient } from "../mnemopi/embed-client";
 import { getMnemopiSessionState, type MnemopiSessionState, setMnemopiSessionState } from "../mnemopi/state";
+import { containsDeepseaneuron, DEEPSEANEURON_NOTICE } from "../modes/deepseaneuron";
 import { containsOrchestrate, renderOrchestrateNotice } from "../modes/orchestrate";
 import { containsPromaxthink, PROMAXTHINK_NOTICE } from "../modes/promaxthink";
 import { theme } from "../modes/theme/theme";
@@ -5864,7 +5865,9 @@ export class AgentSession {
 		return this.#providerBoundary.normalizeAgentMessageImages(message);
 	}
 
-	#magicKeywordEnabled(keyword: "orchestrate" | "ultrathink" | "workflow" | "promaxthink"): boolean {
+	#magicKeywordEnabled(
+		keyword: "orchestrate" | "ultrathink" | "workflow" | "promaxthink" | "doomania" | "deepseaneuron",
+	): boolean {
 		return this.settings.get("magicKeywords.enabled") && this.settings.get(`magicKeywords.${keyword}`);
 	}
 
@@ -5924,6 +5927,16 @@ export class AgentSession {
 					timestamp,
 				});
 			}
+		}
+		if (this.#magicKeywordEnabled("deepseaneuron") && containsDeepseaneuron(text)) {
+			keywordNotices.push({
+				role: "custom",
+				customType: "deepseaneuron-notice",
+				content: DEEPSEANEURON_NOTICE,
+				display: false,
+				attribution: "user",
+				timestamp,
+			});
 		}
 		return keywordNotices;
 	}

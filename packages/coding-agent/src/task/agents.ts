@@ -8,6 +8,9 @@ import { parseFrontmatter, prompt } from "@oh-my-pi/pi-utils";
 import { parseAgentFields } from "../discovery/helpers";
 // Embed agent markdown files at build time
 import agentFrontmatterTemplate from "../prompts/agents/frontmatter.md" with { type: "text" };
+import doomaniaCriativoMd from "../prompts/agents/doomania-criativo.md" with { type: "text" };
+import doomaniaCriticoMd from "../prompts/agents/doomania-critico.md" with { type: "text" };
+import doomaniaPermissivoMd from "../prompts/agents/doomania-permissivo.md" with { type: "text" };
 import librarianMd from "../prompts/agents/librarian.md" with { type: "text" };
 import reviewerMd from "../prompts/agents/reviewer.md" with { type: "text" };
 import scoutMd from "../prompts/agents/scout.md" with { type: "text" };
@@ -46,6 +49,9 @@ const EMBEDDED_AGENT_DEFS: EmbeddedAgentDef[] = [
 	{ fileName: "reviewer.md", template: reviewerMd },
 	{ fileName: "security-reviewer.md", template: securityReviewerMd },
 	{ fileName: "librarian.md", template: librarianMd },
+	{ fileName: "doomania-critico.md", template: doomaniaCriticoMd },
+	{ fileName: "doomania-permissivo.md", template: doomaniaPermissivoMd },
+	{ fileName: "doomania-criativo.md", template: doomaniaCriativoMd },
 	{
 		fileName: "task.md",
 		frontmatter: {
