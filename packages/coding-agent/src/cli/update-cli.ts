@@ -302,16 +302,16 @@ async function resolveUpdateTarget(): Promise<UpdateTarget> {
 	return { method: "binary", path: launcherPath };
 }
 
-/** Product tag pattern: `ohms-v<semver>`, with an optional prerelease suffix. */
-const TAG_PATTERN = /^ohms-v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$/;
+/** Product tag pattern: `omsk-v<semver>` or `ohms-v<semver>`, with an optional prerelease suffix. */
+const TAG_PATTERN = /^(?:omsk|ohms)-v(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)$/;
 
 /**
- * Parse an `ohms-v<semver>` tag into its product version.
+ * Parse an `omsk-v<semver>` or `ohms-v<semver>` tag into its product version.
  * Returns undefined for anything else so foreign tags are never installed.
  */
 export function parseProductTag(tag: unknown): string | undefined {
 	if (typeof tag !== "string") return undefined;
-	return TAG_PATTERN.exec(tag)?.[1];
+	return tag.match(TAG_PATTERN)?.[1];
 }
 
 /**
