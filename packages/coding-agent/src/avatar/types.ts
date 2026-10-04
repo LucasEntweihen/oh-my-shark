@@ -126,7 +126,12 @@ export type AvatarStanceType = "solid" | "relaxed" | "floating" | "hovering";
 
 export type AvatarEyebrowsType = "neutral" | "focused" | "raised" | "determined" | "serene";
 
+export type AvatarRenderMode = "vector" | "dots" | "pixel";
+export type AvatarRootModelKind = "basic" | "dots" | "grok" | "strobi";
+
 export interface AvatarFullBodyDefinition {
+	bodiless?: boolean;
+	rootModel?: AvatarRootModelKind;
 	clothing?: AvatarClothingType;
 	clothingColor?: HexColor;
 	accentColor?: HexColor;
@@ -159,6 +164,8 @@ export interface AvatarDefinition {
 	expressionOrder: string[];
 	animations: Record<string, AvatarAnimationDefinition>;
 	animationOrder: string[];
+	renderStyle?: AvatarRenderStyle;
+	rootModel?: AvatarRootModelKind;
 	fullBody?: AvatarFullBodyDefinition;
 }
 

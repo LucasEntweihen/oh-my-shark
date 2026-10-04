@@ -118,6 +118,7 @@ export function compileAgentsMarkdown(profiles: AgentProfile[]): string {
 		lines.push(`- **Categoria:** \`${p.structure.category}\``);
 		const fb = p.avatar.fullBody;
 		const avatarDetails = [
+			`Modelo Raiz \`Bodiless Bot (${p.avatar.rootModel ?? "basic"})\``,
 			`Superfície \`${p.avatar.body.primary.type}\``,
 			`Cor Primária \`${p.avatar.colors.body}\``,
 			`Olhos \`${p.avatar.colors.eyes}\``,

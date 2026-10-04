@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import {
 	DEFAULT_AGENT_PROFILES,
+	GROK_BOT_AVATAR,
+	OPENAI_DOTS_AVATAR,
+	STROBI_AVATAR,
 	computeGrokDots,
 	expressionFromGrokIndex,
 	renderAvatarDefinition,
@@ -91,5 +94,23 @@ describe("Bible Strong Avatar Engine & Dots System", () => {
 		);
 		expect(outputText).toContain("@theological-scholar");
 		expect(outputText).toContain("Bible Strong Scholar");
+	});
+	it("verifies canonical bodiless root avatar presets for Bible Strong, Grok Bot, and OpenAI Dots", () => {
+		expect(STROBI_AVATAR.rootModel).toBe("strobi");
+		expect(STROBI_AVATAR.renderStyle?.type).toBe("vector");
+		expect(STROBI_AVATAR.fullBody?.bodiless).toBe(true);
+
+		expect(GROK_BOT_AVATAR.rootModel).toBe("grok");
+		expect(GROK_BOT_AVATAR.renderStyle?.type).toBe("dots");
+		expect(GROK_BOT_AVATAR.fullBody?.bodiless).toBe(true);
+
+		expect(OPENAI_DOTS_AVATAR.rootModel).toBe("dots");
+		expect(OPENAI_DOTS_AVATAR.renderStyle?.type).toBe("dots");
+		expect(OPENAI_DOTS_AVATAR.fullBody?.bodiless).toBe(true);
+
+		for (const agent of DEFAULT_AGENT_PROFILES) {
+			expect(agent.avatar.fullBody?.bodiless).toBe(true);
+			expect(agent.avatar.rootModel).toBeDefined();
+		}
 	});
 });

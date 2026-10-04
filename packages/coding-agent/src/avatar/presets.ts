@@ -122,7 +122,11 @@ export const SHARK_VANGUARD_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle", "talking", "investigating"],
+	renderStyle: { type: "vector" },
+	rootModel: "basic",
 	fullBody: {
+		bodiless: true,
+		rootModel: "basic",
 		style: "futuristic",
 		clothing: "armor",
 		clothingColor: "#0A1424",
@@ -212,7 +216,11 @@ export const DEEP_SEA_SAGE_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	renderStyle: { type: "vector" },
+	rootModel: "basic",
 	fullBody: {
+		bodiless: true,
+		rootModel: "basic",
 		style: "academic",
 		clothing: "robe",
 		clothingColor: "#1B0F2A",
@@ -291,7 +299,11 @@ export const CODE_ARCHITECT_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	renderStyle: { type: "vector" },
+	rootModel: "basic",
 	fullBody: {
+		bodiless: true,
+		rootModel: "basic",
 		style: "minimalist",
 		clothing: "suit",
 		clothingColor: "#0D1815",
@@ -371,7 +383,11 @@ export const THEOLOGICAL_SCHOLAR_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	renderStyle: { type: "vector" },
+	rootModel: "basic",
 	fullBody: {
+		bodiless: true,
+		rootModel: "basic",
 		style: "scholar",
 		clothing: "robe",
 		clothingColor: "#2A2016",
@@ -450,7 +466,11 @@ export const SECURITY_SENTINEL_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	renderStyle: { type: "vector" },
+	rootModel: "basic",
 	fullBody: {
+		bodiless: true,
+		rootModel: "basic",
 		style: "tactical",
 		clothing: "armor",
 		clothingColor: "#220D0D",
@@ -508,6 +528,14 @@ export const STROBI_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	renderStyle: { type: "vector" },
+	rootModel: "strobi",
+	fullBody: {
+		bodiless: true,
+		rootModel: "strobi",
+		style: "minimalist",
+		posture: "relaxed",
+	},
 };
 
 export const GROK_BOT_AVATAR: AvatarDefinition = {
@@ -550,6 +578,64 @@ export const GROK_BOT_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	renderStyle: { type: "dots" },
+	rootModel: "grok",
+	fullBody: {
+		bodiless: true,
+		rootModel: "grok",
+		style: "minimalist",
+		posture: "observant",
+	},
+};
+export const OPENAI_DOTS_AVATAR: AvatarDefinition = {
+	schema: "bible-strong/avatar-definition",
+	schemaVersion: 1,
+	name: "OpenAI Voice Dots",
+	body: {
+		primary: {
+			type: "sphere",
+			width: 240,
+			height: 240,
+			depth: 240,
+			roundness: 1,
+		},
+		nodes: [],
+	},
+	colors: {
+		body: "#0A0D14",
+		eyes: "#00F0FF",
+		accent: "#8A2BE2",
+		glow: "#00F0FF",
+	},
+	expressions: {
+		neutral: {
+			head: { x: 0, y: 0, z: 0 },
+			eyes: {
+				left: { width: 22, height: 48, x: 0, y: -4, angle: 0 },
+				right: { width: 22, height: 48, x: 0, y: -4, angle: 0 },
+				spacing: 38,
+			},
+			perspective: 1,
+			motion: { eyes: "microSaccades", body: "slowDrift" },
+		},
+	},
+	expressionOrder: ["neutral"],
+	animations: {
+		idle: {
+			playbackMode: "loop",
+			steps: [{ expression: "neutral", holdMs: 3000, transitionMs: 400, transition: "smooth" }],
+			blink: { enabled: true, initialDelayMs: 2000, minIntervalMs: 3000, maxIntervalMs: 6000, durationMs: 180 },
+		},
+	},
+	animationOrder: ["idle"],
+	renderStyle: { type: "dots" },
+	rootModel: "dots",
+	fullBody: {
+		bodiless: true,
+		rootModel: "dots",
+		style: "futuristic",
+		posture: "upright",
+	},
 };
 
 export const DEFAULT_AGENT_PROFILES: AgentProfile[] = [

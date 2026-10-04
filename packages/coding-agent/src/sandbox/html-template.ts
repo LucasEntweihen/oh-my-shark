@@ -643,6 +643,38 @@ export function renderSandboxHtml(): string {
 			align-items: center;
 			gap: 8px;
 		}
+		.render-mode-tabs {
+			display: flex;
+			gap: 8px;
+			margin-bottom: 12px;
+		}
+
+		.render-mode-btn {
+			flex: 1;
+			padding: 7px 10px;
+			font-size: 11px;
+			font-weight: 600;
+			border-radius: 8px;
+			border: 1px solid var(--glass-border);
+			background: var(--glass-bg);
+			color: #94A3B8;
+			cursor: pointer;
+			text-transform: uppercase;
+			transition: all 0.2s ease;
+		}
+
+		.render-mode-btn:hover {
+			background: var(--glass-bg-hover);
+			color: #FFFFFF;
+		}
+
+		.render-mode-btn.active {
+			background: rgba(0, 229, 255, 0.16);
+			border-color: var(--stellar-cyan);
+			color: var(--stellar-cyan);
+			box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+		}
+
 
 		/* Full Body Viewport */
 		.full-body-viewport {
@@ -1260,51 +1292,71 @@ export function renderSandboxHtml(): string {
 					</div>
 				</main>
 
-				<!-- Right: Bible Strong Avatar Studio 100% Full Body -->
+				<!-- Right: Bible Strong Avatar Studio Root Model (Bodiless / Dots / Grok) -->
 				<aside class="avatar-showcase">
 					<div class="showcase-header">
 						<div class="showcase-title">
-							<span>👤 Bible Strong Avatar</span>
+							<span>👤 Bible Strong Avatar (Modelo Raiz)</span>
 						</div>
-						<span class="hero-badge" id="avatarSurfaceBadge">CUBE</span>
+						<div style="display: flex; gap: 6px; align-items: center;">
+							<span class="hero-badge" id="avatarRenderModeBadge">VECTOR 3D</span>
+							<span class="hero-badge" id="avatarSurfaceBadge">SPHERE</span>
+						</div>
 					</div>
 
-					<!-- 100% Full Body Live Viewport -->
+					<!-- Render Mode Selector Switcher -->
+					<div class="render-mode-tabs">
+						<button type="button" class="render-mode-btn active" id="btnModeVector" onclick="setRenderMode('vector')">✦ 3D Canônico (Lab)</button>
+						<button type="button" class="render-mode-btn" id="btnModeDots" onclick="setRenderMode('dots')">⁖ OpenAI / Grok Dots</button>
+						<button type="button" class="render-mode-btn" id="btnModePixel" onclick="setRenderMode('pixel')">▦ Pixel Retrô</button>
+					</div>
+
+					<!-- Root Model Live Viewport -->
 					<div class="full-body-viewport" id="avatarViewport">
 						<div class="svg-canvas-wrapper" id="avatarSvgContainer">
-							<!-- Procedural Full Body SVG rendered by JS -->
+							<!-- Procedural Bodiless Avatar SVG rendered by JS -->
 						</div>
 						
 						<!-- Live Telemetry Pill -->
 						<div class="telemetry-pill">
 							<div class="telemetry-status">
-								<span><span class="status-dot"></span>PREVIEW VIVO INTEGRAL</span>
-								<span id="telemetryStyleLabel" style="color: var(--stellar-cyan);">MINIMALIST SUIT</span>
+								<span><span class="status-dot"></span>MODELO RAIZ // BODILESS</span>
+								<span id="telemetryStyleLabel" style="color: var(--stellar-cyan);">CANONICAL BOT</span>
 							</div>
 							<div class="telemetry-mood" id="telemetryMoodLabel">
-								Interpretado: Foco Técnico & Rigor
+								Geometria: 3D Procedural · Sem Corpo
 							</div>
 						</div>
 					</div>
 
 					<!-- Visual Style & Identity Controls -->
 					<div class="avatar-settings">
-						<div class="form-field">
-							<label class="field-label">Superfície Geométrica 3D</label>
-							<select class="field-select" id="avatarSurfaceType" onchange="onVisualChange()">
-								<option value="sphere">Sphère (Esfera Fluida)</option>
-								<option value="cube">Cube (Cubo Tecnológico)</option>
-								<option value="capsule">Capsule (Cápsula Orgânica / Scholar)</option>
-								<option value="cylinder">Cylindre (Cilindro Robótico / Tático)</option>
-								<option value="diamond">Diamant (Diamante / Cristal)</option>
-								<option value="cone">Cône (Cone de Foco)</option>
-								<option value="mickey">Mickey (Superfície Dupla)</option>
-							</select>
+						<div class="form-grid-2">
+							<div class="form-field">
+								<label class="field-label">Superfície 3D</label>
+								<select class="field-select" id="avatarSurfaceType" onchange="onVisualChange()">
+									<option value="sphere">Sphère (Esfera / Strobi)</option>
+									<option value="cube">Cube (Cubo Tecnológico)</option>
+									<option value="capsule">Capsule (Cápsula / Scholar)</option>
+									<option value="cylinder">Cylindre (Cilindro / Tático)</option>
+									<option value="diamond">Diamant (Cristal / Sage)</option>
+									<option value="cone">Cône (Cone de Foco)</option>
+									<option value="mickey">Mickey (Superfície Dupla)</option>
+								</select>
+							</div>
+							<div class="form-field">
+								<label class="field-label">Modo Gráfico</label>
+								<select class="field-select" id="avatarRenderMode" onchange="onRenderModeSelectChange()">
+									<option value="vector">✦ 3D Canônico (Bible Strong Lab)</option>
+									<option value="dots">⁖ OpenAI Dots & Grok Bot</option>
+									<option value="pixel">▦ Pixel Matrix Retrô</option>
+								</select>
+							</div>
 						</div>
 
 						<div class="form-grid-2">
 							<div class="form-field">
-								<label class="field-label">Estilo Visual</label>
+								<label class="field-label">Estilo / Arquétipo</label>
 								<select class="field-select" id="avatarStyle" onchange="onVisualChange()">
 									<option value="futuristic">Futurista Cósmico</option>
 									<option value="minimalist">Minimalista</option>
@@ -1317,18 +1369,15 @@ export function renderSandboxHtml(): string {
 								</select>
 							</div>
 							<div class="form-field">
-								<label class="field-label">Vestimenta</label>
-								<select class="field-select" id="avatarClothing" onchange="onVisualChange()">
-									<option value="suit">Terno Tecnológico</option>
-									<option value="armor">Armadura Cósmica</option>
-									<option value="robe">Robe / Manto Nobre</option>
-									<option value="lab_coat">Jaleco Científico</option>
-									<option value="hoodie">Capuz Cyber</option>
-									<option value="vest">Colete Moderno</option>
+								<label class="field-label">Modelo Raiz</label>
+								<select class="field-select" id="avatarRootModel" onchange="onRootModelChange()">
+									<option value="basic">Modelo Básico (Sem Corpo)</option>
+									<option value="strobi">Strobi (Canônico Avatar Lab)</option>
+									<option value="grok">Grok Bot (Dots Calibrados)</option>
+									<option value="dots">OpenAI Voice Dots (Orbe Quântica)</option>
 								</select>
 							</div>
 						</div>
-
 						<!-- Color Swatches -->
 						<div class="color-swatches">
 							<div class="swatch-group">
@@ -1588,8 +1637,13 @@ export function renderSandboxHtml(): string {
 
 			document.getElementById('avatarSurfaceType').value = a.avatar?.body?.primary?.type || 'sphere';
 			document.getElementById('avatarStyle').value = a.avatar?.fullBody?.style || 'futuristic';
-			document.getElementById('avatarClothing').value = a.avatar?.fullBody?.clothing || 'suit';
-
+			if (document.getElementById('avatarRenderMode')) {
+				document.getElementById('avatarRenderMode').value = a.avatar?.renderStyle?.type || currentRenderMode || 'vector';
+			}
+			if (document.getElementById('avatarRootModel')) {
+				document.getElementById('avatarRootModel').value = a.avatar?.rootModel || 'basic';
+			}
+			setRenderMode(a.avatar?.renderStyle?.type || currentRenderMode || 'vector');
 			renderRosters();
 			updateStudioAvatarPreview();
 		}
@@ -1677,245 +1731,375 @@ export function renderSandboxHtml(): string {
 		}
 
 		/* ==========================================================================
-		   PROCEDURAL FULL BODY BIBLE STRONG AVATAR SVG ENGINE (100% UNCLIPPED)
+		   CANONICAL BIBLE STRONG & GROK / OPENAI DOTS AVATAR ENGINE (100% BODILESS)
+		   Modelos Raiz Oficiais: Bible Strong Avatar Lab, Grok Bot & OpenAI Dots
 		   ========================================================================== */
+		let currentRenderMode = 'vector';
+
+		function setRenderMode(mode) {
+			currentRenderMode = mode;
+			document.querySelectorAll('.render-mode-btn').forEach(b => b.classList.remove('active'));
+			if (mode === 'vector' && document.getElementById('btnModeVector')) document.getElementById('btnModeVector').classList.add('active');
+			if (mode === 'dots' && document.getElementById('btnModeDots')) document.getElementById('btnModeDots').classList.add('active');
+			if (mode === 'pixel' && document.getElementById('btnModePixel')) document.getElementById('btnModePixel').classList.add('active');
+			
+			const badge = document.getElementById('avatarRenderModeBadge');
+			if (badge) badge.textContent = mode.toUpperCase();
+			const select = document.getElementById('avatarRenderMode');
+			if (select) select.value = mode;
+
+			const a = allAgents.find(x => x.id === currentAgentId);
+			if (a) {
+				if (!a.avatar.renderStyle) a.avatar.renderStyle = { type: mode };
+				else a.avatar.renderStyle.type = mode;
+			}
+
+			updateStudioAvatarPreview();
+			if (document.getElementById('viewChat').classList.contains('active')) {
+				updateChatAvatarPreview();
+			}
+		}
+
+		function onRenderModeSelectChange() {
+			const select = document.getElementById('avatarRenderMode');
+			if (select) setRenderMode(select.value);
+		}
+
+		function onRootModelChange() {
+			const select = document.getElementById('avatarRootModel');
+			if (!select) return;
+			const rootModel = select.value;
+			const a = allAgents.find(x => x.id === currentAgentId);
+			if (!a) return;
+
+			a.avatar.rootModel = rootModel;
+			if (rootModel === 'strobi') {
+				// Canonical Bible Strong Avatar Lab Strobi mascot
+				a.avatar.body.primary.type = 'sphere';
+				a.avatar.colors.body = '#5B7FE5';
+				a.avatar.colors.eyes = '#111316';
+				a.avatar.colors.glow = '#5B7FE5';
+				a.avatar.colors.accent = '#93C5FD';
+				document.getElementById('avatarSurfaceType').value = 'sphere';
+				document.getElementById('colBody').value = '#5B7FE5';
+				document.getElementById('colEyes').value = '#111316';
+				document.getElementById('colGlow').value = '#5B7FE5';
+				document.getElementById('colAccent').value = '#93C5FD';
+				setRenderMode('vector');
+			} else if (rootModel === 'grok') {
+				// Canonical Grok Bot
+				a.avatar.body.primary.type = 'sphere';
+				a.avatar.colors.body = '#000000';
+				a.avatar.colors.eyes = '#FFFFFF';
+				a.avatar.colors.glow = '#00E5FF';
+				a.avatar.colors.accent = '#38BDF8';
+				document.getElementById('avatarSurfaceType').value = 'sphere';
+				document.getElementById('colBody').value = '#000000';
+				document.getElementById('colEyes').value = '#FFFFFF';
+				document.getElementById('colGlow').value = '#00E5FF';
+				document.getElementById('colAccent').value = '#38BDF8';
+				setRenderMode('dots');
+			} else if (rootModel === 'dots') {
+				// OpenAI Voice Dots Orb
+				a.avatar.body.primary.type = 'sphere';
+				a.avatar.colors.body = '#0A0D14';
+				a.avatar.colors.eyes = '#00F0FF';
+				a.avatar.colors.glow = '#00F0FF';
+				a.avatar.colors.accent = '#8A2BE2';
+				document.getElementById('avatarSurfaceType').value = 'sphere';
+				document.getElementById('colBody').value = '#0A0D14';
+				document.getElementById('colEyes').value = '#00F0FF';
+				document.getElementById('colGlow').value = '#00F0FF';
+				document.getElementById('colAccent').value = '#8A2BE2';
+				setRenderMode('dots');
+			} else {
+				setRenderMode('vector');
+			}
+			updateStudioAvatarPreview();
+		}
+
 		function generateFullBodySvg(agent, mode = 'studio', statusOverride = null) {
 			if (!agent) return '';
 
 			const status = statusOverride || (mode === 'chat' ? chatStatus : 'idle');
 			const colors = agent.avatar?.colors || { body: '#00E5FF', eyes: '#0B0F19', glow: '#00E5FF', accent: '#8A2BE2' };
-			const fullBody = agent.avatar?.fullBody || {};
 			const surface = agent.avatar?.body?.primary?.type || 'sphere';
-			const style = fullBody.style || 'futuristic';
-			const clothing = fullBody.clothing || 'suit';
-			const posture = fullBody.posture || 'upright';
+			const fullBody = agent.avatar?.fullBody || {};
 			const accessories = fullBody.accessories || [];
-			const limbs = fullBody.limbs || { armsPosition: 'neutral', stance: 'solid' };
+			const activeMode = agent.avatar?.renderStyle?.type || currentRenderMode || 'vector';
 
 			// Animation factors
-			const breath = Math.sin(breathPhase) * 3.5;
+			const breath = Math.sin(breathPhase) * 5;
 			const isTalking = status === 'talking';
 			const isThinking = status === 'thinking';
 			const isListening = status === 'listening';
 
-			// Posture inclinations
+			// Posture inclination
 			let headRot = 0;
-			let torsoLean = 0;
-			if (posture === 'tactical') { headRot = 2; torsoLean = 2; }
-			else if (posture === 'scholarly') { headRot = -3; torsoLean = -1; }
-			else if (posture === 'confident') { headRot = 0; torsoLean = 0; }
-
-			if (isListening) headRot += 4;
-			if (isThinking) headRot -= 5;
+			if (fullBody.posture === 'tactical') headRot = 2;
+			else if (fullBody.posture === 'scholarly') headRot = -2.5;
+			if (isListening) headRot += 3.5;
+			if (isThinking) headRot -= 4.5;
 
 			const bodyColor = colors.body;
 			const eyesColor = colors.eyes;
 			const glowColor = colors.glow || bodyColor;
 			const accentColor = colors.accent || '#8A2BE2';
-			const clothingColor = fullBody.clothingColor || '#0D1117';
 
-			// Eye and eyebrow geometry
-			const eyeW = 20;
-			const eyeH = isThinking ? 28 : (isListening ? 38 : 34);
-			const spacing = 36;
+			// Eye geometry (Calibrated Bible Strong & Grok Bot proportions)
+			const eyeW = isThinking ? 18 : 22;
+			const eyeH = isThinking ? 32 : (isListening ? 48 : 44);
+			const spacing = 46;
 			const leftEyeX = 160 - spacing / 2;
 			const rightEyeX = 160 + spacing / 2;
-			const eyeY = 88 + (isThinking ? -2 : 0);
+			const eyeY = 152 + (isThinking ? -3 : 0);
 
 			// Eyebrow angle
 			let eyebrowAngle = 0;
-			if (posture === 'tactical' || isThinking) eyebrowAngle = 10;
-			else if (posture === 'scholarly') eyebrowAngle = -4;
+			if (fullBody.posture === 'tactical' || isThinking) eyebrowAngle = 9;
+			else if (fullBody.posture === 'scholarly') eyebrowAngle = -5;
 
-			// Talking wave indicator
-			const talkWave = isTalking ? Math.sin(talkWavePhase) * 6 : 0;
+			// Talking wave phase
+			const talkWave = isTalking ? Math.sin(talkWavePhase) * 7 : 0;
 
-			return \`
-				<svg viewBox="0 0 320 460" width="100%" height="100%" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg">
-					<defs>
-						<!-- Cosmic Body Glow -->
-						<filter id="body-glow-\${mode}" x="-30%" y="-30%" width="160%" height="160%">
-							<feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="\${glowColor}" flood-opacity="0.45" />
-						</filter>
-						<filter id="accent-glow-\${mode}" x="-30%" y="-30%" width="160%" height="160%">
-							<feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="\${accentColor}" flood-opacity="0.6" />
-						</filter>
-						<!-- Soft Back Aura Gradient -->
-						<radialGradient id="back-aura-\${mode}" cx="50%" cy="45%" r="55%">
-							<stop offset="0%" stop-color="\${glowColor}" stop-opacity="\${isThinking ? 0.45 : 0.25}" />
-							<stop offset="60%" stop-color="\${accentColor}" stop-opacity="0.1" />
-							<stop offset="100%" stop-color="#000000" stop-opacity="0" />
-						</radialGradient>
-						<!-- Shading Gradients -->
-						<linearGradient id="cloth-shading-\${mode}" x1="0%" y1="0%" x2="100%" y2="100%">
-							<stop offset="0%" stop-color="\${clothingColor}" />
-							<stop offset="100%" stop-color="#05070B" />
-						</linearGradient>
-					</defs>
+			// -------------------------------------------------------------
+			// RENDER MODE: DOTS (OpenAI Voice Dots / Grok Bot Matrix)
+			// -------------------------------------------------------------
+			if (activeMode === 'dots') {
+				// Compute Grok Eye Dots (24 dots per eye ring)
+				const numEyeDots = 24;
+				const rx = eyeW * 0.75;
+				const ry = Math.max(3, eyeH * 0.75 * blinkScaleY);
+				let leftDotsSvg = '';
+				let rightDotsSvg = '';
 
-					<!-- LAYER 1: BACK COSMIC AURA -->
-					<circle cx="160" cy="220" r="140" fill="url(#back-aura-\${mode})" style="transition: all 0.5s ease;" />
+				for (let i = 0; i < numEyeDots; i++) {
+					const theta = (i / numEyeDots) * Math.PI * 2;
+					const lx = leftEyeX + rx * Math.cos(theta);
+					const ly = eyeY + ry * Math.sin(theta);
+					const eyeFill = (eyesColor === '#000000' || eyesColor === '#0B0F19') ? '#FFFFFF' : eyesColor;
+					leftDotsSvg += '<circle cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="2.2" fill="' + eyeFill + '" filter="url(#accent-glow-' + mode + ')" />';
 
-					<!-- LAYER 2: HALO (SE HOUVER) -->
-					\${accessories.includes('halo') || posture === 'confident' ? \`
-						<g transform="translate(160, 32)">
-							<ellipse cx="0" cy="0" rx="48" ry="12" fill="none" stroke="\${accentColor}" stroke-width="2.5" filter="url(#accent-glow-\${mode})" opacity="0.9" />
-							<ellipse cx="0" cy="0" rx="44" ry="10" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.7" />
-						</g>
-					\` : ''}
+					const rxPos = rightEyeX + rx * Math.cos(theta);
+					const ryPos = eyeY + ry * Math.sin(theta);
+					rightDotsSvg += '<circle cx="' + rxPos.toFixed(1) + '" cy="' + ryPos.toFixed(1) + '" r="2.2" fill="' + eyeFill + '" filter="url(#accent-glow-' + mode + ')" />';
+				}
 
-					<!-- LAYER 3: MANTO / CAPA DORSAL (SE ROBE OU TACTICAL) -->
-					\${clothing === 'robe' || style === 'scholar' ? \`
-						<path d="M 115 180 Q 70 340 60 410 L 260 410 Q 250 340 205 180 Z" fill="#13101C" opacity="0.75" />
-					\` : ''}
+				// OpenAI Orbital Pulsing Dots (24 animated peripheral dots)
+				let orbitalDotsSvg = '';
+				const numOrbital = 24;
+				for (let i = 0; i < numOrbital; i++) {
+					const theta = (i / numOrbital) * Math.PI * 2 + (talkWavePhase * 0.15);
+					const rDist = 112 + Math.sin(breathPhase * 2 + i * 0.8) * 3.5;
+					const ox = 160 + rDist * Math.cos(theta);
+					const oy = 160 + rDist * Math.sin(theta);
+					const dotR = 2.4 + (isTalking ? Math.sin(talkWavePhase + i) * 0.8 : 0);
+					const opacity = 0.5 + Math.sin(breathPhase + i) * 0.45;
+					orbitalDotsSvg += '<circle cx="' + ox.toFixed(1) + '" cy="' + oy.toFixed(1) + '" r="' + Math.max(1.5, dotR).toFixed(1) + '" fill="' + accentColor + '" opacity="' + Math.max(0.2, opacity).toFixed(2) + '" filter="url(#accent-glow-' + mode + ')" />';
+				}
 
-					<!-- LAYER 4: BASE / PERNAS / CALÇADOS (100% VISÍVEIS) -->
-					<g transform="translate(0, \${breath * 0.4})">
-						<!-- Pernas -->
-						<rect x="122" y="275" width="28" height="110" rx="8" fill="#0C0F17" stroke="\${clothingColor}" stroke-width="1" />
-						<rect x="170" y="275" width="28" height="110" rx="8" fill="#0C0F17" stroke="\${clothingColor}" stroke-width="1" />
-						<!-- Linhas de Energia nas Pernas -->
-						<line x1="136" y1="285" x2="136" y2="375" stroke="\${accentColor}" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
-						<line x1="184" y1="285" x2="184" y2="375" stroke="\${accentColor}" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6" />
+				// Central Voice / Wave dots (OpenAI Voice Mode)
+				let voiceDotsSvg = '';
+				if (isTalking) {
+					for (let col = -3; col <= 3; col++) {
+						const cx = 160 + col * 9;
+						const waveAmp = Math.sin(talkWavePhase * 2 + col * 0.9) * 16;
+						voiceDotsSvg += '<circle cx="' + cx + '" cy="' + (194 - waveAmp * 0.5) + '" r="2.2" fill="' + glowColor + '" filter="url(#body-glow-' + mode + ')" />' +
+							'<circle cx="' + cx + '" cy="194" r="2.5" fill="#FFFFFF" />' +
+							'<circle cx="' + cx + '" cy="' + (194 + waveAmp * 0.5) + '" r="2.2" fill="' + glowColor + '" filter="url(#body-glow-' + mode + ')" />';
+					}
+				} else {
+					voiceDotsSvg = '<circle cx="150" cy="192" r="2" fill="' + glowColor + '" opacity="0.6" />' +
+						'<circle cx="160" cy="192" r="2.4" fill="' + glowColor + '" opacity="0.9" />' +
+						'<circle cx="170" cy="192" r="2" fill="' + glowColor + '" opacity="0.6" />';
+				}
 
-						\${limbs.stance === 'floating' ? \`
-							<!-- Propulsores Anti-Gravidade Flutuantes -->
-							<ellipse cx="136" cy="392" rx="16" ry="6" fill="\${accentColor}" filter="url(#accent-glow-\${mode})" />
-							<ellipse cx="184" cy="392" rx="16" ry="6" fill="\${accentColor}" filter="url(#accent-glow-\${mode})" />
-							<line x1="136" y1="392" x2="136" y2="430" stroke="\${glowColor}" stroke-width="3" opacity="0.7" stroke-linecap="round" />
-							<line x1="184" y1="392" x2="184" y2="430" stroke="\${glowColor}" stroke-width="3" opacity="0.7" stroke-linecap="round" />
-						\` : \`
-							<!-- Calçados Tecnológicos -->
-							<rect x="114" y="380" width="38" height="22" rx="6" fill="#151922" stroke="\${accentColor}" stroke-width="1.2" />
-							<rect x="168" y="380" width="38" height="22" rx="6" fill="#151922" stroke="\${accentColor}" stroke-width="1.2" />
-							<line x1="114" y1="400" x2="152" y2="400" stroke="\${accentColor}" stroke-width="2" opacity="0.8" />
-							<line x1="168" y1="400" x2="206" y2="400" stroke="\${accentColor}" stroke-width="2" opacity="0.8" />
-						\`}
-					</g>
+				return '<svg viewBox="0 0 320 320" width="100%" height="100%" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg">' +
+					'<defs>' +
+						'<filter id="body-glow-' + mode + '" x="-30%" y="-30%" width="160%" height="160%">' +
+							'<feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="' + glowColor + '" flood-opacity="0.65" />' +
+						'</filter>' +
+						'<filter id="accent-glow-' + mode + '" x="-30%" y="-30%" width="160%" height="160%">' +
+							'<feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="' + accentColor + '" flood-opacity="0.75" />' +
+						'</filter>' +
+						'<radialGradient id="dots-core-grad-' + mode + '" cx="45%" cy="40%" r="65%">' +
+							'<stop offset="0%" stop-color="#0E1726" />' +
+							'<stop offset="70%" stop-color="#04060A" />' +
+							'<stop offset="100%" stop-color="#000000" />' +
+						'</radialGradient>' +
+					'</defs>' +
+					'<!-- LAYER 1: BACK COSMIC AURA -->' +
+					'<circle cx="160" cy="160" r="130" fill="' + glowColor + '" opacity="' + (isThinking ? 0.28 : 0.16) + '" filter="url(#body-glow-' + mode + ')" />' +
+					'<!-- LAYER 2: OPENAI ORBITAL PULSING DOTS -->' +
+					'<g transform="translate(160, 160) rotate(' + (headRot * 1.5) + ') translate(-160, -160)">' +
+						orbitalDotsSvg +
+					'</g>' +
+					'<!-- LAYER 3: CORE BOT ORB (BODILESS) -->' +
+					'<g transform="translate(0, ' + breath + ') translate(160, 160) rotate(' + headRot + ') translate(-160, -160)">' +
+						'<circle cx="160" cy="160" r="95" fill="url(#dots-core-grad-' + mode + ')" stroke="' + glowColor + '" stroke-width="1.8" filter="url(#body-glow-' + mode + ')" />' +
+						'<circle cx="160" cy="160" r="92" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1" />' +
+						'<circle cx="160" cy="160" r="80" fill="none" stroke="' + accentColor + '" stroke-width="1" stroke-dasharray="4 6" opacity="0.4" />' +
+						'<g>' + leftDotsSvg + rightDotsSvg + '</g>' +
+						'<g>' + voiceDotsSvg + '</g>' +
+					'</g>' +
+				'</svg>';
+			}
 
-					<!-- LAYER 5: TRONCO & VESTIMENTA (COM RESPIRAÇÃO NATURAL) -->
-					<g transform="translate(0, \${breath})">
-						<!-- Torso Base -->
-						<path d="M 104 165 C 104 150, 216 150, 216 165 L 204 285 C 204 290, 116 290, 116 285 Z" fill="url(#cloth-shading-\${mode})" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+			// -------------------------------------------------------------
+			// RENDER MODE: PIXEL (Retro Canvas Pixel Grid)
+			// -------------------------------------------------------------
+			if (activeMode === 'pixel') {
+				const pixelSize = 12;
+				const gridStartX = 88;
+				const gridStartY = 88;
+				const gridSize = 12;
 
-						<!-- Detalhes de Roupa por Estilo -->
-						\${clothing === 'armor' ? \`
-							<!-- Placas de Armadura Cibernética -->
-							<path d="M 118 175 L 160 195 L 202 175 L 195 240 L 160 260 L 125 240 Z" fill="#182234" stroke="\${accentColor}" stroke-width="1.5" />
-							<!-- Arc Reactor / Núcleo de Energia -->
-							<circle cx="160" cy="215" r="14" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-							<circle cx="160" cy="215" r="8" fill="#FFFFFF" />
-						\` : clothing === 'suit' ? \`
-							<!-- Lapelas de Terno Elegante -->
-							<polygon points="120,165 160,225 145,280 120,280" fill="#090D14" />
-							<polygon points="200,165 160,225 175,280 200,280" fill="#090D14" />
-							<!-- Gravata / Fita de Dados -->
-							<polygon points="156,180 164,180 162,255 158,255" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-						\` : clothing === 'robe' ? \`
-							<!-- Dobras de Túnica Teológica -->
-							<path d="M 125 165 Q 160 240 125 285" fill="none" stroke="\${accentColor}" stroke-width="2" opacity="0.7" />
-							<path d="M 195 165 Q 160 240 195 285" fill="none" stroke="\${accentColor}" stroke-width="2" opacity="0.7" />
-							<circle cx="160" cy="185" r="7" fill="\${accentColor}" />
-						\` : \`
-							<!-- Traje Básico Moderno -->
-							<line x1="160" y1="165" x2="160" y2="280" stroke="\${accentColor}" stroke-width="2" opacity="0.6" />
-						\`}
+				let pixelsSvg = '';
+				for (let row = 0; row < gridSize; row++) {
+					for (let col = 0; col < gridSize; col++) {
+						const distFromCenter = Math.hypot(col - 5.5, row - 5.5);
+						let isPixelActive = false;
+						let pixelColor = bodyColor;
 
-						<!-- Braços e Membros -->
-						\${limbs.armsPosition === 'folded' ? \`
-							<!-- Braços Cruzados Focados -->
-							<path d="M 104 175 C 90 205, 110 245, 160 245 C 210 245, 230 205, 216 175" fill="none" stroke="url(#cloth-shading-\${mode})" stroke-width="24" stroke-linecap="round" />
-							<path d="M 120 235 L 200 235" stroke="\${accentColor}" stroke-width="1.5" opacity="0.7" />
-						\` : limbs.armsPosition === 'hands_joined' ? \`
-							<!-- Mãos Unidas Reflexivas -->
-							<path d="M 104 175 L 145 235 L 160 240 L 175 235 L 216 175" fill="none" stroke="url(#cloth-shading-\${mode})" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" />
-							<circle cx="160" cy="238" r="8" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-						\` : isTalking ? \`
-							<!-- Braços em Gesticulação Ativa -->
-							<path d="M 104 175 Q 80 215 95 245" fill="none" stroke="url(#cloth-shading-\${mode})" stroke-width="22" stroke-linecap="round" />
-							<path d="M 216 175 Q 248 200 235 230" fill="none" stroke="url(#cloth-shading-\${mode})" stroke-width="22" stroke-linecap="round" />
-							<circle cx="235" cy="230" r="7" fill="\${bodyColor}" />
-						\` : \`
-							<!-- Braços nas Laterais em Prontidão -->
-							<path d="M 104 175 Q 92 225 96 265" fill="none" stroke="url(#cloth-shading-\${mode})" stroke-width="22" stroke-linecap="round" />
-							<path d="M 216 175 Q 228 225 224 265" fill="none" stroke="url(#cloth-shading-\${mode})" stroke-width="22" stroke-linecap="round" />
-							<circle cx="96" cy="265" r="7" fill="\${bodyColor}" />
-							<circle cx="224" cy="265" r="7" fill="\${bodyColor}" />
-						\`}
+						if (distFromCenter <= 5.2) {
+							isPixelActive = true;
+							const isLeftEye = (col === 3 || col === 4) && (row === 5 || (blinkScaleY > 0.3 && (row === 4 || row === 6)));
+							const isRightEye = (col === 7 || col === 8) && (row === 5 || (blinkScaleY > 0.3 && (row === 4 || row === 6)));
+							if (isLeftEye || isRightEye) {
+								pixelColor = eyesColor;
+							} else if (distFromCenter >= 4.4) {
+								pixelColor = glowColor;
+							}
+						}
 
-						<!-- Pescoço -->
-						<rect x="148" y="132" width="24" height="24" rx="4" fill="#0A0E17" stroke="rgba(255,255,255,0.1)" />
-					</g>
+						if (isPixelActive) {
+							const px = gridStartX + col * pixelSize;
+							const py = gridStartY + row * pixelSize;
+							pixelsSvg += '<rect x="' + px + '" y="' + py + '" width="' + (pixelSize - 1) + '" height="' + (pixelSize - 1) + '" fill="' + pixelColor + '" rx="1" />';
+						}
+					}
+				}
 
-					<!-- LAYER 6: CABEÇA 3D NATIVA BIBLE STRONG COM PERSPECTIVA -->
-					<g transform="translate(160, 95) rotate(\${headRot}) translate(-160, -95)">
-						<!-- Superfície Geométrica da Cabeça -->
-						\${surface === 'cube' ? \`
-							<rect x="110" y="45" width="100" height="100" rx="20" ry="20" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-							<rect x="115" y="50" width="90" height="90" rx="16" ry="16" fill="none" stroke="#FFFFFF" stroke-width="1.2" opacity="0.3" />
-						\` : surface === 'capsule' ? \`
-							<rect x="115" y="40" width="90" height="110" rx="45" ry="45" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-						\` : surface === 'cylinder' ? \`
-							<rect x="115" y="45" width="90" height="100" rx="16" ry="16" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-							<ellipse cx="160" cy="50" rx="45" ry="14" fill="#FFFFFF" opacity="0.25" />
-						\` : surface === 'diamond' ? \`
-							<polygon points="160,35 215,95 160,155 105,95" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-						\` : surface === 'cone' ? \`
-							<polygon points="160,35 215,150 105,150" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-						\` : surface === 'mickey' ? \`
-							<circle cx="120" cy="50" r="26" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-							<circle cx="200" cy="50" r="26" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-							<circle cx="160" cy="95" r="48" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-						\` : \`
-							<!-- Sphere (Default) -->
-							<circle cx="160" cy="95" r="48" fill="\${bodyColor}" filter="url(#body-glow-\${mode})" />
-							<!-- 3D Spherical Volume Highlight -->
-							<ellipse cx="145" cy="80" rx="30" ry="22" fill="#FFFFFF" opacity="0.3" />
-						\`}
+				return '<svg viewBox="0 0 320 320" width="100%" height="100%" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg">' +
+					'<defs>' +
+						'<filter id="body-glow-' + mode + '">' +
+							'<feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="' + glowColor + '" flood-opacity="0.5" />' +
+						'</filter>' +
+					'</defs>' +
+					'<circle cx="160" cy="160" r="110" fill="' + glowColor + '" opacity="0.12" filter="url(#body-glow-' + mode + ')" />' +
+					'<g transform="translate(0, ' + breath + ')">' +
+						pixelsSvg +
+					'</g>' +
+				'</svg>';
+			}
 
-						<!-- LAYER 7: ROSTO & OLHOS BIBLE STRONG -->
-						<!-- Sobrancelhas Dinâmicas -->
-						<line x1="\${leftEyeX - 10}" y1="\${eyeY - 22 + eyebrowAngle}" x2="\${leftEyeX + 10}" y2="\${eyeY - 22 - eyebrowAngle}" stroke="\${eyesColor}" stroke-width="3" stroke-linecap="round" />
-						<line x1="\${rightEyeX - 10}" y1="\${eyeY - 22 - eyebrowAngle}" x2="\${rightEyeX + 10}" y2="\${eyeY - 22 + eyebrowAngle}" stroke="\${eyesColor}" stroke-width="3" stroke-linecap="round" />
+			// -------------------------------------------------------------
+			// RENDER MODE: VECTOR 3D (Bible Strong Avatar Lab Canonical Mascot - Strobi Style)
+			// 100% Bodiless Procedural Mascot Character
+			// -------------------------------------------------------------
+			let surfaceSvg = '';
+			if (surface === 'cube') {
+				surfaceSvg = '<rect x="80" y="80" width="160" height="160" rx="36" ry="36" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<rect x="88" y="88" width="144" height="60" rx="26" fill="url(#specular-grad-' + mode + ')" opacity="0.45" />' +
+					'<rect x="84" y="84" width="152" height="152" rx="32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" />';
+			} else if (surface === 'capsule') {
+				surfaceSvg = '<rect x="90" y="70" width="140" height="180" rx="70" ry="70" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<ellipse cx="160" cy="115" rx="52" ry="28" fill="url(#specular-grad-' + mode + ')" opacity="0.5" />' +
+					'<rect x="94" y="74" width="132" height="172" rx="66" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" />';
+			} else if (surface === 'cylinder') {
+				surfaceSvg = '<rect x="90" y="75" width="140" height="170" rx="28" ry="28" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<ellipse cx="160" cy="98" rx="68" ry="22" fill="#FFFFFF" opacity="0.28" />' +
+					'<rect x="94" y="79" width="132" height="162" rx="24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" />';
+			} else if (surface === 'diamond') {
+				surfaceSvg = '<polygon points="160,65 250,160 160,255 70,160" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<polygon points="160,75 240,160 160,160" fill="#FFFFFF" opacity="0.22" />' +
+					'<polygon points="160,160 240,160 160,245" fill="#000000" opacity="0.18" />' +
+					'<polygon points="160,65 250,160 160,255 70,160" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />';
+			} else if (surface === 'cone') {
+				surfaceSvg = '<polygon points="160,65 248,245 72,245" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<ellipse cx="160" cy="245" rx="88" ry="16" fill="url(#surf-gradient-' + mode + ')" />' +
+					'<polygon points="160,75 238,242 160,242" fill="#FFFFFF" opacity="0.25" />';
+			} else if (surface === 'mickey') {
+				surfaceSvg = '<circle cx="102" cy="98" r="42" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<circle cx="218" cy="98" r="42" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<circle cx="160" cy="165" r="78" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<ellipse cx="140" cy="140" rx="46" ry="30" fill="url(#specular-grad-' + mode + ')" opacity="0.45" />';
+			} else {
+				// Canonical Superellipsoid Sphere (Strobi & Bible Strong Reference)
+				surfaceSvg = '<circle cx="160" cy="160" r="84" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<ellipse cx="138" cy="130" rx="54" ry="36" fill="url(#specular-grad-' + mode + ')" opacity="0.48" />' +
+					'<circle cx="160" cy="160" r="82" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" />';
+			}
 
-						<!-- Olhos Expressivos com Piscar Orgânico -->
-						<g transform="translate(0, 0)">
-							<!-- Olho Esquerdo -->
-							<g transform="translate(\${leftEyeX}, \${eyeY}) scale(1, \${blinkScaleY}) translate(-\${leftEyeX}, -\${eyeY})">
-								<ellipse cx="\${leftEyeX}" cy="\${eyeY}" rx="\${eyeW / 2}" ry="\${eyeH / 2}" fill="\${eyesColor}" />
-								<circle cx="\${leftEyeX + 2}" cy="\${eyeY - 4}" r="3" fill="#FFFFFF" opacity="0.9" />
-							</g>
-							<!-- Olho Direito -->
-							<g transform="translate(\${rightEyeX}, \${eyeY}) scale(1, \${blinkScaleY}) translate(-\${rightEyeX}, -\${eyeY})">
-								<ellipse cx="\${rightEyeX}" cy="\${eyeY}" rx="\${eyeW / 2}" ry="\${eyeH / 2}" fill="\${eyesColor}" />
-								<circle cx="\${rightEyeX + 2}" cy="\${eyeY - 4}" r="3" fill="#FFFFFF" opacity="0.9" />
-							</g>
-						</g>
+			const haloSvg = (accessories.includes('halo') || fullBody.posture === 'confident') ?
+				'<g transform="translate(160, 56) rotate(' + headRot + ') translate(-160, -56)">' +
+					'<ellipse cx="160" cy="56" rx="54" ry="14" fill="none" stroke="' + accentColor + '" stroke-width="2.5" filter="url(#accent-glow-' + mode + ')" opacity="0.9" />' +
+					'<ellipse cx="160" cy="56" rx="50" ry="12" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.75" />' +
+				'</g>' : '';
 
-						<!-- LAYER 8: ACESSÓRIOS DE ROSTO -->
-						\${accessories.includes('hud_visor') ? \`
-							<!-- HUD Visor Translúcido -->
-							<rect x="116" y="\${eyeY - 14}" width="88" height="28" rx="6" fill="\${accentColor}" opacity="0.45" filter="url(#accent-glow-\${mode})" />
-							<rect x="118" y="\${eyeY - 12}" width="84" height="24" rx="4" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.8" />
-							<line x1="124" y1="\${eyeY}" x2="196" y2="\${eyeY}" stroke="#FFFFFF" stroke-width="0.75" stroke-dasharray="3 3" opacity="0.7" />
-						\` : accessories.includes('glasses') ? \`
-							<!-- Óculos Acadêmicos Eruditos -->
-							<circle cx="\${leftEyeX}" cy="\${eyeY}" r="17" fill="none" stroke="\${accentColor}" stroke-width="2.5" />
-							<circle cx="\${rightEyeX}" cy="\${eyeY}" r="17" fill="none" stroke="\${accentColor}" stroke-width="2.5" />
-							<line x1="\${leftEyeX + 17}" y1="\${eyeY}" x2="\${rightEyeX - 17}" y2="\${eyeY}" stroke="\${accentColor}" stroke-width="2.5" />
-						\` : ''}
+			const accessorySvg = accessories.includes('hud_visor') ?
+				'<rect x="112" y="' + (eyeY - 14) + '" width="96" height="30" rx="8" fill="' + accentColor + '" opacity="0.45" filter="url(#accent-glow-' + mode + ')" />' +
+				'<rect x="114" y="' + (eyeY - 12) + '" width="92" height="26" rx="6" fill="none" stroke="#FFFFFF" stroke-width="1.2" opacity="0.85" />' +
+				'<line x1="120" y1="' + eyeY + '" x2="200" y2="' + eyeY + '" stroke="#FFFFFF" stroke-width="1" stroke-dasharray="3 3" opacity="0.75" />' :
+				accessories.includes('glasses') ?
+				'<circle cx="' + leftEyeX + '" cy="' + eyeY + '" r="19" fill="none" stroke="' + accentColor + '" stroke-width="2.5" />' +
+				'<circle cx="' + rightEyeX + '" cy="' + eyeY + '" r="19" fill="none" stroke="' + accentColor + '" stroke-width="2.5" />' +
+				'<line x1="' + (leftEyeX + 19) + '" y1="' + eyeY + '" x2="' + (rightEyeX - 19) + '" y2="' + eyeY + '" stroke="' + accentColor + '" stroke-width="2.5" />' : '';
 
-						<!-- Boca / Indicador de Fala -->
-						\${isTalking ? \`
-							<!-- Onda de Fala Ativa -->
-							<path d="M 148 \${122 + talkWave} Q 160 \${128 - talkWave} 172 \${122 + talkWave}" fill="none" stroke="\${eyesColor}" stroke-width="3" stroke-linecap="round" />
-						\` : \`
-							<!-- Boca Neutra Firme -->
-							<line x1="152" y1="122" x2="168" y2="122" stroke="\${eyesColor}" stroke-width="2.5" stroke-linecap="round" />
-						\`}
-					</g>
-				</svg>
-			\`;
+			const mouthSvg = isTalking ?
+				'<path d="M 144 ' + (186 + talkWave) + ' Q 160 ' + (194 - talkWave) + ' 176 ' + (186 + talkWave) + '" fill="none" stroke="' + eyesColor + '" stroke-width="3.5" stroke-linecap="round" />' :
+				'<line x1="150" y1="188" x2="170" y2="188" stroke="' + eyesColor + '" stroke-width="2.8" stroke-linecap="round" />';
+
+			return '<svg viewBox="0 0 320 320" width="100%" height="100%" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg">' +
+				'<defs>' +
+					'<filter id="body-glow-' + mode + '" x="-30%" y="-30%" width="160%" height="160%">' +
+						'<feDropShadow dx="0" dy="0" stdDeviation="14" flood-color="' + glowColor + '" flood-opacity="0.5" />' +
+					'</filter>' +
+					'<filter id="accent-glow-' + mode + '" x="-30%" y="-30%" width="160%" height="160%">' +
+						'<feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="' + accentColor + '" flood-opacity="0.6" />' +
+					'</filter>' +
+					'<radialGradient id="back-aura-' + mode + '" cx="50%" cy="50%" r="55%">' +
+						'<stop offset="0%" stop-color="' + glowColor + '" stop-opacity="' + (isThinking ? 0.38 : 0.22) + '" />' +
+						'<stop offset="60%" stop-color="' + accentColor + '" stop-opacity="0.08" />' +
+						'<stop offset="100%" stop-color="#000000" stop-opacity="0" />' +
+					'</radialGradient>' +
+					'<radialGradient id="surf-gradient-' + mode + '" cx="38%" cy="32%" r="70%">' +
+						'<stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35" />' +
+						'<stop offset="15%" stop-color="' + bodyColor + '" />' +
+						'<stop offset="85%" stop-color="' + bodyColor + '" />' +
+						'<stop offset="100%" stop-color="#05080E" stop-opacity="0.9" />' +
+					'</radialGradient>' +
+					'<radialGradient id="specular-grad-' + mode + '" cx="45%" cy="35%" r="60%">' +
+						'<stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85" />' +
+						'<stop offset="60%" stop-color="#FFFFFF" stop-opacity="0.15" />' +
+						'<stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />' +
+					'</radialGradient>' +
+				'</defs>' +
+				'<!-- LAYER 1: BACK COSMIC AURA -->' +
+				'<circle cx="160" cy="160" r="140" fill="url(#back-aura-' + mode + ')" style="transition: all 0.5s ease;" />' +
+				'<!-- LAYER 2: HALO -->' +
+				haloSvg +
+				'<!-- LAYER 3: CORPO 3D DO MASCOTE (100% BODILESS ROOT MODEL) -->' +
+				'<g transform="translate(0, ' + breath + ') translate(160, 160) rotate(' + headRot + ') translate(-160, -160)">' +
+					surfaceSvg +
+					'<!-- Sobrancelhas Dinâmicas Expressivas -->' +
+					'<line x1="' + (leftEyeX - 10) + '" y1="' + (eyeY - 24 + eyebrowAngle) + '" x2="' + (leftEyeX + 10) + '" y2="' + (eyeY - 24 - eyebrowAngle) + '" stroke="' + eyesColor + '" stroke-width="3.2" stroke-linecap="round" />' +
+					'<line x1="' + (rightEyeX - 10) + '" y1="' + (eyeY - 24 - eyebrowAngle) + '" x2="' + (rightEyeX + 10) + '" y2="' + (eyeY - 24 + eyebrowAngle) + '" stroke="' + eyesColor + '" stroke-width="3.2" stroke-linecap="round" />' +
+					'<!-- Olhos Expressivos com Piscar Orgânico -->' +
+					'<g>' +
+						'<g transform="translate(' + leftEyeX + ', ' + eyeY + ') scale(1, ' + blinkScaleY + ') translate(-' + leftEyeX + ', -' + eyeY + ')">' +
+							'<ellipse cx="' + leftEyeX + '" cy="' + eyeY + '" rx="' + (eyeW / 2) + '" ry="' + (eyeH / 2) + '" fill="' + eyesColor + '" />' +
+							'<circle cx="' + (leftEyeX + 3) + '" cy="' + (eyeY - 6) + '" r="3.5" fill="#FFFFFF" opacity="0.95" />' +
+						'</g>' +
+						'<g transform="translate(' + rightEyeX + ', ' + eyeY + ') scale(1, ' + blinkScaleY + ') translate(-' + rightEyeX + ', -' + eyeY + ')">' +
+							'<ellipse cx="' + rightEyeX + '" cy="' + eyeY + '" rx="' + (eyeW / 2) + '" ry="' + (eyeH / 2) + '" fill="' + eyesColor + '" />' +
+							'<circle cx="' + (rightEyeX + 3) + '" cy="' + (eyeY - 6) + '" r="3.5" fill="#FFFFFF" opacity="0.95" />' +
+						'</g>' +
+					'</g>' +
+					accessorySvg +
+					mouthSvg +
+				'</g>' +
+			'</svg>';
 		}
 
 		function updateStudioAvatarPreview() {
@@ -1925,13 +2109,20 @@ export function renderSandboxHtml(): string {
 			// Mirror controls to agent state
 			a.avatar.body.primary.type = document.getElementById('avatarSurfaceType').value;
 			a.avatar.fullBody.style = document.getElementById('avatarStyle').value;
-			a.avatar.fullBody.clothing = document.getElementById('avatarClothing').value;
+			if (document.getElementById('avatarRenderMode')) {
+				a.avatar.renderStyle = { type: document.getElementById('avatarRenderMode').value };
+			}
+			if (document.getElementById('avatarRootModel')) {
+				a.avatar.rootModel = document.getElementById('avatarRootModel').value;
+			}
 			a.avatar.colors.body = document.getElementById('colBody').value;
 			a.avatar.colors.eyes = document.getElementById('colEyes').value;
 			a.avatar.colors.glow = document.getElementById('colGlow').value;
 			a.avatar.colors.accent = document.getElementById('colAccent').value;
 
-			document.getElementById('telemetryStyleLabel').textContent = (a.avatar.fullBody.style + ' ' + a.avatar.fullBody.clothing).toUpperCase();
+			const modeStr = (a.avatar.renderStyle?.type || currentRenderMode || 'vector').toUpperCase();
+			const surfStr = (a.avatar.body?.primary?.type || 'sphere').toUpperCase();
+			document.getElementById('telemetryStyleLabel').textContent = surfStr + ' · ' + modeStr;
 
 			const container = document.getElementById('avatarSvgContainer');
 			container.innerHTML = generateFullBodySvg(a, 'studio');
@@ -2209,14 +2400,17 @@ export function renderSandboxHtml(): string {
 						}
 					},
 					animationOrder: ['idle'],
+					renderStyle: { type: currentRenderMode },
+					rootModel: document.getElementById('avatarRootModel') ? document.getElementById('avatarRootModel').value : 'basic',
 					fullBody: {
+						bodiless: true,
+						rootModel: document.getElementById('avatarRootModel') ? document.getElementById('avatarRootModel').value : 'basic',
 						style: document.getElementById('avatarStyle').value,
-						clothing: document.getElementById('avatarClothing').value,
+						clothing: 'minimal',
 						clothingColor: '#0A1424',
 						accentColor: document.getElementById('colAccent').value,
-						accessories: ['hud_visor'],
+						accessories: ['none'],
 						posture: 'upright',
-						limbs: { armsPosition: 'neutral', stance: 'solid' },
 						interpretedMood: document.getElementById('telemetryMoodLabel').textContent.replace('Interpretado: ', '')
 					}
 				},

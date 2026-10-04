@@ -165,6 +165,26 @@ export const PRESET_COLLAB_AGENTS: AgentVisualMetadata[] = [
 		model: "Avatar Lab Core v1",
 		contextHint: "Configuração de referência do Bible Strong Avatar Lab.",
 	},
+	{
+		id: "openai-dots",
+		name: "OpenAI Voice Dots",
+		title: "Orbe Quântica de Voz e Partículas",
+		strongRef: "OpenAI ChatGPT Voice System",
+		personality: {
+			tone: "Responsivo, dinâmico e sutil",
+			traits: ["Voice Orb", "Partículas Pulsantes", "Minimalismo Absoluto"],
+			catchphrase: "Presença viva modulada por frequências de voz.",
+		},
+		surface: "sphere",
+		colors: {
+			body: "#0A0D14",
+			eyes: "#00F0FF",
+			glow: "#00F0FF",
+			accent: "#8A2BE2",
+		},
+		model: "GPT-4o Voice Engine / Quantum Dots",
+		contextHint: "Orbe minimalista fluida com pontos orbitais quânticos e anéis de voz.",
+	},
 ];
 
 export interface BibleStrongAvatarViewProps {

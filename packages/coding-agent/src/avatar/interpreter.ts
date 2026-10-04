@@ -290,6 +290,8 @@ export function interpretVisualProfile(input: InterpretVisualInput): Interpreted
 	}
 
 	const fullBody: AvatarFullBodyDefinition = {
+		bodiless: true,
+		rootModel: "basic",
 		style,
 		clothing,
 		clothingColor: (style === "scholar" ? "#2A2016" : style === "tactical" ? "#1A1010" : "#111827") as HexColor,
@@ -503,7 +505,13 @@ export function interpretAgentFromNaturalLanguage(prompt: string): AgentProfile 
 			},
 		},
 		animationOrder: ["idle"],
-		fullBody: visual.fullBody,
+		renderStyle: { type: "vector" },
+		rootModel: "basic",
+		fullBody: {
+			...visual.fullBody,
+			bodiless: true,
+			rootModel: "basic",
+		},
 	};
 
 	const now = new Date().toISOString();
