@@ -7,12 +7,12 @@
 	"redirects": [
 		{
 			"source": "/install",
-			"destination": "https://github.com/LucasEntweihen/oh-my-shark/releases/download/ohms-v0.0.3/install.sh",
+			"destination": "https://raw.githubusercontent.com/LucasEntweihen/oh-my-shark/main/scripts/install.sh",
 			"permanent": false
 		},
 		{
 			"source": "/install.ps1",
-			"destination": "https://github.com/LucasEntweihen/oh-my-shark/releases/download/ohms-v0.0.3/install.ps1",
+			"destination": "https://raw.githubusercontent.com/LucasEntweihen/oh-my-shark/main/install.ps1",
 			"permanent": false
 		}
 	],
