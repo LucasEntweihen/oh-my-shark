@@ -122,6 +122,23 @@ export const SHARK_VANGUARD_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle", "talking", "investigating"],
+	fullBody: {
+		style: "futuristic",
+		clothing: "armor",
+		clothingColor: "#0A1424",
+		accentColor: "#8A2BE2",
+		accessories: ["hud_visor", "halo"],
+		posture: "confident",
+		limbs: {
+			armsPosition: "ready",
+			stance: "floating",
+		},
+		faceDetails: {
+			eyebrows: "determined",
+			mouth: "neutral",
+		},
+		interpretedMood: "Comando Estratégico & Presença Soberana",
+	},
 };
 
 export const DEEP_SEA_SAGE_AVATAR: AvatarDefinition = {
@@ -195,6 +212,23 @@ export const DEEP_SEA_SAGE_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	fullBody: {
+		style: "academic",
+		clothing: "robe",
+		clothingColor: "#1B0F2A",
+		accentColor: "#D4AF37",
+		accessories: ["halo"],
+		posture: "scholarly",
+		limbs: {
+			armsPosition: "hands_joined",
+			stance: "floating",
+		},
+		faceDetails: {
+			eyebrows: "serene",
+			mouth: "subtle_smile",
+		},
+		interpretedMood: "Sabedoria Abissal & Introspecção Serena",
+	},
 };
 
 export const CODE_ARCHITECT_AVATAR: AvatarDefinition = {
@@ -257,6 +291,23 @@ export const CODE_ARCHITECT_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	fullBody: {
+		style: "minimalist",
+		clothing: "suit",
+		clothingColor: "#0D1815",
+		accentColor: "#00E5FF",
+		accessories: ["hud_visor"],
+		posture: "upright",
+		limbs: {
+			armsPosition: "folded",
+			stance: "solid",
+		},
+		faceDetails: {
+			eyebrows: "focused",
+			mouth: "firm",
+		},
+		interpretedMood: "Rigor Técnico & Precisão Zero-Overhead",
+	},
 };
 
 export const THEOLOGICAL_SCHOLAR_AVATAR: AvatarDefinition = {
@@ -320,6 +371,23 @@ export const THEOLOGICAL_SCHOLAR_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	fullBody: {
+		style: "scholar",
+		clothing: "robe",
+		clothingColor: "#2A2016",
+		accentColor: "#8A2BE2",
+		accessories: ["glasses", "halo"],
+		posture: "scholarly",
+		limbs: {
+			armsPosition: "hands_joined",
+			stance: "solid",
+		},
+		faceDetails: {
+			eyebrows: "serene",
+			mouth: "subtle_smile",
+		},
+		interpretedMood: "Erudição Filológica & Reverência ao Logos",
+	},
 };
 
 export const SECURITY_SENTINEL_AVATAR: AvatarDefinition = {
@@ -382,6 +450,23 @@ export const SECURITY_SENTINEL_AVATAR: AvatarDefinition = {
 		},
 	},
 	animationOrder: ["idle"],
+	fullBody: {
+		style: "tactical",
+		clothing: "armor",
+		clothingColor: "#220D0D",
+		accentColor: "#FF5500",
+		accessories: ["badge", "wrist_gauntlet"],
+		posture: "tactical",
+		limbs: {
+			armsPosition: "ready",
+			stance: "solid",
+		},
+		faceDetails: {
+			eyebrows: "focused",
+			mouth: "firm",
+		},
+		interpretedMood: "Vigilância Inflexível & Ceticismo Metódico",
+	},
 };
 
 export const DEFAULT_AGENT_PROFILES: AgentProfile[] = [

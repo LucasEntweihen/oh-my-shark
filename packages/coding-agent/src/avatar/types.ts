@@ -84,6 +84,79 @@ export interface AvatarBodyDefinition {
 	nodes: AvatarBodyNodeDefinition[];
 }
 
+export type AvatarStyleType =
+	| "futuristic"
+	| "academic"
+	| "corporate"
+	| "cyber"
+	| "scholar"
+	| "casual"
+	| "minimalist"
+	| "tactical"
+	| "scientific";
+
+export type AvatarClothingType =
+	| "coat"
+	| "suit"
+	| "robe"
+	| "armor"
+	| "tunic"
+	| "hoodie"
+	| "vest"
+	| "minimal"
+	| "lab_coat";
+
+export type AvatarAccessoryType =
+	| "hud_visor"
+	| "glasses"
+	| "halo"
+	| "cape"
+	| "badge"
+	| "audio_rig"
+	| "wrist_gauntlet"
+	| "none";
+
+export type AvatarPostureType =
+	| "upright"
+	| "confident"
+	| "scholarly"
+	| "tactical"
+	| "relaxed"
+	| "observant";
+
+export type AvatarArmsPosition =
+	| "folded"
+	| "neutral"
+	| "gesturing"
+	| "ready"
+	| "hands_joined";
+
+export type AvatarStanceType = "solid" | "relaxed" | "floating" | "hovering";
+
+export type AvatarEyebrowsType = "neutral" | "focused" | "raised" | "determined" | "serene";
+
+export interface AvatarFullBodyDefinition {
+	clothing?: AvatarClothingType;
+	clothingColor?: HexColor;
+	accentColor?: HexColor;
+	accessories?: AvatarAccessoryType[];
+	posture?: AvatarPostureType;
+	style?: AvatarStyleType;
+	limbs?: {
+		armsPosition?: AvatarArmsPosition;
+		stance?: AvatarStanceType;
+	};
+	hair?: {
+		style?: "short" | "flowing" | "spiky" | "halo" | "none";
+		color?: HexColor;
+	};
+	faceDetails?: {
+		eyebrows?: AvatarEyebrowsType;
+		mouth?: "neutral" | "subtle_smile" | "talking" | "firm";
+	};
+	interpretedMood?: string;
+}
+
 /** Canonical Bible Strong Avatar schema (compatible with bible-strong/avatar-definition schema v1) */
 export interface AvatarDefinition {
 	schema: "bible-strong/avatar-definition";
@@ -95,6 +168,7 @@ export interface AvatarDefinition {
 	expressionOrder: string[];
 	animations: Record<string, AvatarAnimationDefinition>;
 	animationOrder: string[];
+	fullBody?: AvatarFullBodyDefinition;
 }
 
 export interface AgentModelConfig {

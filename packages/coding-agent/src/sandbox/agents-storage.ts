@@ -51,7 +51,14 @@ export async function loadAgentProfiles(cwd = process.cwd()): Promise<AgentProfi
 			try {
 				const content = await Bun.file(filePath).json();
 				if (content && typeof content === "object" && "id" in content) {
-					profiles.push(content as AgentProfile);
+					const agent = content as AgentProfile;
+					if (!agent.avatar.fullBody) {
+						const defaultPreset = DEFAULT_AGENT_PROFILES.find(d => d.id === agent.id);
+						if (defaultPreset?.avatar.fullBody) {
+							agent.avatar.fullBody = defaultPreset.avatar.fullBody;
+						}
+					}
+					profiles.push(agent);
 				}
 			} catch (err) {
 				logger.warn("Failed to parse agent profile file", { filePath, err });
@@ -109,9 +116,16 @@ export function compileAgentsMarkdown(profiles: AgentProfile[]): string {
 		lines.push(`### 🤖 ${p.name} (\`@${p.id}\`)`);
 		lines.push(`- **Título / Papel:** ${p.title} (${p.structure.role})`);
 		lines.push(`- **Categoria:** \`${p.structure.category}\``);
-		lines.push(
-			`- **Avatar Bible Strong:** Superfície \`${p.avatar.body.primary.type}\`, Cor Primária \`${p.avatar.colors.body}\`, Olhos \`${p.avatar.colors.eyes}\``,
-		);
+		const fb = p.avatar.fullBody;
+		const avatarDetails = [
+			`Superfície \`${p.avatar.body.primary.type}\``,
+			`Cor Primária \`${p.avatar.colors.body}\``,
+			`Olhos \`${p.avatar.colors.eyes}\``,
+			fb?.style ? `Estilo \`${fb.style}\`` : null,
+			fb?.clothing ? `Vestimenta \`${fb.clothing}\`` : null,
+			fb?.posture ? `Postura \`${fb.posture}\`` : null,
+		].filter(Boolean).join(", ");
+		lines.push(`- **Avatar Bible Strong:** ${avatarDetails}`);
 		lines.push(`- **Tom e Personalidade:** ${p.personality.tone}`);
 		lines.push(`- **Traços Marcantes:** ${p.personality.traits.join(", ")}`);
 		if (p.personality.catchphrase) {
