@@ -30,6 +30,24 @@ export const surfacePresets: Record<SurfaceType, SurfaceConfig> = {
 		baseRoundness: 0.45,
 	},
 	diamond: { type: "diamond", width: 235, height: 260, depth: 215, roundness: 0 },
+	triangle: { type: "triangle", width: 250, height: 265, depth: 225, roundness: 0, morphRoundness: 0, tipRoundness: 0.55, baseRoundness: 0.45 },
+	rectangle: { type: "rectangle", width: 265, height: 210, depth: 220, roundness: 0.2 },
+	prism: { type: "prism", width: 240, height: 250, depth: 240, roundness: 0.1 },
+	star: { type: "star", width: 255, height: 255, depth: 190, roundness: 0.3 },
+	heart: { type: "heart", width: 250, height: 240, depth: 195, roundness: 0.6 },
+	skull: { type: "skull", width: 240, height: 260, depth: 220, roundness: 0.4 },
+	fish: { type: "fish", width: 270, height: 230, depth: 180, roundness: 0.5 },
+	quadrado: { type: "quadrado", width: 245, height: 245, depth: 220, roundness: 0 },
+	bola: { type: "bola", width: 240, height: 240, depth: 240, roundness: 1 },
+	triangulo: { type: "triangulo", width: 250, height: 265, depth: 225, roundness: 0, morphRoundness: 0, tipRoundness: 0.55, baseRoundness: 0.45 },
+	cilindro: { type: "cilindro", width: 235, height: 250, depth: 215, roundness: 0.45, morphRoundness: 0 },
+	retangulo: { type: "retangulo", width: 265, height: 210, depth: 220, roundness: 0.2 },
+	prisma: { type: "prisma", width: 240, height: 250, depth: 240, roundness: 0.1 },
+	estrela: { type: "estrela", width: 255, height: 255, depth: 190, roundness: 0.3 },
+	coração: { type: "coração", width: 250, height: 240, depth: 195, roundness: 0.6 },
+	coracao: { type: "coracao", width: 250, height: 240, depth: 195, roundness: 0.6 },
+	caveira: { type: "caveira", width: 240, height: 260, depth: 220, roundness: 0.4 },
+	peixe: { type: "peixe", width: 270, height: 230, depth: 180, roundness: 0.5 },
 };
 
 export const surfaceLabels: Record<SurfaceType, string> = {
@@ -41,8 +59,25 @@ export const surfaceLabels: Record<SurfaceType, string> = {
 	cylinder: "Cylindre",
 	cone: "Cône",
 	diamond: "Diamant",
+	triangle: "Triângulo",
+	rectangle: "Retângulo",
+	prism: "Prisma",
+	star: "Estrela",
+	heart: "Coração",
+	skull: "Caveira",
+	fish: "Peixe (Ichthys)",
+	quadrado: "Quadrado",
+	bola: "Bola",
+	triangulo: "Triângulo",
+	cilindro: "Cilindro",
+	retangulo: "Retângulo",
+	prisma: "Prisma",
+	estrela: "Estrela",
+	coração: "Coração",
+	coracao: "Coração",
+	caveira: "Caveira",
+	peixe: "Peixe",
 };
-
 const signedPower = (value: number, exponent: number): number => Math.sign(value) * Math.abs(value) ** exponent;
 
 const superellipsoid = (
@@ -257,10 +292,15 @@ export const surfacePointAt = (config: SurfaceConfig, longitude: number, latitud
 	switch (config.type) {
 		case "sphere":
 		case "mickey":
+		case "bola":
 			return superellipsoid(longitude, latitude, width, height, depth, 1, 1);
 		case "cube":
+		case "quadrado":
+		case "rectangle":
+		case "retangulo":
 			return cube(config, longitude, latitude);
-		case "cylinder": {
+		case "cylinder":
+		case "cilindro": {
 			const progress = (latitude + Math.PI / 2) / Math.PI;
 			const profile = morphedCylinderProfileAt(config, progress);
 			return [
@@ -286,10 +326,14 @@ export const surfacePointAt = (config: SurfaceConfig, longitude: number, latitud
 			];
 		}
 		case "diamond":
+		case "prism":
+		case "prisma":
 			return diamond(config, longitude, latitude);
 		case "capsule":
 			return capsule(config, longitude, latitude);
-		case "cone": {
+		case "cone":
+		case "triangle":
+		case "triangulo": {
 			const progress = (latitude + Math.PI / 2) / Math.PI;
 			const profile = morphedConeProfileAt(config, progress);
 			return [
@@ -298,6 +342,29 @@ export const surfacePointAt = (config: SurfaceConfig, longitude: number, latitud
 				(depth / 2) * profile.radiusScale * Math.cos(longitude),
 			];
 		}
+		case "star":
+		case "estrela": {
+			const starMod = 1 + 0.18 * Math.cos(5 * longitude);
+			return superellipsoid(longitude, latitude, width * starMod, height, depth * starMod, 1, 1);
+		}
+		case "heart":
+		case "coração":
+		case "coracao": {
+			const heartMod = 1 + 0.18 * Math.sin(longitude) * Math.sin(latitude);
+			return superellipsoid(longitude, latitude, width, height * heartMod, depth, 1, 1);
+		}
+		case "skull":
+		case "caveira": {
+			const skullMod = latitude < 0 ? 0.82 : 1;
+			return superellipsoid(longitude, latitude, width * skullMod, height, depth * skullMod, 1, 1);
+		}
+		case "fish":
+		case "peixe": {
+			const fishModX = 1 + 0.22 * Math.cos(longitude);
+			return superellipsoid(longitude, latitude, width * fishModX, height, depth, 1, 1);
+		}
+		default:
+			return superellipsoid(longitude, latitude, width, height, depth, 1, 1);
 	}
 };
 
@@ -458,8 +525,21 @@ export const surfaceFrontSampleAt = (config: SurfaceConfig, x: number, y: number
 	switch (config.type) {
 		case "sphere":
 		case "mickey":
+		case "bola":
+		case "star":
+		case "estrela":
+		case "heart":
+		case "coração":
+		case "coracao":
+		case "skull":
+		case "caveira":
+		case "fish":
+		case "peixe":
 			return ellipsoidFrontSample(x, y, radiusX, radiusY, radiusZ);
 		case "cube":
+		case "quadrado":
+		case "rectangle":
+		case "retangulo":
 			return lpFrontSample(config, x, y, cubeExponent(config), cubeNormal);
 		case "capsule": {
 			const capRadiusY = Math.min(radiusX, radiusY);
@@ -468,6 +548,7 @@ export const surfaceFrontSampleAt = (config: SurfaceConfig, x: number, y: number
 			return ellipsoidFrontSample(x, y, radiusX, capRadiusY, radiusZ, capCenterY);
 		}
 		case "cylinder":
+		case "cilindro":
 			return radialProfileFrontSample(config, x, y, morphedCylinderProfileAt, 1);
 		case "cursor": {
 			const layout = cursorLayout(config);
@@ -484,16 +565,22 @@ export const surfaceFrontSampleAt = (config: SurfaceConfig, x: number, y: number
 			};
 		}
 		case "cone":
+		case "triangle":
+		case "triangulo":
 			return radialProfileFrontSample(config, x, y, morphedConeProfileAt, -1);
 		case "diamond":
+		case "prism":
+		case "prisma":
 			return lpFrontSample(config, x, y, diamondExponent(config), diamondNormal);
+		default:
+			return ellipsoidFrontSample(x, y, radiusX, radiusY, radiusZ);
 	}
 };
 
 export const surfaceNormalAt = (config: SurfaceConfig, longitude: number, latitude: number): Point3 => {
 	const point = surfacePointAt(config, longitude, latitude);
 
-	if (config.type === "sphere" || config.type === "mickey") {
+	if (config.type === "sphere" || config.type === "mickey" || config.type === "bola") {
 		const halfWidth = config.width / 2 || 1;
 		const halfHeight = config.height / 2 || 1;
 		const halfDepth = config.depth / 2 || 1;
@@ -504,7 +591,7 @@ export const surfaceNormalAt = (config: SurfaceConfig, longitude: number, latitu
 		]);
 	}
 
-	if (config.type === "cylinder" && config.roundness <= 0 && (config.morphRoundness ?? 0) <= 0) {
+	if ((config.type === "cylinder" || config.type === "cilindro") && config.roundness <= 0 && (config.morphRoundness ?? 0) <= 0) {
 		return normalize([
 			Math.sin(longitude) / (config.width / 2 || 1),
 			0,
@@ -512,11 +599,11 @@ export const surfaceNormalAt = (config: SurfaceConfig, longitude: number, latitu
 		]);
 	}
 
-	if (config.type === "diamond") {
+	if (config.type === "diamond" || config.type === "prism" || config.type === "prisma") {
 		return diamondNormal(config, point);
 	}
 
-	if (config.type === "cube") {
+	if (config.type === "cube" || config.type === "quadrado" || config.type === "rectangle" || config.type === "retangulo") {
 		return cubeNormal(config, point);
 	}
 
@@ -526,7 +613,7 @@ export const surfaceNormalAt = (config: SurfaceConfig, longitude: number, latitu
 export const surfaceSampleAt = (config: SurfaceConfig, longitude: number, latitude: number): SurfaceSample => {
 	const point = surfacePointAt(config, longitude, latitude);
 
-	if (config.type === "sphere" || config.type === "mickey") {
+	if (config.type === "sphere" || config.type === "mickey" || config.type === "bola") {
 		const halfWidth = config.width / 2 || 1;
 		const halfHeight = config.height / 2 || 1;
 		const halfDepth = config.depth / 2 || 1;
@@ -540,7 +627,7 @@ export const surfaceSampleAt = (config: SurfaceConfig, longitude: number, latitu
 		};
 	}
 
-	if (config.type === "cylinder" && config.roundness <= 0 && (config.morphRoundness ?? 0) <= 0) {
+	if ((config.type === "cylinder" || config.type === "cilindro") && config.roundness <= 0 && (config.morphRoundness ?? 0) <= 0) {
 		return {
 			point,
 			normal: normalize([
@@ -551,14 +638,14 @@ export const surfaceSampleAt = (config: SurfaceConfig, longitude: number, latitu
 		};
 	}
 
-	if (config.type === "diamond") {
+	if (config.type === "diamond" || config.type === "prism" || config.type === "prisma") {
 		return {
 			point,
 			normal: diamondNormal(config, point),
 		};
 	}
 
-	if (config.type === "cube") {
+	if (config.type === "cube" || config.type === "quadrado" || config.type === "rectangle" || config.type === "retangulo") {
 		return {
 			point,
 			normal: cubeNormal(config, point),

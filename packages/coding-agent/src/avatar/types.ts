@@ -3,7 +3,33 @@ export type HexColor = `#${string}`;
 export type Point3 = readonly [number, number, number];
 export type Quaternion = readonly [number, number, number, number];
 
-export type SurfaceType = "sphere" | "mickey" | "cursor" | "cube" | "capsule" | "cylinder" | "cone" | "diamond";
+export type SurfaceType =
+	| "sphere"
+	| "mickey"
+	| "cursor"
+	| "cube"
+	| "capsule"
+	| "cylinder"
+	| "cone"
+	| "diamond"
+	| "triangle"
+	| "rectangle"
+	| "prism"
+	| "star"
+	| "heart"
+	| "skull"
+	| "fish"
+	| "quadrado"
+	| "bola"
+	| "triangulo"
+	| "cilindro"
+	| "retangulo"
+	| "prisma"
+	| "estrela"
+	| "coração"
+	| "coracao"
+	| "caveira"
+	| "peixe";
 export interface SurfaceConfig {
 	type: SurfaceType;
 	width: number;

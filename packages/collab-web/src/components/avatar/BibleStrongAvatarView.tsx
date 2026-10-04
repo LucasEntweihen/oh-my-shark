@@ -310,18 +310,28 @@ export function BibleStrongAvatarView({
 	const { headSvgPath, eyeWidth, eyeHeight, eyeSpacing } = useMemo(() => {
 		const s = currentAgent.surface;
 		let path = "";
-		if (s === "cube") {
+		if (s === "cube" || s === "quadrado") {
 			path = "M -95,-95 L 95,-95 L 95,95 L -95,95 Z";
 		} else if (s === "capsule") {
 			path = "M -75,-105 C -75,-125 75,-125 75,-105 L 75,105 C 75,125 -75,125 -75,105 Z";
-		} else if (s === "cylinder") {
+		} else if (s === "cylinder" || s === "cilindro") {
 			path = "M -85,-100 L 85,-100 L 85,100 L -85,100 Z";
-		} else if (s === "diamond") {
-			path = "M 0,-115 L 115,0 L 0,115 L -115,0 Z";
-		} else if (s === "cone") {
+		} else if (s === "diamond" || s === "prism" || s === "prisma") {
+			path = "M 0,-110 L 95,-55 L 95,55 L 0,110 L -95,55 L -95,-55 Z";
+		} else if (s === "cone" || s === "triangle" || s === "triangulo") {
 			path = "M 0,-115 L 105,105 L -105,105 Z";
+		} else if (s === "rectangle" || s === "retangulo") {
+			path = "M -115,-75 L 115,-75 L 115,75 L -115,75 Z";
+		} else if (s === "star" || s === "estrela") {
+			path = "M 0,-115 L 32,-35 L 115,-35 L 50,20 L 72,105 L 0,55 L -72,105 L -50,20 L -115,-35 L -32,-35 Z";
+		} else if (s === "heart" || s === "coração" || s === "coracao") {
+			path = "M 0,105 C -75,45 -110,-10 -110,-55 C -110,-95 -75,-110 -35,-110 C -15,-110 0,-95 0,-85 C 0,-95 15,-110 35,-110 C 75,-110 110,-95 110,-55 C 110,-10 75,45 0,105 Z";
+		} else if (s === "skull" || s === "caveira") {
+			path = "M -80,-30 C -80,-90 -45,-110 0,-110 C 45,-110 80,-90 80,-30 C 80,15 65,35 50,45 L 50,95 L -50,95 L -50,45 C -65,35 -80,15 -80,-30 Z";
+		} else if (s === "fish" || s === "peixe") {
+			path = "M -105,0 C -35,-85 65,-10 105,-45 L 85,0 L 105,45 C 65,10 -35,85 -105,0 Z";
 		} else {
-			// sphere / mickey: perfect canonical 120 radius superellipsoid
+			// sphere / bola / mickey
 			path =
 				"M 0,-115 C 63,-115 115,-63 115,0 C 115,63 63,115 0,115 C -63,115 -115,63 -115,0 C -115,-63 -63,-115 0,-115 Z";
 		}
@@ -416,27 +426,21 @@ export function BibleStrongAvatarView({
 				</div>
 
 				<div style={{ display: "flex", gap: "6px" }}>
-					{(["vector", "dots", "pixel"] as AvatarRenderMode[]).map(mode => (
-						<button
-							key={mode}
-							type="button"
-							onClick={() => setRenderMode(mode)}
-							style={{
-								padding: "4px 8px",
-								fontSize: "0.72rem",
-								fontWeight: 600,
-								borderRadius: "6px",
-								border: `1px solid ${renderMode === mode ? currentAgent.colors.body : "#334155"}`,
-								background: renderMode === mode ? currentAgent.colors.body : "#1E293B",
-								color: renderMode === mode ? "#0B0F19" : "#E2E8F0",
-								cursor: "pointer",
-								textTransform: "uppercase",
-								transition: "all 0.15s ease",
-							}}
-						>
-							{mode}
-						</button>
-					))}
+					<span
+						style={{
+							padding: "4px 10px",
+							fontSize: "0.72rem",
+							fontWeight: 600,
+							borderRadius: "6px",
+							border: `1px solid ${currentAgent.colors.body}`,
+							background: currentAgent.colors.body,
+							color: "#0B0F19",
+							textTransform: "uppercase",
+							letterSpacing: "0.05em",
+						}}
+					>
+						✦ 3D Canônico (Bible Strong Lab)
+					</span>
 				</div>
 			</div>
 

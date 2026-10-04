@@ -689,6 +689,128 @@ export function renderSandboxHtml(): string {
 			justify-content: center;
 			position: relative;
 			overflow: hidden;
+			cursor: grab;
+			user-select: none;
+			touch-action: none;
+		}
+
+		.full-body-viewport:active {
+			cursor: grabbing;
+		}
+
+		/* Screen Pet Widget (Requirement 8) */
+		.screen-pet-container {
+			position: fixed;
+			bottom: 30px;
+			right: 30px;
+			z-index: 99999;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			user-select: none;
+			touch-action: none;
+			cursor: grab;
+			transition: filter 0.2s ease;
+		}
+
+		.screen-pet-container.dragging {
+			cursor: grabbing;
+			transform: scale(1.06) rotate(3deg);
+			filter: drop-shadow(0 14px 28px rgba(0, 229, 255, 0.45));
+		}
+
+		.screen-pet-body {
+			width: 140px;
+			height: 140px;
+			position: relative;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.7));
+			transition: transform 0.15s ease;
+		}
+
+		.screen-pet-body:hover {
+			transform: scale(1.05);
+		}
+
+		.pet-svg-wrapper {
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+		}
+
+		.pet-name-pill {
+			margin-top: -6px;
+			font-family: var(--font-hud);
+			font-size: 0.65rem;
+			font-weight: 700;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: #FFFFFF;
+			background: rgba(11, 15, 25, 0.88);
+			backdrop-filter: blur(12px);
+			border: 1px solid var(--glass-border);
+			padding: 2px 10px;
+			border-radius: 999px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+			pointer-events: none;
+		}
+
+		.pet-bubble-thinking {
+			position: absolute;
+			top: -40px;
+			background: rgba(15, 23, 42, 0.92);
+			backdrop-filter: blur(14px);
+			border: 1px solid var(--stellar-cyan);
+			color: #38BDF8;
+			font-family: var(--font-hud);
+			font-size: 0.72rem;
+			font-weight: 600;
+			padding: 5px 12px;
+			border-radius: 14px;
+			box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+			animation: petFloat 2s ease-in-out infinite;
+			pointer-events: none;
+			white-space: nowrap;
+		}
+
+		.pet-bubble-alert {
+			position: absolute;
+			top: -46px;
+			background: linear-gradient(135deg, #10B981, #059669);
+			color: #FFFFFF;
+			font-family: var(--font-hud);
+			font-size: 0.76rem;
+			font-weight: 700;
+			padding: 6px 14px;
+			border-radius: 16px;
+			box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+			animation: petPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+			cursor: pointer;
+			white-space: nowrap;
+		}
+
+		@keyframes petFloat {
+			0%, 100% { transform: translateY(0); }
+			50% { transform: translateY(-5px); }
+		}
+
+		@keyframes petPopIn {
+			0% { transform: scale(0.5) translateY(10px); opacity: 0; }
+			100% { transform: scale(1) translateY(0); opacity: 1; }
+		}
+
+		.pet-bounce-anim {
+			animation: petBounceJump 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+		}
+
+		@keyframes petBounceJump {
+			0% { transform: translateY(0) scale(1, 1); }
+			30% { transform: translateY(-24px) scale(0.92, 1.12); }
+			60% { transform: translateY(0) scale(1.08, 0.92); }
+			80% { transform: translateY(-6px) scale(0.98, 1.02); }
+			100% { transform: translateY(0) scale(1, 1); }
 		}
 
 		.svg-canvas-wrapper {
@@ -1306,9 +1428,8 @@ export function renderSandboxHtml(): string {
 
 					<!-- Render Mode Selector Switcher -->
 					<div class="render-mode-tabs">
-						<button type="button" class="render-mode-btn active" id="btnModeVector" onclick="setRenderMode('vector')">✦ 3D Canônico (Lab)</button>
-						<button type="button" class="render-mode-btn" id="btnModeDots" onclick="setRenderMode('dots')">⁖ OpenAI / Grok Dots</button>
-						<button type="button" class="render-mode-btn" id="btnModePixel" onclick="setRenderMode('pixel')">▦ Pixel Retrô</button>
+						<button type="button" class="render-mode-btn active" id="btnModeVector" onclick="setRenderMode('vector')">✦ 3D Canônico (Bible Strong Lab)</button>
+						<button type="button" class="render-mode-btn" id="btnTogglePet" onclick="toggleScreenPet()">🐾 Pet Flutuante: <span id="petToggleText">ATIVO</span></button>
 					</div>
 
 					<!-- Root Model Live Viewport -->
@@ -1335,21 +1456,29 @@ export function renderSandboxHtml(): string {
 							<div class="form-field">
 								<label class="field-label">Superfície 3D</label>
 								<select class="field-select" id="avatarSurfaceType" onchange="onVisualChange()">
-									<option value="sphere">Sphère (Esfera / Strobi)</option>
-									<option value="cube">Cube (Cubo Tecnológico)</option>
-									<option value="capsule">Capsule (Cápsula / Scholar)</option>
-									<option value="cylinder">Cylindre (Cilindro / Tático)</option>
-									<option value="diamond">Diamant (Cristal / Sage)</option>
-									<option value="cone">Cône (Cone de Foco)</option>
-									<option value="mickey">Mickey (Superfície Dupla)</option>
+									<option value="quadrado">⬛ Quadrado (Cubo 3D)</option>
+									<option value="bola">⚪ Bola (Esfera 3D - Strobi)</option>
+									<option value="triangulo">🔺 Triângulo (Pirâmide 3D)</option>
+									<option value="cilindro">🥫 Cilindro (Cilindro 3D)</option>
+									<option value="retangulo">▬ Retângulo (Caixa 3D)</option>
+									<option value="prisma">⬡ Prisma (Hexagonal 3D)</option>
+									<option value="estrela">⭐ Estrela (Estrela Cósmica 3D)</option>
+									<option value="coração">❤️ Coração (Coração 3D)</option>
+									<option value="caveira">💀 Caveira (Caveira 3D)</option>
+									<option value="peixe">🐟 Peixe (Ichthys Bíblico 3D)</option>
 								</select>
 							</div>
 							<div class="form-field">
-								<label class="field-label">Modo Gráfico</label>
-								<select class="field-select" id="avatarRenderMode" onchange="onRenderModeSelectChange()">
-									<option value="vector">✦ 3D Canônico (Bible Strong Lab)</option>
-									<option value="dots">⁖ OpenAI Dots & Grok Bot</option>
-									<option value="pixel">▦ Pixel Matrix Retrô</option>
+								<label class="field-label">Expressão Facial</label>
+								<select class="field-select" id="avatarExpressionSelect" onchange="onExpressionSelectChange()">
+									<option value="random">🎲 Aleatória (Orgânica Automática)</option>
+									<option value="neutral">😐 Neutra / Concentrada</option>
+									<option value="happy">😊 Alegre / Radiante</option>
+									<option value="curious">🤔 Curiosa / Inclinada</option>
+									<option value="alert">⚡ Alerta / Atenta</option>
+									<option value="thinking">💭 Raciocinando / Profunda</option>
+									<option value="winking">😉 Piscadinha / Cumplicidade</option>
+									<option value="peaceful">🕊️ Serena / Shalom</option>
 								</select>
 							</div>
 						</div>
@@ -1475,6 +1604,22 @@ export function renderSandboxHtml(): string {
 	</div>
 
 	<div class="hud-toast" id="toast"></div>
+	<!-- ======================================================================
+	     FLOATING SCREEN PET WIDGET (Requirement 8)
+	     ====================================================================== -->
+	<div id="screenPetContainer" class="screen-pet-container">
+		<div class="pet-bubble-thinking" id="petThinkingBubble" style="display: none;">
+			<span>💭 Raciocinando...</span>
+		</div>
+		<div class="pet-bubble-alert" id="petAlertBubble" style="display: none;" onclick="dismissPetAlert()">
+			<span id="petAlertText">✨ Mensagem pronta!</span>
+		</div>
+		<div class="screen-pet-body" id="screenPetBody" onclick="onPetClick()" title="Clique ou arraste seu Pet!">
+			<div id="screenPetSvgWrapper" class="pet-svg-wrapper"></div>
+		</div>
+		<div class="pet-name-pill" id="petNamePill">@shark-lead</div>
+	</div>
+
 
 	<!-- ==========================================================================
 	     CLIENT RUNTIME SCRIPT
@@ -1495,6 +1640,9 @@ export function renderSandboxHtml(): string {
 		async function init() {
 			renderToolsChips();
 			await loadAgents();
+			initStudioDraggable();
+			initScreenPet();
+			startRandomExpressionCycle();
 			startCosmicLoops();
 
 			// Auto open chat view if requested in URL
@@ -1646,6 +1794,7 @@ export function renderSandboxHtml(): string {
 			setRenderMode(a.avatar?.renderStyle?.type || currentRenderMode || 'vector');
 			renderRosters();
 			updateStudioAvatarPreview();
+			if (typeof setScreenPetAgent === 'function') setScreenPetAgent(currentAgentId);
 		}
 
 		function selectChatAgent(id) {
@@ -1657,6 +1806,7 @@ export function renderSandboxHtml(): string {
 				document.getElementById('chatAvatarMoodTag').textContent = 'Conectado: ' + a.name;
 			}
 			updateChatAvatarPreview();
+			if (typeof setScreenPetAgent === 'function') setScreenPetAgent(id);
 		}
 
 		// Interpretive AI: Updates visual profile automatically based on role/tone
@@ -1688,6 +1838,7 @@ export function renderSandboxHtml(): string {
 			const surface = document.getElementById('avatarSurfaceType').value;
 			document.getElementById('avatarSurfaceBadge').textContent = surface.toUpperCase();
 			updateStudioAvatarPreview();
+			if (typeof updateScreenPet === 'function') updateScreenPet();
 		}
 
 		function applyPresetPrompt(prompt) {
@@ -1731,38 +1882,262 @@ export function renderSandboxHtml(): string {
 		}
 
 		/* ==========================================================================
-		   CANONICAL BIBLE STRONG & GROK / OPENAI DOTS AVATAR ENGINE (100% BODILESS)
-		   Modelos Raiz Oficiais: Bible Strong Avatar Lab, Grok Bot & OpenAI Dots
+		   CANONICAL BIBLE STRONG 3D AVATAR ENGINE (100% BODILESS)
+		   Baseado 100% no original: https://github.com/smontlouis/bible-strong-avatar-lab.git
 		   ========================================================================== */
 		let currentRenderMode = 'vector';
 
+		// Studio Dragging State (Requirement 3)
+		let isStudioDragging = false;
+		let studioDragStartX = 0;
+		let studioDragStartY = 0;
+		let studioRotX = 0;
+		let studioRotY = 0;
+		let studioTransX = 0;
+		let studioTransY = 0;
+
+		// Dynamic Random Expressions (Requirement 6)
+		const AVATAR_EXPRESSIONS = ['neutral', 'happy', 'curious', 'alert', 'thinking', 'winking', 'peaceful'];
+		let currentExpressionMode = 'random';
+		let currentDynamicExpression = 'neutral';
+		let expressionTimer = null;
+
+		// Screen Pet Widget State (Requirement 8)
+		let screenPetEnabled = true;
+		let petStatus = 'idle'; // 'idle' | 'thinking' | 'ready'
+		let petAgentId = null;
+		let petGazeX = 0;
+		let petGazeY = 0;
+		let isPetDragging = false;
+		let petDragStartX = 0;
+		let petDragStartY = 0;
+		let petPosLeft = null;
+		let petPosTop = null;
+		let petAlertTimer = null;
+
 		function setRenderMode(mode) {
-			currentRenderMode = mode;
-			document.querySelectorAll('.render-mode-btn').forEach(b => b.classList.remove('active'));
-			if (mode === 'vector' && document.getElementById('btnModeVector')) document.getElementById('btnModeVector').classList.add('active');
-			if (mode === 'dots' && document.getElementById('btnModeDots')) document.getElementById('btnModeDots').classList.add('active');
-			if (mode === 'pixel' && document.getElementById('btnModePixel')) document.getElementById('btnModePixel').classList.add('active');
-			
+			currentRenderMode = 'vector';
 			const badge = document.getElementById('avatarRenderModeBadge');
-			if (badge) badge.textContent = mode.toUpperCase();
-			const select = document.getElementById('avatarRenderMode');
-			if (select) select.value = mode;
-
-			const a = allAgents.find(x => x.id === currentAgentId);
-			if (a) {
-				if (!a.avatar.renderStyle) a.avatar.renderStyle = { type: mode };
-				else a.avatar.renderStyle.type = mode;
-			}
-
+			if (badge) badge.textContent = '3D CANÔNICO';
 			updateStudioAvatarPreview();
 			if (document.getElementById('viewChat').classList.contains('active')) {
 				updateChatAvatarPreview();
 			}
+			updateScreenPet();
 		}
 
 		function onRenderModeSelectChange() {
-			const select = document.getElementById('avatarRenderMode');
-			if (select) setRenderMode(select.value);
+			setRenderMode('vector');
+		}
+
+		function onExpressionSelectChange() {
+			const select = document.getElementById('avatarExpressionSelect');
+			if (!select) return;
+			currentExpressionMode = select.value;
+			if (currentExpressionMode !== 'random') {
+				currentDynamicExpression = currentExpressionMode;
+			}
+			updateStudioAvatarPreview();
+			updateChatAvatarPreview();
+			updateScreenPet();
+		}
+
+		function startRandomExpressionCycle() {
+			if (expressionTimer) clearInterval(expressionTimer);
+			expressionTimer = setInterval(() => {
+				if (currentExpressionMode === 'random') {
+					const randIdx = Math.floor(Math.random() * AVATAR_EXPRESSIONS.length);
+					currentDynamicExpression = AVATAR_EXPRESSIONS[randIdx];
+					updateStudioAvatarPreview();
+					updateChatAvatarPreview();
+					updateScreenPet();
+				}
+			}, 4800);
+		}
+
+		function toggleScreenPet() {
+			screenPetEnabled = !screenPetEnabled;
+			const petEl = document.getElementById('screenPetContainer');
+			const label = document.getElementById('petToggleText');
+			if (petEl) petEl.style.display = screenPetEnabled ? 'flex' : 'none';
+			if (label) label.textContent = screenPetEnabled ? 'ATIVO' : 'OFF';
+			if (screenPetEnabled) updateScreenPet();
+		}
+
+		function setScreenPetAgent(id) {
+			petAgentId = id;
+			updateScreenPet();
+		}
+
+		function dismissPetAlert() {
+			const alertBubble = document.getElementById('petAlertBubble');
+			if (alertBubble) alertBubble.style.display = 'none';
+			if (petAlertTimer) clearTimeout(petAlertTimer);
+			petStatus = 'idle';
+			updateScreenPet();
+		}
+
+		function triggerPetThinking() {
+			petStatus = 'thinking';
+			const thinkingBubble = document.getElementById('petThinkingBubble');
+			const alertBubble = document.getElementById('petAlertBubble');
+			if (thinkingBubble) thinkingBubble.style.display = 'block';
+			if (alertBubble) alertBubble.style.display = 'none';
+			updateScreenPet();
+		}
+
+		function triggerPetReady(replyText) {
+			petStatus = 'ready';
+			const thinkingBubble = document.getElementById('petThinkingBubble');
+			const alertBubble = document.getElementById('petAlertBubble');
+			if (thinkingBubble) thinkingBubble.style.display = 'none';
+			if (alertBubble) {
+				const alertText = document.getElementById('petAlertText');
+				if (alertText) alertText.textContent = '✨ Mensagem pronta!';
+				alertBubble.style.display = 'block';
+			}
+			// Trigger celebratory jump animation on pet
+			const petBody = document.getElementById('screenPetBody');
+			if (petBody) {
+				petBody.classList.remove('pet-bounce-anim');
+				void petBody.offsetWidth; // force reflow
+				petBody.classList.add('pet-bounce-anim');
+			}
+			updateScreenPet();
+			if (petAlertTimer) clearTimeout(petAlertTimer);
+			petAlertTimer = setTimeout(() => {
+				dismissPetAlert();
+			}, 6000);
+		}
+
+		function triggerPetIdle() {
+			if (petStatus === 'thinking') {
+				petStatus = 'idle';
+				const thinkingBubble = document.getElementById('petThinkingBubble');
+				if (thinkingBubble) thinkingBubble.style.display = 'none';
+				updateScreenPet();
+			}
+		}
+
+		function onPetClick() {
+			const petBody = document.getElementById('screenPetBody');
+			if (petBody) {
+				petBody.classList.remove('pet-bounce-anim');
+				void petBody.offsetWidth;
+				petBody.classList.add('pet-bounce-anim');
+			}
+			// Randomize expression on click
+			const happyExprs = ['happy', 'winking', 'alert', 'curious'];
+			currentDynamicExpression = happyExprs[Math.floor(Math.random() * happyExprs.length)];
+			updateScreenPet();
+			updateStudioAvatarPreview();
+			showToast('🐾 ' + (allAgents.find(x => x.id === (petAgentId || currentAgentId))?.name || 'Pet') + ' reagiu ao seu toque!');
+		}
+
+		function initStudioDraggable() {
+			const vp = document.getElementById('avatarViewport');
+			if (!vp) return;
+			vp.addEventListener('mousedown', e => {
+				if (e.target.closest('.telemetry-pill')) return;
+				isStudioDragging = true;
+				studioDragStartX = e.clientX - studioTransX;
+				studioDragStartY = e.clientY - studioTransY;
+				vp.style.cursor = 'grabbing';
+			});
+			window.addEventListener('mousemove', e => {
+				if (!isStudioDragging) return;
+				studioTransX = e.clientX - studioDragStartX;
+				studioTransY = e.clientY - studioDragStartY;
+				studioRotY = Math.max(-50, Math.min(50, studioTransX * 0.4));
+				studioRotX = Math.max(-35, Math.min(35, -studioTransY * 0.4));
+				const svgWrapper = document.getElementById('avatarSvgContainer');
+				if (svgWrapper) {
+					svgWrapper.style.transform = 'translate(' + (studioTransX * 0.35) + 'px, ' + (studioTransY * 0.35) + 'px) rotateY(' + studioRotY + 'deg) rotateX(' + studioRotX + 'deg)';
+				}
+			});
+			window.addEventListener('mouseup', () => {
+				if (!isStudioDragging) return;
+				isStudioDragging = false;
+				vp.style.cursor = 'grab';
+				const svgWrapper = document.getElementById('avatarSvgContainer');
+				if (svgWrapper) {
+					svgWrapper.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+					svgWrapper.style.transform = 'translate(0px, 0px) rotateY(0deg) rotateX(0deg)';
+					setTimeout(() => {
+						studioTransX = 0;
+						studioTransY = 0;
+						studioRotX = 0;
+						studioRotY = 0;
+						svgWrapper.style.transition = '';
+					}, 400);
+				}
+			});
+		}
+
+		function initScreenPet() {
+			const petContainer = document.getElementById('screenPetContainer');
+			if (!petContainer) return;
+
+			// Restore saved position
+			const saved = localStorage.getItem('omsk_pet_pos');
+			if (saved) {
+				try {
+					const pos = JSON.parse(saved);
+					if (typeof pos.left === 'number' && typeof pos.top === 'number') {
+						petPosLeft = Math.max(10, Math.min(window.innerWidth - 160, pos.left));
+						petPosTop = Math.max(10, Math.min(window.innerHeight - 180, pos.top));
+						petContainer.style.left = petPosLeft + 'px';
+						petContainer.style.top = petPosTop + 'px';
+						petContainer.style.right = 'auto';
+						petContainer.style.bottom = 'auto';
+					}
+				} catch {}
+			}
+
+			// Mouse tracking for eyes gaze
+			window.addEventListener('mousemove', e => {
+				const rect = petContainer.getBoundingClientRect();
+				const centerX = rect.left + rect.width / 2;
+				const centerY = rect.top + rect.height / 2;
+				const dx = e.clientX - centerX;
+				const dy = e.clientY - centerY;
+				const dist = Math.min(1, Math.hypot(dx, dy) / 360);
+				const angle = Math.atan2(dy, dx);
+				petGazeX = Math.cos(angle) * 7.5 * dist;
+				petGazeY = Math.sin(angle) * 6 * dist;
+
+				if (isPetDragging) {
+					petPosLeft = e.clientX - petDragStartX;
+					petPosTop = e.clientY - petDragStartY;
+					// clamp to viewport
+					petPosLeft = Math.max(10, Math.min(window.innerWidth - 150, petPosLeft));
+					petPosTop = Math.max(10, Math.min(window.innerHeight - 170, petPosTop));
+					petContainer.style.left = petPosLeft + 'px';
+					petContainer.style.top = petPosTop + 'px';
+					petContainer.style.right = 'auto';
+					petContainer.style.bottom = 'auto';
+				}
+			});
+
+			petContainer.addEventListener('mousedown', e => {
+				if (e.target.closest('.pet-bubble-alert')) return;
+				isPetDragging = true;
+				const rect = petContainer.getBoundingClientRect();
+				petDragStartX = e.clientX - rect.left;
+				petDragStartY = e.clientY - rect.top;
+				petContainer.classList.add('dragging');
+			});
+
+			window.addEventListener('mouseup', () => {
+				if (!isPetDragging) return;
+				isPetDragging = false;
+				petContainer.classList.remove('dragging');
+				if (petPosLeft !== null && petPosTop !== null) {
+					localStorage.setItem('omsk_pet_pos', JSON.stringify({ left: petPosLeft, top: petPosTop }));
+				}
+			});
+
+			updateScreenPet();
 		}
 
 		function onRootModelChange() {
@@ -1774,256 +2149,140 @@ export function renderSandboxHtml(): string {
 
 			a.avatar.rootModel = rootModel;
 			if (rootModel === 'strobi') {
-				// Canonical Bible Strong Avatar Lab Strobi mascot
-				a.avatar.body.primary.type = 'sphere';
+				a.avatar.body.primary.type = 'bola';
 				a.avatar.colors.body = '#5B7FE5';
 				a.avatar.colors.eyes = '#111316';
 				a.avatar.colors.glow = '#5B7FE5';
 				a.avatar.colors.accent = '#93C5FD';
-				document.getElementById('avatarSurfaceType').value = 'sphere';
+				document.getElementById('avatarSurfaceType').value = 'bola';
 				document.getElementById('colBody').value = '#5B7FE5';
 				document.getElementById('colEyes').value = '#111316';
 				document.getElementById('colGlow').value = '#5B7FE5';
 				document.getElementById('colAccent').value = '#93C5FD';
-				setRenderMode('vector');
-			} else if (rootModel === 'grok') {
-				// Canonical Grok Bot
-				a.avatar.body.primary.type = 'sphere';
-				a.avatar.colors.body = '#000000';
-				a.avatar.colors.eyes = '#FFFFFF';
-				a.avatar.colors.glow = '#00E5FF';
-				a.avatar.colors.accent = '#38BDF8';
-				document.getElementById('avatarSurfaceType').value = 'sphere';
-				document.getElementById('colBody').value = '#000000';
-				document.getElementById('colEyes').value = '#FFFFFF';
-				document.getElementById('colGlow').value = '#00E5FF';
-				document.getElementById('colAccent').value = '#38BDF8';
-				setRenderMode('dots');
-			} else if (rootModel === 'dots') {
-				// OpenAI Voice Dots Orb
-				a.avatar.body.primary.type = 'sphere';
-				a.avatar.colors.body = '#0A0D14';
-				a.avatar.colors.eyes = '#00F0FF';
-				a.avatar.colors.glow = '#00F0FF';
-				a.avatar.colors.accent = '#8A2BE2';
-				document.getElementById('avatarSurfaceType').value = 'sphere';
-				document.getElementById('colBody').value = '#0A0D14';
-				document.getElementById('colEyes').value = '#00F0FF';
-				document.getElementById('colGlow').value = '#00F0FF';
-				document.getElementById('colAccent').value = '#8A2BE2';
-				setRenderMode('dots');
 			} else {
-				setRenderMode('vector');
+				a.avatar.body.primary.type = document.getElementById('avatarSurfaceType').value || 'bola';
 			}
+			setRenderMode('vector');
 			updateStudioAvatarPreview();
+			updateScreenPet();
 		}
 
-		function generateFullBodySvg(agent, mode = 'studio', statusOverride = null) {
+		function updateScreenPet() {
+			if (!screenPetEnabled) return;
+			const targetId = petAgentId || chatAgentId || currentAgentId;
+			const a = allAgents.find(x => x.id === targetId) || allAgents[0];
+			if (!a) return;
+
+			const wrapper = document.getElementById('screenPetSvgWrapper');
+			if (wrapper) {
+				wrapper.innerHTML = generateFullBodySvg(a, 'pet', petStatus, petGazeX, petGazeY, currentDynamicExpression);
+			}
+			const pill = document.getElementById('petNamePill');
+			if (pill) {
+				pill.textContent = '@' + a.id;
+			}
+		}
+
+		function generateFullBodySvg(agent, mode = 'studio', statusOverride = null, customGazeX = 0, customGazeY = 0, customExpr = null) {
 			if (!agent) return '';
 
 			const status = statusOverride || (mode === 'chat' ? chatStatus : 'idle');
 			const colors = agent.avatar?.colors || { body: '#00E5FF', eyes: '#0B0F19', glow: '#00E5FF', accent: '#8A2BE2' };
-			const surface = agent.avatar?.body?.primary?.type || 'sphere';
+			const rawSurface = (agent.avatar?.body?.primary?.type || 'bola').toLowerCase();
+			const surface = rawSurface;
 			const fullBody = agent.avatar?.fullBody || {};
 			const accessories = fullBody.accessories || [];
-			const activeMode = agent.avatar?.renderStyle?.type || currentRenderMode || 'vector';
+			const expr = customExpr || currentDynamicExpression || 'neutral';
 
 			// Animation factors
 			const breath = Math.sin(breathPhase) * 5;
 			const isTalking = status === 'talking';
 			const isThinking = status === 'thinking';
 			const isListening = status === 'listening';
+			const isReady = status === 'ready';
 
-			// Posture inclination
+			// Posture and inclination
 			let headRot = 0;
 			if (fullBody.posture === 'tactical') headRot = 2;
 			else if (fullBody.posture === 'scholarly') headRot = -2.5;
 			if (isListening) headRot += 3.5;
 			if (isThinking) headRot -= 4.5;
+			if (expr === 'curious') headRot += 6.5;
+			if (expr === 'happy' || isReady) headRot += 2.5;
 
 			const bodyColor = colors.body;
 			const eyesColor = colors.eyes;
 			const glowColor = colors.glow || bodyColor;
 			const accentColor = colors.accent || '#8A2BE2';
 
-			// Eye geometry (Calibrated Bible Strong & Grok Bot proportions)
-			const eyeW = isThinking ? 18 : 22;
-			const eyeH = isThinking ? 32 : (isListening ? 48 : 44);
+			// Eye geometry (Calibrated Bible Strong Avatar Lab)
+			let eyeW = isThinking ? 18 : 22;
+			let eyeH = isThinking ? 32 : (isListening ? 48 : 44);
+			if (expr === 'alert' || isReady) {
+				eyeW = 24;
+				eyeH = 50;
+			}
 			const spacing = 46;
-			const leftEyeX = 160 - spacing / 2;
-			const rightEyeX = 160 + spacing / 2;
-			const eyeY = 152 + (isThinking ? -3 : 0);
-
-			// Eyebrow angle
-			let eyebrowAngle = 0;
-			if (fullBody.posture === 'tactical' || isThinking) eyebrowAngle = 9;
-			else if (fullBody.posture === 'scholarly') eyebrowAngle = -5;
+			const leftEyeX = 160 - spacing / 2 + customGazeX;
+			const rightEyeX = 160 + spacing / 2 + customGazeX;
+			const eyeY = 152 + (isThinking ? -4 : (expr === 'happy' ? -2 : 0)) + customGazeY;
 
 			// Talking wave phase
 			const talkWave = isTalking ? Math.sin(talkWavePhase) * 7 : 0;
 
 			// -------------------------------------------------------------
-			// RENDER MODE: DOTS (OpenAI Voice Dots / Grok Bot Matrix)
-			// -------------------------------------------------------------
-			if (activeMode === 'dots') {
-				// Compute Grok Eye Dots (24 dots per eye ring)
-				const numEyeDots = 24;
-				const rx = eyeW * 0.75;
-				const ry = Math.max(3, eyeH * 0.75 * blinkScaleY);
-				let leftDotsSvg = '';
-				let rightDotsSvg = '';
-
-				for (let i = 0; i < numEyeDots; i++) {
-					const theta = (i / numEyeDots) * Math.PI * 2;
-					const lx = leftEyeX + rx * Math.cos(theta);
-					const ly = eyeY + ry * Math.sin(theta);
-					const eyeFill = (eyesColor === '#000000' || eyesColor === '#0B0F19') ? '#FFFFFF' : eyesColor;
-					leftDotsSvg += '<circle cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="2.2" fill="' + eyeFill + '" filter="url(#accent-glow-' + mode + ')" />';
-
-					const rxPos = rightEyeX + rx * Math.cos(theta);
-					const ryPos = eyeY + ry * Math.sin(theta);
-					rightDotsSvg += '<circle cx="' + rxPos.toFixed(1) + '" cy="' + ryPos.toFixed(1) + '" r="2.2" fill="' + eyeFill + '" filter="url(#accent-glow-' + mode + ')" />';
-				}
-
-				// OpenAI Orbital Pulsing Dots (24 animated peripheral dots)
-				let orbitalDotsSvg = '';
-				const numOrbital = 24;
-				for (let i = 0; i < numOrbital; i++) {
-					const theta = (i / numOrbital) * Math.PI * 2 + (talkWavePhase * 0.15);
-					const rDist = 112 + Math.sin(breathPhase * 2 + i * 0.8) * 3.5;
-					const ox = 160 + rDist * Math.cos(theta);
-					const oy = 160 + rDist * Math.sin(theta);
-					const dotR = 2.4 + (isTalking ? Math.sin(talkWavePhase + i) * 0.8 : 0);
-					const opacity = 0.5 + Math.sin(breathPhase + i) * 0.45;
-					orbitalDotsSvg += '<circle cx="' + ox.toFixed(1) + '" cy="' + oy.toFixed(1) + '" r="' + Math.max(1.5, dotR).toFixed(1) + '" fill="' + accentColor + '" opacity="' + Math.max(0.2, opacity).toFixed(2) + '" filter="url(#accent-glow-' + mode + ')" />';
-				}
-
-				// Central Voice / Wave dots (OpenAI Voice Mode)
-				let voiceDotsSvg = '';
-				if (isTalking) {
-					for (let col = -3; col <= 3; col++) {
-						const cx = 160 + col * 9;
-						const waveAmp = Math.sin(talkWavePhase * 2 + col * 0.9) * 16;
-						voiceDotsSvg += '<circle cx="' + cx + '" cy="' + (194 - waveAmp * 0.5) + '" r="2.2" fill="' + glowColor + '" filter="url(#body-glow-' + mode + ')" />' +
-							'<circle cx="' + cx + '" cy="194" r="2.5" fill="#FFFFFF" />' +
-							'<circle cx="' + cx + '" cy="' + (194 + waveAmp * 0.5) + '" r="2.2" fill="' + glowColor + '" filter="url(#body-glow-' + mode + ')" />';
-					}
-				} else {
-					voiceDotsSvg = '<circle cx="150" cy="192" r="2" fill="' + glowColor + '" opacity="0.6" />' +
-						'<circle cx="160" cy="192" r="2.4" fill="' + glowColor + '" opacity="0.9" />' +
-						'<circle cx="170" cy="192" r="2" fill="' + glowColor + '" opacity="0.6" />';
-				}
-
-				return '<svg viewBox="0 0 320 320" width="100%" height="100%" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg">' +
-					'<defs>' +
-						'<filter id="body-glow-' + mode + '" x="-30%" y="-30%" width="160%" height="160%">' +
-							'<feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="' + glowColor + '" flood-opacity="0.65" />' +
-						'</filter>' +
-						'<filter id="accent-glow-' + mode + '" x="-30%" y="-30%" width="160%" height="160%">' +
-							'<feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="' + accentColor + '" flood-opacity="0.75" />' +
-						'</filter>' +
-						'<radialGradient id="dots-core-grad-' + mode + '" cx="45%" cy="40%" r="65%">' +
-							'<stop offset="0%" stop-color="#0E1726" />' +
-							'<stop offset="70%" stop-color="#04060A" />' +
-							'<stop offset="100%" stop-color="#000000" />' +
-						'</radialGradient>' +
-					'</defs>' +
-					'<!-- LAYER 1: BACK COSMIC AURA -->' +
-					'<circle cx="160" cy="160" r="130" fill="' + glowColor + '" opacity="' + (isThinking ? 0.28 : 0.16) + '" filter="url(#body-glow-' + mode + ')" />' +
-					'<!-- LAYER 2: OPENAI ORBITAL PULSING DOTS -->' +
-					'<g transform="translate(160, 160) rotate(' + (headRot * 1.5) + ') translate(-160, -160)">' +
-						orbitalDotsSvg +
-					'</g>' +
-					'<!-- LAYER 3: CORE BOT ORB (BODILESS) -->' +
-					'<g transform="translate(0, ' + breath + ') translate(160, 160) rotate(' + headRot + ') translate(-160, -160)">' +
-						'<circle cx="160" cy="160" r="95" fill="url(#dots-core-grad-' + mode + ')" stroke="' + glowColor + '" stroke-width="1.8" filter="url(#body-glow-' + mode + ')" />' +
-						'<circle cx="160" cy="160" r="92" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1" />' +
-						'<circle cx="160" cy="160" r="80" fill="none" stroke="' + accentColor + '" stroke-width="1" stroke-dasharray="4 6" opacity="0.4" />' +
-						'<g>' + leftDotsSvg + rightDotsSvg + '</g>' +
-						'<g>' + voiceDotsSvg + '</g>' +
-					'</g>' +
-				'</svg>';
-			}
-
-			// -------------------------------------------------------------
-			// RENDER MODE: PIXEL (Retro Canvas Pixel Grid)
-			// -------------------------------------------------------------
-			if (activeMode === 'pixel') {
-				const pixelSize = 12;
-				const gridStartX = 88;
-				const gridStartY = 88;
-				const gridSize = 12;
-
-				let pixelsSvg = '';
-				for (let row = 0; row < gridSize; row++) {
-					for (let col = 0; col < gridSize; col++) {
-						const distFromCenter = Math.hypot(col - 5.5, row - 5.5);
-						let isPixelActive = false;
-						let pixelColor = bodyColor;
-
-						if (distFromCenter <= 5.2) {
-							isPixelActive = true;
-							const isLeftEye = (col === 3 || col === 4) && (row === 5 || (blinkScaleY > 0.3 && (row === 4 || row === 6)));
-							const isRightEye = (col === 7 || col === 8) && (row === 5 || (blinkScaleY > 0.3 && (row === 4 || row === 6)));
-							if (isLeftEye || isRightEye) {
-								pixelColor = eyesColor;
-							} else if (distFromCenter >= 4.4) {
-								pixelColor = glowColor;
-							}
-						}
-
-						if (isPixelActive) {
-							const px = gridStartX + col * pixelSize;
-							const py = gridStartY + row * pixelSize;
-							pixelsSvg += '<rect x="' + px + '" y="' + py + '" width="' + (pixelSize - 1) + '" height="' + (pixelSize - 1) + '" fill="' + pixelColor + '" rx="1" />';
-						}
-					}
-				}
-
-				return '<svg viewBox="0 0 320 320" width="100%" height="100%" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg">' +
-					'<defs>' +
-						'<filter id="body-glow-' + mode + '">' +
-							'<feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="' + glowColor + '" flood-opacity="0.5" />' +
-						'</filter>' +
-					'</defs>' +
-					'<circle cx="160" cy="160" r="110" fill="' + glowColor + '" opacity="0.12" filter="url(#body-glow-' + mode + ')" />' +
-					'<g transform="translate(0, ' + breath + ')">' +
-						pixelsSvg +
-					'</g>' +
-				'</svg>';
-			}
-
-			// -------------------------------------------------------------
-			// RENDER MODE: VECTOR 3D (Bible Strong Avatar Lab Canonical Mascot - Strobi Style)
-			// 100% Bodiless Procedural Mascot Character
+			// RENDER MODE: VECTOR 3D (Bible Strong Avatar Lab Canonical Mascot)
+			// 100% Bodiless Procedural Mascot Character com 10 Formatos
 			// -------------------------------------------------------------
 			let surfaceSvg = '';
-			if (surface === 'cube') {
+			if (surface === 'cube' || surface === 'quadrado') {
 				surfaceSvg = '<rect x="80" y="80" width="160" height="160" rx="36" ry="36" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
 					'<rect x="88" y="88" width="144" height="60" rx="26" fill="url(#specular-grad-' + mode + ')" opacity="0.45" />' +
 					'<rect x="84" y="84" width="152" height="152" rx="32" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" />';
+			} else if (surface === 'rectangle' || surface === 'retangulo') {
+				surfaceSvg = '<rect x="68" y="90" width="184" height="140" rx="28" ry="28" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<rect x="76" y="98" width="168" height="50" rx="22" fill="url(#specular-grad-' + mode + ')" opacity="0.45" />' +
+					'<rect x="72" y="94" width="176" height="132" rx="24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" />';
 			} else if (surface === 'capsule') {
 				surfaceSvg = '<rect x="90" y="70" width="140" height="180" rx="70" ry="70" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
 					'<ellipse cx="160" cy="115" rx="52" ry="28" fill="url(#specular-grad-' + mode + ')" opacity="0.5" />' +
 					'<rect x="94" y="74" width="132" height="172" rx="66" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" />';
-			} else if (surface === 'cylinder') {
+			} else if (surface === 'cylinder' || surface === 'cilindro') {
 				surfaceSvg = '<rect x="90" y="75" width="140" height="170" rx="28" ry="28" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
 					'<ellipse cx="160" cy="98" rx="68" ry="22" fill="#FFFFFF" opacity="0.28" />' +
 					'<rect x="94" y="79" width="132" height="162" rx="24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" />';
-			} else if (surface === 'diamond') {
-				surfaceSvg = '<polygon points="160,65 250,160 160,255 70,160" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
-					'<polygon points="160,75 240,160 160,160" fill="#FFFFFF" opacity="0.22" />' +
-					'<polygon points="160,160 240,160 160,245" fill="#000000" opacity="0.18" />' +
-					'<polygon points="160,65 250,160 160,255 70,160" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />';
-			} else if (surface === 'cone') {
-				surfaceSvg = '<polygon points="160,65 248,245 72,245" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+			} else if (surface === 'diamond' || surface === 'prism' || surface === 'prisma') {
+				surfaceSvg = '<polygon points="160,62 246,110 246,210 160,258 74,210 74,110" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<polygon points="160,62 246,110 160,160 74,110" fill="#FFFFFF" opacity="0.28" />' +
+					'<polygon points="160,160 246,110 246,210 160,258" fill="#000000" opacity="0.15" />' +
+					'<polygon points="160,62 246,110 246,210 160,258 74,210 74,110" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />';
+			} else if (surface === 'cone' || surface === 'triangle' || surface === 'triangulo') {
+				surfaceSvg = '<polygon points="160,65 248,245 72,245" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" stroke-linejoin="round" />' +
 					'<ellipse cx="160" cy="245" rx="88" ry="16" fill="url(#surf-gradient-' + mode + ')" />' +
-					'<polygon points="160,75 238,242 160,242" fill="#FFFFFF" opacity="0.25" />';
-			} else if (surface === 'mickey') {
-				surfaceSvg = '<circle cx="102" cy="98" r="42" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
-					'<circle cx="218" cy="98" r="42" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
-					'<circle cx="160" cy="165" r="78" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
-					'<ellipse cx="140" cy="140" rx="46" ry="30" fill="url(#specular-grad-' + mode + ')" opacity="0.45" />';
+					'<polygon points="160,75 238,242 160,242" fill="#FFFFFF" opacity="0.25" />' +
+					'<polygon points="160,65 248,245 72,245" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.5" stroke-linejoin="round" />';
+			} else if (surface === 'star' || surface === 'estrela') {
+				surfaceSvg = '<polygon points="160,54 188,124 262,128 204,176 225,250 160,208 95,250 116,176 58,128 132,124" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" stroke-linejoin="round" />' +
+					'<polygon points="160,54 188,124 160,160" fill="#FFFFFF" opacity="0.32" />' +
+					'<polygon points="160,160 204,176 160,208" fill="#000000" opacity="0.18" />' +
+					'<polygon points="160,54 188,124 262,128 204,176 225,250 160,208 95,250 116,176 58,128 132,124" fill="none" stroke="rgba(255,255,255,0.32)" stroke-width="1.5" stroke-linejoin="round" />';
+			} else if (surface === 'heart' || surface === 'coração' || surface === 'coracao') {
+				surfaceSvg = '<path d="M 160,250 C 95,195 62,150 62,112 C 62,76 92,60 126,60 C 146,60 156,72 160,82 C 164,72 174,60 194,60 C 228,60 258,76 258,112 C 258,150 225,195 160,250 Z" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<ellipse cx="120" cy="98" rx="34" ry="20" fill="url(#specular-grad-' + mode + ')" opacity="0.5" transform="rotate(-20 120 98)" />' +
+					'<ellipse cx="200" cy="98" rx="34" ry="20" fill="url(#specular-grad-' + mode + ')" opacity="0.3" transform="rotate(20 200 98)" />' +
+					'<path d="M 160,250 C 95,195 62,150 62,112 C 62,76 92,60 126,60 C 146,60 156,72 160,82 C 164,72 174,60 194,60 C 228,60 258,76 258,112 C 258,150 225,195 160,250 Z" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.5" />';
+			} else if (surface === 'skull' || surface === 'caveira') {
+				surfaceSvg = '<path d="M 90,140 C 90,85 120,65 160,65 C 200,65 230,85 230,140 C 230,175 210,195 200,198 L 200,240 C 200,246 194,250 188,250 L 132,250 C 126,250 120,246 120,240 L 120,198 C 110,195 90,175 90,140 Z" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<ellipse cx="140" cy="110" rx="48" ry="28" fill="url(#specular-grad-' + mode + ')" opacity="0.45" />' +
+					'<line x1="142" y1="230" x2="142" y2="246" stroke="#000000" stroke-width="2.5" opacity="0.35" />' +
+					'<line x1="160" y1="230" x2="160" y2="246" stroke="#000000" stroke-width="2.5" opacity="0.35" />' +
+					'<line x1="178" y1="230" x2="178" y2="246" stroke="#000000" stroke-width="2.5" opacity="0.35" />' +
+					'<path d="M 90,140 C 90,85 120,65 160,65 C 200,65 230,85 230,140 C 230,175 210,195 200,198 L 200,240 C 200,246 194,250 188,250 L 132,250 C 126,250 120,246 120,240 L 120,198 C 110,195 90,175 90,140 Z" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.5" />';
+			} else if (surface === 'fish' || surface === 'peixe') {
+				surfaceSvg = '<path d="M 75,160 Q 140,85 235,160 L 268,125 L 256,160 L 268,195 L 235,160 Q 140,235 75,160 Z" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
+					'<path d="M 140,95 Q 170,80 185,100 Z" fill="url(#surf-gradient-' + mode + ')" opacity="0.8" />' +
+					'<ellipse cx="145" cy="135" rx="55" ry="24" fill="url(#specular-grad-' + mode + ')" opacity="0.45" />' +
+					'<path d="M 75,160 Q 140,85 235,160 L 268,125 L 256,160 L 268,195 L 235,160 Q 140,235 75,160 Z" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />';
 			} else {
 				// Canonical Superellipsoid Sphere (Strobi & Bible Strong Reference)
 				surfaceSvg = '<circle cx="160" cy="160" r="84" fill="url(#surf-gradient-' + mode + ')" filter="url(#body-glow-' + mode + ')" />' +
@@ -2046,9 +2305,58 @@ export function renderSandboxHtml(): string {
 				'<circle cx="' + rightEyeX + '" cy="' + eyeY + '" r="19" fill="none" stroke="' + accentColor + '" stroke-width="2.5" />' +
 				'<line x1="' + (leftEyeX + 19) + '" y1="' + eyeY + '" x2="' + (rightEyeX - 19) + '" y2="' + eyeY + '" stroke="' + accentColor + '" stroke-width="2.5" />' : '';
 
-			const mouthSvg = isTalking ?
-				'<path d="M 144 ' + (186 + talkWave) + ' Q 160 ' + (194 - talkWave) + ' 176 ' + (186 + talkWave) + '" fill="none" stroke="' + eyesColor + '" stroke-width="3.5" stroke-linecap="round" />' :
-				'<line x1="150" y1="188" x2="170" y2="188" stroke="' + eyesColor + '" stroke-width="2.8" stroke-linecap="round" />';
+			// Expression Eyes Rendering (Organic, Zero Eyebrows - Requirement 2)
+			let leftEyeSvg = '';
+			let rightEyeSvg = '';
+
+			if (expr === 'peaceful') {
+				// Serene closed eye arcs (blessing and peace)
+				leftEyeSvg = '<path d="M ' + (leftEyeX - 11) + ' ' + (eyeY) + ' Q ' + leftEyeX + ' ' + (eyeY + 8) + ' ' + (leftEyeX + 11) + ' ' + (eyeY) + '" fill="none" stroke="' + eyesColor + '" stroke-width="3.5" stroke-linecap="round" />';
+				rightEyeSvg = '<path d="M ' + (rightEyeX - 11) + ' ' + (eyeY) + ' Q ' + rightEyeX + ' ' + (eyeY + 8) + ' ' + (rightEyeX + 11) + ' ' + (eyeY) + '" fill="none" stroke="' + eyesColor + '" stroke-width="3.5" stroke-linecap="round" />';
+			} else if (expr === 'winking') {
+				// Left eye open, right eye wink
+				leftEyeSvg = '<g transform="translate(' + leftEyeX + ', ' + eyeY + ') scale(1, ' + blinkScaleY + ') translate(-' + leftEyeX + ', -' + eyeY + ')">' +
+					'<ellipse cx="' + leftEyeX + '" cy="' + eyeY + '" rx="' + (eyeW / 2) + '" ry="' + (eyeH / 2) + '" fill="' + eyesColor + '" />' +
+					'<circle cx="' + (leftEyeX + 3) + '" cy="' + (eyeY - 6) + '" r="3.5" fill="#FFFFFF" opacity="0.95" />' +
+				'</g>';
+				rightEyeSvg = '<path d="M ' + (rightEyeX - 11) + ' ' + (eyeY) + ' Q ' + rightEyeX + ' ' + (eyeY - 6) + ' ' + (rightEyeX + 11) + ' ' + (eyeY) + '" fill="none" stroke="' + eyesColor + '" stroke-width="3.6" stroke-linecap="round" />';
+			} else if (expr === 'happy') {
+				// Smiling upward crescent eyes
+				leftEyeSvg = '<g transform="translate(' + leftEyeX + ', ' + eyeY + ') scale(1, ' + blinkScaleY + ') translate(-' + leftEyeX + ', -' + eyeY + ')">' +
+					'<ellipse cx="' + leftEyeX + '" cy="' + eyeY + '" rx="' + (eyeW / 2) + '" ry="' + (eyeH / 2) + '" fill="' + eyesColor + '" />' +
+					'<circle cx="' + (leftEyeX + 3) + '" cy="' + (eyeY - 5) + '" r="3.5" fill="#FFFFFF" opacity="0.95" />' +
+					'<path d="M ' + (leftEyeX - 10) + ' ' + (eyeY + 4) + ' Q ' + leftEyeX + ' ' + (eyeY - 8) + ' ' + (leftEyeX + 10) + ' ' + (eyeY + 4) + '" fill="none" stroke="' + bodyColor + '" stroke-width="2" />' +
+				'</g>';
+				rightEyeSvg = '<g transform="translate(' + rightEyeX + ', ' + eyeY + ') scale(1, ' + blinkScaleY + ') translate(-' + rightEyeX + ', -' + eyeY + ')">' +
+					'<ellipse cx="' + rightEyeX + '" cy="' + eyeY + '" rx="' + (eyeW / 2) + '" ry="' + (eyeH / 2) + '" fill="' + eyesColor + '" />' +
+					'<circle cx="' + (rightEyeX + 3) + '" cy="' + (eyeY - 5) + '" r="3.5" fill="#FFFFFF" opacity="0.95" />' +
+					'<path d="M ' + (rightEyeX - 10) + ' ' + (eyeY + 4) + ' Q ' + rightEyeX + ' ' + (eyeY - 8) + ' ' + (rightEyeX + 10) + ' ' + (eyeY + 4) + '" fill="none" stroke="' + bodyColor + '" stroke-width="2" />' +
+				'</g>';
+			} else {
+				// Standard organic eyes with biological blink
+				leftEyeSvg = '<g transform="translate(' + leftEyeX + ', ' + eyeY + ') scale(1, ' + blinkScaleY + ') translate(-' + leftEyeX + ', -' + eyeY + ')">' +
+					'<ellipse cx="' + leftEyeX + '" cy="' + eyeY + '" rx="' + (eyeW / 2) + '" ry="' + (eyeH / 2) + '" fill="' + eyesColor + '" />' +
+					'<circle cx="' + (leftEyeX + 3) + '" cy="' + (eyeY - 6) + '" r="3.5" fill="#FFFFFF" opacity="0.95" />' +
+				'</g>';
+				rightEyeSvg = '<g transform="translate(' + rightEyeX + ', ' + eyeY + ') scale(1, ' + blinkScaleY + ') translate(-' + rightEyeX + ', -' + eyeY + ')">' +
+					'<ellipse cx="' + rightEyeX + '" cy="' + eyeY + '" rx="' + (eyeW / 2) + '" ry="' + (eyeH / 2) + '" fill="' + eyesColor + '" />' +
+					'<circle cx="' + (rightEyeX + 3) + '" cy="' + (eyeY - 6) + '" r="3.5" fill="#FFFFFF" opacity="0.95" />' +
+				'</g>';
+			}
+
+			// Mouth rendering
+			let mouthSvg = '';
+			if (isTalking) {
+				mouthSvg = '<path d="M 144 ' + (186 + talkWave) + ' Q 160 ' + (196 - talkWave) + ' 176 ' + (186 + talkWave) + '" fill="none" stroke="' + eyesColor + '" stroke-width="3.5" stroke-linecap="round" />';
+			} else if (expr === 'happy' || isReady) {
+				mouthSvg = '<path d="M 144 184 Q 160 200 176 184" fill="none" stroke="' + eyesColor + '" stroke-width="3.5" stroke-linecap="round" />';
+			} else if (expr === 'curious') {
+				mouthSvg = '<circle cx="160" cy="188" r="4.5" fill="' + eyesColor + '" />';
+			} else if (expr === 'peaceful') {
+				mouthSvg = '<path d="M 148 186 Q 160 192 172 186" fill="none" stroke="' + eyesColor + '" stroke-width="2.6" stroke-linecap="round" />';
+			} else {
+				mouthSvg = '<line x1="150" y1="188" x2="170" y2="188" stroke="' + eyesColor + '" stroke-width="2.8" stroke-linecap="round" />';
+			}
 
 			return '<svg viewBox="0 0 320 320" width="100%" height="100%" style="overflow: visible;" xmlns="http://www.w3.org/2000/svg">' +
 				'<defs>' +
@@ -2064,7 +2372,7 @@ export function renderSandboxHtml(): string {
 						'<stop offset="100%" stop-color="#000000" stop-opacity="0" />' +
 					'</radialGradient>' +
 					'<radialGradient id="surf-gradient-' + mode + '" cx="38%" cy="32%" r="70%">' +
-						'<stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.35" />' +
+						'<stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.38" />' +
 						'<stop offset="15%" stop-color="' + bodyColor + '" />' +
 						'<stop offset="85%" stop-color="' + bodyColor + '" />' +
 						'<stop offset="100%" stop-color="#05080E" stop-opacity="0.9" />' +
@@ -2079,22 +2387,13 @@ export function renderSandboxHtml(): string {
 				'<circle cx="160" cy="160" r="140" fill="url(#back-aura-' + mode + ')" style="transition: all 0.5s ease;" />' +
 				'<!-- LAYER 2: HALO -->' +
 				haloSvg +
-				'<!-- LAYER 3: CORPO 3D DO MASCOTE (100% BODILESS ROOT MODEL) -->' +
+				'<!-- LAYER 3: CORPO 3D DO MASCOTE (100% BODILESS ROOT MODEL - SEM SOBRANCELHA) -->' +
 				'<g transform="translate(0, ' + breath + ') translate(160, 160) rotate(' + headRot + ') translate(-160, -160)">' +
 					surfaceSvg +
-					'<!-- Sobrancelhas Dinâmicas Expressivas -->' +
-					'<line x1="' + (leftEyeX - 10) + '" y1="' + (eyeY - 24 + eyebrowAngle) + '" x2="' + (leftEyeX + 10) + '" y2="' + (eyeY - 24 - eyebrowAngle) + '" stroke="' + eyesColor + '" stroke-width="3.2" stroke-linecap="round" />' +
-					'<line x1="' + (rightEyeX - 10) + '" y1="' + (eyeY - 24 - eyebrowAngle) + '" x2="' + (rightEyeX + 10) + '" y2="' + (eyeY - 24 + eyebrowAngle) + '" stroke="' + eyesColor + '" stroke-width="3.2" stroke-linecap="round" />' +
-					'<!-- Olhos Expressivos com Piscar Orgânico -->' +
+					'<!-- Olhos Expressivos com Gaze Dinâmica (Sem Sobrancelhas) -->' +
 					'<g>' +
-						'<g transform="translate(' + leftEyeX + ', ' + eyeY + ') scale(1, ' + blinkScaleY + ') translate(-' + leftEyeX + ', -' + eyeY + ')">' +
-							'<ellipse cx="' + leftEyeX + '" cy="' + eyeY + '" rx="' + (eyeW / 2) + '" ry="' + (eyeH / 2) + '" fill="' + eyesColor + '" />' +
-							'<circle cx="' + (leftEyeX + 3) + '" cy="' + (eyeY - 6) + '" r="3.5" fill="#FFFFFF" opacity="0.95" />' +
-						'</g>' +
-						'<g transform="translate(' + rightEyeX + ', ' + eyeY + ') scale(1, ' + blinkScaleY + ') translate(-' + rightEyeX + ', -' + eyeY + ')">' +
-							'<ellipse cx="' + rightEyeX + '" cy="' + eyeY + '" rx="' + (eyeW / 2) + '" ry="' + (eyeH / 2) + '" fill="' + eyesColor + '" />' +
-							'<circle cx="' + (rightEyeX + 3) + '" cy="' + (eyeY - 6) + '" r="3.5" fill="#FFFFFF" opacity="0.95" />' +
-						'</g>' +
+						leftEyeSvg +
+						rightEyeSvg +
 					'</g>' +
 					accessorySvg +
 					mouthSvg +
@@ -2109,9 +2408,6 @@ export function renderSandboxHtml(): string {
 			// Mirror controls to agent state
 			a.avatar.body.primary.type = document.getElementById('avatarSurfaceType').value;
 			a.avatar.fullBody.style = document.getElementById('avatarStyle').value;
-			if (document.getElementById('avatarRenderMode')) {
-				a.avatar.renderStyle = { type: document.getElementById('avatarRenderMode').value };
-			}
 			if (document.getElementById('avatarRootModel')) {
 				a.avatar.rootModel = document.getElementById('avatarRootModel').value;
 			}
@@ -2120,12 +2416,11 @@ export function renderSandboxHtml(): string {
 			a.avatar.colors.glow = document.getElementById('colGlow').value;
 			a.avatar.colors.accent = document.getElementById('colAccent').value;
 
-			const modeStr = (a.avatar.renderStyle?.type || currentRenderMode || 'vector').toUpperCase();
-			const surfStr = (a.avatar.body?.primary?.type || 'sphere').toUpperCase();
-			document.getElementById('telemetryStyleLabel').textContent = surfStr + ' · ' + modeStr;
+			const surfStr = (a.avatar.body?.primary?.type || 'bola').toUpperCase();
+			document.getElementById('telemetryStyleLabel').textContent = surfStr + ' · 3D CANÔNICO';
 
 			const container = document.getElementById('avatarSvgContainer');
-			container.innerHTML = generateFullBodySvg(a, 'studio');
+			if (container) container.innerHTML = generateFullBodySvg(a, 'studio');
 		}
 
 		function updateChatAvatarPreview() {
@@ -2133,17 +2428,19 @@ export function renderSandboxHtml(): string {
 			if (!a) return;
 
 			const container = document.getElementById('chatAvatarSvgContainer');
-			container.innerHTML = generateFullBodySvg(a, 'chat', chatStatus);
+			if (container) container.innerHTML = generateFullBodySvg(a, 'chat', chatStatus);
 
 			const dot = document.getElementById('chatAvatarStatusDot');
-			if (chatStatus === 'thinking') {
-				dot.innerHTML = '<span class="status-dot" style="background:#00E5FF; box-shadow:0 0 10px #00E5FF;"></span>RACIOCINANDO // THINKING';
-			} else if (chatStatus === 'talking') {
-				dot.innerHTML = '<span class="status-dot" style="background:#FF5500; box-shadow:0 0 10px #FF5500;"></span>RESPONDENDO // TALKING';
-			} else if (chatStatus === 'listening') {
-				dot.innerHTML = '<span class="status-dot" style="background:#D4AF37; box-shadow:0 0 10px #D4AF37;"></span>ESCUTANDO // LISTENING';
-			} else {
-				dot.innerHTML = '<span class="status-dot"></span>IDLE // OBSERVANDO';
+			if (dot) {
+				if (chatStatus === 'thinking') {
+					dot.innerHTML = '<span class="status-dot" style="background:#00E5FF; box-shadow:0 0 10px #00E5FF;"></span>RACIOCINANDO // THINKING';
+				} else if (chatStatus === 'talking') {
+					dot.innerHTML = '<span class="status-dot" style="background:#FF5500; box-shadow:0 0 10px #FF5500;"></span>RESPONDENDO // TALKING';
+				} else if (chatStatus === 'listening') {
+					dot.innerHTML = '<span class="status-dot" style="background:#D4AF37; box-shadow:0 0 10px #D4AF37;"></span>ESCUTANDO // LISTENING';
+				} else {
+					dot.innerHTML = '<span class="status-dot"></span>IDLE // OBSERVANDO';
+				}
 			}
 		}
 
@@ -2158,6 +2455,7 @@ export function renderSandboxHtml(): string {
 				if (document.getElementById('viewChat').classList.contains('active')) {
 					updateChatAvatarPreview();
 				}
+				updateScreenPet();
 			}, 50);
 
 			// Natural blinking loop (every 3.8s to 5.5s)
@@ -2167,10 +2465,12 @@ export function renderSandboxHtml(): string {
 					blinkScaleY = 0.08;
 					updateStudioAvatarPreview();
 					updateChatAvatarPreview();
+					updateScreenPet();
 					setTimeout(() => {
 						blinkScaleY = 1;
 						updateStudioAvatarPreview();
 						updateChatAvatarPreview();
+						updateScreenPet();
 						scheduleBlink();
 					}, 150);
 				}, nextDelay);
@@ -2211,7 +2511,7 @@ export function renderSandboxHtml(): string {
 			// Switch avatar to thinking state
 			chatStatus = 'thinking';
 			updateChatAvatarPreview();
-
+			if (typeof triggerPetThinking === 'function') triggerPetThinking();
 			try {
 				const res = await fetch('/api/chat', {
 					method: 'POST',
@@ -2223,7 +2523,7 @@ export function renderSandboxHtml(): string {
 				// Switch to talking state
 				chatStatus = 'talking';
 				updateChatAvatarPreview();
-
+				if (typeof triggerPetReady === 'function') triggerPetReady(data.reply);
 				const agentBubble = document.createElement('div');
 				agentBubble.className = 'chat-bubble agent';
 				const formattedText = formatMarkdownBasic(data.reply || 'Processado com sucesso.');
@@ -2242,11 +2542,13 @@ export function renderSandboxHtml(): string {
 				setTimeout(() => {
 					chatStatus = 'idle';
 					updateChatAvatarPreview();
+					if (typeof triggerPetIdle === 'function') triggerPetIdle();
 				}, 2400);
 
 			} catch (err) {
 				chatStatus = 'idle';
 				updateChatAvatarPreview();
+				if (typeof triggerPetIdle === 'function') triggerPetIdle();
 				const errBubble = document.createElement('div');
 				errBubble.className = 'chat-bubble agent';
 				errBubble.textContent = 'Erro ao processar mensagem com o agente.';
