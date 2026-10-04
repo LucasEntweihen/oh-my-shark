@@ -172,6 +172,17 @@ describe("getLatestRelease fork resolution", () => {
 		expect(release).toEqual({ tag: "ohms-v0.0.3", version: "0.0.3", dist: "binary" });
 		expect(seen).toEqual([METADATA_URL]);
 	});
+	it("resolves the fork's latest stable release with omsk-v tag prefix", async () => {
+		const seen: string[] = [];
+		const release = await getLatestRelease({
+			fetchImpl: releaseFetch({ tag_name: "omsk-v0.0.12", draft: false, prerelease: false }, seen),
+			githubToken: "",
+		});
+
+		expect(release).toEqual({ tag: "omsk-v0.0.12", version: "0.0.12", dist: "binary" });
+		expect(seen).toEqual([METADATA_URL]);
+	});
+
 
 	it("sends the GitHub token when one is configured", async () => {
 		const seen: string[] = [];
@@ -554,7 +565,7 @@ describe("update-cli binary replacement", () => {
 				expectedVersion: "15.1.8",
 				verifyInstalledVersion: async () => ({ ok: false, path: targetPath }),
 			}),
-		).rejects.toThrow("restored previous ohms binary");
+		).rejects.toThrow(/restored previous (?:omsk|ohms) binary/);
 
 		expect(await Bun.file(targetPath).text()).toBe("old binary");
 		expect(await Bun.file(tempPath).exists()).toBe(false);
@@ -926,7 +937,7 @@ describe("update-cli script-shim takeover", () => {
 					fetchImpl: makeFetch(exe),
 					githubToken: "test-token",
 				}),
-			).rejects.toThrow("restored previous ohms launcher");
+			).rejects.toThrow(/restored previous (?:omsk|ohms) launcher/);
 		} finally {
 			renameSpy.mockRestore();
 		}

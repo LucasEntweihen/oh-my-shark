@@ -123,8 +123,9 @@ async function getReleaseBinaryAsset(
 	fetchImpl: Fetch = fetch,
 	githubToken: string | undefined = $env.GITHUB_TOKEN || $env.GH_TOKEN,
 	allowPrerelease = false,
+	expectedTag?: string,
 ): Promise<ReleaseBinaryAsset> {
-	const tag = `${TAG_PREFIX}${expectedVersion}`;
+	let tag = expectedTag ?? (expectedVersion.startsWith("omsk-v") || expectedVersion.startsWith("ohms-v") ? expectedVersion : `${TAG_PREFIX}${expectedVersion}`);
 	const headers: Record<string, string> = {
 		Accept: "application/vnd.github+json",
 		"X-GitHub-Api-Version": "2022-11-28",
@@ -148,6 +149,21 @@ async function getReleaseBinaryAsset(
 		throw new Error(
 			"GitHub API rate limit exceeded while fetching release metadata; retry later or set GITHUB_TOKEN or GH_TOKEN",
 		);
+	}
+	if (response.status === 404 && !expectedTag && tag.startsWith("ohms-v")) {
+		const fallbackTag = `omsk-v${expectedVersion}`;
+		try {
+			const fallbackResponse = await fetchImpl(`${GITHUB_API}/repos/${REPO}/releases/tags/${encodeURIComponent(fallbackTag)}`, {
+				headers,
+				signal: withTimeoutSignal(RELEASE_METADATA_TIMEOUT_MS),
+			});
+			if (fallbackResponse.ok) {
+				tag = fallbackTag;
+				response = fallbackResponse;
+			}
+		} catch {
+			// ignore fallback error and preserve original response
+		}
 	}
 	if (!response.ok) {
 		throw new Error(`Failed to fetch GitHub release metadata: ${response.statusText}`);
@@ -377,7 +393,9 @@ export async function getLatestRelease(
 	}
 
 	return {
-		tag: `${TAG_PREFIX}${version}`,
+		tag: typeof data.tag_name === "string" && (data.tag_name.startsWith("omsk-v") || data.tag_name.startsWith("ohms-v"))
+			? data.tag_name
+			: `${TAG_PREFIX}${version}`,
 		version,
 		dist: "binary",
 	};
@@ -646,6 +664,7 @@ export async function updateViaBinaryAt(
 		fetchImpl?: Fetch;
 		githubToken?: string;
 		allowPrerelease?: boolean;
+		expectedTag?: string;
 		verifyInstalledVersion?: typeof verifyInstalledVersion;
 	} = {},
 ): Promise<void> {
@@ -668,6 +687,7 @@ export async function updateViaBinaryAt(
 		options.fetchImpl,
 		options.githubToken,
 		options.allowPrerelease,
+		options.expectedTag,
 	);
 	console.log(chalk.dim(`Downloading ${binaryName}…`));
 	await downloadVerifiedBinary({
@@ -736,6 +756,7 @@ export async function updateViaShimTakeover(
 		fetchImpl?: Fetch;
 		githubToken?: string;
 		allowPrerelease?: boolean;
+		expectedTag?: string;
 		verifyBinary?: typeof verifyBinaryAtPath;
 	} = {},
 ): Promise<void> {
@@ -750,6 +771,7 @@ export async function updateViaShimTakeover(
 		options.fetchImpl,
 		options.githubToken,
 		options.allowPrerelease,
+		options.expectedTag,
 	);
 	console.log(chalk.dim(`Downloading ${binaryName}…`));
 	await downloadVerifiedBinary({
@@ -924,14 +946,14 @@ export async function runUpdateCommand(opts: {
 		const target = await resolveUpdateTarget();
 		if (process.platform === "win32" && isWindowsScriptLauncherPath(target.path)) {
 			console.log(chalk.dim("This release ships as a standalone binary; replacing the script launcher."));
-			await updateViaShimTakeover(target.path, release.version, {});
+			await updateViaShimTakeover(target.path, release.version, { expectedTag: release.tag });
 			console.log(
 				chalk.yellow(
 					`This install is no longer managed by a package manager. If the launcher breaks, reinstall with: ${installerHint()}`,
 				),
 			);
 		} else {
-			await updateViaBinaryAt(target.path, release.version, {});
+			await updateViaBinaryAt(target.path, release.version, { expectedTag: release.tag });
 		}
 		if (opts.channel) persistChannel(channel);
 	} catch (err) {

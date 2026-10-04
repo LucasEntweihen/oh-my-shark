@@ -201,9 +201,9 @@ jobs:
           Source: https://github.com/LucasEntweihen/oh-my-shark/tree/${TAG}
           EOF
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --notes-file "$NOTES" || true
+            gh release edit "$TAG" --notes-file "$NOTES" --latest || true
           else
-            gh release create "$TAG" --title "OhMyShark v${VERSION}" --notes-file "$NOTES"
+            gh release create "$TAG" --title "OhMyShark v${VERSION}" --notes-file "$NOTES" --latest
           fi
           gh release upload "$TAG" staging/out/* --clobber
       - name: Attest provenance for every asset
