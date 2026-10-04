@@ -9,6 +9,8 @@ import { HeaderBar } from "./components/shell/HeaderBar";
 import { SharkViewer } from "./components/shark/SharkViewer";
 import { Toasts } from "./components/shell/Toasts";
 import { Transcript } from "./components/transcript/Transcript";
+import { BibleStrongAvatarView } from "./components/avatar/BibleStrongAvatarView";
+import { BibleStrongDictionaryView } from "./components/bible/BibleStrongDictionaryView";
 import { GuestClient } from "./lib/client";
 import { useGuestSnapshot } from "./lib/use-guest";
 import type { ToolRenderHost } from "./tool-render";
@@ -125,6 +127,8 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 	const [railOpen, setRailOpen] = useState(false);
 	const [sharkOpen, setSharkOpen] = useState(true);
 	const [ttsEnabled, setTtsEnabled] = useState(false);
+	const [agencyMode, setAgencyMode] = useState<"code" | "research" | "bible">("code");
+	const [avatarViewMode, setAvatarViewMode] = useState<"bible-avatar" | "shark-3d">("bible-avatar");
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const autoOpenedRef = useRef(false);
 
@@ -187,6 +191,8 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 				railOpen={railOpen}
 				sharkOpen={sharkOpen}
 				ttsEnabled={ttsEnabled}
+				agencyMode={agencyMode}
+				onSelectAgencyMode={setAgencyMode}
 				onToggleRail={() => setRailOpen(open => !open)}
 				onToggleShark={() => setSharkOpen(open => !open)}
 				onToggleTts={() => setTtsEnabled(enabled => !enabled)}
@@ -194,30 +200,96 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 			/>
 			<main className="sh-main">
 				<section className="sh-content" data-rail={railOpen ? "true" : "false"}>
-					<div className="sh-transcript">
-						<Transcript
-							entries={snap.entries}
-							stream={snap.stream}
-							streamDone={snap.streamDone}
-							activeTools={snap.activeTools}
-							working={snap.working}
-							host={toolHost}
-							phase={snap.phase}
-						/>
-					</div>
+					{agencyMode === "bible" ? (
+						<BibleStrongDictionaryView />
+					) : (
+						<div className="sh-transcript" style={{ maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
+							<Transcript
+								entries={snap.entries}
+								stream={snap.stream}
+								streamDone={snap.streamDone}
+								activeTools={snap.activeTools}
+								working={snap.working}
+								host={toolHost}
+								phase={snap.phase}
+							/>
+						</div>
+					)}
 				</section>
 				{sharkOpen && (
 					<div
 						style={{
-							width: "420px",
-							minWidth: "320px",
+							width: "440px",
+							minWidth: "350px",
 							height: "100%",
 							display: "flex",
 							flexDirection: "column",
-							borderLeft: "1px solid var(--sh-border, rgba(255,255,255,0.1))",
+							borderLeft: "1px solid var(--border, #2A3245)",
+							background: "var(--bg-shark-skin, #1A2235)",
 						}}
 					>
-						<SharkViewer lastMessage={lastText} ttsEnabled={ttsEnabled} />
+						{/* Toggle entre Bible Strong Avatar e Shark 3D Biometrics */}
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "space-between",
+								padding: "8px 14px",
+								background: "rgba(0,0,0,0.3)",
+								borderBottom: "1px solid var(--border, #2A3245)",
+							}}
+						>
+							<div style={{ display: "flex", gap: "6px" }}>
+								<button
+									type="button"
+									onClick={() => setAvatarViewMode("bible-avatar")}
+									style={{
+										padding: "4px 10px",
+										borderRadius: "4px",
+										fontSize: "0.75rem",
+										fontWeight: 600,
+										background:
+											avatarViewMode === "bible-avatar" ? "var(--neon-cyan, #00F0FF)" : "transparent",
+										color: avatarViewMode === "bible-avatar" ? "#070B14" : "var(--text-muted, #94A3B8)",
+										border: "none",
+										cursor: "pointer",
+									}}
+								>
+									Bible Avatar
+								</button>
+								<button
+									type="button"
+									onClick={() => setAvatarViewMode("shark-3d")}
+									style={{
+										padding: "4px 10px",
+										borderRadius: "4px",
+										fontSize: "0.75rem",
+										fontWeight: 600,
+										background:
+											avatarViewMode === "shark-3d" ? "var(--abyssal-purple, #8A2BE2)" : "transparent",
+										color: avatarViewMode === "shark-3d" ? "#FFFFFF" : "var(--text-muted, #94A3B8)",
+										border: "none",
+										cursor: "pointer",
+									}}
+								>
+									Shark 3D
+								</button>
+							</div>
+							<span style={{ fontSize: "0.7rem", color: "var(--text-muted, #94A3B8)" }}>HUD v2.0</span>
+						</div>
+
+						<div style={{ flex: 1, overflow: "hidden" }}>
+							{avatarViewMode === "bible-avatar" ? (
+								<BibleStrongAvatarView
+									lastMessage={lastText}
+									ttsEnabled={ttsEnabled}
+									statusPhase={snap.phase}
+									agencyMode={agencyMode}
+								/>
+							) : (
+								<SharkViewer lastMessage={lastText} ttsEnabled={ttsEnabled} />
+							)}
+						</div>
 					</div>
 				)}
 				{railOpen && (

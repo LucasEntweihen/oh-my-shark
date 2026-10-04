@@ -18,6 +18,8 @@ target/
 # Environment
 .env
 
+# Project Local Hidden Agents
+.omp-agents/
 # Editors
 .vscode/
 .zed/

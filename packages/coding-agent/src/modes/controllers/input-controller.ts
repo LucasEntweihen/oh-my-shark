@@ -20,6 +20,7 @@ import { createPromptActionAutocompleteProvider } from "../../modes/prompt-actio
 import { parseQueueShorthand, splitQueuedMessages } from "../../modes/queue-input";
 import { buildSkillCommandPrompt, isKnownSkillCommand } from "../../modes/skill-command";
 import type { InteractiveModeContext } from "../../modes/types";
+import { routeUserPrompt } from "../../router/agent-router";
 import manualContinuePrompt from "../../prompts/system/manual-continue.md" with { type: "text" };
 import { USER_INTERRUPT_LABEL } from "../../session/messages";
 import { executeBuiltinSlashCommand, lookupBuiltinSlashCommand } from "../../slash-commands/builtin-registry";
@@ -982,6 +983,16 @@ export class InputController {
 			this.ctx.flushPendingBashComponents();
 
 			if (this.ctx.onInputCallback) {
+				// Route prompt through explicit agent router
+				let promptText = text;
+				try {
+					const routing = await routeUserPrompt(text);
+					this.ctx.showStatus(routing.cardOutput, { dim: false });
+					promptText = routing.augmentedPrompt;
+				} catch (err) {
+					logger.warn("Agent routing fallback", { err });
+				}
+
 				// Include any pending images from clipboard paste
 				this.ctx.editor.imageLinks = undefined;
 				const images = inputImages && inputImages.length > 0 ? [...inputImages] : undefined;
@@ -995,7 +1006,7 @@ export class InputController {
 				// streaming-branch Enter (above) and keeps the message from throwing
 				// AgentBusyError on that race.
 				const submission = this.ctx.startPendingSubmission({
-					text,
+					text: promptText,
 					images,
 					imageLinks: inputImageLinks,
 					streamingBehavior: "steer",

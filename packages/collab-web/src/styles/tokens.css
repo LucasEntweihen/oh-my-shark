@@ -5,44 +5,50 @@
 :root {
 	color-scheme: dark;
 
-	/* surfaces — neutral ramp tinted by the brand purple (hue 307, anchored to #0f0a14) */
-	--bg: oklch(0.16 0.02 307);
-	--bg-raised: oklch(0.19 0.022 307);
-	--bg-inset: oklch(0.13 0.016 307);
-	--bg-overlay: oklch(0.235 0.026 307);
+	/* Oh My Shark & Bible Strong Avatar native dark palette (DESIGN.md) */
+	--bg: #0B0F19; /* Deep Ocean */
+	--bg-raised: #1A2235; /* Shark Skin */
+	--bg-inset: #070B14;
+	--bg-overlay: #222C42;
 
 	/* text */
-	--fg: oklch(0.92 0.01 307);
-	--fg-muted: oklch(0.71 0.016 307);
-	--fg-faint: oklch(0.53 0.018 307);
+	--fg: #E2E8F0; /* Primary Text */
+	--fg-muted: #94A3B8; /* Muted Text */
+	--fg-faint: #64748B;
 
-	/* one accent: brand pink (#ed4abf) */
-	--accent: oklch(0.674 0.23 341);
-	--accent-fg: oklch(0.2 0.07 341);
-	--accent-muted: oklch(0.674 0.23 341 / 18%);
+	/* Brand colors (DESIGN.md) */
+	--neon-cyan: #00F0FF;
+	--abyssal-purple: #8A2BE2;
+	--aged-gold: #D4AF37;
+	--papyrus-dark: #2C2518;
+
+	/* Accent: Neon Cyan (#00F0FF) */
+	--accent: #00F0FF;
+	--accent-fg: #070B14;
+	--accent-muted: rgba(0, 240, 255, 0.18);
 
 	/* brand lockup */
-	--brand-mark-gradient: linear-gradient(135deg, #ed4abf 0%, #9b4dff 50%, #5ad8e6 100%);
+	--brand-mark-gradient: linear-gradient(135deg, #00F0FF 0%, #8A2BE2 60%, #D4AF37 100%);
 
-	/* status — used sparingly */
-	--ok: oklch(0.76 0.14 150);
-	--warn: oklch(0.79 0.14 85);
-	--err: oklch(0.66 0.19 25);
+	/* status (DESIGN.md) */
+	--ok: #10B981; /* Emerald Executando */
+	--warn: #F59E0B; /* Amber Pensando */
+	--err: #EF4444; /* Red Erro/Alerta */
 
 	/* hairlines */
-	--border: oklch(1 0 0 / 9%);
-	--border-strong: oklch(1 0 0 / 13%);
-	/* focus ring: brand cyan (#5ad8e6) — distinct from the accent */
-	--ring: oklch(0.817 0.112 205 / 70%);
+	--border: #2A3245;
+	--border-strong: rgba(0, 240, 255, 0.35);
+	--ring: rgba(0, 240, 255, 0.6);
 
-	/* type — system stacks only */
-	--font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
-	--font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+	/* typography (DESIGN.md) */
+	--font-title: 'Space Grotesk', sans-serif;
+	--font-ui: 'Inter', ui-sans-serif, system-ui, sans-serif;
+	--font-mono: 'JetBrains Mono', monospace;
 
 	/* radii */
-	--radius-sm: 3px;
-	--radius: 6px;
-	--radius-lg: 8px;
+	--radius-sm: 4px;
+	--radius: 8px;
+	--radius-lg: 12px;
 
 	/* non-pinned helpers (kept here so no raw colors leak outside this file) */
 	--shadow-overlay: 0 12px 32px oklch(0 0 0 / 45%), 0 2px 8px oklch(0 0 0 / 30%);

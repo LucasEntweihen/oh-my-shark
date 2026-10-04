@@ -21,14 +21,17 @@ export interface GradientHighlightSpec {
 	highlight: RegExp;
 	/** Number of color stops swept across the gradient. */
 	stops: number;
-	/** Maps a normalized position `t` in [0, 1) to an HSL hue in degrees. */
-	hue: (t: number) => number;
+	/** Maps a normalized position `t` in [0, 1) to an HSL hue in degrees. Optional if `color` or `colors` is provided. */
+	hue?: (t: number) => number;
+	/** Maps a normalized position `t` in [0, 1) to a CSS color string (#hex, rgb, etc.). */
+	color?: (t: number) => string;
+	/** Sequence of CSS color strings to sweep across the stops. */
+	colors?: readonly string[];
 	/** HSL saturation percentage. Default 90. */
 	saturation?: number;
 	/** HSL lightness percentage. Default 62. */
 	lightness?: number;
 }
-
 /**
  * Build a stateless highlighter that paints each standalone match of `highlight`
  * with a smooth HSL gradient for editor display. The returned function adds only
@@ -37,7 +40,7 @@ export interface GradientHighlightSpec {
  * memoized per active color mode.
  */
 export function createGradientHighlighter(spec: GradientHighlightSpec): KeywordHighlighter {
-	const { probe, highlight, stops, hue, saturation = 90, lightness = 62 } = spec;
+	const { probe, highlight, stops, hue, color, colors, saturation = 90, lightness = 62 } = spec;
 
 	let cachedMode: string | undefined;
 	let cachedPalette: readonly string[] | undefined;
@@ -49,7 +52,17 @@ export function createGradientHighlighter(spec: GradientHighlightSpec): KeywordH
 		const format = mode === "truecolor" ? "ansi-16m" : "ansi-256";
 		const next: string[] = [];
 		for (let i = 0; i < stops; i++) {
-			next.push(Bun.color(`hsl(${Math.round(hue(i / stops))}, ${saturation}%, ${lightness}%)`, format) ?? "");
+			const t = i / stops;
+			let cssColor = "";
+			if (color) {
+				cssColor = color(t);
+			} else if (colors && colors.length > 0) {
+				const idx = Math.min(colors.length - 1, Math.floor(t * colors.length));
+				cssColor = colors[idx] ?? colors[0]!;
+			} else if (hue) {
+				cssColor = `hsl(${Math.round(hue(t))}, ${saturation}%, ${lightness}%)`;
+			}
+			next.push(Bun.color(cssColor, format) ?? "");
 		}
 		cachedMode = mode;
 		cachedPalette = next;

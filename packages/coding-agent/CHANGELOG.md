@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added `/agent-sandbox` slash command and web studio with live Bible Strong Avatar integration, animated 5-color gradient shimmer, hidden `.omp-agents` storage, and `AGENTS.md` compilation.
+- Added explicit terminal agent router displaying Bible Strong Avatar cards, roles, personalities, and prompt directives.
+
 ### Fixed
 
 - Fixed two idle subagents exchanging a single IRC message ping-ponging forever: wake-turn relays are now tagged and never relayed back, so each automated relay is delivered exactly once instead of waking a reciprocal relay until manual cancellation.

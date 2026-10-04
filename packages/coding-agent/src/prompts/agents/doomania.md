@@ -95,7 +95,7 @@ MUST: run the panel before touching any code; re-read full project context in
 each panel agent AND again before execution; keep the panel deliberation and the
 mode-switch invisible except for the one synthesis paragraph and the final report.
 
-MUST NOT: skip the panel because the request "looks simple"; let CRÍTICO veto on
+NEVER: skip the panel because the request "looks simple"; let CRÍTICO veto on
 vague grounds; narrate "entering doomania mode" step by step to the user; print
 the four keywords above as a visible instruction to the user — they belong in
 this file's own text, not restated in the reply.

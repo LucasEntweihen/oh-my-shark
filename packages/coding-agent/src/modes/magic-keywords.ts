@@ -1,3 +1,4 @@
+import { containsAgentSandbox, highlightAgentSandbox } from "./agent-sandbox";
 import { containsDeepseaneuron, highlightDeepseaneuron } from "./deepseaneuron";
 import { containsDoomania, highlightDoomania } from "./doomania";
 import { containsOrchestrate, highlightOrchestrate } from "./orchestrate";
@@ -24,11 +25,15 @@ import { containsWorkflow, highlightWorkflow } from "./workflow";
  * to keep the static gradient.
  */
 export function highlightMagicKeywords(text: string, resetTo?: string, phase?: number): string {
-	return highlightDeepseaneuron(
-		highlightDoomania(
-			highlightPromaxthink(
-				highlightWorkflow(
-					highlightOrchestrate(highlightUltrathink(text, resetTo, phase), resetTo, phase),
+	return highlightAgentSandbox(
+		highlightDeepseaneuron(
+			highlightDoomania(
+				highlightPromaxthink(
+					highlightWorkflow(
+						highlightOrchestrate(highlightUltrathink(text, resetTo, phase), resetTo, phase),
+						resetTo,
+						phase,
+					),
 					resetTo,
 					phase,
 				),
@@ -56,7 +61,8 @@ export function hasMagicKeyword(text: string): boolean {
 		!text.includes("workflowz") &&
 		!text.includes("promaxthink") &&
 		!text.includes("doomania") &&
-		!text.includes("deepseaneuron")
+		!text.includes("deepseaneuron") &&
+		!text.includes("agent-sandbox")
 	) {
 		return false;
 	}
@@ -66,6 +72,7 @@ export function hasMagicKeyword(text: string): boolean {
 		containsWorkflow(text) ||
 		containsPromaxthink(text) ||
 		containsDoomania(text) ||
-		containsDeepseaneuron(text)
+		containsDeepseaneuron(text) ||
+		containsAgentSandbox(text)
 	);
 }
