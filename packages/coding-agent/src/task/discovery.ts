@@ -31,9 +31,12 @@ import type { AgentDefinition, AgentSource } from "./types";
 
 // Provenance label matched against config.ts source tags (which emit CONFIG_DIR_NAME
 // for the downstream project dir). Compared at runtime only, never persisted.
-const TASK_AGENT_CONFIG_SOURCE = CONFIG_DIR_NAME;
+const TASK_AGENT_CONFIG_SOURCES: Record<string, true> = {
+	[CONFIG_DIR_NAME]: true,
+	".ohms": true,
+	".omp": true,
+};
 
-/** Result of agent discovery */
 export interface DiscoveryResult {
 	agents: AgentDefinition[];
 	projectAgentsDir: string | null;
@@ -79,19 +82,18 @@ export async function discoverAgents(
 	const resolvedCwd = path.resolve(cwd);
 
 	const userDirs = getConfigDirs("agents", { project: false })
-		.filter(entry => entry.source === TASK_AGENT_CONFIG_SOURCE)
+		.filter(entry => Boolean(TASK_AGENT_CONFIG_SOURCES[entry.source]))
 		.map(entry => ({
 			...entry,
 			path: path.resolve(entry.path),
 		}));
 
 	const projectDirs = findAllNearestProjectConfigDirs("agents", resolvedCwd)
-		.filter(entry => entry.source === TASK_AGENT_CONFIG_SOURCE)
+		.filter(entry => Boolean(TASK_AGENT_CONFIG_SOURCES[entry.source]))
 		.map(entry => ({
 			...entry,
 			path: path.resolve(entry.path),
 		}));
-
 	const orderedDirs: Array<{ dir: string; source: AgentSource }> = [];
 	const project = projectDirs[0];
 	if (project) orderedDirs.push({ dir: project.path, source: "project" });

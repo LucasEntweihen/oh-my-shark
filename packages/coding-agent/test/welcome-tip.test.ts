@@ -115,7 +115,7 @@ describe("renderWelcomeTip", () => {
 			[{ name: "prior work", timeAgo: "5m ago" }],
 			[{ name: "typescript", status: "ready", fileTypes: [".ts"] }],
 		);
-		const frames = [32, 60, 80, 120].map(width => ({
+		const frames = [32, 65, 105, 120].map(width => ({
 			width,
 			lines: welcome.render(width),
 		}));

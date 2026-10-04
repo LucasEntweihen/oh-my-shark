@@ -10,6 +10,8 @@ export * from "./config/config-file";
 
 const priorityList = [
 	{ dir: CONFIG_DIR_NAME, globalAgentDir: getConfigAgentDirName },
+	...(CONFIG_DIR_NAME !== ".ohms" ? [{ dir: ".ohms" }] : []),
+	...(CONFIG_DIR_NAME !== ".omp" ? [{ dir: ".omp" }] : []),
 	{ dir: ".claude" },
 	{ dir: ".codex" },
 	{ dir: ".gemini" },

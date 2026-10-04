@@ -610,7 +610,13 @@ export function getLogPath(date = new Date(), pid = process.pid): string {
  */
 export function getPluginsDir(home?: string): string {
 	if (home !== undefined && home !== RESOLVER_HOME) {
-		return path.join(home, getConfigDirName(), "plugins");
+		const target = path.join(home, getConfigDirName(), "plugins");
+		if (fs.existsSync(target)) return target;
+		const ohmsTarget = path.join(home, ".ohms", "plugins");
+		if (fs.existsSync(ohmsTarget)) return ohmsTarget;
+		const ompTarget = path.join(home, ".omp", "plugins");
+		if (fs.existsSync(ompTarget)) return ompTarget;
+		return target;
 	}
 	return dirs.rootSubdir("plugins", "data");
 }

@@ -80,14 +80,14 @@ Two rules on top of whatever those contracts already say:
 
 ## Phase 4 — Report
 
-End with a short, structured report:
+End with a short, structured report in the same language as the user's prompt:
 
 - **Decisão** — the Phase 2 paragraph (if not already shown).
 - **Feito** — what actually changed, concretely.
 - **Verificação** — what was checked and the result.
 - **Em aberto** — anything Phase 2 approved but this turn could not finish, if any.
 
-Do not re-print the three raw persona verdicts from Phase 1 — only the synthesis.
+Do not re-print the three raw persona verdicts from Phase 1 — only the synthesis. Deliver the synthesis and report in the user's language.
 
 ## Rules
 
