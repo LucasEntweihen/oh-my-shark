@@ -2,6 +2,7 @@ import type { AutocompleteItem } from "@oh-my-pi/pi-tui";
 import { COLLAB_GUEST_ALLOWED_COMMANDS } from "../collab/guest";
 import { BUILTIN_AGENT_SANDBOX_SLASH_COMMANDS } from "./builtin-agent-sandbox";
 import { BUILTIN_COLLABORATION_SLASH_COMMANDS } from "./builtin-collaboration";
+import { BUILTIN_AGENT_SELECT_SLASH_COMMANDS } from "./builtin-agent";
 import {
 	buildArgumentCompletions,
 	buildDirectoryArgumentCompletions,
@@ -39,6 +40,7 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<SlashCommandSpec> = [
 	...BUILTIN_MODE_SLASH_COMMANDS,
 	...BUILTIN_AGENT_SANDBOX_SLASH_COMMANDS,
 	...BUILTIN_COLLABORATION_SLASH_COMMANDS,
+	...BUILTIN_AGENT_SELECT_SLASH_COMMANDS,
 	...BUILTIN_SESSION_SLASH_COMMANDS,
 	...BUILTIN_LIFECYCLE_SLASH_COMMANDS,
 	...BUILTIN_MARKETPLACE_SLASH_COMMANDS,

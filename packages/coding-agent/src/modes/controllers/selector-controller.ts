@@ -88,6 +88,8 @@ import { setSessionTerminalTitle } from "../../utils/title-generator";
 import { type AdvisorConfigDeps, AdvisorConfigOverlayComponent } from "../components/advisor-config";
 import { AgentHubOverlayComponent } from "../components/agent-hub";
 import { AgentsHubComponent } from "../components/agents-hub";
+import { AgentSelectorComponent } from "../components/agent-selector";
+import { renderTerminalAvatarCard } from "../../avatar";
 import { AssistantMessageComponent } from "../components/assistant-message";
 import { CopySelectorComponent } from "../components/copy-selector";
 import { ExtensionDashboard } from "../components/extensions";
@@ -2214,6 +2216,32 @@ export class SelectorController {
 					done();
 					this.ctx.ui.requestRender();
 				},
+			);
+			return { component: selector, focus: selector };
+		});
+	}
+	showAgentSelector(options?: { activeAgentId?: string }): void {
+		this.showSelector(done => {
+			const selector = new AgentSelectorComponent(
+				{
+					onSelect: agent => {
+						done();
+						const currentText = this.ctx.editor.getText().trim();
+						if (!currentText.startsWith(`@${agent.id}`)) {
+							const newText = currentText.length > 0 ? `@${agent.id} ${currentText}` : `@${agent.id} `;
+							this.ctx.editor.setText(newText);
+						}
+						const card = renderTerminalAvatarCard(agent);
+						this.ctx.showStatus(card, { dim: false });
+						this.ctx.statusLine.invalidate();
+						this.ctx.ui.requestRender();
+					},
+					onCancel: () => {
+						done();
+						this.ctx.ui.requestRender();
+					},
+				},
+				options?.activeAgentId,
 			);
 			return { component: selector, focus: selector };
 		});

@@ -124,7 +124,9 @@ export function compileAgentsMarkdown(profiles: AgentProfile[]): string {
 			fb?.style ? `Estilo \`${fb.style}\`` : null,
 			fb?.clothing ? `Vestimenta \`${fb.clothing}\`` : null,
 			fb?.posture ? `Postura \`${fb.posture}\`` : null,
-		].filter(Boolean).join(", ");
+		]
+			.filter(Boolean)
+			.join(", ");
 		lines.push(`- **Avatar Bible Strong:** ${avatarDetails}`);
 		lines.push(`- **Tom e Personalidade:** ${p.personality.tone}`);
 		lines.push(`- **Traços Marcantes:** ${p.personality.traits.join(", ")}`);

@@ -1,7 +1,9 @@
 export type HexColor = `#${string}`;
 
-export type SurfaceType = "sphere" | "mickey" | "cursor" | "cube" | "capsule" | "cylinder" | "cone" | "diamond";
+export type Point3 = readonly [number, number, number];
+export type Quaternion = readonly [number, number, number, number];
 
+export type SurfaceType = "sphere" | "mickey" | "cursor" | "cube" | "capsule" | "cylinder" | "cone" | "diamond";
 export interface SurfaceConfig {
 	type: SurfaceType;
 	width: number;
@@ -116,20 +118,9 @@ export type AvatarAccessoryType =
 	| "wrist_gauntlet"
 	| "none";
 
-export type AvatarPostureType =
-	| "upright"
-	| "confident"
-	| "scholarly"
-	| "tactical"
-	| "relaxed"
-	| "observant";
+export type AvatarPostureType = "upright" | "confident" | "scholarly" | "tactical" | "relaxed" | "observant";
 
-export type AvatarArmsPosition =
-	| "folded"
-	| "neutral"
-	| "gesturing"
-	| "ready"
-	| "hands_joined";
+export type AvatarArmsPosition = "folded" | "neutral" | "gesturing" | "ready" | "hands_joined";
 
 export type AvatarStanceType = "solid" | "relaxed" | "floating" | "hovering";
 
@@ -225,6 +216,56 @@ export interface AvatarGeometry {
 	rightVisible: boolean;
 	frontPaths: string[];
 	backPaths: string[];
+	backNodeIds?: (string | null)[];
+	frontNodeIds?: (string | null)[];
+	wirePaths?: string[];
+}
+
+export interface Expression {
+	id: string;
+	semanticKey?: string;
+	headX: number;
+	headY: number;
+	headZ: number;
+	widthLeft: number;
+	widthRight: number;
+	heightLeft: number;
+	heightRight: number;
+	spacing: number;
+	positionXLeft: number;
+	positionXRight: number;
+	positionYLeft: number;
+	positionYRight: number;
+	leftAngle: number;
+	rightAngle: number;
+	perspective: number;
+	eyeMotion: EyeMotion;
+	bodyMotion: BodyMotion;
+	bodyColor?: string;
+	eyeColor?: string;
+}
+
+export interface AvatarPose {
+	expression: Expression;
+	orientation: Quaternion;
+}
+
+export interface RenderAvatarOptions {
+	includeWire?: boolean;
+	eyeOffset?: Readonly<{ x: number; y: number }>;
+}
+
+export type PixelRenderStyle = {
+	type: "pixel";
+	resolution: number;
+};
+
+export type AvatarRenderStyle = { type: "vector" } | { type: "dots" } | PixelRenderStyle;
+
+export interface GrokDotRing {
+	points: [number, number][];
+	center: [number, number];
+	radius: number;
 }
 
 export interface AvatarScene {

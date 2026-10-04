@@ -70,7 +70,8 @@ describe("Cosmic Agent Sandbox & Bible Strong Avatar Studio", () => {
 
 	describe("Natural Language Agent Interpreter", () => {
 		it("extracts complete agent profile from natural prompt", () => {
-			const prompt = "Quero um professor paciente de programação que explique conceitos com clareza e exemplos práticos.";
+			const prompt =
+				"Quero um professor paciente de programação que explique conceitos com clareza e exemplos práticos.";
 			const agent = interpretAgentFromNaturalLanguage(prompt);
 
 			expect(agent.name).toBeDefined();
@@ -117,7 +118,10 @@ describe("Cosmic Agent Sandbox & Bible Strong Avatar Studio", () => {
 				body: JSON.stringify({ prompt: "Auditor tático de cibersegurança militar" }),
 			});
 			expect(res.status).toBe(200);
-			const data = (await res.json()) as { ok: boolean; agent: { id: string; avatar: { colors: { body: string } } } };
+			const data = (await res.json()) as {
+				ok: boolean;
+				agent: { id: string; avatar: { colors: { body: string } } };
+			};
 			expect(data.ok).toBe(true);
 			expect(data.agent).toBeDefined();
 			expect(data.agent.avatar.colors.body).toBe("#EF4444");

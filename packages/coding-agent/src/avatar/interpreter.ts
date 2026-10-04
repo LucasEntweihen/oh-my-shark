@@ -92,7 +92,12 @@ export function interpretVisualProfile(input: InterpretVisualInput): Interpreted
 			surface = "diamond";
 		} else if (text.includes("foco") || text.includes("laser") || text.includes("raio") || text.includes("direto")) {
 			surface = "cone";
-		} else if (text.includes("divertid") || text.includes("criativ") || text.includes("mickey") || text.includes("jogo")) {
+		} else if (
+			text.includes("divertid") ||
+			text.includes("criativ") ||
+			text.includes("mickey") ||
+			text.includes("jogo")
+		) {
 			surface = "mickey";
 		} else {
 			surface = "sphere";
@@ -147,12 +152,7 @@ export function interpretVisualProfile(input: InterpretVisualInput): Interpreted
 		eyesColor = "#070D1F";
 		glowColor = "#60A5FA";
 		accentColor = "#00E5FF";
-	} else if (
-		text.includes("criativ") ||
-		text.includes("arte") ||
-		text.includes("design") ||
-		text.includes("poet")
-	) {
+	} else if (text.includes("criativ") || text.includes("arte") || text.includes("design") || text.includes("poet")) {
 		bodyColor = "#EC4899";
 		eyesColor = "#180816";
 		glowColor = "#F472B6";
@@ -169,12 +169,7 @@ export function interpretVisualProfile(input: InterpretVisualInput): Interpreted
 	let clothing: AvatarClothingType = "suit";
 	const accessories: AvatarAccessoryType[] = [];
 
-	if (
-		text.includes("professor") ||
-		text.includes("teolog") ||
-		text.includes("scholar") ||
-		text.includes("filosofo")
-	) {
+	if (text.includes("professor") || text.includes("teolog") || text.includes("scholar") || text.includes("filosofo")) {
 		style = "scholar";
 		clothing = "robe";
 		accessories.push("glasses");
@@ -203,12 +198,7 @@ export function interpretVisualProfile(input: InterpretVisualInput): Interpreted
 		style = "corporate";
 		clothing = "suit";
 		accessories.push("badge");
-	} else if (
-		text.includes("cyber") ||
-		text.includes("hacker") ||
-		text.includes("rede") ||
-		text.includes("sistemas")
-	) {
+	} else if (text.includes("cyber") || text.includes("hacker") || text.includes("rede") || text.includes("sistemas")) {
 		style = "cyber";
 		clothing = "hoodie";
 		accessories.push("hud_visor");
@@ -239,10 +229,7 @@ export function interpretVisualProfile(input: InterpretVisualInput): Interpreted
 		text.includes("precis") ||
 		text.includes("focad");
 	const isVigilant =
-		text.includes("cetic") ||
-		text.includes("vigilant") ||
-		text.includes("seguranc") ||
-		text.includes("auditor");
+		text.includes("cetic") || text.includes("vigilant") || text.includes("seguranc") || text.includes("auditor");
 	const isWarm =
 		text.includes("pacient") ||
 		text.includes("acolhedor") ||
@@ -256,10 +243,7 @@ export function interpretVisualProfile(input: InterpretVisualInput): Interpreted
 		text.includes("agil") ||
 		text.includes("veloz");
 	const isLeader =
-		text.includes("lider") ||
-		text.includes("orquestrad") ||
-		text.includes("confiant") ||
-		text.includes("estrategic");
+		text.includes("lider") || text.includes("orquestrad") || text.includes("confiant") || text.includes("estrategic");
 	const isScholar =
 		style === "scholar" ||
 		text.includes("scholar") ||

@@ -1,12 +1,23 @@
-import type { AvatarExpressionDefinition, AvatarGeometry, SurfaceConfig } from "./types";
-
-export type Point3 = readonly [number, number, number];
-export type Quaternion = readonly [number, number, number, number];
+import { surfaceFrontSampleAt, surfacePointAt } from "./surfaces";
+import type {
+	AvatarExpressionDefinition,
+	AvatarGeometry,
+	AvatarPose,
+	Expression,
+	Point3,
+	Quaternion,
+	RenderAvatarOptions,
+	SurfaceConfig,
+} from "./types";
 
 export const RADIUS = 120;
 const FOCAL_LENGTH = 620;
-const HEAD_LATITUDE_SAMPLES = 28;
-const HEAD_LONGITUDE_SAMPLES = 56;
+const QUARTER_ARC_SAMPLES = 14;
+const HEAD_LATITUDE_SAMPLES = 25;
+const HEAD_LONGITUDE_SAMPLES = 73;
+const MAX_SURFACE_CACHE_ENTRIES = 24;
+
+const headSamplesCache = new Map<string, Point3[]>();
 
 export function radians(degrees: number): number {
 	return (degrees * Math.PI) / 180;
@@ -16,100 +27,141 @@ export function clamp(value: number, min: number, max: number): number {
 	return Math.max(min, Math.min(max, value));
 }
 
-export function quaternionFromEuler(pitch: number, yaw: number, roll: number): Quaternion {
-	const halfX = pitch / 2;
-	const halfY = yaw / 2;
-	const halfZ = roll / 2;
-	const cx = Math.cos(halfX);
-	const sx = Math.sin(halfX);
-	const cy = Math.cos(halfY);
-	const sy = Math.sin(halfY);
-	const cz = Math.cos(halfZ);
-	const sz = Math.sin(halfZ);
-	return [
-		cx * cy * cz - sx * sy * sz,
-		sx * cy * cz + cx * sy * sz,
-		cx * sy * cz - sx * cy * sz,
-		cx * cy * sz + sx * sy * cz,
+export const normalizeQuaternion = ([w, x, y, z]: Quaternion): Quaternion => {
+	const length = Math.hypot(w, x, y, z) || 1;
+	return [w / length, x / length, y / length, z / length];
+};
+
+export const multiplyQuaternions = ([aw, ax, ay, az]: Quaternion, [bw, bx, by, bz]: Quaternion): Quaternion =>
+	normalizeQuaternion([
+		aw * bw - ax * bx - ay * by - az * bz,
+		aw * bx + ax * bw + ay * bz - az * by,
+		aw * by - ax * bz + ay * bw + az * bx,
+		aw * bz + ax * by - ay * bx + az * bw,
+	]);
+
+export const quaternionFromAxisAngle = ([x, y, z]: Point3, angle: number): Quaternion => {
+	const halfAngle = angle / 2;
+	const sine = Math.sin(halfAngle);
+	return normalizeQuaternion([Math.cos(halfAngle), x * sine, y * sine, z * sine]);
+};
+
+export function quaternionFromEuler(pitchDegrees: number, yawDegrees: number, rollDegrees: number): Quaternion {
+	const x = radians(pitchDegrees);
+	const y = radians(yawDegrees);
+	const z = radians(rollDegrees);
+	const xRotation = quaternionFromAxisAngle([1, 0, 0], x);
+	const yRotation = quaternionFromAxisAngle([0, 1, 0], y);
+	const zRotation = quaternionFromAxisAngle([0, 0, 1], z);
+	return multiplyQuaternions(multiplyQuaternions(zRotation, xRotation), yRotation);
+}
+
+export const quaternionFromVectors = (from: Point3, to: Point3): Quaternion => {
+	const dot = from[0] * to[0] + from[1] * to[1] + from[2] * to[2];
+	const cross: Point3 = [
+		from[1] * to[2] - from[2] * to[1],
+		from[2] * to[0] - from[0] * to[2],
+		from[0] * to[1] - from[1] * to[0],
 	];
-}
+	return normalizeQuaternion([1 + dot, cross[0], cross[1], cross[2]]);
+};
 
-export function rotateWithQuaternion([qw, qx, qy, qz]: Quaternion, [x, y, z]: Point3): Point3 {
-	const ix = qw * x + qy * z - qz * y;
-	const iy = qw * y + qz * x - qx * z;
-	const iz = qw * z + qx * y - qy * x;
-	const iw = -qx * x - qy * y - qz * z;
-	return [
-		ix * qw + iw * -qx + iy * -qz - iz * -qy,
-		iy * qw + iw * -qy + iz * -qx - ix * -qz,
-		iz * qw + iw * -qz + ix * -qy - iy * -qx,
-	];
-}
+export const quaternionToEuler = ([w, x, y, z]: Quaternion): Point3 => {
+	const matrix00 = 1 - 2 * (y * y + z * z);
+	const matrix01 = 2 * (x * y - z * w);
+	const matrix10 = 2 * (x * y + z * w);
+	const matrix11 = 1 - 2 * (x * x + z * z);
+	const matrix20 = 2 * (x * z - y * w);
+	const matrix21 = 2 * (y * z + x * w);
+	const matrix22 = 1 - 2 * (x * x + y * y);
+	const headX = Math.asin(clamp(matrix21, -1, 1));
+	if (Math.abs(Math.cos(headX)) < 0.00001) return [headX, 0, Math.atan2(matrix10, matrix00)];
+	return [headX, Math.atan2(-matrix20, matrix22), Math.atan2(-matrix01, matrix11)];
+};
 
-export function project([x, y, z]: Point3, perspective = 1): Point3 {
-	if (perspective <= 0) return [x, y, z];
-	const scale = FOCAL_LENGTH / (FOCAL_LENGTH + z * perspective);
-	return [x * scale, y * scale, z];
-}
-export function surfacePointAt(config: SurfaceConfig, longitude: number, latitude: number): Point3 {
-	const w = config.width / 2;
-	const h = config.height / 2;
-	const d = config.depth / 2;
+export const rotateWithQuaternion = ([w, x, y, z]: Quaternion, [px, py, pz]: Point3): Point3 => {
+	const tx = 2 * (y * pz - z * py);
+	const ty = 2 * (z * px - x * pz);
+	const tz = 2 * (x * py - y * px);
+	return [px + w * tx + (y * tz - z * ty), py + w * ty + (z * tx - x * tz), pz + w * tz + (x * ty - y * tx)];
+};
 
-	switch (config.type) {
-		case "cube": {
-			const round = Math.max(0.01, config.roundness);
-			const p = 2 / (0.04 + (round / 2) * 0.96);
-			const sx = Math.cos(latitude) * Math.sin(longitude);
-			const sy = Math.sin(latitude);
-			const sz = Math.cos(latitude) * Math.cos(longitude);
-			const norm = (Math.abs(sx) ** p + Math.abs(sy) ** p + Math.abs(sz) ** p) ** (1 / p) || 1;
-			return [w * (sx / norm), h * (sy / norm), d * (sz / norm)];
-		}
-		case "capsule": {
-			const capR = Math.min(w, h);
-			const straight = Math.max(0, h - capR);
-			const latAngle = latitude;
-			const rad = w * Math.cos(latAngle);
-			const yOffset = straight * Math.sign(Math.sin(latAngle));
-			return [rad * Math.sin(longitude), capR * Math.sin(latAngle) + yOffset, rad * Math.cos(longitude)];
-		}
-		case "diamond": {
-			const p = 1 + clamp(config.roundness, 0, 2) / 2;
-			const sx = Math.cos(latitude) * Math.sin(longitude);
-			const sy = Math.sin(latitude);
-			const sz = Math.cos(latitude) * Math.cos(longitude);
-			const norm = (Math.abs(sx) ** p + Math.abs(sy) ** p + Math.abs(sz) ** p) ** (1 / p) || 1;
-			return [w * (sx / norm), h * (sy / norm), d * (sz / norm)];
-		}
-		case "cylinder": {
-			const rad = w;
-			const y = h * Math.sin(latitude);
-			return [rad * Math.sin(longitude), y, (d / w) * rad * Math.cos(longitude)];
-		}
-		case "cone": {
-			const frac = (1 - Math.sin(latitude)) / 2;
-			const rad = w * frac;
-			const y = h * Math.sin(latitude);
-			return [rad * Math.sin(longitude), y, (d / w) * rad * Math.cos(longitude)];
-		}
-		case "mickey": {
-			// Mickey surface: head sphere with subtle ear swellings
-			const baseR = w;
-			const sx = Math.cos(latitude) * Math.sin(longitude);
-			const sy = Math.sin(latitude);
-			const sz = Math.cos(latitude) * Math.cos(longitude);
-			return [baseR * sx, h * sy, d * sz];
-		}
-		case "sphere":
-		default: {
-			const cosLat = Math.cos(latitude);
-			return [w * cosLat * Math.sin(longitude), h * Math.sin(latitude), d * cosLat * Math.cos(longitude)];
-		}
+export const slerpQuaternion = (start: Quaternion, end: Quaternion, progress: number): Quaternion => {
+	let target = end;
+	let dot = start.reduce((total, value, index) => total + value * target[index]!, 0);
+	if (dot < 0) {
+		target = target.map(value => -value) as unknown as Quaternion;
+		dot = -dot;
 	}
+	if (dot > 0.9995) {
+		return normalizeQuaternion(
+			start.map((value, index) => value + (target[index]! - value) * progress) as unknown as Quaternion,
+		);
+	}
+	const angle = Math.acos(clamp(dot, -1, 1));
+	const sine = Math.sin(angle);
+	const startWeight = Math.sin((1 - progress) * angle) / sine;
+	const targetWeight = Math.sin(progress * angle) / sine;
+	return normalizeQuaternion(
+		start.map((value, index) => value * startWeight + target[index]! * targetWeight) as unknown as Quaternion,
+	);
+};
+
+export function project(point: Point3, perspective = 1): Point3 {
+	const denominator = FOCAL_LENGTH - point[2] * perspective;
+	const scale = Math.abs(denominator) < 0.0001 ? FOCAL_LENGTH / 0.0001 : FOCAL_LENGTH / denominator;
+	return [point[0] * scale, point[1] * scale, point[2]];
 }
 
-export function convexHull(points: Point3[]): Point3[] {
+export const axisVector = (axis: "x" | "y" | "z"): Point3 =>
+	axis === "x" ? [1, 0, 0] : axis === "y" ? [0, 1, 0] : [0, 0, 1];
+
+export const poseFromExpression = (expression: Expression): AvatarPose => ({
+	expression,
+	orientation: quaternionFromEuler(expression.headX, expression.headY, expression.headZ),
+});
+
+const roundedRectangle = (width: number, height: number): (readonly [number, number])[] => {
+	const halfWidth = width / 2;
+	const halfHeight = height / 2;
+	const cornerRadius = Math.min(halfHeight, halfWidth);
+	const points: (readonly [number, number])[] = [];
+
+	const addLine = (start: readonly [number, number], end: readonly [number, number]) => {
+		const samples = Math.max(2, Math.ceil(Math.hypot(end[0] - start[0], end[1] - start[1]) / 1.5));
+		for (let index = 0; index < samples; index += 1) {
+			const progress = index / samples;
+			points.push([start[0] + (end[0] - start[0]) * progress, start[1] + (end[1] - start[1]) * progress]);
+		}
+	};
+
+	const addArc = (centerX: number, centerY: number, startAngle: number) => {
+		for (let index = 0; index < QUARTER_ARC_SAMPLES; index += 1) {
+			const angle = startAngle + (index / QUARTER_ARC_SAMPLES) * (Math.PI / 2);
+			points.push([centerX + Math.cos(angle) * cornerRadius, centerY + Math.sin(angle) * cornerRadius]);
+		}
+	};
+
+	addLine([-halfWidth + cornerRadius, -halfHeight], [halfWidth - cornerRadius, -halfHeight]);
+	addArc(halfWidth - cornerRadius, -halfHeight + cornerRadius, -Math.PI / 2);
+	addLine([halfWidth, -halfHeight + cornerRadius], [halfWidth, halfHeight - cornerRadius]);
+	addArc(halfWidth - cornerRadius, halfHeight - cornerRadius, 0);
+	addLine([halfWidth - cornerRadius, halfHeight], [-halfWidth + cornerRadius, halfHeight]);
+	addArc(-halfWidth + cornerRadius, halfHeight - cornerRadius, Math.PI / 2);
+	addLine([-halfWidth, halfHeight - cornerRadius], [-halfWidth, -halfHeight + cornerRadius]);
+	addArc(-halfWidth + cornerRadius, -halfHeight + cornerRadius, Math.PI);
+	return points;
+};
+
+export const pathToSvg = (points: Point3[], close = true): string => {
+	if (!points.length) return "";
+	return `M${points[0]![0].toFixed(2)} ${points[0]![1].toFixed(2)}${points
+		.slice(1)
+		.map(pt => `L${pt[0].toFixed(2)} ${pt[1].toFixed(2)}`)
+		.join("")}${close ? "Z" : ""}`;
+};
+
+export const convexHull = (points: Point3[]): Point3[] => {
 	if (points.length <= 3) return points;
 	const sorted = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
 	const cross = (o: Point3, a: Point3, b: Point3): number =>
@@ -132,21 +184,9 @@ export function convexHull(points: Point3[]): Point3[] {
 	lower.pop();
 	upper.pop();
 	return [...lower, ...upper];
-}
+};
 
-export function pathToSvg(points: Point3[], closed = true): string {
-	if (points.length === 0) return "";
-	const start = points[0]!;
-	let d = `M${start[0].toFixed(2)} ${start[1].toFixed(2)}`;
-	for (let i = 1; i < points.length; i++) {
-		const p = points[i]!;
-		d += ` L${p[0].toFixed(2)} ${p[1].toFixed(2)}`;
-	}
-	if (closed) d += " Z";
-	return d;
-}
-
-export function smoothPathToSvg(points: Point3[]): string {
+export const smoothClosedPath = (points: Point3[]): string => {
 	if (points.length < 3) return pathToSvg(points);
 	const n = points.length;
 	let d = `M${points[0]![0].toFixed(2)} ${points[0]![1].toFixed(2)}`;
@@ -161,105 +201,213 @@ export function smoothPathToSvg(points: Point3[]): string {
 		const cp2y = next[1] - (next2[1] - curr[1]) / 6;
 		d += ` C${cp1x.toFixed(2)} ${cp1y.toFixed(2)} ${cp2x.toFixed(2)} ${cp2y.toFixed(2)} ${next[0].toFixed(2)} ${next[1].toFixed(2)}`;
 	}
-	d += " Z";
-	return d;
-}
+	return `${d}Z`;
+};
 
-export function sampleEyeOval(
-	eye: { width: number; height: number; x: number; y: number; angle: number },
-	blink = 1,
-	samples = 24,
-): Point3[] {
-	const points: Point3[] = [];
-	const rad = radians(eye.angle);
-	const cosA = Math.cos(rad);
-	const sinA = Math.sin(rad);
-	const rx = Math.max(1, eye.width / 2);
-	const ry = Math.max(0.5, (eye.height / 2) * blink);
+type ProjectedSurfacePoint = { point: Point3; normal: Point3 };
+type LocalSurfacePoint = ProjectedSurfacePoint;
 
-	for (let i = 0; i < samples; i++) {
-		const theta = (i / samples) * Math.PI * 2;
-		const localX = rx * Math.cos(theta);
-		const localY = ry * Math.sin(theta);
-		const rotX = localX * cosA - localY * sinA;
-		const rotY = localX * sinA + localY * cosA;
-		points.push([eye.x + rotX, eye.y + rotY, 0]);
+const surfaceCacheKey = (surface: SurfaceConfig): string =>
+	JSON.stringify([
+		surface.type,
+		surface.width,
+		surface.height,
+		surface.depth,
+		surface.roundness,
+		surface.morphRoundness,
+		surface.tipRoundness,
+		surface.baseRoundness,
+	]);
+
+const cacheSurfaceValue = <Value>(cache: Map<string, Value>, key: string, value: Value): Value => {
+	if (cache.size >= MAX_SURFACE_CACHE_ENTRIES) cache.delete(cache.keys().next().value!);
+	cache.set(key, value);
+	return value;
+};
+
+const canonicalFaceCoordinates = (x: number, y: number): readonly [number, number] => {
+	const longitude = x / RADIUS;
+	const latitude = y / RADIUS;
+	return [RADIUS * Math.cos(latitude) * Math.sin(longitude), RADIUS * Math.sin(latitude)];
+};
+
+const projectLocalSurfacePoint = (pose: AvatarPose, sample: LocalSurfacePoint): ProjectedSurfacePoint => ({
+	point: project(rotateWithQuaternion(pose.orientation, sample.point), pose.expression.perspective),
+	normal: rotateWithQuaternion(pose.orientation, sample.normal),
+});
+
+const projectFacePoint = (pose: AvatarPose, surface: SurfaceConfig, x: number, y: number): ProjectedSurfacePoint => {
+	const [faceX, faceY] = canonicalFaceCoordinates(x, y);
+	return projectLocalSurfacePoint(pose, surfaceFrontSampleAt(surface, faceX, faceY));
+};
+
+const eyePoints = (
+	pose: AvatarPose,
+	surface: SurfaceConfig,
+	side: -1 | 1,
+	blink: number,
+	offset: Readonly<{ x: number; y: number }> = { x: 0, y: 0 },
+): ProjectedSurfacePoint[] => {
+	const expr = pose.expression;
+	const suffix = side < 0 ? "Left" : "Right";
+	const width = expr[`width${suffix}`];
+	const restingHeight = expr[`height${suffix}`];
+	const height = 5 + (restingHeight - 5) * blink;
+	const centerX = (side * expr.spacing) / 2 + expr[`positionX${suffix}`] + offset.x;
+	const centerY = expr[`positionY${suffix}`] + offset.y;
+	const angle = radians(side < 0 ? expr.leftAngle : expr.rightAngle);
+
+	return roundedRectangle(width, height).map(([localX, localY]) => {
+		const rotatedX = localX * Math.cos(angle) - localY * Math.sin(angle);
+		const rotatedY = localX * Math.sin(angle) + localY * Math.cos(angle);
+		return projectFacePoint(pose, surface, centerX + rotatedX, centerY + rotatedY);
+	});
+};
+
+type ProjectedEllipse = {
+	centerX: number;
+	centerY: number;
+	majorRadius: number;
+	minorRadius: number;
+	rotation: number;
+};
+
+const ellipseProjection = (
+	centerX: number,
+	centerY: number,
+	covarianceXX: number,
+	covarianceXY: number,
+	covarianceYY: number,
+): ProjectedEllipse | null => {
+	const trace = covarianceXX + covarianceYY;
+	const difference = Math.hypot(covarianceXX - covarianceYY, covarianceXY * 2);
+	const majorSquared = (trace + difference) / 2;
+	const minorSquared = (trace - difference) / 2;
+	if (majorSquared <= 0 || minorSquared <= 0) return null;
+
+	return {
+		centerX,
+		centerY,
+		majorRadius: Math.sqrt(majorSquared),
+		minorRadius: Math.sqrt(minorSquared),
+		rotation: Math.atan2(covarianceXY * 2, covarianceXX - covarianceYY) / 2,
+	};
+};
+
+const ellipsePath = ({ centerX, centerY, majorRadius, minorRadius, rotation }: ProjectedEllipse): string => {
+	const rotationDegrees = (rotation * 180) / Math.PI;
+	const offsetX = Math.cos(rotation) * majorRadius;
+	const offsetY = Math.sin(rotation) * majorRadius;
+	const startX = centerX + offsetX;
+	const startY = centerY + offsetY;
+	const endX = centerX - offsetX;
+	const endY = centerY - offsetY;
+
+	return `M${startX.toFixed(2)} ${startY.toFixed(2)}A${majorRadius.toFixed(2)} ${minorRadius.toFixed(2)} ${rotationDegrees.toFixed(2)} 0 1 ${endX.toFixed(2)} ${endY.toFixed(2)}A${majorRadius.toFixed(2)} ${minorRadius.toFixed(2)} ${rotationDegrees.toFixed(2)} 0 1 ${startX.toFixed(2)} ${startY.toFixed(2)}Z`;
+};
+
+const projectedEllipsoid = (
+	pose: AvatarPose,
+	axes: Point3,
+	localCenter: Point3 = [0, 0, 0],
+): ProjectedEllipse | null => {
+	const rotatedAxes = [
+		rotateWithQuaternion(pose.orientation, [1, 0, 0]),
+		rotateWithQuaternion(pose.orientation, [0, 1, 0]),
+		rotateWithQuaternion(pose.orientation, [0, 0, 1]),
+	];
+	const center = rotateWithQuaternion(pose.orientation, localCenter);
+
+	const covarianceXX = rotatedAxes.reduce(
+		(total, axis, index) => total + axis[0] * axis[0] * axes[index]! * axes[index]!,
+		0,
+	);
+	const covarianceXY = rotatedAxes.reduce(
+		(total, axis, index) => total + axis[0] * axis[1] * axes[index]! * axes[index]!,
+		0,
+	);
+	const covarianceYY = rotatedAxes.reduce(
+		(total, axis, index) => total + axis[1] * axis[1] * axes[index]! * axes[index]!,
+		0,
+	);
+
+	const projectedCenter = project(center, pose.expression.perspective);
+	return ellipseProjection(projectedCenter[0], projectedCenter[1], covarianceXX, covarianceXY, covarianceYY);
+};
+
+const headPath = (pose: AvatarPose, surface: SurfaceConfig): string => {
+	if (surface.type === "sphere" || surface.type === "mickey") {
+		const ellipse = projectedEllipsoid(pose, [surface.width / 2, surface.height / 2, surface.depth / 2]);
+		if (ellipse) return ellipsePath(ellipse);
 	}
-	return points;
-}
+
+	const key = surfaceCacheKey(surface);
+	let localSamples = headSamplesCache.get(key);
+	if (!localSamples) {
+		localSamples = Array.from({ length: HEAD_LATITUDE_SAMPLES }, (_, latitudeIndex) => {
+			const latitude = -Math.PI / 2 + (latitudeIndex / (HEAD_LATITUDE_SAMPLES - 1)) * Math.PI;
+			return Array.from({ length: HEAD_LONGITUDE_SAMPLES }, (_, longitudeIndex) => {
+				const longitude = -Math.PI + (longitudeIndex / (HEAD_LONGITUDE_SAMPLES - 1)) * Math.PI * 2;
+				return surfacePointAt(surface, longitude, latitude);
+			});
+		}).flat();
+		cacheSurfaceValue(headSamplesCache, key, localSamples);
+	}
+
+	const projectedSamples = localSamples.map(sample =>
+		project(rotateWithQuaternion(pose.orientation, sample), pose.expression.perspective),
+	);
+	return smoothClosedPath(convexHull(projectedSamples));
+};
+
+export const renderAvatar = (
+	pose: AvatarPose,
+	surface: SurfaceConfig,
+	blink = 1,
+	options: RenderAvatarOptions = {},
+): AvatarGeometry => {
+	const leftSamples = eyePoints(pose, surface, -1, blink, options.eyeOffset);
+	const rightSamples = eyePoints(pose, surface, 1, blink, options.eyeOffset);
+	const left = leftSamples.map(sample => sample.point);
+	const right = rightSamples.map(sample => sample.point);
+
+	return {
+		backPaths: [],
+		frontPaths: [],
+		headPath: headPath(pose, surface),
+		leftPath: smoothClosedPath(left),
+		rightPath: smoothClosedPath(right),
+		leftVisible: leftSamples.reduce((total, sample) => total + sample.normal[2], 0) > 0,
+		rightVisible: rightSamples.reduce((total, sample) => total + sample.normal[2], 0) > 0,
+		wirePaths: [],
+	};
+};
 
 export function renderAvatarPose(
 	surface: SurfaceConfig,
-	expression: AvatarExpressionDefinition,
+	expressionDef: AvatarExpressionDefinition,
 	blink = 1,
 ): AvatarGeometry {
-	const orientation = quaternionFromEuler(
-		radians(expression.head.x),
-		radians(expression.head.y),
-		radians(expression.head.z),
-	);
-
-	// Generate head surface sample points
-	const headPoints: Point3[] = [];
-	for (let latIdx = 0; latIdx < HEAD_LATITUDE_SAMPLES; latIdx++) {
-		const lat = -Math.PI / 2 + (latIdx / (HEAD_LATITUDE_SAMPLES - 1)) * Math.PI;
-		for (let lonIdx = 0; lonIdx < HEAD_LONGITUDE_SAMPLES; lonIdx++) {
-			const lon = -Math.PI + (lonIdx / (HEAD_LONGITUDE_SAMPLES - 1)) * Math.PI * 2;
-			const pt = surfacePointAt(surface, lon, lat);
-			const rot = rotateWithQuaternion(orientation, pt);
-			const proj = project(rot, expression.perspective);
-			headPoints.push(proj);
-		}
-	}
-
-	const hull = convexHull(headPoints);
-	const headPath = smoothPathToSvg(hull);
-
-	// Eye positioning with perspective & head rotation
-	const halfSpacing = expression.eyes.spacing / 2;
-	const leftEyeConfig = {
-		width: expression.eyes.left.width,
-		height: expression.eyes.left.height,
-		x: -halfSpacing + expression.eyes.left.x,
-		y: expression.eyes.left.y,
-		angle: expression.eyes.left.angle,
+	const expr: Expression = {
+		id: "active",
+		headX: expressionDef.head.x,
+		headY: expressionDef.head.y,
+		headZ: expressionDef.head.z,
+		widthLeft: expressionDef.eyes.left.width,
+		widthRight: expressionDef.eyes.right.width,
+		heightLeft: expressionDef.eyes.left.height,
+		heightRight: expressionDef.eyes.right.height,
+		spacing: expressionDef.eyes.spacing,
+		positionXLeft: expressionDef.eyes.left.x,
+		positionXRight: expressionDef.eyes.right.x,
+		positionYLeft: expressionDef.eyes.left.y,
+		positionYRight: expressionDef.eyes.right.y,
+		leftAngle: expressionDef.eyes.left.angle,
+		rightAngle: expressionDef.eyes.right.angle,
+		perspective: expressionDef.perspective,
+		eyeMotion: expressionDef.motion.eyes,
+		bodyMotion: expressionDef.motion.body,
 	};
-	const rightEyeConfig = {
-		width: expression.eyes.right.width,
-		height: expression.eyes.right.height,
-		x: halfSpacing + expression.eyes.right.x,
-		y: expression.eyes.right.y,
-		angle: expression.eyes.right.angle,
-	};
-
-	const leftSamples = sampleEyeOval(leftEyeConfig, blink);
-	const rightSamples = sampleEyeOval(rightEyeConfig, blink);
-
-	// Project eye points onto head surface orientation
-	const projectEyePoints = (samples: Point3[]): { points: Point3[]; visible: boolean } => {
-		const proj = samples.map(pt => {
-			// Find approximate surface depth
-			const rot = rotateWithQuaternion(orientation, [pt[0], pt[1], surface.depth / 2]);
-			return project(rot, expression.perspective);
-		});
-		// Eye is visible if head orientation points somewhat towards camera
-		const normalZ = rotateWithQuaternion(orientation, [0, 0, 1])[2];
-		return { points: proj, visible: normalZ > -0.2 };
-	};
-
-	const leftResult = projectEyePoints(leftSamples);
-	const rightResult = projectEyePoints(rightSamples);
-
-	const leftPath = smoothPathToSvg(leftResult.points);
-	const rightPath = smoothPathToSvg(rightResult.points);
-
-	return {
-		headPath,
-		leftPath,
-		rightPath,
-		leftVisible: leftResult.visible,
-		rightVisible: rightResult.visible,
-		frontPaths: [],
-		backPaths: [],
-	};
+	const pose = poseFromExpression(expr);
+	return renderAvatar(pose, surface, blink);
 }

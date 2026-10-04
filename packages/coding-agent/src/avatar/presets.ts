@@ -468,6 +468,89 @@ export const SECURITY_SENTINEL_AVATAR: AvatarDefinition = {
 		interpretedMood: "Vigilância Inflexível & Ceticismo Metódico",
 	},
 };
+export const STROBI_AVATAR: AvatarDefinition = {
+	schema: "bible-strong/avatar-definition",
+	schemaVersion: 1,
+	name: "Strobi",
+	body: {
+		primary: {
+			type: "sphere",
+			width: 240,
+			height: 240,
+			depth: 240,
+			roundness: 1,
+		},
+		nodes: [],
+	},
+	colors: {
+		body: "#5B7FE5",
+		eyes: "#111316",
+		glow: "#5B7FE5",
+	},
+	expressions: {
+		neutral: {
+			head: { x: 0, y: 0, z: 0 },
+			eyes: {
+				left: { width: 20, height: 50, x: 0, y: -7, angle: 0 },
+				right: { width: 20, height: 50, x: 0, y: -7, angle: 0 },
+				spacing: 35,
+			},
+			perspective: 1,
+			motion: { eyes: "microSaccades", body: "slowDrift" },
+		},
+	},
+	expressionOrder: ["neutral"],
+	animations: {
+		idle: {
+			playbackMode: "loop",
+			steps: [{ expression: "neutral", holdMs: 3000, transitionMs: 400, transition: "smooth" }],
+			blink: { enabled: true, initialDelayMs: 2000, minIntervalMs: 3000, maxIntervalMs: 6000, durationMs: 320 },
+		},
+	},
+	animationOrder: ["idle"],
+};
+
+export const GROK_BOT_AVATAR: AvatarDefinition = {
+	schema: "bible-strong/avatar-definition",
+	schemaVersion: 1,
+	name: "Grok bot",
+	body: {
+		primary: {
+			type: "sphere",
+			width: 240,
+			height: 240,
+			depth: 240,
+			roundness: 1,
+		},
+		nodes: [],
+	},
+	colors: {
+		body: "#000000",
+		eyes: "#FFFFFF",
+		glow: "#FFFFFF",
+	},
+	expressions: {
+		neutral: {
+			head: { x: 0, y: 0, z: 0 },
+			eyes: {
+				left: { width: 20, height: 50, x: 0, y: -7, angle: 0 },
+				right: { width: 20, height: 50, x: 0, y: -7, angle: 0 },
+				spacing: 35,
+			},
+			perspective: 1,
+			motion: { eyes: "microSaccades", body: "slowDrift" },
+		},
+	},
+	expressionOrder: ["neutral"],
+	animations: {
+		idle: {
+			playbackMode: "loop",
+			steps: [{ expression: "neutral", holdMs: 3000, transitionMs: 400, transition: "smooth" }],
+			blink: { enabled: true, initialDelayMs: 1800, minIntervalMs: 2500, maxIntervalMs: 5000, durationMs: 320 },
+		},
+	},
+	animationOrder: ["idle"],
+};
 
 export const DEFAULT_AGENT_PROFILES: AgentProfile[] = [
 	{
@@ -607,6 +690,39 @@ export const DEFAULT_AGENT_PROFILES: AgentProfile[] = [
 			outputFormat: "markdown",
 		},
 		avatar: SECURITY_SENTINEL_AVATAR,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	},
+	{
+		id: "deep-sea-sage",
+		name: "Deep Sea Sage",
+		title: "Filósofo & Estrategista das Profundezas",
+		description:
+			"Estrategista reflexivo e conceitual. Analisa problemas complexos e princípios fundamentais do projeto.",
+		systemPrompt:
+			"Você é o Deep Sea Sage. Você sintetiza conceitos abstratos, heurísticas arquiteturais e princípios de longo prazo.",
+		personality: {
+			tone: "Sereno, contemplativo e rigoroso",
+			traits: ["Reflexão profunda", "Clareza conceitual", "Equilíbrio", "Paciência estratégica"],
+			style: "Filosófico e analítico",
+			catchphrase: "Nas profundezas do silêncio repousam as verdades mais sólidas.",
+			behaviorRules: ["Buscar a causa raiz", "Priorizar sustentabilidade a longo prazo"],
+		},
+		functions: ["read", "grep"],
+		models: {
+			primary: { model: "default", thinkingLevel: "high" },
+		},
+		fallbacks: {
+			models: ["slow"],
+			strategy: "fallback-model",
+		},
+		structure: {
+			role: "Estrategista Conceitual",
+			category: "scholar",
+			calledBy: ["shark-lead"],
+			outputFormat: "markdown",
+		},
+		avatar: DEEP_SEA_SAGE_AVATAR,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	},
