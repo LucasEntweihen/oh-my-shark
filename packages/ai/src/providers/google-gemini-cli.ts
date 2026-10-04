@@ -8,6 +8,7 @@ import { scheduler } from "node:timers/promises";
 import { type } from "@oh-my-pi/omptype";
 import { calculateCost } from "@oh-my-pi/pi-catalog/models";
 import {
+	ensureAntigravityVersion,
 	getAntigravityModelWireProfile,
 	getAntigravityUserAgent,
 	getGeminiCliHeaders,
@@ -572,6 +573,10 @@ export const streamGoogleGeminiCli: StreamFunction<"google-gemini-cli"> = (
 			} else {
 				endpoints = baseUrl ? [baseUrl] : [DEFAULT_ENDPOINT];
 			}
+
+			// The backend gates newer models on the client version; a process that
+			// skipped discovery (fresh model cache) must still send the current one.
+			if (isAntigravity) await ensureAntigravityVersion(options?.fetch ?? fetch, options?.signal);
 
 			let requestBody = buildRequest(model, context, projectId, options, isAntigravity);
 			const replacementPayload = await options?.onPayload?.(requestBody, model);
@@ -1292,8 +1297,7 @@ export function buildRequest(
 		};
 		// Gemini 3 models use thinkingLevel, older models use thinkingBudget
 		if (options.thinking.level !== undefined) {
-			// Cast to any since our GoogleThinkingLevel mirrors Google's ThinkingLevel enum values
-			generationConfig.thinkingConfig.thinkingLevel = options.thinking.level as any;
+			generationConfig.thinkingConfig.thinkingLevel = options.thinking.level;
 		} else if (options.thinking.budgetTokens !== undefined) {
 			generationConfig.thinkingConfig.thinkingBudget = options.thinking.budgetTokens;
 		}
@@ -1303,8 +1307,7 @@ export function buildRequest(
 		const suppress = options.thinking.suppress;
 		generationConfig.thinkingConfig = { includeThoughts: false };
 		if ("level" in suppress) {
-			// Cast to any since our GoogleThinkingLevel mirrors Google's ThinkingLevel enum values
-			generationConfig.thinkingConfig.thinkingLevel = suppress.level as any;
+			generationConfig.thinkingConfig.thinkingLevel = suppress.level;
 		} else {
 			generationConfig.thinkingConfig.thinkingBudget = suppress.budget;
 		}

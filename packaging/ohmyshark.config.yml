@@ -1,14 +1,51 @@
 modelRoles:
-  default: opencode-go/muse-spark-1.3-contributor:high
-  smol: opencode-go/qwen3.8-flash:low
-  slow: opencode-go/kimi-k3:max
-  vision: opencode-go/muse-spark-1.3-contributor:high
-  plan: openai-codex/gpt-5.6-sol:xhigh
-  designer: opencode-go/muse-spark-1.3-contributor:high
-  commit: opencode-go/qwen3.8-flash:low
+  default:
+    - google-antigravity/gemini-3.8-flash:high
+    - google-antigravity/gemini-3-flash:high
+    - google-antigravity/claude-opus-4-6:high
+    - google-gemini-cli/gemini-2.5-flash
+    - google/gemini-2.5-flash
+    - anthropic/claude-3-7-sonnet
+    - openai/gpt-4o
+    - deepseek/deepseek-chat
+    - groq/llama-3.3-70b-versatile
+    - opencode-go/muse-spark-1.3-contributor:high
+  smol:
+    - google-antigravity/gemini-3.8-flash:low
+    - google-antigravity/gemini-3-flash:low
+    - google-gemini-cli/gemini-2.5-flash
+    - google/gemini-2.5-flash
+    - anthropic/claude-3-5-haiku
+    - openai/gpt-4o-mini
+    - deepseek/deepseek-chat
+    - groq/llama-3.1-8b-instant
+    - opencode-go/qwen3.8-flash:low
+  slow:
+    - google-antigravity/claude-opus-4-6:high
+    - google-antigravity/gemini-3.8-flash:high
+    - anthropic/claude-3-7-sonnet
+    - openai/o3-mini:high
+    - openai/gpt-4o
+    - deepseek/deepseek-reasoner
+    - opencode-go/kimi-k3:max
+  vision:
+    - google-antigravity/gemini-3.8-flash:high
+    - google-gemini-cli/gemini-2.5-flash
+    - google/gemini-2.5-flash
+    - anthropic/claude-3-7-sonnet
+    - openai/gpt-4o
+    - opencode-go/muse-spark-1.3-contributor:high
+  plan:
+    - google-antigravity/claude-opus-4-6:high
+    - google-antigravity/gemini-3.8-flash:high
+    - anthropic/claude-3-7-sonnet
+    - openai/o3-mini:high
+    - opencode-go/kimi-k3:max
+  designer: "@vision"
+  commit: "@smol"
   tiny: "@smol"
   task: "@default"
-  advisor: opencode-go/kimi-k2.7-code:high
+  advisor: "@smol"
 symbolPreset: unicode
 theme:
   dark: titanium
@@ -17,21 +54,36 @@ defaultThinkingLevel: auto
 retry:
   fallbackChains:
     default:
+      - google-antigravity/gemini-3.8-flash
+      - google-antigravity/gemini-3-flash
+      - google-gemini-cli/gemini-2.5-flash
+      - google/gemini-2.5-flash
+      - anthropic/claude-3-7-sonnet
+      - openai/gpt-4o
+      - deepseek/deepseek-chat
+      - groq/llama-3.3-70b-versatile
       - opencode-go/muse-spark-1.3-contributor
-      - openai-codex/gpt-5.6-sol
-      - opencode-go/kimi-k3
     slow:
+      - google-antigravity/claude-opus-4-6
+      - google-antigravity/gemini-3.8-flash
+      - anthropic/claude-3-7-sonnet
+      - openai/o3-mini
+      - deepseek/deepseek-reasoner
       - opencode-go/kimi-k3
-      - opencode-go/kimi-k2.7-code
-      - openai-codex/gpt-5.6-sol
     plan:
-      - openai-codex/gpt-5.6-sol
-      - commandcode/gpt-5.6-sol
+      - google-antigravity/claude-opus-4-6
+      - google-antigravity/gemini-3.8-flash
+      - openai/o3-mini
+      - anthropic/claude-3-7-sonnet
       - opencode-go/kimi-k3
     smol:
+      - google-antigravity/gemini-3.8-flash
+      - google-gemini-cli/gemini-2.5-flash
+      - google/gemini-2.5-flash
+      - anthropic/claude-3-5-haiku
+      - openai/gpt-4o-mini
+      - deepseek/deepseek-chat
       - opencode-go/qwen3.8-flash
-      - opencode-go/glm-5.3-flash
-      - opencode-go/mimo-v2.5
 compaction:
   methodOrder:
     - snapcompact

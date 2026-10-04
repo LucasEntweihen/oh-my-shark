@@ -8624,7 +8624,9 @@
 						"high": 10001,
 						"low": 1001
 					},
-					"mode": "budget"
+					"mode": "budget",
+					"requiresEffort": true,
+					"suppressWhenOff": false
 				}
 			},
 			{

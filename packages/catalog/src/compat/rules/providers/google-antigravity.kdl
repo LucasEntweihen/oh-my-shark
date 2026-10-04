@@ -55,5 +55,7 @@ provider "google-antigravity" {
 			low 1001
 		}
 		thinking-mode "budget"
+		thinking-requires-effort #true
+		thinking-suppress-when-off #false
 	}
 }
