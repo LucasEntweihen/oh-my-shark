@@ -14,8 +14,8 @@ set -e
 #   -r <ref>       Shorthand for --ref
 
 REPO="LucasEntweihen/oh-my-shark"
-DEFAULT_TAG="ohms-v0.0.3"
-BIN_NAME="ohms"
+DEFAULT_TAG="omsk-v0.0.8"
+BIN_NAME="omsk"
 INSTALL_DIR="${PI_INSTALL_DIR:-$HOME/.local/bin}"
 MIN_BUN_VERSION="1.3.14"
 
@@ -278,9 +278,9 @@ install_binary() {
         fi
     fi
 
-    BINARY="${BIN_NAME}-${PLATFORM}-${ARCH}"
+    BINARY="ohms-${PLATFORM}-${ARCH}"
     OUT="${INSTALL_DIR}/${BIN_NAME}"
-    AGENT_DIR="$HOME/.ohms/agent"
+    AGENT_DIR="$HOME/.omsk/agent"
 
     TAG="${REF:-$DEFAULT_TAG}"
     echo "Using version: $TAG"
@@ -355,7 +355,7 @@ install_binary() {
 
     echo ""
     echo "✓ Installed ${BIN_NAME} (${SMOKE_OUTPUT}) to ${OUT}"
-
+    ln -sf "$OUT" "${INSTALL_DIR}/ohms" 2>/dev/null || cp "$OUT" "${INSTALL_DIR}/ohms" 2>/dev/null || true
     # Seed the portable preset and model catalog, but never overwrite the
     # user's own files. Sources are the release assets pinned to this tag —
     # never the main branch, never ~/.omp.

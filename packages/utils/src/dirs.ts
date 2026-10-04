@@ -23,7 +23,7 @@ export const APP_NAME: string = "omsk";
 export const DISPLAY_NAME: string = "ohmyshark";
 
 /** Downstream product version, independent of the upstream technical VERSION. */
-export const PRODUCT_VERSION: string = "0.0.7";
+export const PRODUCT_VERSION: string = "0.0.8";
 /** Product byline shown in TUI titles and splash surfaces. */
 export const PRODUCT_BYLINE: string = "made by LucasEntweihen";
 

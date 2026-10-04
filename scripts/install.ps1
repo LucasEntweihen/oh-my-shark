@@ -18,8 +18,8 @@ param(
 $ErrorActionPreference = "Stop"
 
 $Repo = "LucasEntweihen/oh-my-shark"
-$DefaultTag = "ohms-v0.0.3"
-$InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "ohms" }
+$DefaultTag = "omsk-v0.0.8"
+$InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "omsk" }
 $NativeArchitecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
 if ($NativeArchitecture -notin @("x64", "arm64")) {
     throw "Unsupported Windows architecture: $NativeArchitecture"
@@ -228,11 +228,11 @@ function Install-ViaBun {
     }
 
     Write-Host ""
-    Write-Host "[OK] Installed ohms via bun" -ForegroundColor Green
+    Write-Host "[OK] Installed omsk via bun" -ForegroundColor Green
 
     Configure-BashShell
 
-    Write-Host "Run 'ohms' to get started!"
+    Write-Host "Run 'omsk' to get started!"
 }
 
 function Get-OhmsFileHash {
@@ -291,10 +291,11 @@ function Install-Binary {
 
     $BinaryUrl = "https://github.com/$Repo/releases/download/$Tag/$BinaryName"
     $SumsUrl = "https://github.com/$Repo/releases/download/$Tag/SHA256SUMS.txt"
-    $AgentDir = Join-Path $env:USERPROFILE ".ohms\agent"
+    $AgentDir = Join-Path $env:USERPROFILE ".omsk\agent"
 
     New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-    $OutPath = Join-Path $InstallDir "ohms.exe"
+    $OutPath = Join-Path $InstallDir "omsk.exe"
+    $OhmsOutPath = Join-Path $InstallDir "ohms.exe"
     $TmpPath = "$OutPath.new-$PID.exe"
     $SumsPath = "$OutPath.sums-$PID"
 
@@ -333,6 +334,7 @@ function Install-Binary {
 
         # Atomic replacement, then a post-install smoke test.
         Move-Item -Path $TmpPath -Destination $OutPath -Force
+        Copy-Item -Path $OutPath -Destination $OhmsOutPath -Force
 
         $smoke = & $OutPath --version 2>&1
         if ($LASTEXITCODE -ne 0) {
@@ -340,7 +342,7 @@ function Install-Binary {
         }
 
         Write-Host ""
-        Write-Host "[OK] Installed ohms ($smoke) to $OutPath" -ForegroundColor Green
+        Write-Host "[OK] Installed omsk ($smoke) to $OutPath" -ForegroundColor Green
 
         # Seed the portable preset and model catalog, but never overwrite the
         # user's own files. Sources are the release assets pinned to this tag
@@ -369,9 +371,9 @@ function Install-Binary {
     Configure-BashShell
 
     if ($needsRestart) {
-        Write-Host "Restart your terminal, then run 'ohms' to get started!"
+        Write-Host "Restart your terminal, then run 'omsk' to get started!"
     } else {
-        Write-Host "Run 'ohms' to get started!"
+        Write-Host "Run 'omsk' to get started!"
     }
 }
 
