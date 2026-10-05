@@ -11,15 +11,15 @@ type Method = "quick" | "verified";
 
 const COMMANDS: Record<OS, Record<Method, string[]>> = {
   win: {
-    quick: ["irm https://ohmyshark.vercel.app/install.ps1 | iex"],
+    quick: ["irm https://ohmyshark.vercel.app/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File .\\install.ps1"],
     verified: [
       "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.15/install.ps1 -OutFile install.ps1",
       "gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.15 --deny-self-hosted-runners",
-      "& ([scriptblock]::Create((Get-Content .\\install.ps1 -Raw)))",
+      "powershell -ExecutionPolicy Bypass -File .\\install.ps1",
     ],
   },
   mac: {
-    quick: ["curl -fsSL https://ohmyshark.vercel.app/install | sh"],
+    quick: ["curl -fsSL https://ohmyshark.vercel.app/install -o install.sh && sh install.sh"],
     verified: [
       "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.15/install.sh",
       "gh attestation verify install.sh --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.15 --deny-self-hosted-runners",
@@ -27,7 +27,6 @@ const COMMANDS: Record<OS, Record<Method, string[]>> = {
     ],
   },
 };
-
 const SOCIALS = [
   { icon: siX, key: "socialX", href: "https://x.com/soupraga" },
   { icon: siGithub, key: "socialGithub", href: "https://github.com/LucasEntweihen" },

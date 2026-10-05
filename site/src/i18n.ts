@@ -49,11 +49,11 @@ const en = {
   osWindows: "Windows (PowerShell)",
   osTabLabel: "Operating system",
   methodVerified: "Verified (Attestation)",
-  methodQuick: "Quick (1-Line)",
+  methodQuick: "Standard (Robust)",
   methodLabel: "Install method",
-  verifiedNote: "Default. Requires an authenticated GitHub CLI (gh auth login). Verifies the installer attestation before running it.",
+  verifiedNote: "Zero-trust default. Requires an authenticated GitHub CLI (gh auth login). Verifies the installer attestation against the build provenance before running it.",
   quickNote:
-    "Convenience only, no independent verification. Pipes the installer straight from ohmyshark.vercel.app.",
+    "Robust disk-write bootstrap. Bypasses in-memory execution constraints (AMSI) and local policies by securely downloading the installer to disk before executing.",
   installHeading: "Install",
   installLede:
     "Pick your platform below. Verified is the safe default; Quick trades verification for speed. Either way you are running in minutes — and your existing config is never touched.",
@@ -196,12 +196,12 @@ const pt: Strings = {
   osWindows: "Windows (PowerShell)",
   osTabLabel: "Sistema operacional",
   methodVerified: "Verificado (Attestation)",
-  methodQuick: "Rápido (1 Linha)",
+  methodQuick: "Padrão (Robusto)",
   methodLabel: "Método de instalação",
   verifiedNote:
-    "Padrão seguro. Exige GitHub CLI autenticado (gh auth login). Verifica a attestation de proveniência do instalador antes de executá-lo.",
+    "Padrão zero-trust. Exige GitHub CLI autenticado (gh auth login). Verifica a attestation de proveniência do instalador antes de executá-lo.",
   quickNote:
-    "Conveniência instantânea. Canaliza o instalador direto de ohmyshark.vercel.app para o shell.",
+    "Garantido contra bloqueios de memória (AMSI). Baixa o instalador para o disco e executa com bypass de política, garantindo a instalação em ambientes restritos.",
   installHeading: "Instalação",
   installLede:
     "Escolha sua plataforma abaixo. Verificado é o padrão seguro; Rápido troca verificação por velocidade. De qualquer forma, em minutos você está rodando — e sua config existente nunca é tocada.",
