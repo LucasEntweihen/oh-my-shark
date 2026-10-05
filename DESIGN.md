@@ -1,285 +1,274 @@
-    # YAML Front Matter - Design Tokens e Valores de Máquina
-    version: "1.0.0-rc"
-    name: "Cosmic Refraction & Galactic Cartography System"
-    description: "Design system estruturado para uma interface desktop imersiva, unindo mapeamento de dados astronômicos (estilo sci-fi/HUD) com estética ultra-moderna de refração de luz e glassmorphism texturizado."
+    # YAML Front Matter - Design Tokens de Alta Fidelidade
+    version: "1.0.0-omega"
+    name: "Project Prism: The Deep Web Spectrum"
+    description: "Design System arquitetônico focado em refração ótica avançada (Glassmorphism físico), topografia de dados 3D em wireframe e renderização espectral de luz visível."
     colors:
-      space_black: "#030305"
-      core_white: "#FFFFFF"
-      neon_orange: "#FF5500"
-      burnt_orange: "#CC4400"
-      stellar_blue: "#00E5FF"
-      glass_surface: "rgba(255, 255, 255, 0.05)"
-      glass_border: "rgba(255, 255, 255, 0.2)"
+      background:
+        deep_space: "#030305"
+        abyss_core: "#000000"
+        glass_surface: "rgba(255, 255, 255, 0.0)" # Opacidade zero, baseia-se em blur/noise
       spectrum:
-        violet: "#4B0082"
-        indigo: "#5C24FF"
-        blue: "#007BFF"
-        cyan: "#00E5FF"
-        green: "#00FF44"
-        yellow: "#FFEA00"
-        orange: "#FF8C00"
-        red: "#FF0040"
+        ray_ultraviolet: "#4A00E0"
+        ray_indigo: "#3B11A4"
+        ray_blue: "#0055FF"
+        ray_cyan: "#00E5FF"
+        ray_green: "#00FF66"
+        ray_yellow: "#FFEA00"
+        ray_orange: "#FF6600"
+        ray_red: "#FF0033"
+      typography:
+        primary_glow: "#FFFFFF"
+        secondary_muted: "rgba(255, 255, 255, 0.6)"
+        accent_data: "#FF1744"
+      ui_accents:
+        glass_border: "rgba(255, 255, 255, 0.15)"
+        light_leak: "rgba(255, 255, 255, 0.05)"
     typography:
-      display:
-        fontFamily: "'Helvetica Neue', 'Inter', sans-serif"
+      display_mono:
+        fontFamily: "'Space Mono', 'JetBrains Mono', monospace"
         fontWeight: "700"
-        letterSpacing: "-0.04em"
-      hud_data:
-        fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
+        letterSpacing: "-0.05em"
+      body_sans:
+        fontFamily: "'Inter', system-ui, sans-serif"
         fontWeight: "400"
-        letterSpacing: "0.05em"
+        letterSpacing: "0.01em"
+      data_labels:
+        fontFamily: "'Fira Code', monospace"
+        fontSize: "0.75rem"
         textTransform: "uppercase"
-      body:
-        fontFamily: "'Inter', sans-serif"
-        fontSize: "14px"
-        lineHeight: "1.6"
     spacing:
-      base: "4px"
-      scale: ["4px", "8px", "16px", "24px", "32px", "48px", "64px", "128px"]
-      grid_gap: "24px"
+      base_unit: "8px"
+      micro: "2px"
+      macro: "142px" # Baseado no maior blur de camada
+    physics_engine:
+      glass:
+        refraction: 70
+        depth: 55
+        dispersion: 27
+        frost: 60
+      noise:
+        size: 1
+        density: 100
+        opacity: 0.10
+        color: "#FFFFFF"
+      layer_blurs: [14, 30, 40, 52, 70, 142]
+      blend_mode: "plus-lighter"
     shapes:
-      radius_glass: "24px"
-      radius_hud: "2px"
-      radius_planet: "9999px"
-    effects:
-      blur_glass: "backdrop-filter: blur(40px) saturate(150%)"
-      noise_overlay: "url(#noise-filter)"
+      glass_card_radius: "24px"
+      prism_angle: "-45deg"
 
-# DESIGN.md: Cosmic Refraction & Galactic Cartography
+# DESIGN.md: PROJECT PRISM - DEEP WEB SPECTRUM
 
-Este documento é a Fonte Única de Verdade (SSOT) para a recriação programática e visual das interfaces anexadas. Ele instrui agentes de IA (Claude, Cursor, Stitch) e desenvolvedores a construir um sistema que funde mapas estelares tridimensionais, feixes de luz espectral e painéis translúcidos (*glassmorphism*), garantindo fidelidade sub-pixel.
+Este documento serve como a **Fonte Única de Verdade (Single Source of Truth - SSOT)** para o desenvolvimento desta aplicação. Ele foi elaborado com nível máximo de profundidade técnica e teórica para agentes de IA e engenheiros humanos. A interface une a densidade de dados da "Deep Web" (wireframes caóticos) com a pureza física da ótica (dispersão prismática e glassmorphism refrativo).
 
-## 1. As Heurísticas
+## 1. As Heurísticas de Usabilidade e Física
 
-A interface obedece a heurísticas estritas para balancear carga visual pesada com usabilidade técnica:
+* **Correspondência com o Mundo Real (Física Ótica):** A interface não usa "sombras" ou "fundos" arbitrários. O layout opera sob as leis da termodinâmica visual e dispersão de Rayleigh. Painéis de vidro devem *distorcer* e *desfocar* o fundo, não apenas escurecê-lo.
+* **Visibilidade do Status do Sistema (Dados):** Como visto no *mesh* da Deep Web, pontos de dados anômalos são marcados com vermelho (`#FF1744`) e interligados por vértices brancos e azuis. O usuário sempre sabe a magnitude dos dados (ex: "7500+ TB").
+* **Estética e Design Minimalista (Lei de Hick):** O caos da malha de dados e o brilho do espectro são contrastados por tipografia estritamente contida em painéis de vidro translúcido. A carga cognitiva é reduzida agrupando informações em *glass cards*.
+* **Controle de Iluminação:** O usuário deve sentir que a luz emana de trás da tela. O *blend-mode: plus-lighter* (ou `color-dodge`) é fundamental.
 
-* **Relação Sinal-Ruído (Estética vs. Dados):** O ruído visual (granulação) e os feixes de luz são elementos de fundo. A interface de dados (HUD) deve estar na camada mais alta do eixo Z, utilizando fontes monoespaçadas de alto contraste.
-* **Lei de Prägnanz (Simplicidade na Complexidade):** Apesar das órbitas elípticas complexas e da nuvem de pontos estelares, os dados vitais (nomes de planetas, setores galácticos) são alinhados a eixos invisíveis e seguem uma hierarquia de tamanho rígida.
-* **Feedback de Estado Sistêmico:** Interações com o prisma de vidro ou com setores galácticos devem gerar micro-alterações na refração da luz e na opacidade das órbitas, confirmando a ação do usuário sem poluir a tela.
+## 2. Estrutura Visual e Lógica dos Elementos da Tela (Z-Index Hierarchy)
 
-## 2. A Estrutura Visual e Lógica dos Elementos da Tela
+A arquitetura é dividida em eixos Z (profundidade) formados por 3 macros-camadas:
 
-A aplicação desktop é dividida lógicamente em camadas de profundidade (Depth Layers):
+1. **Z-0 (O Abismo - Background):** Fundo ultra-escuro (`#030305`). Hospeda o *Mesh Topográfico 3D* (Surface Web vs. Deep Web) de aspecto wireframe (linhas brancas com nós azuis/vermelhos).
+2. **Z-10 (O Espectro - Midground):** O feixe de luz densa que cruza a tela em diagonal (45 graus). Composto por 8 bandas de cor (do roxo profundo ao vermelho incandescente), utilizando *noise* e granulação.
+3. **Z-20 (A Lente - Foreground):** Interface do usuário (UI). Painéis de vidro (*Glassmorphism*) quadrados ou com bordas suavemente arredondadas (`24px`). Estes painéis interceptam a luz de Z-10, aplicando os cálculos físicos de refração, *frost* e *layer blurs* exponenciais.
 
-* **Layer 0 (Void):** Fundo `#030305` absoluto.
-* **Layer 1 (Cosmos/Spectrum):** Feixes de luz arco-íris diagonais (baseados na referência *Fast Design*) ou o núcleo galáctico branco/laranja brilhante.
-* **Layer 2 (Cartography):** Malha de elipses concêntricas, pontos de dados (planetas/estrelas) e text-labels (ex: *Trantor, Terminus, E-Eridani*).
-* **Layer 3 (Atmosphere):** Filtro de ruído progressivo (Noise) cobrindo os quadrantes vazios.
-* **Layer 4 (UI/Glass):** Componentes de interação de usuário flutuantes, usando cartões de *glassmorphism* altamente refratários que distorcem o que está nas Layers 1 a 3.
+## 3. Disposição dos Elementos Gráficos, Proporções e Tamanhos
 
-## 3. Disposição dos Elementos Gráficos e Proporções
+* **Grid e Espaçamento:** Baseado em módulo de 8px. No entanto, o layout é essencialmente **assimétrico e espacial**. O espectro de luz corta o grid, quebrando a rigidez.
+* **Proporções do Vidro:** Os cartões de vidro devem seguir a Proporção Áurea (1.618) sempre que possível, ou formatos perfeitamente quadráticos (1:1) para se assemelharem a prismas físicos.
+* **Tipografia:** `Space Mono` ou `JetBrains Mono` dominam os numerais e *labels* de dados ("19TB", "7500+ TB"). `Inter` é reservada para descrições longas ("The visible light spectrum is the segment..."). O *tracking* (espaçamento de letras) em monospaces deve ser negativo (`-0.05em`) para criar blocos compactos de dados.
 
-* **Layout Imersivo (Edge-to-Edge):** O design não possui "margins" de página clássicas. Os mapas galácticos e os feixes de luz vazam pelas bordas da viewport (100vw x 100vh).
-* **Centro de Massa:** O núcleo das galáxias ou a origem do feixe de luz atua como o ponto focal âncora, posicionado geralmente no centro-físico (50% 50%) ou em composição de regra dos terços (ex: feixe nascendo em 20% X, 80% Y).
-* **Painel Glass:** O componente UI principal (cartão de leitura de espectro/wallet) possui proporção geométrica próxima a 1:1 (quadrado) com raios de borda acentuados (`24px`).
+## 4. As Cores e Comportamento Luminoso
 
-## 4. As Cores
+Esqueça preenchimentos sólidos. Cores aqui são propriedades de emissão de luz.
 
-* **Espectro Visível Contínuo:** A transição do arco-íris não usa cores web seguras, mas misturas vibrantes com *blend-mode: plus-lighter* ou *screen*. Ordem estrita: Rosa/Vermelho -> Laranja -> Amarelo -> Verde neon -> Azul -> Anil -> Roxo profundo.
-* **Fogo Estelar (Galáxias):** O núcleo é sempre `#FFFFFF` cercado por gradientes radiais de amarelos e laranjas neons (`#FF5500`), com decaimento exponencial de opacidade para o preto.
+* O Espectro é progressivo: `#4A00E0` -> `#3B11A4` -> `#0055FF` -> `#00E5FF` -> `#00FF66` -> `#FFEA00` -> `#FF6600` -> `#FF0033`.
+* As bordas dos painéis de vidro recebem um gradiente linear finíssimo (`1px`) refletindo a luz adjacente (ex: borda superior esquerda branca pura com 40% de opacidade, borda inferior direita preta com 20% de opacidade para simular chanfro 3D).
 
-## 5. A Tipografia e Tamanhos
+## 5. Níveis de Acessibilidade (Maximização sem Comprometimento)
 
-* **Titulação e Textos Explicativos:** `Helvetica Neue` ou `Inter`, pesos mistos (Light e Bold). O texto explicativo sobre o espectro eletromagnético usa 14px, alinhado à direita, com tracking levemente solto.
-* **Cartografia (Nomes de Planetas):** `JetBrains Mono` a 10px ou 12px, cor `#00E5FF` (cyan) ou `#FFFFFF`, com linhas guias de 1px conectando o texto ao nó estelar.
-* **UI do Painel:** Utiliza pesos ultrafinos para valores de dados (ex: `$34,000.72`) e pesos densos para numeração de quadrantes (ex: `F1`).
+O *Glassmorphism* é historicamente inimigo do contraste (WCAG). Para aprimorar isso ao máximo:
 
-## 6. Componentes
+1. **Dynamic Text Inversion:** O texto dentro do vidro deve usar `mix-blend-mode: difference` se o espectro de luz passar exatamente por trás dele com alta luminância (ex: zona amarela/verde).
+2. **Backdrop Saturation:** O painel de vidro deve forçar um `backdrop-filter: blur(142px) saturate(150%) brightness(0.8)`. Isso escurece e funde a luz por trás, garantindo que o texto branco primário mantenha uma proporção de 4.5:1.
+3. **Borders for Bounds:** Usuários com deficiência visual dependem de limites claros. A borda de `1px rgba(255,255,255,0.15)` e um sutil `box-shadow` inset são obrigatórios e não-negociáveis.
 
-* **Glass Card (O Prisma):** O componente principal. Possui desfoque de fundo (backdrop-filter) complexo: a luz branca entra e se dispersa. Requer múltiplas sombras internas brancas (0.1 opacidade) para simular o volume do vidro.
-* **Painel de Engenharia (Settings UI):** Como visto na referência, janelas flutuantes com fundo cinza escuro sólido (`#111`), controles deslizantes (sliders) azuis e inputs de texto para configurar ruído, refração e dispersão.
-* **Nós Galácticos (Stellar Nodes):** Círculos perfeitos (2px a 8px) com brilho externo (box-shadow ou `feDropShadow`), codificados por cor dependendo do tipo de astro.
+## 6. Dados de Responsividade
 
-## 7. Os Padrões e a Falta de Padrões (Antipatterns/Invariantes)
+* **Mobile (< 768px):** O espectro de luz muda de um ângulo de 45 graus para 90 graus (vertical), descendo do topo como um scanner. O mesh 3D da Deep Web é transladado para o fundo e reduzido a 40% da opacidade.
+* **Tablet (768px - 1024px):** O prisma centra-se. *Glass cards* empilham-se em coluna única larga.
+* **Desktop (> 1024px):** Layout livre. Espectro em diagonal cortante. Cartões de vidro flutuam em coordenadas fixas absolutas interativas.
+* **Ultrawide (> 2000px):** O mesh 3D se expande infinitamente em fractais utilizando WebGL/Canvas (se aplicável), enquanto a UI permanece contida em um max-width de 1440px.
 
-* **DO (Padrões):** Use `mix-blend-mode: screen` ou `color-dodge` para todas as interseções de luzes e camadas estelares. Use ruído (noise) para quebrar o "banding" (marcas de transição) dos gradientes.
-* **DON'T (Falta de Padrões Rejeitada):**
-  * **NÃO USE** fundos brancos opacos para a UI de dados astronômicos.
-  * **NÃO USE** drop-shadows pretos genéricos. No espaço, a profundidade é dada por opacidade, tamanho, sobreposição e intensidade de luz, não por sombras projetadas no vácuo.
-  * **NÃO REDUZA** o mapa galáctico a um formato mobile de coluna única. Este é um design imersivo.
+## 7. Animações, Efeitos Visuais e Scroll
 
-## 8. Níveis de Acessibilidade (e como aprimorar)
+* **Efeito Parallax Base:** O fundo 3D (Deep Web) move-se a 10% da velocidade do scroll (`translateY`). O espectro de luz move-se a 30%. O vidro move-se a 100%. Isso cria uma profundidade de campo (Depth of Field) extrema.
+* **Turbulence Animation:** O *noise* (ruído) sobre a luz e o vidro não é estático. Requer uma animação CSS no SVG `<feTurbulence>` atualizando o `baseFrequency` sutilmente a cada segundo (efeito de poeira estelar/estática de radiação cósmica).
+* **Hover no Glass:** Ao passar o mouse, o *refraction* e *layer blur* aumentam. O painel aproxima-se do usuário (`transform: scale(1.02) translateY(-5px)`). O raio de luz subjacente reage ao cursor (rastreamento de ponteiro).
 
-* Melhorar o contraste extremo entre as finas linhas de órbita (opacidade 10%) e o fundo escuro sem destruir o design requer um **"High Contrast Toggle"**, que aumentará a opacidade da base para 60% e tornará as fontes 1.2em maiores, preservando as heurísticas visuais originais para usuários comuns.
-* Os SVG galácticos complexos DEVEM conter tags `<title>` e `<desc>` e usar `role="img"`. Para os painéis UI e configurações, a semântica ARIA correta é inegociável.
+## 8. Padrões, Componentes e Falta de Padrões (Antipatterns)
 
-## 9. Dados de Responsividade
+* **Componente Principal (`<GlassPrismCard>`):**
+  * Requer múltiplas sombras compostas para simular volume 3D: `box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 1px 2px rgba(255, 255, 255, 0.15)`.
+  * Filtros complexos baseados na imagem 3 de referência: 5 camadas de *Layer Blur* (Uniform e Progressive) com intensidades (40, 70, 52, 30, 142).
+* **Antipattern (Falta de Padrões - NÃO FAZER):**
+  * **Flat Design é Proibido:** Nenhuma cor sólida opaca sobreposta.
+  * **Drop Shadows opacas e curtas:** Proibidas. Sombras devem ser difusas, macias e gigantes.
+  * **Arredondamentos irregulares:** Não misture cantos pontiagudos com cantos arredondados na mesma *glass card*.
 
-* **Foco Exclusivo Desktop/Ultrawide:** Breakpoint mínimo operacional: `1280px`. Abaixo disso, o sistema entra em modo *Terminal Fallback* (apenas dados em texto, suprimindo o mapa 3D).
-* Em resoluções Ultrawide (21:9), o mapa galáctico sofre expansão radial natural. O layout usa coordenadas absolutas baseadas em porcentagem (`%` ou `vw/vh`) em vez de pixels fixos, ancoradas a partir do centro (50% 50%).
+## 9. Tecnologias a serem Utilizadas
 
-## 10. Animações, Efeitos Visuais e Scroll
+* **Markup/Styling:** HTML5 + CSS3 Avançado (ou TailwindCSS v4 com configurações extensivas de `@theme` e plugins de filtro de backdrop).
+* **Visualização 3D/Canvas:** Three.js ou React Three Fiber (R3F) para a renderização exata do *mesh* topográfico da Deep Web, caso a performance em SVG torne-se proibitiva devido a milhares de nós.
+* **Vetorização:** SVG puro e complexo em linha (`<svg>`) para a refração do espectro e geração procedural de ruído.
 
-* **Eventos de Scroll:** O scroll tradicional da página é abolido. A rolagem atua como eixo Z (Zoom In/Out) na galáxia, manipulando a propriedade `transform: scale()` e transladando parâmetros de `perspective()`.
-* **Animações:** Rotação elíptica perpétua extremamente lenta para as órbitas (CSS `@keyframes rotate { from { transform: rotateZ(0deg) } to { transform: rotateZ(360deg) } }`, duração de 300s).
-* **Progressive Layer Blur:** O desfoque ao redor da luz ou do núcleo não é linear. Exige o empilhamento de múltiplos filtros de desfoque (como demonstrado na referência de UI) com raios crescentes (ex: 14, 30, 52, 70, 142) para criar um cauda de luz orgânica.
+## 10. Criação e Replicação SVG SIMULTÂNEA (Crucial e Mandatório)
 
-## 11. Tecnologias, Ícones e Ferramentas
+Para replicar o Espectro de Luz Perfeito (com granulação e degradê diagonal contínuo) e a lente prismática que curva a luz, você **DEVE** utilizar o código SVG abaixo. Ele combina a Forma 1 (Replicação detalhada) e a Forma 2 (Múltiplos Gradient/Radial e Volume 3D).
 
-* **Tecnologias:** HTML5 puro, CSS3 (variáveis, `backdrop-filter`, `mix-blend-mode`, `@property` para gradientes animados), SVGs avançados criados via código (DOM). Nenhuma biblioteca pesada de WebGL (Three.js) será usada se o SVG der conta, otimizando SEO e DOM reading.
-* **Ícones:** Ícones geométricos estritos baseados em SVG inline. Ícones de UI de software de design (layers, blend modes, eye icon).
-* **Criação de Ferramentas:** Para replicar o painel de propriedades, use inputs HTML nativos `<input type="range">` estilizados radicalmente via CSS `::-webkit-slider-thumb`.
-
-## 12. Telas e Estrutura de Pastas e Arquivos
-
-* **Quantidade de Telas:** Apenas 1 tela imersiva (Single Page Application dashboard), com modais flutuantes.
-* **Estrutura:**
-  * `/index.html` (Estrutura DOM semântica e SVGs inline)
-  * `/DESIGN.md` (Este arquivo)
-  * *Nota estrutural: A aplicação usará Shadow DOM para encapsular o CSS dos painéis de UI, evitando vazamento de estilos.*
-
-* * *
-
-## 13. ENGENHARIA REVERSA: REPLICAÇÃO DE ELEMENTOS VISUAIS E CURVAS (SVG AVANÇADO)
-
-Conforme a exigência absoluta de recriar as curvas, formatos e refrações aos mínimos detalhes, utilizaremos a **Forma Simultânea** para tratar visuais complexos: representação vetorial em SVG nativo de profundidade 3D.
-
-### A. Replicando o "Cosmic Glassmorphism & Light Spectrum"
-
-O feixe de luz arco-íris, o ruído e o prisma de vidro refratário (`Fast Design.jpg` e `download (28).jpg`) devem ser gerados com o seguinte bloco SVG rigoroso, simulando profundidade, desfoque progressivo e volume 3D:
-
-    <!-- Injetar diretamente no HTML -->
-    <svg width="100vw" height="100vh" viewBox="0 0 1920 1080" style="background: #0d0d12;" xmlns="http://www.w3.org/2000/svg">
+    <!-- SVG COMPLEXO: ESPECTRO DE LUZ E REFRAÇÃO (PROJECT PRISM) -->
+    <svg width="100%" height="100%" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" style="background: #030305;">
+    
       <defs>
-        <!-- Filtro de Ruído Profundo e Progressivo -->
-        <filter id="hyper-noise" x="-20%" y="-20%" width="140%" height="140%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="4" stitchTiles="stitch" result="noise" />
-          <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.15 0" in="noise" result="coloredNoise" />
-          <feComposite operator="in" in="coloredNoise" in2="SourceGraphic" result="compositeNoise"/>
-          <feBlend mode="screen" in="compositeNoise" in2="SourceGraphic" />
+        <!-- Filtro de Ruído (Noise/Grain) idêntico à referência "Fast Design" -->
+        <filter id="film-grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
+          <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.10 0" />
+          <feComposite operator="in" in2="SourceGraphic" result="monoNoise"/>
+          <feBlend mode="screen" in="monoNoise" in2="SourceGraphic" />
         </filter>
     
-        <!-- Gradiente do Feixe de Luz Principal (Branco intenso) -->
-        <linearGradient id="main-beam" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9" />
-          <stop offset="30%" stop-color="#FFFFFF" stop-opacity="1" />
-          <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.0" />
+        <!-- Gradiente Angular Múltiplo para o Espectro de Luz Visível -->
+        <linearGradient id="spectrum-beam" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#4A00E0" stop-opacity="0"/>
+          <stop offset="10%" stop-color="#3B11A4"/>
+          <stop offset="25%" stop-color="#0055FF"/>
+          <stop offset="40%" stop-color="#00E5FF"/>
+          <stop offset="55%" stop-color="#00FF66"/>
+          <stop offset="70%" stop-color="#FFEA00"/>
+          <stop offset="85%" stop-color="#FF6600"/>
+          <stop offset="100%" stop-color="#FF0033"/>
         </linearGradient>
     
-        <!-- Desfoque Progressivo (Simulando dispersão física) -->
-        <filter id="progressive-blur" x="-50%" y="-50%" width="200%" height="200%">
-           <feGaussianBlur stdDeviation="40" result="blur1" />
-           <feGaussianBlur stdDeviation="70" result="blur2" />
-           <feGaussianBlur stdDeviation="142" result="blur3" />
-           <feMerge>
-             <feMergeNode in="blur3" />
-             <feMergeNode in="blur2" />
-             <feMergeNode in="blur1" />
-             <feMergeNode in="SourceGraphic" />
-           </feMerge>
-        </filter>
-      </defs>
-    
-      <!-- Fundo com Ruído -->
-      <rect width="100%" height="100%" fill="#0d0d12" filter="url(#hyper-noise)" />
-    
-      <!-- Feixe de Luz Branca de Entrada (Incidência) -->
-      <polygon points="0,1080 300,1080 800,500 500,500" fill="url(#main-beam)" filter="url(#progressive-blur)" style="mix-blend-mode: plus-lighter;" />
-    
-      <!-- ESPECTRO REFRATADO (Rays) - Recriação Exata das Curvas Retas de Dispersão -->
-      <g transform="translate(700, 450)" style="mix-blend-mode: plus-lighter;" filter="url(#progressive-blur)">
-        <!-- As cores do arco-íris se dispersando angularmente -->
-        <polygon points="0,0 1000,-400 1200,-350 0,50" fill="#FF0040" />
-        <polygon points="0,50 1200,-350 1200,-250 0,100" fill="#FF8C00" />
-        <polygon points="0,100 1200,-250 1200,-150 0,150" fill="#FFEA00" />
-        <polygon points="0,150 1200,-150 1200,-50 0,200" fill="#00FF44" />
-        <polygon points="0,200 1200,-50 1200,50 0,250" fill="#00E5FF" />
-        <polygon points="0,250 1200,50 1200,150 0,300" fill="#007BFF" />
-        <polygon points="0,300 1200,150 1200,250 0,350" fill="#4B0082" />
-      </g>
-    </svg>
-
-*Sobreposição HTML/CSS (O Cartão de Vidro):* O cartão central que causa a refração será posicionado sobre o SVG via CSS:
-
-    .glass-card {
-      position: absolute;
-      top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 400px; height: 400px;
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(55px) saturate(120%);
-      border-radius: 32px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05),
-                  0 30px 60px rgba(0, 0, 0, 0.5);
-      /* A textura de ruído sobre o vidro é aplicada aqui via pseudo-elemento ::before */
-    }
-
-### B. Replicando os "Mapas Galácticos Estelares e Solares"
-
-Para as imagens `download (32).jpg` e `download (31).jpg`, a geometria elíptica tridimensional é mapeada achatando o eixo Y e rotacionando as órbitas, iluminadas por múltiplos `radialGradient` que emulam o fogo cósmico.
-
-    <svg width="100%" height="100%" viewBox="-1000 -500 2000 1000" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <!-- Fogo do Núcleo Galáctico 3D (Branco para Laranja para Transparente) -->
-        <radialGradient id="galactic-core" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1" />
-          <stop offset="15%" stop-color="#FFF5CC" stop-opacity="0.9" />
-          <stop offset="40%" stop-color="#FF5500" stop-opacity="0.6" />
-          <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+        <!-- Simulação 3D de Volume de Luz (Radial Brilliance) -->
+        <radialGradient id="light-bloom" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.4" />
+          <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
         </radialGradient>
     
-        <!-- Gradiente para órbitas (Fade out nas pontas) -->
-        <linearGradient id="orbit-fade" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#FFF" stop-opacity="0.0" />
-          <stop offset="50%" stop-color="#FFF" stop-opacity="0.4" />
-          <stop offset="100%" stop-color="#FFF" stop-opacity="0.0" />
+        <!-- Filtro de Glassmorphism Extremo (Refraction, Dispersion, Frost) -->
+        <filter id="glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
+          <!-- Frost/Blur pesado de 142px equivalente (reduzido proporcionalmente para a viewBox SVG) -->
+          <feGaussianBlur stdDeviation="30" in="SourceGraphic" result="blurLayer1" />
+          <feGaussianBlur stdDeviation="15" in="SourceGraphic" result="blurLayer2" />
+          <!-- Mistura para dispersão -->
+          <feBlend mode="plus-lighter" in="blurLayer1" in2="blurLayer2" result="glassBase"/>
+          <!-- Adição de luz ambiente especular no vidro -->
+          <feComponentTransfer in="glassBase" result="brightGlass">
+            <feFuncA type="linear" slope="0.8"/>
+          </feComponentTransfer>
+        </filter>
+    
+        <!-- Gradiente da Borda do Vidro (Chanfro e reflexão de luz) -->
+        <linearGradient id="glass-border" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.5"/>
+          <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.05"/>
+          <stop offset="100%" stop-color="#000000" stop-opacity="0.3"/>
         </linearGradient>
       </defs>
     
-      <!-- Universo de fundo -->
-      <rect x="-1000" y="-500" width="2000" height="1000" fill="#010103" />
+      <!-- 1. CAMADA DE FUNDO (Background Void) -->
+      <rect width="100%" height="100%" fill="#030305" />
     
-      <!-- Camada de Órbitas Elípticas (Mapeamento 3D) -->
-      <g transform="rotate(-5) scale(1, 0.35)">
-        <!-- O scale(1, 0.35) achata os círculos perfeitos, transformando-os em elipses 3D exatas -->
-        <circle cx="0" cy="0" r="300" fill="none" stroke="url(#orbit-fade)" stroke-width="2" />
-        <circle cx="0" cy="0" r="500" fill="none" stroke="url(#orbit-fade)" stroke-width="1.5" />
-        <circle cx="0" cy="0" r="750" fill="none" stroke="url(#orbit-fade)" stroke-width="1" />
-        <circle cx="0" cy="0" r="950" fill="none" stroke="url(#orbit-fade)" stroke-width="0.5" />
+      <!-- 2. CAMADA DO ESPECTRO DE LUZ (Simultânea: Fiel + Múltiplos Gradientes e Ruído) -->
+      <!-- A luz incide do canto inferior esquerdo para o superior direito -->
+      <g filter="url(#film-grain)">
+        <!-- Feixe Central Expandido -->
+        <polygon points="200,1080 600,1080 1920,400 1920,0" fill="url(#spectrum-beam)" style="mix-blend-mode: screen;" />
     
-        <!-- Linhas Divisórias de Setores Galácticos (Reference: Imagem 32) -->
-        <line x1="0" y1="0" x2="900" y2="-300" stroke="#FFF" stroke-width="0.5" stroke-opacity="0.3" stroke-dasharray="5,5" />
-        <line x1="0" y1="0" x2="-800" y2="-400" stroke="#FFF" stroke-width="0.5" stroke-opacity="0.3" stroke-dasharray="5,5" />
-        <line x1="0" y1="0" x2="-200" y2="950" stroke="#FFF" stroke-width="0.5" stroke-opacity="0.3" stroke-dasharray="5,5" />
+        <!-- Linhas de fatiamento do espectro (Simulando dispersão do prisma - Imagem 2 e 3) -->
+        <!-- Estas faixas dão o efeito de "raios" separados e diagonais -->
+        <polygon points="100,1080 150,1080 1920,100 1920,-50" fill="#4A00E0" opacity="0.6"/>
+        <polygon points="150,1080 250,1080 1920,200 1920,100" fill="#0055FF" opacity="0.7"/>
+        <polygon points="250,1080 350,1080 1920,300 1920,200" fill="#00E5FF" opacity="0.8"/>
+        <polygon points="350,1080 450,1080 1920,400 1920,300" fill="#00FF66" opacity="0.9"/>
+        <polygon points="450,1080 550,1080 1920,500 1920,400" fill="#FFEA00" opacity="0.95"/>
+        <polygon points="550,1080 600,1080 1920,600 1920,500" fill="#FF0033" opacity="0.8"/>
     
-        <!-- Partículas de Estrelas (Representação amostral) -->
-        <circle cx="350" cy="150" r="6" fill="#00E5FF" filter="drop-shadow(0 0 10px #00E5FF)" />
-        <circle cx="-450" cy="-200" r="4" fill="#FFEA00" filter="drop-shadow(0 0 8px #FFEA00)" />
-        <circle cx="600" cy="-300" r="5" fill="#FFFFFF" />
+        <!-- Bloom Radial (Brilho intenso no ponto de refração) -->
+        <circle cx="960" cy="540" r="400" fill="url(#light-bloom)" style="mix-blend-mode: screen;" />
       </g>
     
-      <!-- Núcleo Galáctico (Renderizado pós-órbitas para ficar no topo) -->
-      <circle cx="0" cy="0" r="250" fill="url(#galactic-core)" style="mix-blend-mode: screen;" />
+      <!-- 3. CAMADA DO PRISMA/VIDRO (Foreground) -->
+      <!-- O cartão central com refração (Imagem 3) -->
+      <g transform="translate(710, 340)">
+        <!-- Sombra de Volume 3D subjacente -->
+        <rect x="0" y="20" width="500" height="400" rx="32" fill="#000" opacity="0.4" filter="blur(25px)" />
     
-      <!-- Labels de Dados (Achatamento revertido) -->
-      <text x="350" y="50" fill="#00E5FF" font-family="JetBrains Mono" font-size="12" letter-spacing="1">TERMINUS</text>
-      <text x="-450" y="-70" fill="#FFEA00" font-family="JetBrains Mono" font-size="12" letter-spacing="1">TRANTOR</text>
+        <!-- O Vidro em si (Utilizando backdrop no CSS na prática, mas simulado aqui no SVG com overlay e borda) -->
+        <!-- Na implementação real de HTML, usa-se: backdrop-filter: blur(142px) -->
+        <rect x="0" y="0" width="500" height="400" rx="32" fill="rgba(255, 255, 255, 0.02)" stroke="url(#glass-border)" stroke-width="2" />
+    
+        <!-- Reflexão de luz (Highlight 3D) no canto do vidro -->
+        <path d="M 0 60 A 32 32 0 0 1 32 0 L 150 0 C 80 0 0 80 0 150 Z" fill="#FFFFFF" opacity="0.1" />
+    
+        <!-- Textos da Interface simulados (Imagem 3 e dados da Imagem 1) -->
+        <text x="40" y="60" fill="#FFFFFF" font-family="Space Mono, monospace" font-size="14" font-weight="700" letter-spacing="2">2026 EDITION</text>
+        <text x="320" y="60" fill="#FFFFFF" opacity="0.6" font-family="Inter, sans-serif" font-size="14">Reflect wealth</text>
+    
+        <text x="40" y="300" fill="#FFFFFF" font-family="Space Mono, monospace" font-size="12" opacity="0.5">Bitcoin tens.</text>
+        <text x="40" y="325" fill="#FFFFFF" font-family="Space Mono, monospace" font-size="24" font-weight="700">$34,003.72</text>
+    
+        <!-- Macro Typography Background (F1) -->
+        <text x="350" y="360" fill="#FFFFFF" opacity="0.2" font-family="Inter, sans-serif" font-size="120" font-weight="100">F1</text>
+      </g>
     </svg>
 
-* * *
+## 11. Imagens Realistas e Fallbacks (A Malha Topográfica)
 
-## 14. Tratamento de Imagens Realistas e Fallbacks (Procedimentos Mandatórios)
+Caso a imagem topográfica e distorcida ("SURFACE WEB / THE DEEP WEB" - Imagem 1) não possa ser replicada fluidamente por milhares de nós SVG ou gere sobrecarga de processamento no navegador:
 
-Caso o agente ou desenvolvedor identifique que os SVGs intrincados geram sobrecarga de renderização no DOM do cliente (Performance Bottleneck) ou se texturas cósmicas reais (fotos do telescópio James Webb ou fractais fotorealistas) precisem substituir o `<filter>` de ruído, o uso de imagens rasterizadas (.jpg/.webp) é permitido **EXCLUSIVAMENTE** seguindo este roteiro:
-
-1. **Onde, Como e Porque:** A imagem deve ser utilizada **apenas como camada base (background-image)** no CSS, na "Layer 0" da arquitetura visual. O objetivo é economizar memória de GPU que seria gasta calculando ruídos de SVG complexos `feTurbulence` em telas 4K. A imagem receberá por cima o HTML/CSS de órbitas vetoriais SVG e os cartões de Glassmorphism.
-2. **Onde procurar a imagem FORA DO DOCUMENTO:** O desenvolvedor deve acessar repositórios de imagens astrofotográficas de alta resolução, especificamente o portal **NASA Image and Video Library** ou acervos sem direitos autorais no **Unsplash** (categoria: texturas 3D render e astrofotografia).
-3. **O exato texto de pesquisa:**
-  * Para o fundo galáctico: `"Milky Way galaxy core high resolution dark space telescope"` ou `"Abstract 3D neon solar system infographic map"`.
-  * Para a refração de luz: `"Optical prism light refraction rainbow spectrum noise texture"`.
-4. **Forma de utilização especificada no modelo (Implementação):**A imagem rasterizada não deve ser inserida via tag `<img>`. Ela será acoplada como camada pseudo-elemento em CSS, coberta por um `overlay` escuro para não ofuscar os dados de texto vetoriais:
+1. **Onde e como deve ser utilizada:** A malha deve ser usada estritamente como `background-image` num container com `z-index: 0`, possuindo `mix-blend-mode: screen` ou `color-dodge`, opacidade fixada em `0.35`, para garantir que não sufoque a legibilidade da interface.
+2. **Onde procurar FORA DO DOCUMENTO:** Você deve acessar bancos de assets como Unsplash, Adobe Stock ou ferramentas generativas (Midjourney/DALL-E).
+3. **Texto exato de pesquisa:** `"Abstract 3D digital topographic terrain mesh, glowing neon white and blue wireframe on black background, particle network deep web concept, high resolution, sci-fi data visualization."`
+4. **Especificação de uso no código:**
   
-      .galaxy-viewport::before {
-        content: '';
+      .deep-web-mesh-bg {
         position: absolute;
-        inset: 0;
-        background-image: url('assets/hi-res-galaxy-core.webp');
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background-image: url('/assets/images/3d-mesh-wireframe.jpg');
         background-size: cover;
         background-position: center;
-        opacity: 0.85; /* Nunca opacidade 1, para manter o tom 'dark theme' */
         mix-blend-mode: screen;
-        z-index: 0;
+        opacity: 0.35;
+        filter: contrast(120%) brightness(0.8) sepia(20%) hue-rotate(180deg); /* Ajuste para o tom azul/frio */
+        z-index: -1;
       }
   
 
-Este DESIGN.md garante que nenhuma curva de elipse, dispersão espectral de cor ou profundidade simulada seja perdida entre a idealização do layout e o código entregue por humanos ou agentes de codificação em IA.
+## 12. Ícones e Tipologia Visual
+
+Ícones não devem ser sólidos nem "fofos" (rounded flat icons).
+
+* Eles devem ser de linha finíssima (Stroke: `1px` ou `0.5px`).
+* Devem possuir um leve brilho nativo (Drop shadow de cor idêntica ao traço com blur de `4px` e spread de `0px`).
+* As junções devem ser exatas, pontiagudas, refletindo precisão militar e matemática (Cybernetic).
+
+## 13. Quantidade de Telas e Estrutura de Pastas
+
+Para suportar este volume de complexidade, o projeto assume uma arquitetura Single Page Application (SPA) multi-dashboard.
+
+* **Quantidade de Telas Core:** 3 (Dashboard Principal/Visão Macro, Detalhamento de Nó/Visão Micro, Configurações de Espectro/Engine).
+* **Estrutura de Pastas Requerida:**
+  * `/src/core/physics/` -> Hooks e scripts (WebGL/Three.js) para gerenciar refrações em tempo real e o mouse tracking da luz.
+  * `/src/ui/components/glass/` -> Elementos base da UI. Arquivos independentes para o painel de vidro, bordas prismáticas e textos com blend mode.
+  * `/src/ui/styles/` -> Arquivos onde o YAML deste documento é transpilado (Tokens via Tailwind `@theme` ou CSS Custom Properties avançadas).
+  * `/public/assets/shaders/` -> Se a malha 3D for renderizada proceduralmente, os fragment shaders e vertex shaders residem aqui.
+
+## Conclusão de Rigor
+
+Este sistema não é "mais um site escuro com vidro". É uma simulação óptica. A renderização correta exige precisão nanométrica no controle de opacidade, ruído fractal e sobreposição de camadas de desfoque. Agentes de IA: Adiram rigorosamente aos parâmetros estipulados nos blocos de tokens e na lógica de SVG. O desvio das regras de luz resultará num *antipattern* de poluição visual.

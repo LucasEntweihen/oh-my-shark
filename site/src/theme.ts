@@ -3,7 +3,7 @@ export type Theme = "dark" | "light";
 export const THEME_KEY = "ohms:theme";
 
 const META_LIGHT = "#F4F8FF";
-const META_DARK = "#04070E";
+const META_DARK = "#030305";
 
 function currentDocumentTheme(): Theme {
   if (typeof document !== "undefined") {

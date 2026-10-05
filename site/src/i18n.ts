@@ -16,11 +16,12 @@ export function initLocale(): Locale {
   const first = (langs[0] ?? "").toLowerCase();
   return first.startsWith("pt") ? "pt" : "en";
 }
+
 const en = {
   skipLink: "Skip to content",
   wordmark: "OHMYSHARK",
   navLabel: "Sections",
-  versionBadge: "v0.0.3",
+  versionBadge: "v0.0.15",
   navFeatures: "Features",
   navPreset: "Preset",
   navLineage: "Lineage",
@@ -31,6 +32,7 @@ const en = {
   themeDark: "Dark",
   themeLight: "Light",
 
+  heroSpectrumBadge: "PROJECT PRISM // DEEP WEB SPECTRUM",
   heroEyebrow: "TERMINAL CODING AGENT",
   heroTitle: "Your terminal agent. Tuned for the herd.",
   heroLede:
@@ -38,11 +40,16 @@ const en = {
   heroInstallCta: "Install",
   heroChangesCta: "Why OhMyShark",
 
-  osMacos: "macOS",
-  osWindows: "Windows",
+  quickInstallHeader: "DEFINITIVE INSTALL COMMAND",
+  quickInstallSub: "Execute directly in your terminal to bootstrap OhMyShark immediately:",
+  quickInstallBadge: "LATEST: omsk-v0.0.15",
+  quickInstallMeta: "Zero configuration • SHA-256 verified • Isolated in ~/.ohms",
+
+  osMacos: "macOS / Linux",
+  osWindows: "Windows (PowerShell)",
   osTabLabel: "Operating system",
-  methodVerified: "Verified",
-  methodQuick: "Quick",
+  methodVerified: "Verified (Attestation)",
+  methodQuick: "Quick (1-Line)",
   methodLabel: "Install method",
   verifiedNote: "Default. Requires an authenticated GitHub CLI (gh auth login). Verifies the installer attestation before running it.",
   quickNote:
@@ -57,6 +64,11 @@ const en = {
   copyFailedMessage: "Copy failed — select the text manually",
   commandRegionLabel: "Install commands",
   stepLabel: "Step",
+
+  telemetryHeader: "OPTICAL REFRACTION TELEMETRY",
+  telemetryGrid: "GRID: 3D WIREFRAME MESH (Z-0)",
+  telemetrySpectrum: "DISPERSION: 8-BAND CONTINUOUS SPECTRUM (Z-10)",
+  telemetryStatus: "ANOMALOUS DATA NODES: 7500+ TB DETECTED",
 
   providersEyebrow: "MODEL PROVIDERS",
   providersNote:
@@ -143,7 +155,7 @@ const en = {
 
   footerTagline: "made by LucasEntweihen",
   footerLicenses: "Third-party notices",
-  footerRelease: "Release ohms-v0.0.3",
+  footerRelease: "Release omsk-v0.0.15",
   socialX: "X",
   socialGithub: "GitHub",
   socialLinkedin: "LinkedIn",
@@ -156,7 +168,7 @@ const pt: Strings = {
   skipLink: "Pular para o conteúdo",
   wordmark: "OHMYSHARK",
   navLabel: "Seções",
-  versionBadge: "v0.0.3",
+  versionBadge: "v0.0.15",
   navFeatures: "Recursos",
   navPreset: "Configuração",
   navLineage: "Origem",
@@ -167,6 +179,7 @@ const pt: Strings = {
   themeDark: "Escuro",
   themeLight: "Claro",
 
+  heroSpectrumBadge: "PROJECT PRISM // DEEP WEB SPECTRUM",
   heroEyebrow: "AGENTE DE CODIFICAÇÃO PARA TERMINAL",
   heroTitle: "Seu agente de terminal. Afinado para o rebanho.",
   heroLede:
@@ -174,16 +187,21 @@ const pt: Strings = {
   heroInstallCta: "Instalar",
   heroChangesCta: "Por que OhMyShark",
 
-  osMacos: "macOS",
-  osWindows: "Windows",
+  quickInstallHeader: "COMANDO DEFINITIVO DE DOWNLOAD",
+  quickInstallSub: "Execute diretamente no seu terminal para baixar e iniciar o OhMyShark agora:",
+  quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.15",
+  quickInstallMeta: "Zero configuração • Validação SHA-256 • Isolado em ~/.ohms",
+
+  osMacos: "macOS / Linux",
+  osWindows: "Windows (PowerShell)",
   osTabLabel: "Sistema operacional",
-  methodVerified: "Verificado",
-  methodQuick: "Rápido",
+  methodVerified: "Verificado (Attestation)",
+  methodQuick: "Rápido (1 Linha)",
   methodLabel: "Método de instalação",
   verifiedNote:
-    "Padrão. Exige GitHub CLI autenticado (gh auth login). Verifica a attestation do instalador antes de executá-lo.",
+    "Padrão seguro. Exige GitHub CLI autenticado (gh auth login). Verifica a attestation de proveniência do instalador antes de executá-lo.",
   quickNote:
-    "Apenas conveniência, sem verificação independente. Canaliza o instalador direto de ohmyshark.vercel.app.",
+    "Conveniência instantânea. Canaliza o instalador direto de ohmyshark.vercel.app para o shell.",
   installHeading: "Instalação",
   installLede:
     "Escolha sua plataforma abaixo. Verificado é o padrão seguro; Rápido troca verificação por velocidade. De qualquer forma, em minutos você está rodando — e sua config existente nunca é tocada.",
@@ -194,6 +212,11 @@ const pt: Strings = {
   copyFailedMessage: "Falha ao copiar — selecione o texto manualmente",
   commandRegionLabel: "Comandos de instalação",
   stepLabel: "Passo",
+
+  telemetryHeader: "TELEMETRIA DE REFRAÇÃO ÓTICA",
+  telemetryGrid: "MALHA: TOPOGRAFIA 3D WIREFRAME (Z-0)",
+  telemetrySpectrum: "DISPERSÃO: ESPECTRO CONTÍNUO DE 8 BANDAS (Z-10)",
+  telemetryStatus: "NÓS ANÔMALOS: 7500+ TB DETECTADOS",
 
   providersEyebrow: "PROVEDORES DE MODELO",
   providersNote:
@@ -211,7 +234,7 @@ const pt: Strings = {
     {
       id: "shark",
       title: "Identidade própria",
-      body: "Marca da cabra, estética limpa de terminal e config isolada em ~/.ohms — sua configuração nunca briga com outra ferramenta.",
+      body: "Marca do tubarão, estética limpa de terminal e config isolada em ~/.ohms — sua configuração nunca briga com outra ferramenta.",
     },
     {
       id: "preset",
@@ -280,7 +303,7 @@ const pt: Strings = {
 
   footerTagline: "made by LucasEntweihen",
   footerLicenses: "Avisos de terceiros",
-  footerRelease: "Release ohms-v0.0.3",
+  footerRelease: "Release omsk-v0.0.15",
   socialX: "X",
   socialGithub: "GitHub",
   socialLinkedin: "LinkedIn",
