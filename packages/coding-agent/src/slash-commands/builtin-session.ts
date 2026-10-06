@@ -18,6 +18,7 @@ import { launchStatsDashboard, parseStatsDashboardArgs } from "./helpers/stats-d
 import { handleTodoAcp } from "./helpers/todo";
 import { buildUsageReportText } from "./helpers/usage-report";
 import type { SlashCommandRuntime, SlashCommandSpec } from "./types";
+import { launchTaskManagerGui } from "../taskmanager/launcher";
 
 async function handleUsageResetCommand(
 	arg: string,
@@ -622,6 +623,32 @@ export const BUILTIN_SESSION_SLASH_COMMANDS: ReadonlyArray<SlashCommandSpec> = [
 		handleTui: async (command, runtime) => {
 			runtime.ctx.editor.setText("");
 			await runtime.ctx.handleMCPCommand(command.text);
+		},
+	},
+	{
+		name: "taskmanager",
+		aliases: ["task-manager", "gerenciadortarefas"],
+		icon: "todo",
+		description: "Launch the Python Task Manager GUI",
+		acpDescription: "Launch the Python Task Manager GUI",
+		allowArgs: false,
+		handle: async (_command, runtime) => {
+			const result = await launchTaskManagerGui(runtime.cwd);
+			if (result.ok) {
+				await runtime.output("Task Manager GUI launched.");
+			} else {
+				await runtime.output(`Failed to launch Task Manager GUI: ${result.reason}`);
+			}
+			return { consumed: true };
+		},
+		handleTui: async (_command, runtime) => {
+			runtime.ctx.editor.setText("");
+			const result = await launchTaskManagerGui(runtime.ctx.sessionManager.getCwd());
+			if (result.ok) {
+				runtime.ctx.showStatus("Task Manager GUI launched.");
+			} else {
+				runtime.ctx.showStatus(`Failed to launch Task Manager GUI: ${result.reason}`);
+			}
 		},
 	},
 ];

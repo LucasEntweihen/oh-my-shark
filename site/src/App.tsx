@@ -15,14 +15,14 @@ const COMMANDS: Record<OS, Record<Method, string[]>> = {
       '$s = (irm https://oh-my-shark.vercel.app/install.ps1); $s = $s.Replace("[System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()", \'"x64"\'); & ([scriptblock]::Create($s))',
     ],
     verified: [
-      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.19/install.ps1 -OutFile install.ps1",
+      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.20/install.ps1 -OutFile install.ps1",
       "powershell -ExecutionPolicy Bypass -File .\install.ps1",
     ],
   },
   mac: {
     quick: ["curl -fsSL https://oh-my-shark.vercel.app/install -o install.sh && sh install.sh"],
     verified: [
-      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.19/install.sh",
+      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.20/install.sh",
       "sh install.sh",
     ],
   },
@@ -439,7 +439,7 @@ export default function App() {
                     <span className="dot green" />
                   </div>
                   <span className="terminal-title">ohms // terminal bootstrap</span>
-                  <span className="terminal-spec">v0.0.19</span>
+                  <span className="terminal-spec">v0.0.20</span>
                 </div>
 
                 <div className="terminal-body">
@@ -677,7 +677,7 @@ export default function App() {
               </a>
               <span className="dot-sep" aria-hidden="true">•</span>
               <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.19"
+                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.20"
                 target="_blank"
                 rel="noopener noreferrer"
               >
