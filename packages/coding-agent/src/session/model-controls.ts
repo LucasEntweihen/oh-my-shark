@@ -23,8 +23,10 @@ import {
 } from "../config/model-resolver";
 import { getKnownRoleIds } from "../config/model-roles";
 import type { Settings } from "../config/settings";
+import { containsFastthinkworkerz } from "../modes/fastthinkworkerz";
 import { containsPromaxthink } from "../modes/promaxthink";
 import { containsUltrathink } from "../modes/ultrathink";
+import { containsXlr8 } from "../modes/xlr8";
 import {
 	AUTO_THINKING,
 	type ConfiguredThinkingLevel,
@@ -58,7 +60,7 @@ export interface ModelControlsHost {
 	clearActiveRetryFallback(): void;
 	clearInheritedProviderPromptCacheKey(): void;
 	magicKeywordEnabled(
-		keyword: "orchestrate" | "ultrathink" | "workflow" | "promaxthink" | "doomania" | "deepseaneuron",
+		keyword: "orchestrate" | "ultrathink" | "workflow" | "promaxthink" | "doomania" | "deepseaneuron" | "fastthinkworkerz" | "xlr8",
 	): boolean;
 	emit(event: AgentSessionEvent): void;
 	emitSessionEvent(event: AgentSessionEvent): Promise<void>;
@@ -607,9 +609,15 @@ export class ModelControls {
 		if (getSupportedEfforts(model).length === 0) return;
 
 		let resolved: Effort | undefined;
+		const fastthinkworkerzRequested =
+			this.#host.magicKeywordEnabled("fastthinkworkerz") && containsFastthinkworkerz(promptText);
+		const xlr8Requested = this.#host.magicKeywordEnabled("xlr8") && containsXlr8(promptText);
 		const ultrathinkRequested = this.#host.magicKeywordEnabled("ultrathink") && containsUltrathink(promptText);
 		const promaxthinkRequested = this.#host.magicKeywordEnabled("promaxthink") && containsPromaxthink(promptText);
-		if (ultrathinkRequested || promaxthinkRequested) {
+		if (fastthinkworkerzRequested || xlr8Requested) {
+			// Fast and furious: minimize thinking depth to drastically accelerate turn response
+			resolved = clampAutoThinkingEffort(model, Effort.Minimal);
+		} else if (ultrathinkRequested || promaxthinkRequested) {
 			// The user explicitly asked for maximum thinking (via ultrathink or the
 			// heavier promaxthink contract); bypass the classifier (and the
 			// `providers.autoThinkingMaxEffort` ceiling) and jump straight to the

@@ -158,6 +158,7 @@ import type { DaemonCompletionNotification } from "../launch/protocol";
 import { shutdownMnemopiEmbedClient } from "../mnemopi/embed-client";
 import { getMnemopiSessionState, type MnemopiSessionState, setMnemopiSessionState } from "../mnemopi/state";
 import { containsDeepseaneuron, DEEPSEANEURON_NOTICE } from "../modes/deepseaneuron";
+import { containsFastthinkworkerz, FASTTHINKWORKERZ_NOTICE } from "../modes/fastthinkworkerz";
 import { containsOrchestrate, renderOrchestrateNotice } from "../modes/orchestrate";
 import { containsPromaxthink, PROMAXTHINK_NOTICE } from "../modes/promaxthink";
 import { theme } from "../modes/theme/theme";
@@ -165,6 +166,7 @@ import { parseTurnBudget } from "../modes/turn-budget";
 import { containsUltrathink, ULTRATHINK_NOTICE } from "../modes/ultrathink";
 import { computeNonMessageTokens } from "../modes/utils/context-usage";
 import { containsWorkflow, renderWorkflowNotice } from "../modes/workflow";
+import { containsXlr8, isXlr8BasicMode, XLR8_NOTICE } from "../modes/xlr8";
 import { type PlanApprovalDetails, resolveApprovedPlan } from "../plan-mode/approved-plan";
 import { listPlanFiles, readPlanFile } from "../plan-mode/plan-files";
 import { loadOverallPlanReference } from "../plan-mode/plan-handoff";
@@ -5866,7 +5868,7 @@ export class AgentSession {
 	}
 
 	#magicKeywordEnabled(
-		keyword: "orchestrate" | "ultrathink" | "workflow" | "promaxthink" | "doomania" | "deepseaneuron",
+		keyword: "orchestrate" | "ultrathink" | "workflow" | "promaxthink" | "doomania" | "deepseaneuron" | "fastthinkworkerz" | "xlr8",
 	): boolean {
 		return this.settings.get("magicKeywords.enabled") && this.settings.get(`magicKeywords.${keyword}`);
 	}
@@ -5933,6 +5935,31 @@ export class AgentSession {
 				role: "custom",
 				customType: "deepseaneuron-notice",
 				content: DEEPSEANEURON_NOTICE,
+				display: false,
+				attribution: "user",
+				timestamp,
+			});
+		}
+		if (this.#magicKeywordEnabled("fastthinkworkerz") && containsFastthinkworkerz(text)) {
+			keywordNotices.push({
+				role: "custom",
+				customType: "fastthinkworkerz-notice",
+				content: FASTTHINKWORKERZ_NOTICE,
+				display: false,
+				attribution: "user",
+				timestamp,
+			});
+		}
+		if (this.#magicKeywordEnabled("xlr8") && containsXlr8(text)) {
+			let content = XLR8_NOTICE;
+			if (isXlr8BasicMode(text)) {
+				content +=
+					"\n\n<system-directive>\nAutonomous Basic Mode ACTIVE: Disconnect from all subagents (`task`) and peer coordination (`hub`). Operate strictly as a single, self-contained agent using basic tools only.\n</system-directive>";
+			}
+			keywordNotices.push({
+				role: "custom",
+				customType: "xlr8-notice",
+				content,
 				display: false,
 				attribution: "user",
 				timestamp,
@@ -6021,6 +6048,18 @@ export class AgentSession {
 			const streamingBehavior = options?.streamingBehavior;
 			if (!streamingBehavior) throw new AgentBusyError();
 
+			if (this.#magicKeywordEnabled("xlr8") && containsXlr8(expandedText)) {
+				this.setThinkingLevel("min", false);
+				const inflightNotice: CustomMessage = {
+					role: "custom",
+					customType: "xlr8-inflight-acceleration",
+					content: `<system-notice>\n[XLR8 IN-FLIGHT ACCELERATION TRIGGERED]\nThe user invoked /xlr8 while this message is processing! Accelerate this active turn immediately:\n- Instantly truncate remaining thinking/reasoning.\n- Finalize current analysis and emit the direct, concise solution right now.\n- Do NOT start new subagent calls, multi-turn tool loops, or deep speculation.\n${isXlr8BasicMode(expandedText) ? "- DISCONNECT FROM ALL AGENTS: Operate in autonomous basic mode only, without delegating to subagents.\n" : ""}</system-notice>`,
+					display: false,
+					attribution: "user",
+					timestamp: submittedAt,
+				};
+				await this.#queueCustomMessage(inflightNotice, "steer");
+			}
 			// Steer/follow-up/aside the keyword notices BEFORE the queued user message so the
 			// model reads the steering notice ahead of the prompt it modifies.
 			for (const notice of keywordNotices) {
@@ -6031,6 +6070,12 @@ export class AgentSession {
 		}
 
 		// Skip eager preludes when the user has already queued a directive
+		if (
+			(this.#magicKeywordEnabled("fastthinkworkerz") && containsFastthinkworkerz(expandedText)) ||
+			(this.#magicKeywordEnabled("xlr8") && containsXlr8(expandedText))
+		) {
+			this.setThinkingLevel("min", false);
+		}
 		const hasPendingUserDirective = this.#toolChoiceQueue.inspect().includes("user-force");
 		const activeModel = this.agent.state.model;
 		const externalThinkingToolChoice =
@@ -6069,6 +6114,18 @@ export class AgentSession {
 		if (this.isStreaming) {
 			const streamingBehavior = options?.streamingBehavior;
 			if (!streamingBehavior) throw new AgentBusyError();
+			if (this.#magicKeywordEnabled("xlr8") && containsXlr8(expandedText)) {
+				this.setThinkingLevel("min", false);
+				const inflightNotice: CustomMessage = {
+					role: "custom",
+					customType: "xlr8-inflight-acceleration",
+					content: `<system-notice>\n[XLR8 IN-FLIGHT ACCELERATION TRIGGERED]\nThe user invoked /xlr8 while this message is processing! Accelerate this active turn immediately:\n- Instantly truncate remaining thinking/reasoning.\n- Finalize current analysis and emit the direct, concise solution right now.\n- Do NOT start new subagent calls, multi-turn tool loops, or deep speculation.\n${isXlr8BasicMode(expandedText) ? "- DISCONNECT FROM ALL AGENTS: Operate in autonomous basic mode only, without delegating to subagents.\n" : ""}</system-notice>`,
+					display: false,
+					attribution: "user",
+					timestamp: submittedAt,
+				};
+				await this.#queueCustomMessage(inflightNotice, "steer");
+			}
 			for (const notice of keywordNotices) {
 				await this.#queueCustomMessage(notice, streamingBehavior);
 			}

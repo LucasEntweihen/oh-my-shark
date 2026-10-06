@@ -8,6 +8,8 @@ Ele deve fazer:
 - quando eu chamo ele ele deve acelerar, de alguma forma, o processo da mensagem (acelerando a linha de raciocínio, simplificando o código, otimizando o fluxo de pensamento, tudo o que possa fazer a mensagem acelerar mesmo)
 - se eu chamar ele enquanto uma mensagem já está sendo processada, ele deve **acelerar o processamento *daquela mensagem* de forma que, independemente da mensagem e tempo que ela estiver ali, o /xlr8 é lido e acelera o processo
 - suas cores devem ser cinza, azul, verde e branco
+e além disso:
+- poder se desconectar de todos os agentes e funcionar no básico
 
 ## O site
 mude o site pars que todos os comando especiais (promaxthink, ultrathink, workflowz, orchestrate, deepseaneuron, fastthinkworkerz, /doomania e /xlr8) e o novo comando de instalação (e uma update em alguma parte do github) baseada nesse texto:

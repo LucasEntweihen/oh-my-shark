@@ -1,10 +1,12 @@
 import { containsAgentSandbox, highlightAgentSandbox } from "./agent-sandbox";
 import { containsDeepseaneuron, highlightDeepseaneuron } from "./deepseaneuron";
 import { containsDoomania, highlightDoomania } from "./doomania";
+import { containsFastthinkworkerz, highlightFastthinkworkerz } from "./fastthinkworkerz";
 import { containsOrchestrate, highlightOrchestrate } from "./orchestrate";
 import { containsPromaxthink, highlightPromaxthink } from "./promaxthink";
 import { containsUltrathink, highlightUltrathink } from "./ultrathink";
 import { containsWorkflow, highlightWorkflow } from "./workflow";
+import { containsXlr8, highlightXlr8 } from "./xlr8";
 /**
  * Gradient-highlight every magic keyword ("ultrathink", "orchestrate",
  * "workflowz", "promaxthink") that appears as standalone prose, skipping any
@@ -25,12 +27,20 @@ import { containsWorkflow, highlightWorkflow } from "./workflow";
  * to keep the static gradient.
  */
 export function highlightMagicKeywords(text: string, resetTo?: string, phase?: number): string {
-	return highlightAgentSandbox(
-		highlightDeepseaneuron(
-			highlightDoomania(
-				highlightPromaxthink(
-					highlightWorkflow(
-						highlightOrchestrate(highlightUltrathink(text, resetTo, phase), resetTo, phase),
+	return highlightXlr8(
+		highlightFastthinkworkerz(
+			highlightAgentSandbox(
+				highlightDeepseaneuron(
+					highlightDoomania(
+						highlightPromaxthink(
+							highlightWorkflow(
+								highlightOrchestrate(highlightUltrathink(text, resetTo, phase), resetTo, phase),
+								resetTo,
+								phase,
+							),
+							resetTo,
+							phase,
+						),
 						resetTo,
 						phase,
 					),
@@ -62,6 +72,8 @@ export function hasMagicKeyword(text: string): boolean {
 		!text.includes("promaxthink") &&
 		!text.includes("doomania") &&
 		!text.includes("deepseaneuron") &&
+		!text.includes("fastthinkworkerz") &&
+		!text.includes("xlr8") &&
 		!text.includes("agent-sandbox")
 	) {
 		return false;
@@ -73,6 +85,8 @@ export function hasMagicKeyword(text: string): boolean {
 		containsPromaxthink(text) ||
 		containsDoomania(text) ||
 		containsDeepseaneuron(text) ||
-		containsAgentSandbox(text)
+		containsAgentSandbox(text) ||
+		containsFastthinkworkerz(text) ||
+		containsXlr8(text)
 	);
 }

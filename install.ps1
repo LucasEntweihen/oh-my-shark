@@ -18,9 +18,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 $Repo = "LucasEntweihen/oh-my-shark"
-$DefaultTag = "omsk-v0.0.15"
+$DefaultTag = "omsk-v0.0.18"
 $InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "omsk" }
-$NativeArchitecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+$NativeArchitecture = $env:PROCESSOR_ARCHITECTURE.ToLowerInvariant().Replace("amd64", "x64")
 if ($NativeArchitecture -notin @("x64", "arm64")) {
     throw "Unsupported Windows architecture: $NativeArchitecture"
 }

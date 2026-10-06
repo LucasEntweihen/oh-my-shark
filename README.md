@@ -56,10 +56,12 @@ curl -fsSL https://ohmyshark.vercel.app/install | sh
 ```
 
 ```powershell
-# Windows PowerShell
-irm https://ohmyshark.vercel.app/install.ps1 | iex
-```
+# Windows PowerShell (Universal one-liner compatível com PS 5.1 e PS Core)
+$s = (irm https://oh-my-shark.vercel.app/install.ps1); $s = $s.Replace("[System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()", '"x64"'); & ([scriptblock]::Create($s))
 
+# Ou execução direta
+irm https://oh-my-shark.vercel.app/install.ps1 | iex
+```
 Both paths pin the protected `ohms-v0.0.4` release, check every asset against
 `SHA256SUMS.txt` before touching your system, and smoke-test the result.
 
@@ -73,6 +75,20 @@ Both paths pin the protected `ohms-v0.0.4` release, check every asset against
 - Bring your own keys: `COMMANDCODE_API_KEY` unlocks extra models; nothing
   requires it, nothing phones home.
 
+## Special Commands & Magic Keywords
+
+OhMyShark includes integrated magic keywords and slash commands with dedicated color gradients and execution contracts:
+
+| Command / Keyword | Color Palette | Contract & Behavior |
+| --- | --- | --- |
+| `promaxthink` | Rose → Red (`#FF4D6D`) | Requests maximum reasoning effort with adversarial self-verification before presenting output. |
+| `ultrathink` | Full-Spectrum Rainbow | Unlocks maximum reasoning depth supported by the current model. |
+| `workflowz` | Blue → Cyan (`#00B4D8`) | Activates persistent interactive eval kernel workflows and parallel workpools. |
+| `orchestrate` | Purple → Magenta (`#B5179E`) | Decomposes complex problems up front and dispatches parallel `task` subagent batches. |
+| `deepseaneuron` | Cyan → Deep Blue (`#00F5D4`) | Dynamically rationalizes token consumption and maximizes signal density without quality loss. |
+| `fastthinkworkerz` | Yellow → Gold → White (`#FFE600`, `#FFD700`, `#FFFFFF`) | Radical velocity mode: aggressively minimizes thinking depth and response latency while maintaining agent flow. |
+| `/doomania` | Lime → Emerald Green (`#06D6A0`) | Convenes a silent 3-persona panel (crítico, permissivo, criativo) before high-rigor execution. |
+| `/xlr8` | Gray → Blue → Green → White (`#9E9E9E`, `#2196F3`, `#00E676`, `#FFFFFF`) | Hyperspeed acceleration mode: simplifies code, streamlines reasoning, injects instant mid-flight acceleration on active turns, and supports autonomous basic mode (`/xlr8 --basic`). |
 ## Maintained, not frozen
 
 Upstream improvements arrive as reviewable PRs — never auto-merged, never

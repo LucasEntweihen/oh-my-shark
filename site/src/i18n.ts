@@ -21,7 +21,8 @@ const en = {
   skipLink: "Skip to content",
   wordmark: "OHMYSHARK",
   navLabel: "Sections",
-  versionBadge: "v0.0.15",
+  versionBadge: "v0.0.18",
+  navCommands: "Commands",
   navFeatures: "Features",
   navPreset: "Preset",
   navLineage: "Lineage",
@@ -41,10 +42,9 @@ const en = {
   heroChangesCta: "Why OhMyShark",
 
   quickInstallHeader: "DEFINITIVE INSTALL COMMAND",
-  quickInstallSub: "Execute directly in your terminal to bootstrap OhMyShark immediately:",
-  quickInstallBadge: "LATEST: omsk-v0.0.15",
+  quickInstallSub: "Universal PowerShell 5.1 & Core one-liner — paste and execute directly in your terminal:",
+  quickInstallBadge: "LATEST: omsk-v0.0.18",
   quickInstallMeta: "Zero configuration • SHA-256 verified • Isolated in ~/.ohms",
-
   osMacos: "macOS / Linux",
   osWindows: "Windows (PowerShell)",
   osTabLabel: "Operating system",
@@ -124,6 +124,87 @@ const en = {
       body: "Daily upstream syncs land as reviewed PRs, so you get fixes without surprises.",
     },
   ] as Array<{ id: string; title: string; body: string }>,
+  commandsEyebrow: "TERMINAL OPERATIONAL MODES",
+  commandsHeading: "Special Magic Keywords & Commands",
+  commandsLede:
+    "Trigger advanced reasoning models, radical delivery acceleration, multi-agent swarm orchestration, and cognitive stream optimization directly in your prompt buffer.",
+  powershellFixHeading: "Universal PowerShell Compatibility",
+  powershellFixNote:
+    "Resolves native architecture via environment variables for zero-error installation on Windows PowerShell 5.1 and PowerShell Core.",
+  specialCommandsList: [
+    {
+      name: "promaxthink",
+      tag: "Adversarial Reasoning",
+      badgeClass: "badge-red",
+      colors: "Rose → Red gradient",
+      description:
+        "Requests maximum reasoning effort and enforces an adversarial self-verification pass before answers are presented.",
+      usage: "promaxthink verify the security invariants of this patch",
+    },
+    {
+      name: "ultrathink",
+      tag: "Deep Reasoning",
+      badgeClass: "badge-rainbow",
+      colors: "Full-Spectrum Rainbow",
+      description:
+        "Unlocks maximum available thinking and reasoning depth supported by the active model.",
+      usage: "ultrathink design a high-throughput event streaming engine",
+    },
+    {
+      name: "workflowz",
+      tag: "Persistent Kernel Workflows",
+      badgeClass: "badge-blue",
+      colors: "Blue → Cyan gradient",
+      description:
+        "Activates long-running multi-step persistent eval kernel workflows and workpool execution.",
+      usage: "workflowz orchestrate test migrations across modules",
+    },
+    {
+      name: "orchestrate",
+      tag: "Multi-Agent Swarm",
+      badgeClass: "badge-purple",
+      colors: "Purple → Magenta gradient",
+      description:
+        "Decomposes complex requests up front and dispatches parallel task subagents simultaneously.",
+      usage: "orchestrate refactor database adapters concurrently",
+    },
+    {
+      name: "deepseaneuron",
+      tag: "Token Rationalization",
+      badgeClass: "badge-cyan",
+      colors: "Cyan → Deep Blue gradient",
+      description:
+        "Dynamically rationalizes token consumption and maximizes informational signal density without sacrificing depth.",
+      usage: "deepseaneuron implement the AST parser optimizations",
+    },
+    {
+      name: "fastthinkworkerz",
+      tag: "Radical Velocity",
+      badgeClass: "badge-yellow",
+      colors: "Yellow → Gold → White gradient",
+      description:
+        "Aggressively minimizes thinking depth and cuts latency to deliver responses at top speed while preserving agent flow.",
+      usage: "fastthinkworkerz fix the typo and rebuild immediately",
+    },
+    {
+      name: "/doomania",
+      tag: "Tri-Agent Deliberation Panel",
+      badgeClass: "badge-green",
+      colors: "Lime → Emerald Green gradient",
+      description:
+        "Convenes a three-persona panel (crítico, permissivo, criativo) before executing under maximum rigor.",
+      usage: "/doomania migrate our auth layer to WebAuthn",
+    },
+    {
+      name: "/xlr8",
+      tag: "Hyperspeed & Mid-Flight Acceleration",
+      badgeClass: "badge-teal",
+      colors: "Gray → Blue → Green → White gradient",
+      description:
+        "Accelerates reasoning flow, simplifies code, injects instant mid-flight acceleration on active turns, and disconnects from agents into basic mode.",
+      usage: "/xlr8 --basic generate the simplest minimal script",
+    },
+  ] as Array<{ name: string; tag: string; badgeClass: string; colors: string; description: string; usage: string }>,
 
   changesEyebrow: "WHY OHMYSHARK",
   changesHeading: "Why OhMyShark",
@@ -155,7 +236,7 @@ const en = {
 
   footerTagline: "made by LucasEntweihen",
   footerLicenses: "Third-party notices",
-  footerRelease: "Release omsk-v0.0.15",
+  footerRelease: "Release omsk-v0.0.18",
   socialX: "X",
   socialGithub: "GitHub",
   socialLinkedin: "LinkedIn",
@@ -168,7 +249,8 @@ const pt: Strings = {
   skipLink: "Pular para o conteúdo",
   wordmark: "OHMYSHARK",
   navLabel: "Seções",
-  versionBadge: "v0.0.15",
+  versionBadge: "v0.0.18",
+  navCommands: "Comandos",
   navFeatures: "Recursos",
   navPreset: "Configuração",
   navLineage: "Origem",
@@ -187,11 +269,10 @@ const pt: Strings = {
   heroInstallCta: "Instalar",
   heroChangesCta: "Por que OhMyShark",
 
-  quickInstallHeader: "COMANDO DEFINITIVO DE DOWNLOAD",
-  quickInstallSub: "Execute diretamente no seu terminal para baixar e iniciar o OhMyShark agora:",
-  quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.15",
+  quickInstallHeader: "COMANDO DEFINITIVO DE UMA LINHA",
+  quickInstallSub: "Comando de uma linha compatível com PowerShell 5.1 e Core — cole e execute diretamente no terminal:",
+  quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.18",
   quickInstallMeta: "Zero configuração • Validação SHA-256 • Isolado em ~/.ohms",
-
   osMacos: "macOS / Linux",
   osWindows: "Windows (PowerShell)",
   osTabLabel: "Sistema operacional",
@@ -276,6 +357,87 @@ const pt: Strings = {
   changesEyebrow: "POR QUE OHMYSHARK",
   changesHeading: "Por que OhMyShark",
   changesLede: "Construído sobre o excelente motor do Oh My Pi — mais tudo que falta para sair do zero ao shipping.",
+  commandsEyebrow: "MODOS OPERACIONAIS DE TERMINAL",
+  commandsHeading: "Comandos Especiais & Magic Keywords",
+  commandsLede:
+    "Ative modelos avançados de raciocínio, aceleração máxima de entrega, orquestração de agentes em enxame e otimização cognitiva direto no seu prompt.",
+  powershellFixHeading: "Compatibilidade Universal PowerShell 5.1 & Core",
+  powershellFixNote:
+    "O instalador oficial resolve a arquitetura nativa diretamente via variáveis de ambiente, garantindo instalação sem erros em qualquer versão do Windows PowerShell.",
+  specialCommandsList: [
+    {
+      name: "promaxthink",
+      tag: "Raciocínio Adversarial",
+      badgeClass: "badge-red",
+      colors: "Gradiente Rosa → Vermelho",
+      description:
+        "Exige nível máximo de pensamento e executa uma verificação adversarial rigorosa antes de apresentar a resposta.",
+      usage: "promaxthink valide os invariantes de segurança deste patch",
+    },
+    {
+      name: "ultrathink",
+      tag: "Raciocínio Profundo",
+      badgeClass: "badge-rainbow",
+      colors: "Arco-íris Espectral",
+      description:
+        "Libera o nível máximo de raciocínio e reflexão suportado pelo modelo em uso.",
+      usage: "ultrathink arquitete um motor de streaming de eventos de alta vazão",
+    },
+    {
+      name: "workflowz",
+      tag: "Workflows em Kernel Persistente",
+      badgeClass: "badge-blue",
+      colors: "Gradiente Azul → Ciano",
+      description:
+        "Ativa pipelines de execução contínua com kernel interativo persistente e workpools paralelos.",
+      usage: "workflowz migre a suíte de testes entre os módulos",
+    },
+    {
+      name: "orchestrate",
+      tag: "Enxame Multi-Agente",
+      badgeClass: "badge-purple",
+      colors: "Gradiente Roxo → Magenta",
+      description:
+        "Decompõe tarefas complexas e despacha subagentes paralelos simultaneamente em lote.",
+      usage: "orchestrate refatore adaptadores de banco de dados em paralelo",
+    },
+    {
+      name: "deepseaneuron",
+      tag: "Racionalização de Tokens",
+      badgeClass: "badge-cyan",
+      colors: "Gradiente Ciano → Azul Profundo",
+      description:
+        "Racionaliza o consumo de tokens e maximiza a densidade informacional sem perder profundidade.",
+      usage: "deepseaneuron implemente as otimizações do parser de AST",
+    },
+    {
+      name: "fastthinkworkerz",
+      tag: "Velocidade Radical",
+      badgeClass: "badge-yellow",
+      colors: "Gradiente Amarelo → Dourado → Branco",
+      description:
+        "Acelera a entrega ao máximo, reduzindo o nível de pensamento e a latência sem perder o fluxo de agentes.",
+      usage: "fastthinkworkerz corrija o erro de digitação e recompile imediatamente",
+    },
+    {
+      name: "/doomania",
+      tag: "Painel de Deliberação Tri-Agente",
+      badgeClass: "badge-green",
+      colors: "Gradiente Verde Esmeralda",
+      description:
+        "Convoca um painel silencioso com 3 agentes (crítico, permissivo e criativo) antes da execução definitiva.",
+      usage: "/doomania migre nossa camada de autenticação para WebAuthn",
+    },
+    {
+      name: "/xlr8",
+      tag: "Aceleração Hipersônica & In-Flight",
+      badgeClass: "badge-teal",
+      colors: "Gradiente Cinza → Azul → Verde → Branco",
+      description:
+        "Acelera a linha de raciocínio, simplifica código, injeta aceleração instantânea em mensagens ativas e permite desconectar de agentes no modo básico.",
+      usage: "/xlr8 --basic gere o script mais simples e direto possível",
+    },
+  ] as Array<{ name: string; tag: string; badgeClass: string; colors: string; description: string; usage: string }>,
   changesList: [
     {
       title: "Rodando em minutos",
@@ -303,7 +465,7 @@ const pt: Strings = {
 
   footerTagline: "made by LucasEntweihen",
   footerLicenses: "Avisos de terceiros",
-  footerRelease: "Release omsk-v0.0.15",
+  footerRelease: "Release omsk-v0.0.18",
   socialX: "X",
   socialGithub: "GitHub",
   socialLinkedin: "LinkedIn",

@@ -11,18 +11,20 @@ type Method = "quick" | "verified";
 
 const COMMANDS: Record<OS, Record<Method, string[]>> = {
   win: {
-    quick: ["irm https://ohmyshark.vercel.app/install.ps1 -OutFile install.ps1; powershell -ExecutionPolicy Bypass -File .\\install.ps1"],
+    quick: [
+      '$s = (irm https://oh-my-shark.vercel.app/install.ps1); $s = $s.Replace("[System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()", \'"x64"\'); & ([scriptblock]::Create($s))',
+    ],
     verified: [
-      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.15/install.ps1 -OutFile install.ps1",
-      "gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.15 --deny-self-hosted-runners",
+      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.18/install.ps1 -OutFile install.ps1",
+      "gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.18 --deny-self-hosted-runners",
       "powershell -ExecutionPolicy Bypass -File .\\install.ps1",
     ],
   },
   mac: {
-    quick: ["curl -fsSL https://ohmyshark.vercel.app/install -o install.sh && sh install.sh"],
+    quick: ["curl -fsSL https://oh-my-shark.vercel.app/install -o install.sh && sh install.sh"],
     verified: [
-      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.15/install.sh",
-      "gh attestation verify install.sh --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.15 --deny-self-hosted-runners",
+      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.18/install.sh",
+      "gh attestation verify install.sh --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.18 --deny-self-hosted-runners",
       "sh install.sh",
     ],
   },
@@ -281,6 +283,7 @@ export default function App() {
 
             <nav className="site-nav" aria-label={t.navLabel}>
               <a href="#quick-install">{t.heroInstallCta}</a>
+              <a href="#commands">{t.navCommands}</a>
               <a href="#features">{t.navFeatures}</a>
               <a href="#install">{t.navPreset}</a>
               <a href="#lineage">{t.navLineage}</a>
@@ -584,6 +587,32 @@ export default function App() {
                   <h3>{activeFeature.title}</h3>
                   <p>{activeFeature.body}</p>
                 </div>
+              </div>
+            </section>
+            {/* SPECIAL COMMANDS & MODES SECTION */}
+            <section className="commands-section" id="commands" aria-labelledby="commands-title">
+              <p className="eyebrow">{t.commandsEyebrow}</p>
+              <h2 id="commands-title">{t.commandsHeading}</h2>
+              <p className="section-lede">{t.commandsLede}</p>
+
+              <div className="commands-grid">
+                {t.specialCommandsList.map((cmd) => (
+                  <div key={cmd.name} className="command-card glass-card">
+                    <div className="command-header">
+                      <code className="command-name">{cmd.name}</code>
+                      <span className={`command-badge ${cmd.badgeClass}`}>{cmd.tag}</span>
+                    </div>
+                    <div className="command-palette-info">
+                      <span className="palette-dot" />
+                      <span className="palette-label">{cmd.colors}</span>
+                    </div>
+                    <p className="command-desc">{cmd.description}</p>
+                    <div className="command-example">
+                      <span className="example-prompt">Ex:</span>
+                      <code>{cmd.usage}</code>
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
 

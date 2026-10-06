@@ -2240,7 +2240,7 @@ export const SETTINGS_SCHEMA = {
 			group: "Magic Keywords",
 			label: "Magic Keywords",
 			description:
-				"Enable hidden notices for standalone ultrathink, orchestrate, workflowz, promaxthink, doomania, and deepseaneuron keywords",
+				"Enable hidden notices for standalone ultrathink, orchestrate, workflowz, promaxthink, doomania, deepseaneuron, fastthinkworkerz, and xlr8 keywords",
 		},
 	},
 
@@ -2308,6 +2308,29 @@ export const SETTINGS_SCHEMA = {
 			label: "Deepseaneuron Keyword",
 			description:
 				"Let standalone deepseaneuron dynamically optimize and rationalize token consumption and append its hidden notice",
+		},
+	},
+	"magicKeywords.fastthinkworkerz": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "interaction",
+			group: "Magic Keywords",
+			label: "Fastthinkworkerz Keyword",
+			description:
+				"Let standalone fastthinkworkerz aggressively accelerate response delivery, reducing thinking depth and response latency",
+		},
+	},
+
+	"magicKeywords.xlr8": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "interaction",
+			group: "Magic Keywords",
+			label: "XLR8 Acceleration Keyword / Command",
+			description:
+				"Enable gradient highlighting and runtime acceleration for /xlr8 command and mid-turn acceleration",
 		},
 	},
 
