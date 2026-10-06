@@ -54,6 +54,25 @@ type Fetch = (input: string | URL | Request, init?: RequestInit) => Promise<Resp
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }
+/**
+ * Resolves GitHub token from explicit options, environment variables, or GitHub CLI (`gh auth token`).
+ */
+export function resolveGitHubToken(explicitToken?: string): string | undefined {
+	const explicit = explicitToken?.trim();
+	if (explicit) return explicit;
+	const envToken = $env.GITHUB_TOKEN?.trim() || $env.GH_TOKEN?.trim();
+	if (envToken) return envToken;
+	try {
+		const proc = Bun.spawnSync(["gh", "auth", "token"], { stdout: "pipe", stderr: "pipe" });
+		if (proc.exitCode === 0) {
+			const token = proc.stdout.toString("utf-8").trim();
+			if (token) return token;
+		}
+	} catch {
+		// gh CLI unavailable or failed
+	}
+	return undefined;
+}
 
 /**
  * Select and validate the binary asset from GitHub release metadata.
@@ -121,16 +140,17 @@ async function getReleaseBinaryAsset(
 	expectedVersion: string,
 	binaryName: string,
 	fetchImpl: Fetch = fetch,
-	githubToken: string | undefined = $env.GITHUB_TOKEN || $env.GH_TOKEN,
+	githubToken?: string,
 	allowPrerelease = false,
 	expectedTag?: string,
 ): Promise<ReleaseBinaryAsset> {
 	let tag = expectedTag ?? (expectedVersion.startsWith("omsk-v") || expectedVersion.startsWith("ohms-v") ? expectedVersion : `${TAG_PREFIX}${expectedVersion}`);
+	const resolvedToken = resolveGitHubToken(githubToken);
 	const headers: Record<string, string> = {
 		Accept: "application/vnd.github+json",
 		"X-GitHub-Api-Version": "2022-11-28",
 	};
-	if (githubToken) headers.Authorization = `Bearer ${githubToken}`;
+	if (resolvedToken) headers.Authorization = `Bearer ${resolvedToken}`;
 
 	let response: Response;
 	try {
@@ -145,7 +165,60 @@ async function getReleaseBinaryAsset(
 		if (isUnsupportedProxyError(err)) throw new Error(unsupportedProxyMessage(), { cause: err });
 		throw err;
 	}
-	if ((response.status === 403 && !githubToken) || response.status === 429) {
+	if (response.status === 403 || response.status === 429) {
+		// Attempt resolution via gh CLI if installed
+		try {
+			const proc = Bun.spawnSync(
+				["gh", "release", "view", tag, "--repo", REPO, "--json", "assets,tag_name,draft,prerelease"],
+				{ stdout: "pipe", stderr: "pipe" },
+			);
+			if (proc.exitCode === 0) {
+				const releaseData: unknown = JSON.parse(proc.stdout.toString("utf-8"));
+				return resolveReleaseBinaryAsset(releaseData, tag, binaryName, { allowPrerelease });
+			}
+		} catch {
+			// gh fallback failed
+		}
+
+		// Fallback: resolve directly from public SHA256SUMS.txt and HEAD binary request
+		try {
+			const sumsUrl = `https://github.com/${REPO}/releases/download/${encodeURIComponent(tag)}/SHA256SUMS.txt`;
+			const sumsResponse = await fetchImpl(sumsUrl, {
+				signal: withTimeoutSignal(RELEASE_METADATA_TIMEOUT_MS),
+			});
+			if (sumsResponse.ok) {
+				const sumsText = await sumsResponse.text();
+				const lines = sumsText.split("\n");
+				let foundDigest: string | undefined;
+				for (const line of lines) {
+					const parts = line.trim().split(/\s+/);
+					if (parts.length >= 2 && parts[1] === binaryName) {
+						foundDigest = parts[0]?.toLowerCase();
+						break;
+					}
+				}
+				if (foundDigest && /^[0-9a-f]{64}$/i.test(foundDigest)) {
+					const binaryUrl = `https://github.com/${REPO}/releases/download/${encodeURIComponent(tag)}/${binaryName}`;
+					const headResponse = await fetchImpl(binaryUrl, {
+						method: "HEAD",
+						redirect: "follow",
+						signal: withTimeoutSignal(RELEASE_METADATA_TIMEOUT_MS),
+					});
+					const contentLength = headResponse.headers.get("content-length");
+					const size = contentLength ? parseInt(contentLength, 10) : 0;
+					if (headResponse.ok && size > 0) {
+						return {
+							url: binaryUrl,
+							size,
+							digest: `sha256:${foundDigest}`,
+						};
+					}
+				}
+			}
+		} catch {
+			// direct fallback failed
+		}
+
 		throw new Error(
 			"GitHub API rate limit exceeded while fetching release metadata; retry later or set GITHUB_TOKEN or GH_TOKEN",
 		);
@@ -348,7 +421,7 @@ export async function getLatestRelease(
 		throw new Error(`No canary channel exists for ${APP_NAME}; stable is the only update channel.`);
 	}
 	const fetchImpl = options.fetchImpl ?? fetch;
-	const githubToken = options.githubToken ?? $env.GITHUB_TOKEN ?? $env.GH_TOKEN;
+	const githubToken = resolveGitHubToken(options.githubToken);
 	const headers: Record<string, string> = {
 		Accept: "application/vnd.github+json",
 		"X-GitHub-Api-Version": "2022-11-28",
@@ -370,7 +443,33 @@ export async function getLatestRelease(
 		if (isUnsupportedProxyError(err)) throw new Error(unsupportedProxyMessage(), { cause: err });
 		throw err;
 	}
-	if ((response.status === 403 && !githubToken) || response.status === 429) {
+	if (response.status === 403 || response.status === 429) {
+		// Rate limit fallback: resolve latest release tag via GitHub web redirect (rate-limit immune)
+		try {
+			const webResponse = await fetchImpl(`https://github.com/${REPO}/releases/latest`, {
+				method: "HEAD",
+				redirect: "manual",
+				signal: withTimeoutSignal(timeoutMs),
+			});
+			const location = webResponse.headers.get("location");
+			if (location) {
+				const tagMatch = /\/releases\/tag\/([^/?#]+)/.exec(location);
+				if (tagMatch?.[1]) {
+					const tag = decodeURIComponent(tagMatch[1]);
+					const version = parseProductTag(tag);
+					if (version) {
+						return {
+							tag,
+							version,
+							dist: "binary",
+						};
+					}
+				}
+			}
+		} catch {
+			// web redirect fallback failed; proceed to report rate limit error
+		}
+
 		throw new Error(
 			"GitHub API rate limit exceeded while fetching release metadata; retry later or set GITHUB_TOKEN or GH_TOKEN",
 		);

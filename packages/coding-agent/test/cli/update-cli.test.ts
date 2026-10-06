@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { getLatestRelease, runUpdateCommand } from "../../src/cli/update-cli";
+import { getLatestRelease, resolveGitHubToken, runUpdateCommand } from "../../src/cli/update-cli";
 
 type FetchInput = string | URL | Request;
 type FetchInit = RequestInit | BunFetchRequestInit;
@@ -65,6 +65,39 @@ describe("getLatestRelease fork releases", () => {
 		stubReleases({ tag_name: "v18.1.8", draft: false, prerelease: false });
 
 		await expect(getLatestRelease()).rejects.toThrow("is not an ohms-v<semver> release");
+	});
+	it("falls back to GitHub web redirect when API returns 403 rate limit", async () => {
+		const urls: string[] = [];
+		const fetchStub = Object.assign(
+			async (input: FetchInput) => {
+				const url = String(input);
+				urls.push(url);
+				if (url.includes("api.github.com")) {
+					return new Response(JSON.stringify({ message: "API rate limit exceeded" }), {
+						status: 403,
+						headers: { "Content-Type": "application/json" },
+					});
+				}
+				if (url === "https://github.com/LucasEntweihen/oh-my-shark/releases/latest") {
+					return new Response(null, {
+						status: 302,
+						headers: { Location: "https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.18" },
+					});
+				}
+				return new Response(null, { status: 404 });
+			},
+			{ preconnect: globalThis.fetch.preconnect },
+		);
+		vi.spyOn(globalThis, "fetch").mockImplementation(fetchStub);
+
+		const release = await getLatestRelease();
+		expect(release).toEqual({ tag: "omsk-v0.0.18", version: "0.0.18", dist: "binary" });
+		expect(urls).toContain("https://api.github.com/repos/LucasEntweihen/oh-my-shark/releases/latest");
+		expect(urls).toContain("https://github.com/LucasEntweihen/oh-my-shark/releases/latest");
+	});
+
+	it("resolves explicit token or environment token cleanly", () => {
+		expect(resolveGitHubToken("custom-token-123")).toBe("custom-token-123");
 	});
 });
 
