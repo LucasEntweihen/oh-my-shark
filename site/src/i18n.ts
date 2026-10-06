@@ -21,7 +21,7 @@ const en = {
   skipLink: "Skip to content",
   wordmark: "OHMYSHARK",
   navLabel: "Sections",
-  versionBadge: "v0.0.18",
+  versionBadge: "v0.0.19",
   navCommands: "Commands",
   navFeatures: "Features",
   navPreset: "Preset",
@@ -43,7 +43,7 @@ const en = {
 
   quickInstallHeader: "DEFINITIVE INSTALL COMMAND",
   quickInstallSub: "Universal PowerShell 5.1 & Core one-liner — paste and execute directly in your terminal:",
-  quickInstallBadge: "LATEST: omsk-v0.0.18",
+  quickInstallBadge: "LATEST: omsk-v0.0.19",
   quickInstallMeta: "Zero configuration • SHA-256 verified • Isolated in ~/.ohms",
   osMacos: "macOS / Linux",
   osWindows: "Windows (PowerShell)",
@@ -236,7 +236,7 @@ const en = {
 
   footerTagline: "made by LucasEntweihen",
   footerLicenses: "Third-party notices",
-  footerRelease: "Release omsk-v0.0.18",
+  footerRelease: "Release omsk-v0.0.19",
   socialX: "X",
   socialGithub: "GitHub",
   socialLinkedin: "LinkedIn",
@@ -249,7 +249,7 @@ const pt: Strings = {
   skipLink: "Pular para o conteúdo",
   wordmark: "OHMYSHARK",
   navLabel: "Seções",
-  versionBadge: "v0.0.18",
+  versionBadge: "v0.0.19",
   navCommands: "Comandos",
   navFeatures: "Recursos",
   navPreset: "Configuração",
@@ -271,7 +271,7 @@ const pt: Strings = {
 
   quickInstallHeader: "COMANDO DEFINITIVO DE UMA LINHA",
   quickInstallSub: "Comando de uma linha compatível com PowerShell 5.1 e Core — cole e execute diretamente no terminal:",
-  quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.18",
+  quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.19",
   quickInstallMeta: "Zero configuração • Validação SHA-256 • Isolado em ~/.ohms",
   osMacos: "macOS / Linux",
   osWindows: "Windows (PowerShell)",
@@ -465,7 +465,7 @@ const pt: Strings = {
 
   footerTagline: "made by LucasEntweihen",
   footerLicenses: "Avisos de terceiros",
-  footerRelease: "Release omsk-v0.0.18",
+  footerRelease: "Release omsk-v0.0.19",
   socialX: "X",
   socialGithub: "GitHub",
   socialLinkedin: "LinkedIn",

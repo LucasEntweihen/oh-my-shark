@@ -15,16 +15,16 @@ const COMMANDS: Record<OS, Record<Method, string[]>> = {
       '$s = (irm https://oh-my-shark.vercel.app/install.ps1); $s = $s.Replace("[System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()", \'"x64"\'); & ([scriptblock]::Create($s))',
     ],
     verified: [
-      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.18/install.ps1 -OutFile install.ps1",
-      "gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.18 --deny-self-hosted-runners",
+      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.19/install.ps1 -OutFile install.ps1",
+      "gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.19 --deny-self-hosted-runners",
       "powershell -ExecutionPolicy Bypass -File .\\install.ps1",
     ],
   },
   mac: {
     quick: ["curl -fsSL https://oh-my-shark.vercel.app/install -o install.sh && sh install.sh"],
     verified: [
-      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.18/install.sh",
-      "gh attestation verify install.sh --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.18 --deny-self-hosted-runners",
+      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.19/install.sh",
+      "gh attestation verify install.sh --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.19 --deny-self-hosted-runners",
       "sh install.sh",
     ],
   },
@@ -441,7 +441,7 @@ export default function App() {
                     <span className="dot green" />
                   </div>
                   <span className="terminal-title">ohms // terminal bootstrap</span>
-                  <span className="terminal-spec">v0.0.18</span>
+                  <span className="terminal-spec">v0.0.19</span>
                 </div>
 
                 <div className="terminal-body">
@@ -679,7 +679,7 @@ export default function App() {
               </a>
               <span className="dot-sep" aria-hidden="true">•</span>
               <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.18"
+                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.19"
                 target="_blank"
                 rel="noopener noreferrer"
               >

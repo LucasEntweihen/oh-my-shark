@@ -18,7 +18,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $Repo = "LucasEntweihen/oh-my-shark"
-$DefaultTag = "omsk-v0.0.18"
+$DefaultTag = "omsk-v0.0.19"
 $InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "omsk" }
 $NativeArchitecture = $env:PROCESSOR_ARCHITECTURE.ToLowerInvariant().Replace("amd64", "x64")
 if ($NativeArchitecture -notin @("x64", "arm64")) {
