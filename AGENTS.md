@@ -112,3 +112,7 @@ Você é o Bible Strong Scholar. Você analisa textos sagrados, números de Stro
    - Quando um agente precisa de trabalho de outro, ele formula um contrato de entrada e saída explícito.
    - O agente receptor valida as pré-condições antes de executar.
    - Falhas ativam a cadeia de contingência configurada nos fallbacks.
+
+## 3. Diretrizes de Releases e Distribuição
+
+1. **Obrigatoriedade de Assets Completos:** Toda e qualquer release (`omsk-v*` / `ohms-v*`) DEVE impreterivelmente conter os binários compilados (`omsk-windows-x64.exe`, `ohms-windows-x64.exe`, variantes Linux e macOS, `install.ps1`, `install.sh`, configs e hashes). Nunca publicar uma release apenas com scripts vazios ou sem os executáveis exigidos pelo auto-updater (`omsk update`).

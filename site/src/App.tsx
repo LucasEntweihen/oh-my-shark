@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { siGithub, siLinkedin, siX } from "simple-icons";
+import { siGithub, siLinkedin } from "simple-icons";
 import { LOCALE_KEY, dict, initLocale } from "./i18n";
 import type { Locale, Strings } from "./i18n";
 import { applyTheme, initTheme } from "./theme";
@@ -28,9 +28,8 @@ const COMMANDS: Record<OS, Record<Method, string[]>> = {
   },
 };
 const SOCIALS = [
-  { icon: siX, key: "socialX", href: "https://x.com/soupraga" },
   { icon: siGithub, key: "socialGithub", href: "https://github.com/LucasEntweihen" },
-  { icon: siLinkedin, key: "socialLinkedin", href: "https://www.linkedin.com/in/eduardomdp/" },
+  { icon: siLinkedin, key: "socialLinkedin", href: "https://www.linkedin.com/in/lucas-guerriero-286665364/?isSelfProfile=true" },
 ] as const;
 
 function fallbackCopy(text: string): boolean {
