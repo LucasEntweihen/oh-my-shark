@@ -23,7 +23,7 @@ export const APP_NAME: string = "omsk";
 export const DISPLAY_NAME: string = "ohmyshark";
 
 /** Downstream product version, independent of the upstream technical VERSION. */
-export const PRODUCT_VERSION: string = "0.0.15";
+export const PRODUCT_VERSION: string = "0.0.18";
 export const PRODUCT_BYLINE: string = "made by LucasEntweihen";
 
 /** Config directory name (e.g. ".omsk") */

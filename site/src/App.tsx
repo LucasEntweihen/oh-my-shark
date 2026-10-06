@@ -441,7 +441,7 @@ export default function App() {
                     <span className="dot green" />
                   </div>
                   <span className="terminal-title">ohms // terminal bootstrap</span>
-                  <span className="terminal-spec">v0.0.15</span>
+                  <span className="terminal-spec">v0.0.18</span>
                 </div>
 
                 <div className="terminal-body">
@@ -679,7 +679,7 @@ export default function App() {
               </a>
               <span className="dot-sep" aria-hidden="true">•</span>
               <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.15"
+                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.18"
                 target="_blank"
                 rel="noopener noreferrer"
               >
