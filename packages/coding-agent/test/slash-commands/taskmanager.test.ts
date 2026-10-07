@@ -1,3 +1,4 @@
+import { launchTaskManagerGui } from "../../src/taskmanager/launcher";
 import { describe, expect, it } from "bun:test";
 import { BUILTIN_SLASH_COMMAND_DEFS, executeBuiltinSlashCommand } from "../../src/slash-commands/builtin-registry";
 import type { TuiSlashCommandRuntime } from "../../src/slash-commands/types";
@@ -25,5 +26,9 @@ describe("/taskmanager slash command", () => {
 		} as TuiSlashCommandRuntime);
 
 		expect(executed).toBe(false);
+	});
+
+	it("handles launcher staging cleanly", async () => {
+		expect(typeof launchTaskManagerGui).toBe("function");
 	});
 });

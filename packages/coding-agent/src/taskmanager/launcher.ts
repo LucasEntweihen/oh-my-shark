@@ -1,19 +1,13 @@
-import * as path from "node:path";
-import * as fs from "node:fs";
 import { checkPythonKernelAvailability } from "../eval/py/kernel";
+import { stageRunnerScript } from "../eval/runner-cache";
 import { logger } from "@oh-my-pi/pi-utils";
+import TASKMANAGER_SCRIPT from "./taskmanager.py" with { type: "text" };
 
 /**
  * Launch the Python Task Manager GUI in a detached, independent process.
  */
 export async function launchTaskManagerGui(cwd?: string): Promise<{ ok: boolean; reason?: string }> {
 	const workingDir = cwd ?? process.cwd();
-	const scriptPath = path.join(import.meta.dir, "taskmanager.py");
-
-	if (!fs.existsSync(scriptPath)) {
-		return { ok: false, reason: `TaskManager script not found at ${scriptPath}` };
-	}
-
 	const availability = await checkPythonKernelAvailability(workingDir);
 	if (!availability.ok || !availability.pythonPath) {
 		return {
@@ -21,8 +15,8 @@ export async function launchTaskManagerGui(cwd?: string): Promise<{ ok: boolean;
 			reason: availability.reason ?? "Python interpreter not found. Please install Python 3.8+ or configure python.interpreter.",
 		};
 	}
-
 	try {
+		const scriptPath = await stageRunnerScript("omp-taskmanager-gui", "py", TASKMANAGER_SCRIPT);
 		const pythonBin = availability.pythonPath;
 		// Spawn Python GUI detached with its own window
 		const child = Bun.spawn([pythonBin, scriptPath], {
