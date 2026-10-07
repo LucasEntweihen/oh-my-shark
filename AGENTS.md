@@ -116,3 +116,11 @@ Você é o Bible Strong Scholar. Você analisa textos sagrados, números de Stro
 ## 3. Diretrizes de Releases e Distribuição
 
 1. **Obrigatoriedade de Assets Completos:** Toda e qualquer release (`omsk-v*` / `ohms-v*`) DEVE impreterivelmente conter os binários compilados (`omsk-windows-x64.exe`, `ohms-windows-x64.exe`, variantes Linux e macOS, `install.ps1`, `install.sh`, configs e hashes). Nunca publicar uma release apenas com scripts vazios ou sem os executáveis exigidos pelo auto-updater (`omsk update`).
+2. **Conteúdo Exclusivo para IA:** As releases devem ser construídas e distribuídas estritamente com conteúdo, ferramentas e binários otimizados **PARA A IA** (agente autônomo, ferramentas integradas, runtimes e modelos).
+
+## 4. Padrões de Engenharia, Commits e Mecânicas
+
+1. **Padrões Rigorosos de Commit (Conventional Commits):**
+   - Todo commit DEVE seguir o padrão convencional (`feat(...)`, `fix(...)`, `chore(...)`, `refactor(...)`, etc.) com mensagens claras, em minúsculas e sem pontuação final.
+2. **Mecânicas 100% Redondinhas (Zero Tolerância a Falhas):**
+   - Todas as mecânicas, fluxos de execução, integrações de comandos, ferramentas, slash commands e processos em background DEVEM funcionar de ponta a ponta sem gambiarras, com caminhos validados, tipagem exata e testes automatizados passando.

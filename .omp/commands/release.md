@@ -37,5 +37,10 @@ git push origin main
 git tag -f v$ARGUMENTS && git push origin v$ARGUMENTS --force
 bun scripts/release.ts watch
 ```
-
 `watch`: re-watches CI for current commit until all checks pass.
+
+## Diretrizes Mandatórias de Release & Engenharia
+
+1. **Padrão de Commit Mandatório:** Seguir rigorosamente Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`).
+2. **Conteúdo Estritamente Para IA:** As releases devem conter apenas ferramentas, binários e artefatos dedicados e otimizados **PARA A IA**.
+3. **Mecânicas 100% Redondinhas:** Nenhuma release ou entrega pode conter fluxos quebrados, caminhos virtuais inválidos ou pendências não resolvidas.
