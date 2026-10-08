@@ -1,803 +1,829 @@
 """
-Terminal de Tarefas — janela translúcida, sem bordas, com cara e funcionalidade de terminal.
+OhMyShark Ultra Task & Process Manager (taskmanager.py)
+Recriado do Zero com Telemetria em Tempo Real, Processos, Gráficos Vetoriais,
+Gerenciamento de Tarefas com Prioridades e Painel de Agentes de IA OhMyShark.
 
-- Só fecha pelo botão ✕ do menu no canto superior direito (Alt+F4 e `exit` são ignorados).
-- Menu com 3 botões: ◉ fixar no topo | ◐ transparência | ✕ fechar.
-- Terminal de verdade: `cd`, `cd ..`, `cd ~`, `cd -`, `D:` (Windows), Tab completa caminhos,
-  setas ↑/↓ navegam no histórico, Ctrl+C interrompe o comando em execução,
-  e qualquer outro comando (git, python, npm, dir, ls...) roda na pasta atual.
-- Painel de tarefas no topo (a divisória pode ser arrastada):
-  botões ✎ editar / ✓ feita / ✕ remover / ⌫ limpar feitas / ➕ adicionar, duplo clique = concluir,
-  Delete = remover, clique direito = remover.
-- Também dá para gerenciar tarefas pelo terminal:
-      todo                lista
-      todo add <texto>       cria
-      todo edit <n> <texto>  edita (sem <texto>: abre no prompt para você ajustar)
-      todo done <n...>       marca como feita (só quando VOCÊ mandar)
-      todo undone <n...>     reabre
-      todo rm <n...>         remove (aceita 1 3 5 ou 2-4)
-      todo clear             remove as concluídas
-- Tarefas salvas em tarefas.json (mesma pasta do script).
-
-Uso: python taskmanager.py   (Python 3 com tkinter, nada para instalar)
+Zero dependências externas obrigatórias (100% Python Standard Library + Tkinter nativo).
+Suporta aceleração opcional com psutil se presente no ambiente.
 """
 
+import datetime
 import getpass
 import json
+import math
 import os
+import platform
 import queue
 import re
 import signal
 import socket
 import subprocess
+import sys
 import threading
-import ctypes
+import time
 import tkinter as tk
 import tkinter.font as tkfont
+from collections import deque
 from pathlib import Path
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
-ARQUIVO = Path(__file__).with_name("tarefas.json")
+# Tenta carregar psutil opcionalmente para máxima performance
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    psutil = None
+    HAS_PSUTIL = False
+
+# Tenta carregar ctypes no Windows para telemetria nativa sem psutil
+if os.name == "nt":
+    import ctypes
+    from ctypes import wintypes
+    HAS_CTYPES = True
+else:
+    HAS_CTYPES = False
+
 WIN = os.name == "nt"
 SEM_JANELA = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-ANSI = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
+ANSI_REGEX = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
 
-# Cores
-BG = "#0c0c14"
-PAINEL = "#12121c"
-BARRA = "#08080e"
-SELECAO = "#2a2a3d"
-FG = "#cdd6f4"
-BRANCO = "#ffffff"
-MUDO = "#6c7086"
-VERDE = "#a6e3a1"
-AZUL = "#89b4fa"
-VERMELHO = "#f38ba8"
-AMARELO = "#f9e2af"
+# Caminhos de persistência
+DIR_CONFIG = Path.home() / ".omsk"
+DIR_CONFIG.mkdir(parents=True, exist_ok=True)
+ARQUIVO_TAREFAS = DIR_CONFIG / "tarefas.json"
 
-
-def codificacao_saida():
-    if WIN:
-        try:
-            return "cp%d" % ctypes.windll.kernel32.GetOEMCP()
-        except Exception:
-            return "cp850"
-    return "utf-8"
+# ==============================================================================
+# PALETA DE CORES CYBERPUNK / SHARK ULTRA
+# ==============================================================================
+BG_DARK = "#070A13"         # Fundo principal ultra escuro
+BG_PANEL = "#0D1322"        # Painéis e cards
+BG_CARD = "#141D33"         # Cards internos e inputs
+BG_HEADER = "#090D18"       # Barra de título e status
+CYAN_NEON = "#00F0FF"       # Destaque primário Neon Shark
+CYAN_DIM = "#00A3B0"        # Ciano atenuado
+GOLD_ACCENT = "#D4AF37"     # Destaque dourado bíblico / pro
+GREEN_LIVE = "#10B981"      # Status ativo / saudável
+RED_ALERT = "#EF4444"       # Alerta / Erro / Kill
+PURPLE_AI = "#A855F7"       # Agentes / IA
+FG_LIGHT = "#F1F5F9"        # Texto principal
+FG_MUTED = "#64748B"        # Texto secundário
+FG_SUBTLE = "#334155"       # Bordas sutis
+BORDER_COLOR = "#1E293B"    # Bordas de divisórias
+HOVER_COLOR = "#1E2C4A"     # Hover de botões
+SELECT_COLOR = "#003D4D"    # Seleção de linhas
 
 
 def escolher_fonte(root):
     disponiveis = set(tkfont.families(root))
-    for nome in ("Cascadia Mono", "Consolas", "Menlo", "DejaVu Sans Mono",
-                 "Liberation Mono", "Courier New"):
-        if nome in disponiveis:
-            return nome
+    for f in ("Consolas", "Cascadia Code", "Fira Code", "JetBrains Mono", "Courier New", "DejaVu Sans Mono", "Courier"):
+        if f in disponiveis:
+            return f
     return "Courier"
 
 
-class App:
+def formatar_bytes(b):
+    if b < 1024:
+        return f"{b} B"
+    elif b < 1024 * 1024:
+        return f"{b/1024:.1f} KB"
+    elif b < 1024 * 1024 * 1024:
+        return f"{b/(1024*1024):.1f} MB"
+    else:
+        return f"{b/(1024*1024*1024):.2f} GB"
+
+
+# ==============================================================================
+# COLETOR DE TELEMETRIA NATIVO (FALLBACK ROBUSTO SEM PSUTIL)
+# ==============================================================================
+class NativeMetrics:
     def __init__(self):
-        self.root = r = tk.Tk()
-        r.title("Terminal de Tarefas")
-        r.overrideredirect(True)                 # sem barra nativa (sem X do sistema)
-        r.geometry("720x540+100+100")
-        r.minsize(460, 360)
-        r.configure(bg=BARRA)
+        self.prev_cpu_times = None
+        self.prev_cpu_calc_time = None
+        self.num_cpus = os.cpu_count() or 4
+        self.setup_windows_memory()
 
-        self.niveis = [0.95, 0.85, 0.70, 0.55]   # níveis de opacidade
-        self.nivel = 1
-        r.attributes("-alpha", self.niveis[self.nivel])
+    def setup_windows_memory(self):
+        if WIN and HAS_CTYPES:
+            class MEMORYSTATUSEX(ctypes.Structure):
+                _fields_ = [
+                    ("dwLength", wintypes.DWORD),
+                    ("dwMemoryLoad", wintypes.DWORD),
+                    ("ullTotalPhys", ctypes.c_uint64),
+                    ("ullAvailPhys", ctypes.c_uint64),
+                    ("ullTotalPageFile", ctypes.c_uint64),
+                    ("ullAvailPageFile", ctypes.c_uint64),
+                    ("ullTotalVirtual", ctypes.c_uint64),
+                    ("ullAvailVirtual", ctypes.c_uint64),
+                    ("ullAvailExtendedVirtual", ctypes.c_uint64),
+                ]
+            self.MEMORYSTATUSEX = MEMORYSTATUSEX
+            self.kernel32 = ctypes.windll.kernel32
 
-        self.topo = True
-        r.attributes("-topmost", True)
+    def get_system_metrics(self):
+        cpu_percent = 0.0
+        ram_percent = 0.0
+        ram_used = 0
+        ram_total = 1024 * 1024 * 1024 * 8  # 8GB default fallback
 
-        # Ignora qualquer tentativa de fechar fora do botão ✕ (ex.: Alt+F4)
-        r.protocol("WM_DELETE_WINDOW", lambda: None)
+        if HAS_PSUTIL:
+            try:
+                cpu_percent = psutil.cpu_percent(interval=None)
+                mem = psutil.virtual_memory()
+                ram_percent = mem.percent
+                ram_used = mem.used
+                ram_total = mem.total
+                return cpu_percent, ram_percent, ram_used, ram_total
+            except Exception:
+                pass
 
-        self.fonte = escolher_fonte(r)
-        self.tam = 10
-        self.enc = codificacao_saida()
-        try:
-            self.usuario = getpass.getuser()
-        except Exception:
-            self.usuario = "user"
-        self.host = socket.gethostname().split(".")[0]
+        # Windows Nativo
+        if WIN and HAS_CTYPES:
+            try:
+                stat = self.MEMORYSTATUSEX()
+                stat.dwLength = ctypes.sizeof(self.MEMORYSTATUSEX)
+                self.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
+                ram_percent = float(stat.dwMemoryLoad)
+                ram_total = stat.ullTotalPhys
+                ram_used = ram_total - stat.ullAvailPhys
+            except Exception:
+                pass
 
+            try:
+                idle = ctypes.c_uint64()
+                kernel = ctypes.c_uint64()
+                user = ctypes.c_uint64()
+                if self.kernel32.GetSystemTimes(ctypes.byref(idle), ctypes.byref(kernel), ctypes.byref(user)):
+                    curr_times = (idle.value, kernel.value, user.value)
+                    curr_time = time.time()
+                    if self.prev_cpu_times and self.prev_cpu_calc_time:
+                        dt = curr_time - self.prev_cpu_calc_time
+                        if dt > 0.3:
+                            d_idle = curr_times[0] - self.prev_cpu_times[0]
+                            d_kernel = curr_times[1] - self.prev_cpu_times[1]
+                            d_user = curr_times[2] - self.prev_cpu_times[2]
+                            total_sys = d_kernel + d_user
+                            if total_sys > 0:
+                                busy = total_sys - d_idle
+                                cpu_percent = max(0.0, min(100.0, (busy / total_sys) * 100.0))
+                            self.prev_cpu_times = curr_times
+                            self.prev_cpu_calc_time = curr_time
+                    else:
+                        self.prev_cpu_times = curr_times
+                        self.prev_cpu_calc_time = curr_time
+            except Exception:
+                pass
+        elif platform.system() == "Linux":
+            try:
+                with open("/proc/meminfo", "r") as f:
+                    lines = f.readlines()
+                    total = 0
+                    avail = 0
+                    for line in lines:
+                        if line.startswith("MemTotal:"):
+                            total = int(line.split()[1]) * 1024
+                        elif line.startswith("MemAvailable:"):
+                            avail = int(line.split()[1]) * 1024
+                    if total > 0:
+                        ram_total = total
+                        ram_used = total - avail
+                        ram_percent = (ram_used / ram_total) * 100.0
+            except Exception:
+                pass
+
+        return cpu_percent, ram_percent, ram_used, ram_total
+
+    def get_process_list(self):
+        procs = []
+        if HAS_PSUTIL:
+            try:
+                for p in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_info', 'status', 'username']):
+                    try:
+                        info = p.info
+                        mem = info.get('memory_info')
+                        rss = mem.rss if mem else 0
+                        procs.append({
+                            "pid": info['pid'],
+                            "name": info['name'] or "Unknown",
+                            "cpu": info.get('cpu_percent') or 0.0,
+                            "ram": rss,
+                            "status": info.get('status') or "running",
+                            "user": info.get('username') or "N/A"
+                        })
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        continue
+                return procs
+            except Exception:
+                pass
+
+        # Fallback Windows: tasklist
+        if WIN:
+            try:
+                cmd = ["tasklist", "/FO", "CSV", "/NH"]
+                res = subprocess.run(cmd, capture_output=True, text=True, creationflags=SEM_JANELA, timeout=3)
+                lines = res.stdout.strip().split("\n")
+                for line in lines:
+                    parts = [p.strip('"\r') for p in line.split('","')]
+                    if len(parts) >= 5:
+                        name = parts[0]
+                        try:
+                            pid = int(parts[1])
+                            mem_str = parts[4].replace(".", "").replace(",", "").replace(" K", "").replace("K", "").strip()
+                            mem_bytes = int(mem_str) * 1024
+                        except Exception:
+                            pid = 0
+                            mem_bytes = 0
+                        procs.append({
+                            "pid": pid,
+                            "name": name,
+                            "cpu": 0.0,
+                            "ram": mem_bytes,
+                            "status": "running",
+                            "user": "System/User"
+                        })
+            except Exception:
+                pass
+        else:
+            try:
+                cmd = ["ps", "-eo", "pid,user,%cpu,rss,comm"]
+                res = subprocess.run(cmd, capture_output=True, text=True, timeout=3)
+                lines = res.stdout.strip().split("\n")[1:]
+                for line in lines:
+                    parts = line.split(None, 4)
+                    if len(parts) >= 5:
+                        try:
+                            pid = int(parts[0])
+                            user = parts[1]
+                            cpu = float(parts[2])
+                            rss = int(parts[3]) * 1024
+                            name = parts[4]
+                            procs.append({
+                                "pid": pid,
+                                "name": name,
+                                "cpu": cpu,
+                                "ram": rss,
+                                "status": "running",
+                                "user": user
+                            })
+                        except Exception:
+                            continue
+            except Exception:
+                pass
+
+        return procs
+
+
+# ==============================================================================
+# WIDGET CUSTOMIZADO: GRAPH CANVAS (OSCILLOSCOPE ULTRA HUD)
+# ==============================================================================
+class SmoothGraph(tk.Canvas):
+    def __init__(self, master, label="CPU", color=CYAN_NEON, max_points=60, **kwargs):
+        super().__init__(master, bg=BG_CARD, highlightthickness=1, highlightbackground=BORDER_COLOR, **kwargs)
+        self.label = label
+        self.color = color
+        self.data = deque([0.0] * max_points, maxlen=max_points)
+        self.bind("<Configure>", lambda e: self.redraw())
+
+    def push(self, val):
+        self.data.append(max(0.0, min(100.0, float(val))))
+        self.redraw()
+
+    def redraw(self):
+        self.delete("all")
+        w = self.winfo_width()
+        h = self.winfo_height()
+        if w < 10 or h < 10:
+            return
+
+        # Grid de fundo
+        for y in range(0, h, 24):
+            self.create_line(0, y, w, y, fill=BORDER_COLOR, dash=(2, 4))
+        for x in range(0, w, 32):
+            self.create_line(x, 0, x, h, fill=BORDER_COLOR, dash=(2, 4))
+
+        # Desenha linha gráfica com gradiente e preenchimento
+        pts = list(self.data)
+        n = len(pts)
+        if n < 2:
+            return
+
+        step = w / (n - 1)
+        coords = []
+        for i, val in enumerate(pts):
+            x = i * step
+            y = h - (val / 100.0) * (h - 12) - 6
+            coords.extend([x, y])
+
+        # Preenchimento poligonal sob a curva
+        poly_coords = [0, h] + coords + [w, h]
+        self.create_polygon(poly_coords, fill=BG_PANEL, outline="")
+
+        # Linha Neon
+        self.create_line(coords, fill=self.color, width=2, smooth=True)
+
+        # Label e valor atual
+        curr = pts[-1]
+        self.create_text(10, 12, text=f"{self.label}: {curr:.1f}%", fill=self.color,
+                         anchor="w", font=("Consolas", 10, "bold"))
+
+
+# ==============================================================================
+# APLICAÇÃO PRINCIPAL: TASK MANAGER ULTRA
+# ==============================================================================
+class TaskManagerApp:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("OhMyShark Task & Process Manager Ultra")
+        self.root.geometry("980x680+80+80")
+        self.root.minsize(740, 500)
+        self.root.configure(bg=BG_DARK)
+
+        # Configura estilo do ttk
+        self.fonte_mono = escolher_fonte(self.root)
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+        self.configurar_estilos_ttk()
+
+        self.telemetria = NativeMetrics()
+        self.tarefas = self.carregar_tarefas()
+        self.processos = []
+        self.filtro_proc = ""
+        self.coluna_ordem = "cpu"
+        self.ordem_reversa = True
+
+        # Estados de terminal integrado
         self.cwd = Path.home()
-        self.anterior = self.cwd
-        self.historico = []
-        self.pos_hist = 0
-        self.proc = None
-        self.ocupado = False
-        self.fila = queue.Queue()
-        self.tarefas = self.carregar()
+        self.historico_cmd = []
+        self.idx_hist = 0
+        self.proc_terminal = None
+        self.fila_terminal = queue.Queue()
 
-        self.montar()
-        self.atualizar_tarefas()
-        self.banner()
-        self.atualizar_prompt()
-        r.after(40, self.drenar_fila)
-        r.after(150, self.entrada.focus_force)
+        self.construir_interface()
+        self.iniciar_threads_background()
 
-    # ------------------------------------------------------------------ dados
-    def carregar(self):
+    def configurar_estilos_ttk(self):
+        s = self.style
+        s.configure("TNotebook", background=BG_DARK, borderwidth=0)
+        s.configure("TNotebook.Tab", background=BG_PANEL, foreground=FG_MUTED,
+                    font=(self.fonte_mono, 10, "bold"), padding=[16, 8], borderwidth=0)
+        s.map("TNotebook.Tab",
+              background=[("selected", BG_CARD), ("active", HOVER_COLOR)],
+              foreground=[("selected", CYAN_NEON), ("active", FG_LIGHT)])
+
+        s.configure("Treeview", background=BG_CARD, foreground=FG_LIGHT,
+                    fieldbackground=BG_CARD, font=(self.fonte_mono, 9),
+                    rowheight=24, borderwidth=0)
+        s.configure("Treeview.Heading", background=BG_PANEL, foreground=CYAN_NEON,
+                    font=(self.fonte_mono, 9, "bold"), relief="flat")
+        s.map("Treeview.Heading", background=[("active", HOVER_COLOR)])
+        s.map("Treeview", background=[("selected", SELECT_COLOR)],
+              foreground=[("selected", CYAN_NEON)])
+
+    def carregar_tarefas(self):
+        if not ARQUIVO_TAREFAS.exists():
+            return [
+                {"texto": "Configurar modelos e rotas do OMSK", "feita": False, "prioridade": "Alta", "data": "2026-10-08"},
+                {"texto": "Validar telemetria de processos em tempo real", "feita": True, "prioridade": "Média", "data": "2026-10-08"},
+                {"texto": "Executar auditoria de segurança dos subagentes", "feita": False, "prioridade": "Crítica", "data": "2026-10-08"},
+            ]
         try:
-            dados = json.loads(ARQUIVO.read_text(encoding="utf-8"))
-            return [{"texto": str(t["texto"]), 
-                     "feita": bool(t.get("feita", False)),
-                     "prioridade": str(t.get("prioridade", "Baixa")),
-                     "data": str(t.get("data", ""))}
-                    for t in dados]
+            return json.loads(ARQUIVO_TAREFAS.read_text(encoding="utf-8"))
         except Exception:
             return []
 
-    def salvar(self):
+    def salvar_tarefas(self):
         try:
-            ARQUIVO.write_text(json.dumps(self.tarefas, ensure_ascii=False, indent=2),
-                               encoding="utf-8")
+            ARQUIVO_TAREFAS.write_text(json.dumps(self.tarefas, ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception as e:
-            print("Erro ao salvar:", e)
+            print("Erro ao salvar tarefas:", e)
 
-    # -------------------------------------------------------------- interface
-    def botao(self, pai, texto, comando, cor=FG, bg=BARRA, **kw):
-        b = tk.Label(pai, text=texto, bg=bg, fg=cor, cursor="hand2",
-                     font=(self.fonte, self.tam), **kw)
-        b.bind("<Button-1>", lambda e: comando())
-        b.bind("<Enter>", lambda e: b.config(bg=SELECAO))
-        b.bind("<Leave>", lambda e: b.config(bg=bg))
-        return b
+    def construir_interface(self):
+        # 1. HEADER HUD SUPERIOR COM TELEMETRIA
+        self.header = tk.Frame(self.root, bg=BG_HEADER, height=72, highlightthickness=1, highlightbackground=BORDER_COLOR)
+        self.header.pack(fill="x", side="top", padx=8, pady=(8, 4))
+        self.header.pack_propagate(False)
 
-    def montar(self):
-        r = self.root
+        # Logo / Branding OhMyShark
+        brand_frame = tk.Frame(self.header, bg=BG_HEADER)
+        brand_frame.pack(side="left", padx=16, pady=8)
+        tk.Label(brand_frame, text="🦈 OHMYSHARK", font=(self.fonte_mono, 13, "bold"),
+                 fg=CYAN_NEON, bg=BG_HEADER).pack(anchor="w")
+        tk.Label(brand_frame, text="ULTRA TASK & PROCESS HUD", font=(self.fonte_mono, 8),
+                 fg=GOLD_ACCENT, bg=BG_HEADER).pack(anchor="w")
 
-        # ---- Barra superior: arrastar + menu de 3 botões à direita
-        barra = tk.Frame(r, bg=BARRA, height=32)
-        barra.pack(fill="x")
-        barra.pack_propagate(False)
+        # Cards HUD métricas rápidas
+        self.hud_cpu_val = tk.Label(self.header, text="CPU: 0.0%", font=(self.fonte_mono, 11, "bold"),
+                                    fg=GREEN_LIVE, bg=BG_CARD, padx=12, pady=6, relief="flat",
+                                    highlightthickness=1, highlightbackground=BORDER_COLOR)
+        self.hud_cpu_val.pack(side="left", padx=8, pady=12)
 
-        titulo = tk.Label(barra, text="  ▍terminal de tarefas", bg=BARRA, fg=MUDO,
-                          font=(self.fonte, 10, "bold"), anchor="w")
-        titulo.pack(side="left", fill="both", expand=True)
-        for w in (barra, titulo):
-            w.bind("<ButtonPress-1>", self.inicio_arrasto)
-            w.bind("<B1-Motion>", self.arrastar)
+        self.hud_ram_val = tk.Label(self.header, text="RAM: 0.0% (0 MB)", font=(self.fonte_mono, 11, "bold"),
+                                    fg=CYAN_NEON, bg=BG_CARD, padx=12, pady=6, relief="flat",
+                                    highlightthickness=1, highlightbackground=BORDER_COLOR)
+        self.hud_ram_val.pack(side="left", padx=8, pady=12)
 
-        self.botao(barra, "✕", self.fechar, VERMELHO, BARRA, width=4).pack(side="right", fill="y")
-        self.botao(barra, "◐", self.trocar_opacidade, FG, BARRA, width=4).pack(side="right", fill="y")
-        self.b_topo = self.botao(barra, "◉", self.alternar_topo, AZUL, BARRA, width=4)
-        self.b_topo.pack(side="right", fill="y")
+        self.hud_procs_val = tk.Label(self.header, text="PROCESSOS: 0", font=(self.fonte_mono, 11, "bold"),
+                                      fg=PURPLE_AI, bg=BG_CARD, padx=12, pady=6, relief="flat",
+                                      highlightthickness=1, highlightbackground=BORDER_COLOR)
+        self.hud_procs_val.pack(side="left", padx=8, pady=12)
 
-        # ---- Corpo: painel de tarefas (cima) + terminal (baixo)
-        paned = tk.PanedWindow(r, orient="vertical", sashwidth=5, bg=BARRA,
-                               bd=0, sashrelief="flat", opaqueresize=True)
-        paned.pack(fill="both", expand=True)
+        # Botão Ação Rápida Fechar / Atualizar
+        btn_refresh = tk.Label(self.header, text="🔄 REFRESH", font=(self.fonte_mono, 9, "bold"),
+                               fg=FG_LIGHT, bg=BG_PANEL, padx=12, pady=6, cursor="hand2",
+                               highlightthickness=1, highlightbackground=BORDER_COLOR)
+        btn_refresh.pack(side="right", padx=12, pady=12)
+        btn_refresh.bind("<Button-1>", lambda e: self.atualizar_ciclo())
+        btn_refresh.bind("<Enter>", lambda e: btn_refresh.config(bg=HOVER_COLOR))
+        btn_refresh.bind("<Leave>", lambda e: btn_refresh.config(bg=BG_PANEL))
 
-        # Painel de tarefas
-        painel = tk.Frame(paned, bg=PAINEL)
-        cab = tk.Frame(painel, bg=PAINEL)
-        cab.pack(fill="x")
-        tk.Label(cab, text=" TAREFAS", bg=PAINEL, fg=MUDO,
-                 font=(self.fonte, 9, "bold")).pack(side="left", pady=(4, 2))
-        self.info = tk.Label(cab, text="", bg=PAINEL, fg=MUDO, font=(self.fonte, 9))
-        self.info.pack(side="right", padx=8)
+        # 2. NOTEBOOK / ABAS PRINCIPAIS
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill="both", expand=True, padx=8, pady=4)
 
-        corpo = tk.Frame(painel, bg=PAINEL)
-        corpo.pack(fill="both", expand=True, padx=6)
-        self.lista = tk.Listbox(
-            corpo, bg=PAINEL, fg=FG, selectbackground=SELECAO, selectforeground=BRANCO,
-            activestyle="none", relief="flat", highlightthickness=0, borderwidth=0,
-            exportselection=False, font=(self.fonte, self.tam))
-        rolagem = tk.Scrollbar(corpo, command=self.lista.yview)
-        self.lista.config(yscrollcommand=rolagem.set)
-        rolagem.pack(side="right", fill="y")
-        self.lista.pack(side="left", fill="both", expand=True)
-        self.lista.bind("<Double-Button-1>", self.duplo_clique)
-        self.lista.bind("<Delete>", lambda e: self.remover_selecionada())
-        self.lista.bind("<Button-3>", self.clique_direito)
+        # Criação das Abas
+        self.tab_processos = tk.Frame(self.notebook, bg=BG_DARK)
+        self.tab_graficos = tk.Frame(self.notebook, bg=BG_DARK)
+        self.tab_tarefas = tk.Frame(self.notebook, bg=BG_DARK)
+        self.tab_agentes = tk.Frame(self.notebook, bg=BG_DARK)
+        self.tab_terminal = tk.Frame(self.notebook, bg=BG_DARK)
 
-        botoes = tk.Frame(painel, bg=PAINEL)
-        botoes.pack(fill="x", padx=6, pady=(4, 6))
-        for texto, cmd, cor in (("✎ editar", self.editar_selecionada, AZUL),
-                                ("✓ feita/reabrir", self.alternar_selecionada, VERDE),
-                                ("✕ remover", self.remover_selecionada, VERMELHO),
-                                ("⌫ limpar feitas", self.limpar_feitas, AMARELO),
-                                ("➕ adicionar", self.abrir_janela_adicionar, VERDE)):
-            self.botao(botoes, texto, cmd, cor, PAINEL, padx=8, pady=2).pack(side="left", padx=(0, 6))
+        self.notebook.add(self.tab_processos, text="⚡ Processos do Sistema")
+        self.notebook.add(self.tab_graficos, text="📊 Gráficos em Tempo Real")
+        self.notebook.add(self.tab_tarefas, text="📋 Gerenciador de Tarefas")
+        self.notebook.add(self.tab_agentes, text="🤖 Agentes & IA OMSK")
+        self.notebook.add(self.tab_terminal, text="💻 Terminal Integrado")
 
-        # Terminal
-        term = tk.Frame(paned, bg=BG)
+        self.montar_aba_processos()
+        self.montar_aba_graficos()
+        self.montar_aba_tarefas()
+        self.montar_aba_agentes()
+        self.montar_aba_terminal()
 
-        linha = tk.Frame(term, bg=BG)
-        linha.pack(side="bottom", fill="x")
-        self.prompt = tk.Label(linha, text="", bg=BG, fg=VERDE,
-                               font=(self.fonte, self.tam, "bold"))
-        self.prompt.pack(side="left", padx=(8, 4), pady=4)
-        self.entrada = tk.Entry(linha, bg=BG, fg=BRANCO, insertbackground=BRANCO,
-                                relief="flat", highlightthickness=0, borderwidth=0,
-                                font=(self.fonte, self.tam))
-        self.entrada.pack(side="left", fill="x", expand=True, pady=4)
-        alca = tk.Label(linha, text="◢", bg=BG, fg=MUDO, cursor="size_nw_se")
-        alca.pack(side="right", padx=4)
-        alca.bind("<ButtonPress-1>", self.inicio_redim)
-        alca.bind("<B1-Motion>", self.redimensionar)
+        # 3. STATUS BAR INFERIOR
+        self.statusbar = tk.Frame(self.root, bg=BG_HEADER, height=26, highlightthickness=1, highlightbackground=BORDER_COLOR)
+        self.statusbar.pack(fill="x", side="bottom", padx=8, pady=(0, 8))
+        self.lbl_status = tk.Label(self.statusbar, text="● Sistema Operacional Online | Engine Shark Ativo",
+                                   font=(self.fonte_mono, 8), fg=GREEN_LIVE, bg=BG_HEADER)
+        self.lbl_status.pack(side="left", padx=8)
 
-        self.saida = tk.Text(term, bg=BG, fg=FG, relief="flat", borderwidth=0,
-                             highlightthickness=0, wrap="char", padx=8, pady=6,
-                             font=(self.fonte, self.tam), state="disabled",
-                             insertwidth=0, spacing1=1)
-        sb = tk.Scrollbar(term, command=self.saida.yview)
-        self.saida.config(yscrollcommand=sb.set)
-        sb.pack(side="right", fill="y")
-        self.saida.pack(side="left", fill="both", expand=True)
+        self.lbl_user_host = tk.Label(self.statusbar, text=f"{getpass.getuser()}@{socket.gethostname()}",
+                                      font=(self.fonte_mono, 8), fg=FG_MUTED, bg=BG_HEADER)
+        self.lbl_user_host.pack(side="right", padx=8)
 
-        for tag, cor in (("out", FG), ("cmd", BRANCO), ("prompt", VERDE), ("path", AZUL),
-                         ("dim", MUDO), ("err", VERMELHO), ("ok", VERDE), ("dir", AZUL)):
-            self.saida.tag_config(tag, foreground=cor)
-        self.saida.tag_config("prompt", font=(self.fonte, self.tam, "bold"))
-        self.saida.tag_config("dir", font=(self.fonte, self.tam, "bold"))
+    # --------------------------------------------------------------------------
+    # ABA 1: PROCESSOS DO SISTEMA
+    # --------------------------------------------------------------------------
+    def montar_aba_processos(self):
+        f_top = tk.Frame(self.tab_processos, bg=BG_DARK)
+        f_top.pack(fill="x", padx=8, pady=8)
 
-        # Clicar na área de saída devolve o foco ao prompt (a menos que haja seleção)
-        self.saida.bind("<ButtonRelease-1>", self.foco_prompt)
+        tk.Label(f_top, text="Filtrar Processo:", font=(self.fonte_mono, 9),
+                 fg=CYAN_NEON, bg=BG_DARK).pack(side="left", padx=4)
 
-        paned.add(painel, minsize=90, height=170)
-        paned.add(term, minsize=140, stretch="always")
+        self.ent_busca_proc = tk.Entry(f_top, font=(self.fonte_mono, 9), bg=BG_CARD,
+                                       fg=FG_LIGHT, insertbackground=CYAN_NEON,
+                                       highlightthickness=1, highlightbackground=BORDER_COLOR)
+        self.ent_busca_proc.pack(side="left", fill="x", expand=True, padx=8)
+        self.ent_busca_proc.bind("<KeyRelease>", lambda e: self.filtrar_processos())
 
-        e = self.entrada
-        e.bind("<Return>", self.enviar)
-        e.bind("<Up>", self.hist_anterior)
-        e.bind("<Down>", self.hist_proximo)
-        e.bind("<Tab>", self.completar)
-        e.bind("<Control-c>", self.ctrl_c)
-        e.bind("<Control-l>", lambda ev: (self.limpar_tela(), "break")[1])
+        btn_kill = tk.Label(f_top, text="🛑 Encerrar Processo (Kill)", font=(self.fonte_mono, 9, "bold"),
+                            fg=RED_ALERT, bg=BG_CARD, padx=12, pady=4, cursor="hand2",
+                            highlightthickness=1, highlightbackground=RED_ALERT)
+        btn_kill.pack(side="right", padx=4)
+        btn_kill.bind("<Button-1>", lambda e: self.matar_processo_selecionado())
 
-    def foco_prompt(self, _):
-        if not self.saida.tag_ranges("sel"):
-            self.entrada.focus_set()
+        # Tabela Treeview
+        colunas = ("pid", "name", "cpu", "ram", "status", "user")
+        self.tree_procs = ttk.Treeview(self.tab_processos, columns=colunas, show="headings", selectmode="browse")
+        self.tree_procs.heading("pid", text="PID", command=lambda: self.ordenar_processos("pid"))
+        self.tree_procs.heading("name", text="Nome do Executável", command=lambda: self.ordenar_processos("name"))
+        self.tree_procs.heading("cpu", text="CPU %", command=lambda: self.ordenar_processos("cpu"))
+        self.tree_procs.heading("ram", text="Memória RAM", command=lambda: self.ordenar_processos("ram"))
+        self.tree_procs.heading("status", text="Estado", command=lambda: self.ordenar_processos("status"))
+        self.tree_procs.heading("user", text="Usuário", command=lambda: self.ordenar_processos("user"))
 
-    # ---------------------------------------------------------------- saída
-    def escrever(self, texto, tag="out"):
-        s = self.saida
-        s.config(state="normal")
-        s.insert("end", texto, tag)
-        if int(s.index("end-1c").split(".")[0]) > 3000:   # limita o histórico na tela
-            s.delete("1.0", "500.0")
-        s.config(state="disabled")
-        s.see("end")
+        self.tree_procs.column("pid", width=70, anchor="center")
+        self.tree_procs.column("name", width=260, anchor="w")
+        self.tree_procs.column("cpu", width=90, anchor="center")
+        self.tree_procs.column("ram", width=120, anchor="center")
+        self.tree_procs.column("status", width=90, anchor="center")
+        self.tree_procs.column("user", width=160, anchor="w")
 
-    def limpar_tela(self):
-        self.saida.config(state="normal")
-        self.saida.delete("1.0", "end")
-        self.saida.config(state="disabled")
+        scrollbar = ttk.Scrollbar(self.tab_processos, orient="vertical", command=self.tree_procs.yview)
+        self.tree_procs.configure(yscrollcommand=scrollbar.set)
 
-    def eco(self, cmd):
-        self.escrever(f"{self.usuario}@{self.host}", "prompt")
-        self.escrever(":", "dim")
-        self.escrever(self.caminho_curto(), "path")
-        self.escrever("$ ", "dim")
-        self.escrever(cmd + "\n", "cmd")
+        self.tree_procs.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=4)
+        scrollbar.pack(side="right", fill="y", padx=(0, 8), pady=4)
 
-    def caminho_curto(self):
-        p, h = str(self.cwd), str(Path.home())
-        if p == h:
-            return "~"
-        if p.startswith(h + os.sep):
-            return "~" + p[len(h):]
-        return p
-
-    def atualizar_prompt(self):
-        if self.ocupado:
-            self.prompt.config(text="⏳", fg=AMARELO)
+    def ordenar_processos(self, coluna):
+        if self.coluna_ordem == coluna:
+            self.ordem_reversa = not self.ordem_reversa
         else:
-            self.prompt.config(text=f"{self.usuario}@{self.host}:{self.caminho_curto()}$",
-                               fg=VERDE)
+            self.coluna_ordem = coluna
+            self.ordem_reversa = True if coluna in ("cpu", "ram") else False
+        self.renderizar_tabela_processos()
 
-    def banner(self):
-        self.escrever("Terminal de Tarefas", "prompt")
-        self.escrever("  —  digite ", "dim")
-        self.escrever("help", "cmd")
-        self.escrever(" para ver os comandos. Feche só pelo ✕ do menu.\n\n", "dim")
+    def filtrar_processos(self):
+        self.filtro_proc = self.ent_busca_proc.get().strip().lower()
+        self.renderizar_tabela_processos()
 
-    # -------------------------------------------------------------- comandos
-    def enviar(self, _=None):
-        cmd = self.entrada.get().strip()
-        self.entrada.delete(0, "end")
-        if self.ocupado:
-            self.escrever("processo em execução — use Ctrl+C para interromper\n", "err")
+    def renderizar_tabela_processos(self):
+        for item in self.tree_procs.get_children():
+            self.tree_procs.delete(item)
+
+        procs_filtrados = [p for p in self.processos if not self.filtro_proc or self.filtro_proc in p["name"].lower()]
+
+        if self.coluna_ordem in ("cpu", "ram", "pid"):
+            procs_filtrados.sort(key=lambda x: x.get(self.coluna_ordem, 0), reverse=self.ordem_reversa)
+        else:
+            procs_filtrados.sort(key=lambda x: str(x.get(self.coluna_ordem, "")).lower(), reverse=self.ordem_reversa)
+
+        for p in procs_filtrados[:150]:
+            self.tree_procs.insert("", "end", values=(
+                p["pid"],
+                p["name"],
+                f"{p['cpu']:.1f}%",
+                formatar_bytes(p["ram"]),
+                p["status"],
+                p["user"]
+            ))
+
+    def matar_processo_selecionado(self):
+        sel = self.tree_procs.selection()
+        if not sel:
+            messagebox.showwarning("Aviso", "Selecione um processo na tabela para encerrar.")
             return
-        self.eco(cmd)
+        item = self.tree_procs.item(sel[0])
+        pid = int(item["values"][0])
+        nome = item["values"][1]
+
+        if messagebox.askyesno("Confirmar Kill", f"Deseja forçar o encerramento do processo {nome} (PID: {pid})?"):
+            try:
+                if HAS_PSUTIL:
+                    p = psutil.Process(pid)
+                    p.kill()
+                elif WIN:
+                    subprocess.run(["taskkill", "/F", "/PID", str(pid)], creationflags=SEM_JANELA)
+                else:
+                    os.kill(pid, signal.SIGKILL)
+                messagebox.showinfo("Sucesso", f"Processo {nome} ({pid}) encerrado.")
+                self.atualizar_ciclo()
+            except Exception as ex:
+                messagebox.showerror("Erro", f"Falha ao encerrar processo: {ex}")
+
+    # --------------------------------------------------------------------------
+    # ABA 2: GRÁFICOS EM TEMPO REAL
+    # --------------------------------------------------------------------------
+    def montar_aba_graficos(self):
+        f_cards = tk.Frame(self.tab_graficos, bg=BG_DARK)
+        f_cards.pack(fill="both", expand=True, padx=8, pady=8)
+
+        # Gráfico CPU
+        self.graph_cpu = SmoothGraph(f_cards, label="USO TOTAL DE CPU", color=CYAN_NEON, height=180)
+        self.graph_cpu.pack(fill="both", expand=True, padx=4, pady=4)
+
+        # Gráfico RAM
+        self.graph_ram = SmoothGraph(f_cards, label="USO DE MEMÓRIA RAM", color=PURPLE_AI, height=180)
+        self.graph_ram.pack(fill="both", expand=True, padx=4, pady=4)
+
+    # --------------------------------------------------------------------------
+    # ABA 3: GERENCIADOR DE TAREFAS
+    # --------------------------------------------------------------------------
+    def montar_aba_tarefas(self):
+        f_top = tk.Frame(self.tab_tarefas, bg=BG_DARK)
+        f_top.pack(fill="x", padx=8, pady=8)
+
+        tk.Label(f_top, text="Nova Tarefa:", font=(self.fonte_mono, 9), fg=GOLD_ACCENT, bg=BG_DARK).pack(side="left", padx=4)
+        self.ent_tarefa = tk.Entry(f_top, font=(self.fonte_mono, 9), bg=BG_CARD, fg=FG_LIGHT,
+                                   insertbackground=CYAN_NEON, highlightthickness=1, highlightbackground=BORDER_COLOR)
+        self.ent_tarefa.pack(side="left", fill="x", expand=True, padx=8)
+        self.ent_tarefa.bind("<Return>", lambda e: self.adicionar_tarefa())
+
+        # Seletor de Prioridade
+        self.cbo_prio = ttk.Combobox(f_top, values=["Baixa", "Média", "Alta", "Crítica"], state="readonly", width=10)
+        self.cbo_prio.set("Média")
+        self.cbo_prio.pack(side="left", padx=4)
+
+        btn_add = tk.Label(f_top, text="➕ Adicionar", font=(self.fonte_mono, 9, "bold"),
+                           fg=CYAN_NEON, bg=BG_CARD, padx=12, pady=4, cursor="hand2",
+                           highlightthickness=1, highlightbackground=BORDER_COLOR)
+        btn_add.pack(side="left", padx=4)
+        btn_add.bind("<Button-1>", lambda e: self.adicionar_tarefa())
+
+        btn_del = tk.Label(f_top, text="🗑️ Remover", font=(self.fonte_mono, 9, "bold"),
+                           fg=RED_ALERT, bg=BG_CARD, padx=12, pady=4, cursor="hand2",
+                           highlightthickness=1, highlightbackground=BORDER_COLOR)
+        btn_del.pack(side="right", padx=4)
+        btn_del.bind("<Button-1>", lambda e: self.remover_tarefa())
+
+        btn_toggle = tk.Label(f_top, text="✔️ Concluir/Alternar", font=(self.fonte_mono, 9, "bold"),
+                              fg=GREEN_LIVE, bg=BG_CARD, padx=12, pady=4, cursor="hand2",
+                              highlightthickness=1, highlightbackground=BORDER_COLOR)
+        btn_toggle.pack(side="right", padx=4)
+        btn_toggle.bind("<Button-1>", lambda e: self.alternar_tarefa())
+
+        # Tabela de Tarefas
+        colunas = ("status", "prio", "desc", "data")
+        self.tree_tarefas = ttk.Treeview(self.tab_tarefas, columns=colunas, show="headings", selectmode="browse")
+        self.tree_tarefas.heading("status", text="Status")
+        self.tree_tarefas.heading("prio", text="Prioridade")
+        self.tree_tarefas.heading("desc", text="Descrição da Tarefa")
+        self.tree_tarefas.heading("data", text="Data de Criação")
+
+        self.tree_tarefas.column("status", width=90, anchor="center")
+        self.tree_tarefas.column("prio", width=100, anchor="center")
+        self.tree_tarefas.column("desc", width=460, anchor="w")
+        self.tree_tarefas.column("data", width=120, anchor="center")
+
+        scroll_t = ttk.Scrollbar(self.tab_tarefas, orient="vertical", command=self.tree_tarefas.yview)
+        self.tree_tarefas.configure(yscrollcommand=scroll_t.set)
+
+        self.tree_tarefas.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=4)
+        scroll_t.pack(side="right", fill="y", padx=(0, 8), pady=4)
+        self.renderizar_tarefas()
+
+    def adicionar_tarefa(self):
+        txt = self.ent_tarefa.get().strip()
+        if not txt:
+            return
+        prio = self.cbo_prio.get()
+        data_hj = datetime.date.today().isoformat()
+        self.tarefas.append({"texto": txt, "feita": False, "prioridade": prio, "data": data_hj})
+        self.ent_tarefa.delete(0, "end")
+        self.salvar_tarefas()
+        self.renderizar_tarefas()
+
+    def alternar_tarefa(self):
+        sel = self.tree_tarefas.selection()
+        if not sel:
+            return
+        idx = self.tree_tarefas.index(sel[0])
+        if 0 <= idx < len(self.tarefas):
+            self.tarefas[idx]["feita"] = not self.tarefas[idx]["feita"]
+            self.salvar_tarefas()
+            self.renderizar_tarefas()
+
+    def remover_tarefa(self):
+        sel = self.tree_tarefas.selection()
+        if not sel:
+            return
+        idx = self.tree_tarefas.index(sel[0])
+        if 0 <= idx < len(self.tarefas):
+            del self.tarefas[idx]
+            self.salvar_tarefas()
+            self.renderizar_tarefas()
+
+    def renderizar_tarefas(self):
+        for item in self.tree_tarefas.get_children():
+            self.tree_tarefas.delete(item)
+        for t in self.tarefas:
+            st = "✅ Concluída" if t["feita"] else "⏳ Pendente"
+            self.tree_tarefas.insert("", "end", values=(
+                st,
+                t.get("prioridade", "Média"),
+                t["texto"],
+                t.get("data", "")
+            ))
+
+    # --------------------------------------------------------------------------
+    # ABA 4: AGENTES & IA OMSK
+    # --------------------------------------------------------------------------
+    def montar_aba_agentes(self):
+        f_top = tk.Frame(self.tab_agentes, bg=BG_DARK)
+        f_top.pack(fill="x", padx=8, pady=8)
+
+        tk.Label(f_top, text="Monitor de Processos & Subagentes OhMyShark:", font=(self.fonte_mono, 10, "bold"),
+                 fg=CYAN_NEON, bg=BG_DARK).pack(side="left", padx=4)
+
+        # Tabela dos agentes OMSK / Bun / Python / Ferramentas
+        colunas = ("pid", "tipo", "name", "mem", "status")
+        self.tree_agentes = ttk.Treeview(self.tab_agentes, columns=colunas, show="headings", selectmode="browse")
+        self.tree_agentes.heading("pid", text="PID")
+        self.tree_agentes.heading("tipo", text="Tipo / Runtime")
+        self.tree_agentes.heading("name", text="Componente")
+        self.tree_agentes.heading("mem", text="RAM Alocada")
+        self.tree_agentes.heading("status", text="Status Operacional")
+
+        self.tree_agentes.column("pid", width=80, anchor="center")
+        self.tree_agentes.column("tipo", width=140, anchor="center")
+        self.tree_agentes.column("name", width=320, anchor="w")
+        self.tree_agentes.column("mem", width=120, anchor="center")
+        self.tree_agentes.column("status", width=140, anchor="center")
+
+        scroll_a = ttk.Scrollbar(self.tab_agentes, orient="vertical", command=self.tree_agentes.yview)
+        self.tree_agentes.configure(yscrollcommand=scroll_a.set)
+
+        self.tree_agentes.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=4)
+        scroll_a.pack(side="right", fill="y", padx=(0, 8), pady=4)
+
+    def renderizar_agentes(self):
+        for item in self.tree_agentes.get_children():
+            self.tree_agentes.delete(item)
+
+        termos_omsk = ("omsk", "ohms", "bun", "python", "node", "taskmanager")
+        agentes_encontrados = [p for p in self.processos if any(t in p["name"].lower() for t in termos_omsk)]
+
+        for a in agentes_encontrados:
+            tipo = "🤖 OMSK / Bun" if "bun" in a["name"].lower() or "om" in a["name"].lower() else "🐍 Python Kernel / Tool"
+            self.tree_agentes.insert("", "end", values=(
+                a["pid"],
+                tipo,
+                a["name"],
+                formatar_bytes(a["ram"]),
+                "🟢 Ativo / Monitorado"
+            ))
+
+    # --------------------------------------------------------------------------
+    # ABA 5: TERMINAL INTEGRADO
+    # --------------------------------------------------------------------------
+    def montar_aba_terminal(self):
+        self.txt_term = tk.Text(self.tab_terminal, bg=BG_HEADER, fg=FG_LIGHT,
+                                font=(self.fonte_mono, 9), insertbackground=CYAN_NEON,
+                                relief="flat", highlightthickness=1, highlightbackground=BORDER_COLOR)
+        scroll_term = ttk.Scrollbar(self.tab_terminal, orient="vertical", command=self.txt_term.yview)
+        self.txt_term.configure(yscrollcommand=scroll_term.set)
+
+        f_cmd = tk.Frame(self.tab_terminal, bg=BG_DARK)
+        f_cmd.pack(fill="x", side="bottom", padx=8, pady=8)
+
+        self.lbl_prompt = tk.Label(f_cmd, text=f"omsk >", font=(self.fonte_mono, 9, "bold"),
+                                   fg=CYAN_NEON, bg=BG_DARK)
+        self.lbl_prompt.pack(side="left", padx=4)
+
+        self.ent_cmd = tk.Entry(f_cmd, font=(self.fonte_mono, 9), bg=BG_CARD, fg=FG_LIGHT,
+                                insertbackground=CYAN_NEON, highlightthickness=1, highlightbackground=BORDER_COLOR)
+        self.ent_cmd.pack(side="left", fill="x", expand=True, padx=4)
+        self.ent_cmd.bind("<Return>", lambda e: self.executar_comando_terminal())
+
+        self.txt_term.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=4)
+        scroll_term.pack(side="right", fill="y", padx=(0, 8), pady=4)
+
+        # Mensagem inicial
+        self.txt_term.insert("end", "╔════════════════════════════════════════════════════════════════════╗\n")
+        self.txt_term.insert("end", "║     OHMYSHARK ULTRA PROCESS & TASK TERMINAL INTELLIGENCE HUD       ║\n")
+        self.txt_term.insert("end", "╚════════════════════════════════════════════════════════════════════╝\n\n")
+
+    def executar_comando_terminal(self):
+        cmd = self.ent_cmd.get().strip()
         if not cmd:
             return
-        if not self.historico or self.historico[-1] != cmd:
-            self.historico.append(cmd)
-        self.pos_hist = len(self.historico)
-        self.interpretar(cmd)
+        self.ent_cmd.delete(0, "end")
+        self.txt_term.insert("end", f"\nomsk > {cmd}\n")
+        self.txt_term.see("end")
 
-    def interpretar(self, cmd):
-        partes = cmd.split(None, 1)
-        nome = partes[0].lower()
-        resto = partes[1] if len(partes) > 1 else ""
-
-        if re.match(r"^cd(\s|$|\.\.|\\|/)", cmd, re.I):
-            self.cmd_cd(cmd[2:])
-        elif WIN and re.fullmatch(r"[A-Za-z]:", cmd):
-            self.cmd_cd(cmd)
-        elif nome in ("todo", "tarefa"):
-            self.cmd_todo(resto)
-        elif nome in ("clear", "cls"):
-            self.limpar_tela()
-        elif nome == "pwd":
-            self.escrever(str(self.cwd) + "\n")
-        elif nome in ("exit", "quit"):
-            self.escrever("use o botão ✕ do menu (canto superior direito) para fechar.\n", "dim")
-        elif nome in ("help", "ajuda", "?"):
-            self.cmd_help()
-        elif WIN and nome == "ls":
-            self.cmd_ls(resto)
-        else:
-            self.executar_shell(cmd)
-
-    def cmd_help(self):
-        linhas = [
-            ("cd <pasta>", "entra na pasta (cd .. | cd ~ | cd - | cd sozinho = home | D: troca de disco)"),
-            ("ls / dir", "lista a pasta atual"),
-            ("pwd", "mostra a pasta atual"),
-            ("clear / cls", "limpa a tela (ou Ctrl+L)"),
-            ("todo", "lista as tarefas"),
-            ("todo add <texto>", "cria uma tarefa"),
-            ("todo edit <n> <texto>", "troca o texto (sem <texto>: abre no prompt para editar)"),
-            ("todo done <n...>", "marca como feita (aceita 1 3 5 ou 2-4)"),
-            ("todo undone <n...>", "reabre a(s) tarefa(s)"),
-            ("todo rm <n...>", "remove tarefa(s)"),
-            ("todo clear", "remove todas as concluídas"),
-            ("Tab / ↑ ↓", "completa caminhos / histórico"),
-            ("Ctrl+C", "interrompe o comando em execução"),
-            ("<qualquer outro>", "roda no shell da máquina, na pasta atual"),
-        ]
-        for a, b in linhas:
-            self.escrever(f"  {a:<24}", "path")
-            self.escrever(b + "\n", "dim")
-
-    # ---- cd / ls
-    def resolver(self, arg, nome="cd"):
-        arg = arg.strip()
-        if len(arg) >= 2 and arg[0] == arg[-1] and arg[0] in "\"'":
-            arg = arg[1:-1]
-        if WIN and re.fullmatch(r"[A-Za-z]:", arg):
-            arg += os.sep
-        destino = Path(os.path.expandvars(os.path.expanduser(arg)))
-        if not destino.is_absolute():
-            destino = self.cwd / destino
-        try:
-            destino = destino.resolve(strict=True)
-        except (OSError, RuntimeError):
-            self.escrever(f"{nome}: {arg}: caminho não encontrado\n", "err")
-            return None
-        if not destino.is_dir():
-            self.escrever(f"{nome}: {arg}: não é uma pasta\n", "err")
-            return None
-        try:
-            os.listdir(destino)
-        except OSError:
-            self.escrever(f"{nome}: {arg}: sem permissão\n", "err")
-            return None
-        return destino
-
-    def cmd_cd(self, arg):
-        arg = arg.strip()
-        if WIN:
-            arg = re.sub(r"^/d\s+", "", arg, flags=re.I)
-        if arg == "":
-            destino = Path.home()
-        elif arg == "-":
-            destino = self.anterior
-        else:
-            destino = self.resolver(arg, "cd")
-            if destino is None:
-                return
-        self.anterior, self.cwd = self.cwd, destino
-        self.atualizar_prompt()
-        if arg == "-":
-            self.escrever(str(self.cwd) + "\n", "dim")
-
-    def cmd_ls(self, args):
-        ocultos, partes = False, []
-        for a in args.split():
-            if a.startswith("-"):
-                ocultos = ocultos or "a" in a
-            else:
-                partes.append(a)
-        alvo = self.resolver(" ".join(partes), "ls") if partes else self.cwd
-        if alvo is None:
-            return
-        pastas, arquivos = [], []
-        try:
-            for nome in os.listdir(alvo):
-                caminho = alvo / nome
-                oculto = nome.startswith(".")
-                try:
-                    oculto = oculto or bool(getattr(os.stat(caminho), "st_file_attributes", 0) & 2)
-                except OSError:
-                    pass
-                if oculto and not ocultos:
-                    continue
-                (pastas if caminho.is_dir() else arquivos).append(nome)
-        except OSError as e:
-            self.escrever(f"ls: {e}\n", "err")
-            return
-        itens = [(n + os.sep, "dir") for n in sorted(pastas, key=str.lower)]
-        itens += [(n, "out") for n in sorted(arquivos, key=str.lower)]
-        if not itens:
-            return
-        f = tkfont.Font(family=self.fonte, size=self.tam)
-        largura_chars = max(20, (self.saida.winfo_width() - 20) // max(1, f.measure("0")))
-        col = max(len(n) for n, _ in itens) + 2
-        n_cols = max(1, largura_chars // col)
-        for i, (nome, tag) in enumerate(itens):
-            fim = "\n" if (i + 1) % n_cols == 0 or i == len(itens) - 1 else ""
-            self.escrever(nome.ljust(col) if not fim else nome, tag)
-            if fim:
-                self.escrever("\n")
-
-    # ---- tarefas pelo terminal
-    def cmd_todo(self, resto):
-        sub, _, arg = resto.strip().partition(" ")
-        sub, arg = sub.lower(), arg.strip()
-        if sub in ("", "ls", "list"):
-            self.imprimir_tarefas()
-        elif sub in ("add", "new", "+"):
-            if not arg:
-                self.escrever("uso: todo add <texto>\n", "err")
-                return
-            self.tarefas.append({"texto": arg, "feita": False})
-            self.persistir()
-            self.escrever(f"+ tarefa {len(self.tarefas)} criada\n", "ok")
-        elif sub in ("edit", "ed"):
-            self.cmd_editar(arg)
-        elif sub in ("done", "do", "x", "ok"):
-            self.aplicar_indices(arg, lambda t: t.update(feita=True), "concluída(s)")
-        elif sub in ("undone", "undo", "reopen"):
-            self.aplicar_indices(arg, lambda t: t.update(feita=False), "reaberta(s)")
-        elif sub in ("rm", "del", "remove"):
-            self.cmd_remover(arg)
-        elif sub == "clear":
-            n = sum(1 for t in self.tarefas if t["feita"])
-            self.tarefas = [t for t in self.tarefas if not t["feita"]]
-            self.persistir()
-            self.escrever(f"{n} tarefa(s) concluída(s) removida(s)\n", "ok")
-        else:
-            self.escrever("subcomandos: todo [add <txt> | edit <n> <txt> | done <n...> | "
-                          "undone <n...> | rm <n...> | clear]\n", "err")
-
-    def imprimir_tarefas(self):
-        if not self.tarefas:
-            self.escrever("nenhuma tarefa. crie uma com 'todo add <texto>' ou pelo botão ➕\n", "dim")
-            return
-        feitas = sum(1 for t in self.tarefas if t["feita"])
-        self.escrever(f"Tarefas ({feitas}/{len(self.tarefas)} concluídas):\n", "path")
-        for i, t in enumerate(self.tarefas, 1):
-            if t["feita"]:
-                self.escrever(f"  {i:>2}. [✓] ", "ok")
-                self.escrever(f"{t['texto']}\n", "dim")
-            else:
-                self.escrever(f"  {i:>2}. [ ] ", "prompt")
-                self.escrever(f"{t['texto']}\n", "cmd")
-
-    def parse_indices(self, arg):
-        if not arg:
-            return []
-        res = set()
-        for parte in arg.split():
-            m = re.fullmatch(r"(\d+)-(\d+)", parte)
-            if m:
-                a, b = sorted((int(m.group(1)), int(m.group(2))))
-                res.update(range(a, b + 1))
-            elif parte.isdigit():
-                res.add(int(parte))
-        return [i - 1 for i in sorted(res) if 1 <= i <= len(self.tarefas)]
-
-    def aplicar_indices(self, arg, fn, rotulo):
-        idx = self.parse_indices(arg)
-        if not idx:
-            self.escrever(f"uso: informe os números válidos (ex.: todo done 1 3 ou 2-4)\n", "err")
-            return
-        for i in idx:
-            fn(self.tarefas[i])
-        self.persistir()
-        self.escrever(f"{len(idx)} tarefa(s) {rotulo}\n", "ok")
-
-    def cmd_editar(self, arg):
-        num, _, novo = arg.partition(" ")
-        num, novo = num.strip(), novo.strip()
-        if not num.isdigit() or not (1 <= int(num) <= len(self.tarefas)):
-            self.escrever("uso: todo edit <número> [novo texto]\n", "err")
-            return
-        idx = int(num) - 1
-        if novo:
-            self.tarefas[idx]["texto"] = novo
-            self.persistir()
-            self.escrever(f"tarefa {num} atualizada\n", "ok")
-        else:
-            self.entrada.delete(0, "end")
-            self.entrada.insert(0, f"todo edit {num} {self.tarefas[idx]['texto']}")
-            self.entrada.focus_set()
-            self.entrada.icursor("end")
-
-    def cmd_remover(self, arg):
-        idx = sorted(self.parse_indices(arg), reverse=True)
-        if not idx:
-            self.escrever("uso: todo rm <números> (ex.: todo rm 1 3 ou 2-4)\n", "err")
-            return
-        for i in idx:
-            self.tarefas.pop(i)
-        self.persistir()
-        self.escrever(f"{len(idx)} tarefa(s) removida(s)\n", "ok")
-
-    # ------------------------------------------------------------ interface
-    def persistir(self):
-        self.salvar()
-        self.atualizar_tarefas()
-
-    def atualizar_tarefas(self):
-        self.lista.delete(0, "end")
-        feitas = 0
-        for i, t in enumerate(self.tarefas):
-            prefixo = " ✓ " if t["feita"] else " ○ "
-            self.lista.insert("end", f"{prefixo} {t['texto']}")
-            if t["feita"]:
-                self.lista.itemconfig(i, fg=MUDO)
-                feitas += 1
-            else:
-                self.lista.itemconfig(i, fg=FG)
-        total = len(self.tarefas)
-        self.info.config(text=f"{feitas}/{total} feitas" if total else "nenhuma tarefa")
-
-    def duplo_clique(self, event):
-        sel = self.lista.curselection()
-        if not sel:
-            return
-        idx = sel[0]
-        self.tarefas[idx]["feita"] = not self.tarefas[idx]["feita"]
-        self.persistir()
-
-    def alternar_selecionada(self):
-        sel = self.lista.curselection()
-        if not sel:
-            return
-        idx = sel[0]
-        self.tarefas[idx]["feita"] = not self.tarefas[idx]["feita"]
-        self.persistir()
-
-    def editar_selecionada(self):
-        sel = self.lista.curselection()
-        if not sel:
-            return
-        idx = sel[0]
-        t = self.tarefas[idx]
-        janela = tk.Toplevel(self.root)
-        janela.title("Editar Tarefa")
-        janela.geometry("400x120")
-        janela.configure(bg=PAINEL)
-        janela.transient(self.root)
-        janela.grab_set()
-
-        e = tk.Entry(janela, bg=BG, fg=BRANCO, insertbackground=BRANCO,
-                     relief="flat", font=(self.fonte, self.tam))
-        e.pack(fill="x", padx=16, pady=(20, 10))
-        e.insert(0, t["texto"])
-        e.focus_set()
-        e.select_range(0, "end")
-
-        def salvar():
-            txt = e.get().strip()
-            if txt:
-                self.tarefas[idx]["texto"] = txt
-                self.persistir()
-            janela.destroy()
-
-        b = tk.Button(janela, text="Salvar", command=salvar, bg=BARRA, fg=AZUL,
-                      relief="flat", font=(self.fonte, self.tam))
-        b.pack(pady=6)
-        janela.bind("<Return>", lambda ev: salvar())
-        janela.bind("<Escape>", lambda ev: janela.destroy())
-
-    def remover_selecionada(self):
-        sel = self.lista.curselection()
-        if not sel:
-            return
-        idx = sel[0]
-        self.tarefas.pop(idx)
-        self.persistir()
-
-    def limpar_feitas(self):
-        self.tarefas = [t for t in self.tarefas if not t["feita"]]
-        self.persistir()
-
-    def abrir_janela_adicionar(self):
-        janela = tk.Toplevel(self.root)
-        janela.title("Nova Tarefa")
-        janela.geometry("400x120")
-        janela.configure(bg=PAINEL)
-        janela.transient(self.root)
-        janela.grab_set()
-
-        e = tk.Entry(janela, bg=BG, fg=BRANCO, insertbackground=BRANCO,
-                     relief="flat", font=(self.fonte, self.tam))
-        e.pack(fill="x", padx=16, pady=(20, 10))
-        e.focus_set()
-
-        def salvar():
-            txt = e.get().strip()
-            if txt:
-                self.tarefas.append({"texto": txt, "feita": False})
-                self.persistir()
-            janela.destroy()
-
-        b = tk.Button(janela, text="Adicionar", command=salvar, bg=BARRA, fg=VERDE,
-                      relief="flat", font=(self.fonte, self.tam))
-        b.pack(pady=6)
-        janela.bind("<Return>", lambda ev: salvar())
-        janela.bind("<Escape>", lambda ev: janela.destroy())
-
-    def clique_direito(self, event):
-        idx = self.lista.nearest(event.y)
-        if idx >= 0 and idx < len(self.tarefas):
-            self.lista.selection_clear(0, "end")
-            self.lista.selection_set(idx)
-            self.remover_selecionada()
-
-    # -------------------------------------------------------------- processo
-    def executar_shell(self, cmd):
-        self.ocupado = True
-        self.atualizar_prompt()
-
-        def alvo():
+        def _run():
             try:
-                kw = {"cwd": str(self.cwd), "stdout": subprocess.PIPE, "stderr": subprocess.PIPE,
-                      "stdin": subprocess.DEVNULL}
-                if WIN:
-                    kw["creationflags"] = SEM_JANELA
-                p = subprocess.Popen(cmd, shell=True, **kw)
-                self.proc = p
+                res = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=self.cwd, timeout=15)
+                saida = res.stdout if res.stdout else res.stderr
+                self.fila_terminal.put(saida)
+            except Exception as ex:
+                self.fila_terminal.put(f"Erro: {ex}\n")
 
-                def ler(fluxo, tag):
-                    for linha in iter(fluxo.readline, b""):
-                        try:
-                            txt = linha.decode(self.enc, errors="replace")
-                        except Exception:
-                            txt = linha.decode("utf-8", errors="replace")
-                        txt = ANSI.sub("", txt)
-                        self.fila.put((tag, txt))
-                    fluxo.close()
+        threading.Thread(target=_run, daemon=True).start()
 
-                t1 = threading.Thread(target=ler, args=(p.stdout, "out"), daemon=True)
-                t2 = threading.Thread(target=ler, args=(p.stderr, "err"), daemon=True)
-                t1.start()
-                t2.start()
-                p.wait()
-                t1.join()
-                t2.join()
-            except Exception as e:
-                self.fila.put(("err", f"erro ao executar: {e}\n"))
-            finally:
-                self.fila.put(("__fim__", ""))
+    # --------------------------------------------------------------------------
+    # THREADS E ATUALIZAÇÃO EM BACKGROUND
+    # --------------------------------------------------------------------------
+    def iniciar_threads_background(self):
+        def _loop_telemetria():
+            while True:
+                cpu, ram_pct, ram_used, ram_total = self.telemetria.get_system_metrics()
+                procs = self.telemetria.get_process_list()
 
-        threading.Thread(target=alvo, daemon=True).start()
+                self.root.after(0, self.atualizar_ui_telemetria, cpu, ram_pct, ram_used, ram_total, procs)
+                time.sleep(1.5)
 
-    def drenar_fila(self):
-        while not self.fila.empty():
-            tag, txt = self.fila.get()
-            if tag == "__fim__":
-                self.ocupado = False
-                self.proc = None
-                self.atualizar_prompt()
-            else:
-                self.escrever(txt, tag)
-        self.root.after(40, self.drenar_fila)
+        threading.Thread(target=_loop_telemetria, daemon=True).start()
+        self.root.after(100, self.drenar_fila_terminal)
 
-    def ctrl_c(self, _=None):
-        if self.proc and self.proc.poll() is None:
-            try:
-                self.proc.terminate()
-                self.escrever("^C\n", "err")
-            except Exception:
-                pass
-        else:
-            self.entrada.delete(0, "end")
+    def drenar_fila_terminal(self):
+        while not self.fila_terminal.empty():
+            saida = self.fila_terminal.get()
+            self.txt_term.insert("end", ANSI_REGEX.sub("", saida))
+            self.txt_term.see("end")
+        self.root.after(100, self.drenar_fila_terminal)
 
-    # --------------------------------------------------------- navegação & autocompletar
-    def hist_anterior(self, _=None):
-        if not self.historico:
-            return "break"
-        if self.pos_hist > 0:
-            self.pos_hist -= 1
-            self.entrada.delete(0, "end")
-            self.entrada.insert(0, self.historico[self.pos_hist])
-        return "break"
+    def atualizar_ui_telemetria(self, cpu, ram_pct, ram_used, ram_total, procs):
+        self.processos = procs
+        self.hud_cpu_val.config(text=f"CPU: {cpu:.1f}%")
+        self.hud_ram_val.config(text=f"RAM: {ram_pct:.1f}% ({formatar_bytes(ram_used)})")
+        self.hud_procs_val.config(text=f"PROCESSOS: {len(procs)}")
 
-    def hist_proximo(self, _=None):
-        if not self.historico:
-            return "break"
-        if self.pos_hist < len(self.historico) - 1:
-            self.pos_hist += 1
-            self.entrada.delete(0, "end")
-            self.entrada.insert(0, self.historico[self.pos_hist])
-        else:
-            self.pos_hist = len(self.historico)
-            self.entrada.delete(0, "end")
-        return "break"
+        # Atualiza gráficos Canvas
+        self.graph_cpu.push(cpu)
+        self.graph_ram.push(ram_pct)
 
-    def completar(self, _=None):
-        txt = self.entrada.get()
-        # auto-completar caminhos básicos
-        partes = txt.split()
-        if not partes:
-            return "break"
-        ultimo = partes[-1]
-        caminho = Path(ultimo)
-        if not caminho.is_absolute():
-            base = self.cwd / caminho.parent
-            prefixo = caminho.name
-        else:
-            base = caminho.parent
-            prefixo = caminho.name
-        if base.is_dir():
-            try:
-                matches = [n for n in os.listdir(base) if n.lower().startswith(prefixo.lower())]
-                if len(matches) == 1:
-                    novo_caminho = str(caminho.parent / matches[0]) if str(caminho.parent) != "." else matches[0]
-                    if (base / matches[0]).is_dir():
-                        novo_caminho += os.sep
-                    partes[-1] = novo_caminho
-                    self.entrada.delete(0, "end")
-                    self.entrada.insert(0, " ".join(partes))
-                    self.entrada.icursor("end")
-            except Exception:
-                pass
-        return "break"
+        # Atualiza tabelas
+        self.renderizar_tabela_processos()
+        self.renderizar_agentes()
 
-    # ------------------------------------------------------------- utilitários de janela
-    def inicio_arrasto(self, event):
-        self._x = event.x
-        self._y = event.y
-
-    def arrastar(self, event):
-        x = self.root.winfo_x() + (event.x - self._x)
-        y = self.root.winfo_y() + (event.y - self._y)
-        self.root.geometry(f"+{x}+{y}")
-
-    def inicio_redim(self, event):
-        self._rx = event.x_root
-        self._ry = event.y_root
-        self._rw = self.root.winfo_width()
-        self._rh = self.root.winfo_height()
-
-    def redimensionar(self, event):
-        dx = event.x_root - self._rx
-        dy = event.y_root - self._ry
-        nw = max(460, self._rw + dx)
-        nh = max(360, self._rh + dy)
-        self.root.geometry(f"{nw}x{nh}")
-
-    def alternar_topo(self):
-        self.topo = not self.topo
-        self.root.attributes("-topmost", self.topo)
-        self.b_topo.config(fg=AZUL if self.topo else MUDO)
-
-    def trocar_opacidade(self):
-        self.nivel = (self.nivel + 1) % len(self.niveis)
-        self.root.attributes("-alpha", self.niveis[self.nivel])
-
-    def fechar(self):
-        self.salvar()
-        if self.proc and self.proc.poll() is None:
-            try:
-                self.proc.terminate()
-            except Exception:
-                pass
-        self.root.destroy()
+    def atualizar_ciclo(self):
+        cpu, ram_pct, ram_used, ram_total = self.telemetria.get_system_metrics()
+        procs = self.telemetria.get_process_list()
+        self.atualizar_ui_telemetria(cpu, ram_pct, ram_used, ram_total, procs)
 
 
 def main():
-    app = App()
+    app = TaskManagerApp()
     app.root.mainloop()
 
 
