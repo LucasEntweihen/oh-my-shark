@@ -105,9 +105,10 @@ function expectedAddonFiles(tag: string): string[] {
 function npmPack(lock: NativeLock, tag: string, cwd: string): string {
 	const entry = lock.packages[tag];
 	if (!entry) throw new Error(`Tag ${tag} is not in the native inputs lock`);
+	const npmBin = process.platform === "win32" ? "npm.cmd" : "npm";
 	const proc = Bun.spawnSync(
 		[
-			"npm.cmd",
+			npmBin,
 			"pack",
 			`${entry.name}@${lock.version}`,
 			"--ignore-scripts",
