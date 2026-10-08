@@ -23,6 +23,7 @@ const en = {
   navLabel: "Sections",
   versionBadge: "v0.0.20",
   navCommands: "Commands",
+  navAgents: "Agent Swarm",
   navFeatures: "Features",
   navPreset: "Preset",
   navLineage: "Lineage",
@@ -34,11 +35,11 @@ const en = {
   themeLight: "Light",
 
   heroSpectrumBadge: "PROJECT PRISM // DEEP WEB SPECTRUM",
-  heroEyebrow: "TERMINAL CODING AGENT",
+  heroEyebrow: "TERMINAL CODING AGENT & AGENTIC SWARM",
   heroTitle: "Your terminal agent. Tuned for the herd.",
   heroLede:
-    "Install in minutes, code for hours. OhMyShark ships with a curated model setup, automatic fallbacks, and long sessions that stay sharp — no configuration rabbit hole.",
-  heroInstallCta: "Install",
+    "Install in seconds, code for hours. OhMyShark ships with zero configuration overhead, multi-agent orchestration, instant reasoning modes, and persistent sessions that never degrade.",
+  heroInstallCta: "Quick Install",
   heroChangesCta: "Why OhMyShark",
 
   quickInstallHeader: "DEFINITIVE INSTALL COMMAND",
@@ -54,7 +55,7 @@ const en = {
   verifiedNote: "Zero-trust default. Requires an authenticated GitHub CLI (gh auth login). Verifies the installer attestation against the build provenance before running it.",
   quickNote:
     "Robust disk-write bootstrap. Bypasses in-memory execution constraints (AMSI) and local policies by securely downloading the installer to disk before executing.",
-  installHeading: "Install",
+  installHeading: "Install & Setup",
   installLede:
     "Pick your platform below. Verified is the safe default; Quick trades verification for speed. Either way you are running in minutes — and your existing config is never touched.",
   presetNote:
@@ -77,51 +78,135 @@ const en = {
   providerOpenAiCodex: "OpenAI Codex",
   providerCommandCode: "CommandCode",
 
-  featuresEyebrow: "CHANNELS",
-  featuresHeading: "Features",
+  // AGENT ROSTER SECTION
+  agentsEyebrow: "AGENTIC INTELLIGENCE ROSTER",
+  agentsHeading: "Specialized Autonomous Agent Team",
+  agentsLede:
+    "Invoke specialists directly via @handle or let the Shark Lead Orchestrator automatically delegate tasks to the most qualified agent.",
+  agentCategoryOrchestrator: "Orchestrator",
+  agentCategorySpecialist: "Engineering Specialist",
+  agentCategoryCritic: "Security & Critic",
+  agentCategoryScholar: "Lexicographic & Semantic",
+  agentCategoryExecutor: "General Executor",
+  agentPrimaryModel: "Primary Model",
+  agentThinking: "Thinking Level",
+  agentAuthorizedTools: "Tools",
+  agentsList: [
+    {
+      id: "shark-lead",
+      handle: "@shark-lead",
+      name: "Shark Lead Orchestrator",
+      role: "Strategic Coordinator & System Architect",
+      category: "orchestrator",
+      color: "#00F0FF",
+      motto: "Navigating code depths with predatory speed.",
+      description:
+        "Architectural coordination, holistic planning, surgical task decomposition, and typed workpool distribution across subagent swarms.",
+      thinking: "High",
+      model: "default (auto-fallback to smol / slow)",
+      tools: ["task", "hub", "todo", "read", "grep", "glob"],
+    },
+    {
+      id: "code-architect",
+      handle: "@code-architect",
+      name: "Code Architect",
+      role: "Implementation Engineer & TypeScript Specialist",
+      category: "specialist",
+      color: "#10B981",
+      motto: "Zero overhead, maximum elegance.",
+      description:
+        "High-performance, zero-allocation code, strict TypeScript typing with zero 'any', native Bun runtime primitives, and deep AST refactoring.",
+      thinking: "High",
+      model: "default (downgrades effort on fallback)",
+      tools: ["edit", "write", "read", "lsp", "ast_edit", "bash"],
+    },
+    {
+      id: "security-sentinel",
+      handle: "@security-sentinel",
+      name: "Security Sentinel",
+      role: "Vulnerability Auditor & Invariant Critic",
+      category: "critic",
+      color: "#EF4444",
+      motto: "Methodical distrust is the primary shield.",
+      description:
+        "Adversarial input inspection, attack vector identification, vulnerability discovery, edge-case proofing, and strict security auditability.",
+      thinking: "High",
+      model: "default (fallback: slow)",
+      tools: ["read", "grep", "bash", "lsp"],
+    },
+    {
+      id: "theological-scholar",
+      handle: "@theological-scholar",
+      name: "Bible Strong Scholar",
+      role: "Lexicographical & Theological Researcher",
+      category: "scholar",
+      color: "#D4AF37",
+      motto: "Investigating the roots of the Logos.",
+      description:
+        "Rigorous philological and semantic research, Strong number mapping (H#### / G####), Semitic and Koine Greek root analysis, and cultural expository clarity.",
+      thinking: "Medium",
+      model: "default (fallback: default)",
+      tools: ["read", "grep", "web_search"],
+    },
+  ] as Array<{
+    id: string;
+    handle: string;
+    name: string;
+    role: string;
+    category: string;
+    color: string;
+    motto: string;
+    description: string;
+    thinking: string;
+    model: string;
+    tools: string[];
+  }>,
+
+  featuresEyebrow: "CHANNELS & CAPABILITIES",
+  featuresHeading: "Features & Architecture",
   featuresLede:
-    "Everything you need to ship from the terminal.",
+    "Everything you need to ship world-class software directly from your terminal.",
   featureDetailLabel: "Feature detail",
   featuresList: [
     {
       id: "shark",
-      title: "Own identity",
-      body: "A shark mark, a clean terminal aesthetic, and a config that lives in its own ~/.ohms — your setup never fights another tool's.",
+      title: "Own Identity & Isolation",
+      body: "A distinctive shark mark, refractive visual telemetry, and a fully isolated configuration in ~/.ohms that never collides with external tools.",
     },
     {
       id: "preset",
-      title: "Ready-to-run models",
+      title: "Ready-to-Run Models",
       body: "Roles, fallbacks, and thinking levels arrive preconfigured. Bring your own API keys — nothing secret ever ships in the box.",
     },
     {
       id: "commandcode",
-      title: "More models on demand",
-      body: "A 47-model CommandCode catalog is one env var away. Nothing uses it until you say so.",
+      title: "47+ Models on Demand",
+      body: "A comprehensive CommandCode catalog is one environment variable away. Zero telemetry, zero unrequested activation.",
     },
     {
       id: "snapcompact",
-      title: "Long sessions stay sharp",
-      body: "Compaction keeps big sessions coherent instead of degrading. SnapCompact first, graceful fallbacks after.",
+      title: "Long Sessions Stay Sharp",
+      body: "Compaction keeps multi-hour sessions coherent instead of degrading. SnapCompact preserves crucial context with graceful fallbacks.",
     },
     {
       id: "lsp",
-      title: "Understands your code",
-      body: "Language-server aware edits, diagnostics, and navigation — the agent sees what your IDE sees.",
+      title: "Language Server Awareness",
+      body: "Language-server powered symbol edits, real-time diagnostics, and cross-file references — the agent sees what your IDE sees.",
     },
     {
       id: "debugger",
-      title: "Debug without leaving",
-      body: "Inspect real program state mid-session instead of sprinkling print statements.",
+      title: "Live DAP Debugger",
+      body: "Inspect real runtime memory, set breakpoints, and step through executions mid-session without scattering print statements.",
     },
     {
       id: "orchestration",
-      title: "Delegate the grind",
-      body: "Fan work out to background agents and get typed results back — no babysitting.",
+      title: "Multi-Agent Swarm",
+      body: "Fan work out to background agents concurrently and collect typed, validated outputs with peer IRC coordination.",
     },
     {
       id: "upstream",
-      title: "Maintained, not frozen",
-      body: "Daily upstream syncs land as reviewed PRs, so you get fixes without surprises.",
+      title: "Maintained, Not Frozen",
+      body: "Daily upstream syncs land as reviewed PRs, ensuring you get fixes and improvements without surprise breakages.",
     },
   ] as Array<{ id: string; title: string; body: string }>,
   commandsEyebrow: "TERMINAL OPERATIONAL MODES",
@@ -211,7 +296,7 @@ const en = {
   changesLede: "Built on the excellent Oh My Pi engine — plus everything needed to go from zero to shipping.",
   changesList: [
     {
-      title: "Running in minutes",
+      title: "Running in seconds",
       body: "One command installs the ohms CLI on Windows or macOS. Verified binaries, checksums checked before anything touches your system.",
     },
     {
@@ -223,7 +308,7 @@ const en = {
       body: "Every release asset carries build-provenance attestations you can verify yourself before running anything.",
     },
     {
-      title: "Kept current",
+      title: "Kept current & robust",
       body: "Upstream improvements arrive as reviewable PRs. Conflicts become issues, never silent breakage.",
     },
   ] as Array<{ title: string; body: string }>,
@@ -234,7 +319,7 @@ const en = {
   lineageLicense: "Released under the MIT license.",
   lineageDisclaimer: "Independent public fork; not affiliated with Stencil Labs.",
 
-  footerTagline: "made by LucasEntweihen",
+  footerTagline: "Engineered with maximum zeal by LucasEntweihen",
   footerLicenses: "Third-party notices",
   footerRelease: "Release omsk-v0.0.20",
   socialX: "X",
@@ -251,6 +336,7 @@ const pt: Strings = {
   navLabel: "Seções",
   versionBadge: "v0.0.20",
   navCommands: "Comandos",
+  navAgents: "Enxame de Agentes",
   navFeatures: "Recursos",
   navPreset: "Configuração",
   navLineage: "Origem",
@@ -262,11 +348,11 @@ const pt: Strings = {
   themeLight: "Claro",
 
   heroSpectrumBadge: "PROJECT PRISM // DEEP WEB SPECTRUM",
-  heroEyebrow: "AGENTE DE CODIFICAÇÃO PARA TERMINAL",
+  heroEyebrow: "AGENTE DE CODIFICAÇÃO PARA TERMINAL & ENXAME DE AGENTES",
   heroTitle: "Seu agente de terminal. Afinado para o rebanho.",
   heroLede:
-    "Instale em minutos, programe por horas. OhMyShark já vem com modelos configurados, fallbacks automáticos e sessões longas que não perdem o fio — sem labirinto de configuração.",
-  heroInstallCta: "Instalar",
+    "Instale em segundos, programe por horas. OhMyShark já vem com orquestração multi-agente, modos de raciocínio instantâneo, modelos pré-configurados e sessões longas que nunca perdem o fio.",
+  heroInstallCta: "Instalação Rápida",
   heroChangesCta: "Por que OhMyShark",
 
   quickInstallHeader: "COMANDO DEFINITIVO DE UMA LINHA",
@@ -283,7 +369,7 @@ const pt: Strings = {
     "Padrão zero-trust. Exige GitHub CLI autenticado (gh auth login). Verifica a attestation de proveniência do instalador antes de executá-lo.",
   quickNote:
     "Garantido contra bloqueios de memória (AMSI). Baixa o instalador para o disco e executa com bypass de política, garantindo a instalação em ambientes restritos.",
-  installHeading: "Instalação",
+  installHeading: "Instalação & Setup",
   installLede:
     "Escolha sua plataforma abaixo. Verificado é o padrão seguro; Rápido troca verificação por velocidade. De qualquer forma, em minutos você está rodando — e sua config existente nunca é tocada.",
   presetNote:
@@ -306,51 +392,135 @@ const pt: Strings = {
   providerOpenAiCodex: "OpenAI Codex",
   providerCommandCode: "CommandCode",
 
-  featuresEyebrow: "CANAIS",
-  featuresHeading: "Recursos",
+  // AGENT ROSTER SECTION PT
+  agentsEyebrow: "ROSTER DE INTELIGÊNCIA AGÊNTICA",
+  agentsHeading: "Equipe Especializada de Agentes Autônomos",
+  agentsLede:
+    "Invoque especialistas diretamente via @handle ou deixe o Shark Lead Orchestrator delegar e orquestrar tarefas de forma autônoma.",
+  agentCategoryOrchestrator: "Orquestrador",
+  agentCategorySpecialist: "Especialista em Engenharia",
+  agentCategoryCritic: "Segurança & Auditor",
+  agentCategoryScholar: "Pesquisa & Semântica",
+  agentCategoryExecutor: "Executor Geral",
+  agentPrimaryModel: "Modelo Primário",
+  agentThinking: "Nível de Pensamento",
+  agentAuthorizedTools: "Ferramentas",
+  agentsList: [
+    {
+      id: "shark-lead",
+      handle: "@shark-lead",
+      name: "Shark Lead Orchestrator",
+      role: "Coordenador Estratégico & Arquiteto Sistêmico",
+      category: "orchestrator",
+      color: "#00F0FF",
+      motto: "Navegando as profundezas do código com velocidade predatória.",
+      description:
+        "Coordenação arquitetural, visão holística, planejamento cirúrgico e divisão de tarefas em lote para subagentes especialistas com validação estrita de contratos.",
+      thinking: "Alto",
+      model: "default (fallbacks: smol → slow)",
+      tools: ["task", "hub", "todo", "read", "grep", "glob"],
+    },
+    {
+      id: "code-architect",
+      handle: "@code-architect",
+      name: "Code Architect",
+      role: "Especialista em Engenharia & TypeScript",
+      category: "specialist",
+      color: "#10B981",
+      motto: "Zero overhead, máxima elegância.",
+      description:
+        "Código performático, zero alocações inúteis, conformidade total com APIs nativas do Bun, tipagem estrita sem 'any' e refatorações estruturais via AST.",
+      thinking: "Alto",
+      model: "default (estratégia downgrade-effort)",
+      tools: ["edit", "write", "read", "lsp", "ast_edit", "bash"],
+    },
+    {
+      id: "security-sentinel",
+      handle: "@security-sentinel",
+      name: "Security Sentinel",
+      role: "Auditor de Segurança & Vulnerabilidades",
+      category: "critic",
+      color: "#EF4444",
+      motto: "A desconfiança metódica é o primeiro escudo.",
+      description:
+        "Auditoria de inputs, identificação antecipada de vetores de ataque, análise de invariantes, proteção de edge cases e auditabilidade rigorosa de ponta a ponta.",
+      thinking: "Alto",
+      model: "default (fallback: slow)",
+      tools: ["read", "grep", "bash", "lsp"],
+    },
+    {
+      id: "theological-scholar",
+      handle: "@theological-scholar",
+      name: "Bible Strong Scholar",
+      role: "Pesquisador Lexicográfico & Teológico",
+      category: "scholar",
+      color: "#D4AF37",
+      motto: "Investigando as raízes do Logos.",
+      description:
+        "Pesquisa filológica e semântica com mapeamento de números de Strong (H#### / G####), raízes semíticas e gregas koiné com sensibilidade histórica e profundidade expositiva.",
+      thinking: "Médio",
+      model: "default (fallback: default)",
+      tools: ["read", "grep", "web_search"],
+    },
+  ] as Array<{
+    id: string;
+    handle: string;
+    name: string;
+    role: string;
+    category: string;
+    color: string;
+    motto: string;
+    description: string;
+    thinking: string;
+    model: string;
+    tools: string[];
+  }>,
+
+  featuresEyebrow: "CANAIS & CAPACIDADES",
+  featuresHeading: "Recursos & Arquitetura",
   featuresLede:
-    "Tudo que você precisa para entregar código pelo terminal.",
+    "Tudo que você precisa para entregar software de alto nível diretamente pelo terminal.",
   featureDetailLabel: "Detalhe do recurso",
   featuresList: [
     {
       id: "shark",
-      title: "Identidade própria",
-      body: "Marca do tubarão, estética limpa de terminal e config isolada em ~/.ohms — sua configuração nunca briga com outra ferramenta.",
+      title: "Identidade Própria & Isolamento",
+      body: "Marca do tubarão, estética de refração ótica e configuração 100% isolada em ~/.ohms que nunca interfere com outras ferramentas instaladas.",
     },
     {
       id: "preset",
-      title: "Modelos prontos para rodar",
+      title: "Modelos Prontos para Rodar",
       body: "Roles, fallbacks e níveis de raciocínio já vêm configurados. Traga suas próprias chaves de API — nenhum segredo viaja na caixa.",
     },
     {
       id: "commandcode",
-      title: "Mais modelos sob demanda",
-      body: "Um catálogo CommandCode de 47 modelos a uma variável de ambiente de distância. Nada usa sem você mandar.",
+      title: "Mais de 47 Modelos sob Demanda",
+      body: "Catálogo completo do CommandCode a uma variável de ambiente de distância. Zero telemetria e zero ativação oculta.",
     },
     {
       id: "snapcompact",
-      title: "Sessões longas afiadas",
-      body: "A compactação mantém sessões grandes coerentes em vez de degradar. SnapCompact primeiro, fallbacks graciosos depois.",
+      title: "Sessões Longas e Afiadas",
+      body: "A compactação inteligente mantém sessões de horas coerentes em vez de degradar. O SnapCompact preserva contexto crítico com degradação graciosa.",
     },
     {
       id: "lsp",
-      title: "Entende seu código",
-      body: "Edição, diagnósticos e navegação com language server — o agente vê o que sua IDE vê.",
+      title: "Integração Nativa com Language Server",
+      body: "Edição por símbolos, diagnósticos em tempo real e referências cross-file — o agente enxerga com a mesma precisão da sua IDE.",
     },
     {
       id: "debugger",
-      title: "Depure sem sair",
-      body: "Inspecione o estado real do programa no meio da sessão em vez de espalhar prints.",
+      title: "Depurador DAP em Tempo Real",
+      body: "Inspecione a memória real do processo, configure breakpoints e navegue por frames sem espalhar print statements pelo código.",
     },
     {
       id: "orchestration",
-      title: "Delegue o trabalho pesado",
-      body: "Distribua tarefas para agentes em segundo plano e receba resultados tipados — sem babá.",
+      title: "Enxame Multi-Agente Concorrente",
+      body: "Distribua tarefas para subagentes em segundo plano e receba resultados tipados com coordenação peer via IRC.",
     },
     {
       id: "upstream",
-      title: "Mantido, não congelado",
-      body: "Syncs diários do upstream viram PRs revisados — você recebe correções sem surpresas.",
+      title: "Mantido e Sempre Atualizado",
+      body: "Sincronizações diárias do upstream chegam como PRs revisados — você recebe correções e inovações sem quebras silenciosas.",
     },
   ] as Array<{ id: string; title: string; body: string }>,
 
@@ -440,7 +610,7 @@ const pt: Strings = {
   ] as Array<{ name: string; tag: string; badgeClass: string; colors: string; description: string; usage: string }>,
   changesList: [
     {
-      title: "Rodando em minutos",
+      title: "Rodando em segundos",
       body: "Um comando instala o CLI ohms no Windows ou macOS. Binários verificados, checksums conferidos antes de tocar no seu sistema.",
     },
     {
@@ -452,8 +622,8 @@ const pt: Strings = {
       body: "Cada asset de release traz attestations de proveniência que você mesmo pode verificar antes de executar.",
     },
     {
-      title: "Sempre atualizado",
-      body: "Melhorias do upstream chegam como PRs revisáveis. Conflitos viram issues, nunca quebra silenciosa.",
+      title: "Sempre atualizado & robusto",
+      body: "Melhorias do upstream chegam como PRs revisados. Conflitos viram issues, nunca quebra silenciosa.",
     },
   ] as Array<{ title: string; body: string }>,
 
@@ -463,7 +633,7 @@ const pt: Strings = {
   lineageLicense: "Publicado sob a licença MIT.",
   lineageDisclaimer: "Fork público independente; sem afiliação com a Stencil Labs.",
 
-  footerTagline: "made by LucasEntweihen",
+  footerTagline: "Desenvolvido com zelo extremo por LucasEntweihen",
   footerLicenses: "Avisos de terceiros",
   footerRelease: "Release omsk-v0.0.20",
   socialX: "X",

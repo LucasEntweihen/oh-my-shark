@@ -16,7 +16,7 @@ const COMMANDS: Record<OS, Record<Method, string[]>> = {
     ],
     verified: [
       "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.20/install.ps1 -OutFile install.ps1",
-      "powershell -ExecutionPolicy Bypass -File .\install.ps1",
+      "powershell -ExecutionPolicy Bypass -File .\\install.ps1",
     ],
   },
   mac: {
@@ -27,6 +27,7 @@ const COMMANDS: Record<OS, Record<Method, string[]>> = {
     ],
   },
 };
+
 const SOCIALS = [
   { icon: siGithub, key: "socialGithub", href: "https://github.com/LucasEntweihen" },
   { icon: siLinkedin, key: "socialLinkedin", href: "https://www.linkedin.com/in/lucas-guerriero-286665364/?isSelfProfile=true" },
@@ -36,9 +37,12 @@ function fallbackCopy(text: string): boolean {
   try {
     const area = document.createElement("textarea");
     area.value = text;
-    area.setAttribute("readonly", "");
-    area.className = "copy-fallback";
+    area.style.position = "fixed";
+    area.style.left = "-9999px";
+    area.style.top = "-9999px";
+    area.setAttribute("aria-hidden", "true");
     document.body.appendChild(area);
+    area.focus();
     area.select();
     const ok = document.execCommand("copy");
     document.body.removeChild(area);
@@ -57,21 +61,21 @@ function SharkMark() {
       <path
         d="M5 26C8 18 13 8 26 5C23 15 17 22 7 27L5 26Z"
         fill="url(#shark-grad)"
-        stroke="rgba(0, 229, 255, 0.8)"
+        stroke="rgba(0, 229, 255, 0.85)"
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
       <path
         d="M12 24C16 18 19 13 25 10"
-        stroke="rgba(255, 255, 255, 0.6)"
+        stroke="rgba(255, 255, 255, 0.75)"
         strokeWidth="1"
         strokeLinecap="round"
       />
       <defs>
         <linearGradient id="shark-grad" x1="5" y1="5" x2="26" y2="26" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#00E5FF" stopOpacity="0.8" />
-          <stop offset="0.5" stopColor="#0055FF" stopOpacity="0.5" />
-          <stop offset="1" stopColor="#4A00E0" stopOpacity="0.2" />
+          <stop stopColor="#00E5FF" stopOpacity="0.9" />
+          <stop offset="0.5" stopColor="#0055FF" stopOpacity="0.6" />
+          <stop offset="1" stopColor="#4A00E0" stopOpacity="0.3" />
         </linearGradient>
       </defs>
     </svg>
@@ -104,6 +108,18 @@ function TerminalIcon() {
   );
 }
 
+function BotIcon() {
+  return (
+    <svg className="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="11" width="18" height="10" rx="2" />
+      <circle cx="12" cy="5" r="2" />
+      <path d="M12 7v4" />
+      <line x1="8" y1="16" x2="8" y2="16" />
+      <line x1="16" y1="16" x2="16" y2="16" />
+    </svg>
+  );
+}
+
 function BrandIcon({ path }: { path: string }) {
   return (
     <svg className="brand-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -114,11 +130,7 @@ function BrandIcon({ path }: { path: string }) {
 
 /**
  * Midground Z-10 Spectrum Layer
- * Exact implementation of Section 10 of DESIGN.md:
- * - Film-grain fractal noise filter
- * - Continuous 8-color spectrum beam (#4A00E0 -> #FF0033)
- * - Dispersion sliced polygons
- * - Radial bloom illumination
+ * Film-grain fractal noise filter + Continuous 8-color spectrum beam (#4A00E0 -> #FF0033)
  */
 function SpectrumLayer() {
   return (
@@ -131,51 +143,35 @@ function SpectrumLayer() {
     >
       <defs>
         <filter id="film-grain" x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch" />
-          <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.12 0" />
-          <feComposite operator="in" in2="SourceGraphic" result="monoNoise" />
-          <feBlend mode="screen" in="monoNoise" in2="SourceGraphic" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise" />
+          <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.07 0" />
+          <feComposite in2="SourceGraphic" in="gl" operator="in" />
         </filter>
 
-        <linearGradient id="spectrum-beam" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#4A00E0" stopOpacity="0" />
-          <stop offset="10%" stopColor="#3B11A4" stopOpacity="0.7" />
-          <stop offset="25%" stopColor="#0055FF" stopOpacity="0.8" />
-          <stop offset="40%" stopColor="#00E5FF" stopOpacity="0.85" />
-          <stop offset="55%" stopColor="#00FF66" stopOpacity="0.9" />
-          <stop offset="70%" stopColor="#FFEA00" stopOpacity="0.85" />
-          <stop offset="85%" stopColor="#FF6600" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#FF0033" stopOpacity="0.75" />
+        <linearGradient id="spectrum-beam" x1="0" y1="0" x2="1920" y2="1080" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#4A00E0" stopOpacity="0.4" />
+          <stop offset="14%" stopColor="#3B11A4" stopOpacity="0.35" />
+          <stop offset="28%" stopColor="#0055FF" stopOpacity="0.35" />
+          <stop offset="42%" stopColor="#00E5FF" stopOpacity="0.4" />
+          <stop offset="57%" stopColor="#00FF66" stopOpacity="0.3" />
+          <stop offset="71%" stopColor="#FFEA00" stopOpacity="0.25" />
+          <stop offset="85%" stopColor="#FF6600" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#FF0033" stopOpacity="0.4" />
         </linearGradient>
 
-        <radialGradient id="light-bloom" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.35" />
-          <stop offset="50%" stopColor="#00E5FF" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="#030305" stopOpacity="0" />
+        <radialGradient id="beam-bloom" cx="60%" cy="40%" r="50%">
+          <stop offset="0%" stopColor="#00E5FF" stopOpacity="0.25" />
+          <stop offset="40%" stopColor="#0055FF" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0" />
         </radialGradient>
-
-        <linearGradient id="glass-border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
-          <stop offset="50%" stopColor="#00E5FF" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#4A00E0" stopOpacity="0.1" />
-        </linearGradient>
       </defs>
 
       <g filter="url(#film-grain)">
-        {/* Main expanded diagonal spectrum ray */}
-        <polygon points="120,1080 650,1080 1920,420 1920,0" fill="url(#spectrum-beam)" style={{ mixBlendMode: "screen" }} />
-
-        {/* Spectral slice dispersion bands */}
-        <polygon points="50,1080 140,1080 1920,120 1920,-40" fill="#4A00E0" opacity="0.45" />
-        <polygon points="140,1080 240,1080 1920,220 1920,120" fill="#0055FF" opacity="0.55" />
-        <polygon points="240,1080 340,1080 1920,320 1920,220" fill="#00E5FF" opacity="0.65" />
-        <polygon points="340,1080 440,1080 1920,420 1920,320" fill="#00FF66" opacity="0.75" />
-        <polygon points="440,1080 540,1080 1920,520 1920,420" fill="#FFEA00" opacity="0.7" />
-        <polygon points="540,1080 640,1080 1920,620 1920,520" fill="#FF6600" opacity="0.6" />
-        <polygon points="640,1080 720,1080 1920,720 1920,620" fill="#FF0033" opacity="0.55" />
-
-        {/* Central refractive bloom */}
-        <circle cx="1020" cy="500" r="480" fill="url(#light-bloom)" style={{ mixBlendMode: "screen" }} />
+        <polygon points="120,0 680,0 1920,920 1920,1080 1360,1080 0,160" fill="url(#spectrum-beam)" opacity="0.65" />
+        <circle cx="1150" cy="520" r="620" fill="url(#beam-bloom)" />
+        <line x1="260" y1="0" x2="1920" y2="980" stroke="#00E5FF" strokeWidth="1.5" strokeOpacity="0.45" />
+        <line x1="420" y1="0" x2="1920" y2="820" stroke="#00FF66" strokeWidth="1" strokeOpacity="0.3" />
+        <line x1="580" y1="0" x2="1920" y2="660" stroke="#FFEA00" strokeWidth="1" strokeOpacity="0.25" />
       </g>
     </svg>
   );
@@ -188,6 +184,7 @@ export default function App() {
   const [os, setOs] = useState<OS>("win");
   const [method, setMethod] = useState<Method>("quick");
   const [feature, setFeature] = useState(0);
+  const [selectedAgent, setSelectedAgent] = useState(0);
   const [noticeId, setNoticeId] = useState<string | null>(null);
   const [noticeOk, setNoticeOk] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -280,6 +277,7 @@ export default function App() {
 
             <nav className="site-nav" aria-label={t.navLabel}>
               <a href="#quick-install">{t.heroInstallCta}</a>
+              <a href="#agents">{t.navAgents}</a>
               <a href="#commands">{t.navCommands}</a>
               <a href="#features">{t.navFeatures}</a>
               <a href="#install">{t.navPreset}</a>
@@ -414,12 +412,125 @@ export default function App() {
               </div>
 
               <div className="hero-ctas">
-                <a className="btn btn-primary" href="#install">
+                <a className="btn btn-primary" href="#quick-install">
                   {t.heroInstallCta}
+                </a>
+                <a className="btn btn-ghost" href="#agents">
+                  {t.navAgents}
                 </a>
                 <a className="btn btn-ghost" href="#changes">
                   {t.heroChangesCta}
                 </a>
+              </div>
+            </section>
+
+            {/* ----------------------------------------------------------------- */}
+            {/* AGENT ROSTER SECTION                                              */}
+            {/* ----------------------------------------------------------------- */}
+            <section className="agents-section" id="agents" aria-labelledby="agents-title">
+              <p className="eyebrow">
+                <BotIcon />
+                {t.agentsEyebrow}
+              </p>
+              <h2 id="agents-title">{t.agentsHeading}</h2>
+              <p className="section-lede">{t.agentsLede}</p>
+
+              <div className="agents-grid">
+                {t.agentsList.map((ag, idx) => (
+                  <div
+                    key={ag.id}
+                    className={`agent-card glass-card ${selectedAgent === idx ? "is-active-card" : ""}`}
+                    onClick={() => setSelectedAgent(idx)}
+                    style={{ "--agent-accent": ag.color } as React.CSSProperties}
+                  >
+                    <div className="agent-card-header">
+                      <div className="agent-avatar-sphere" style={{ backgroundColor: ag.color, boxShadow: `0 0 16px ${ag.color}66` }} />
+                      <div>
+                        <div className="agent-handle-group">
+                          <code className="agent-handle">{ag.handle}</code>
+                          <button
+                            type="button"
+                            className="btn-agent-handle-copy"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copy(`handle-${ag.id}`, ag.handle);
+                            }}
+                            title={t.copyLabel}
+                          >
+                            {noticeId === `handle-${ag.id}` ? <CheckIcon /> : <CopyIcon />}
+                          </button>
+                        </div>
+                        <h3 className="agent-name">{ag.name}</h3>
+                      </div>
+                    </div>
+
+                    <div className="agent-role-badge">
+                      <span>{ag.role}</span>
+                    </div>
+
+                    <p className="agent-motto">"{ag.motto}"</p>
+                    <p className="agent-desc">{ag.description}</p>
+
+                    <div className="agent-meta-grid">
+                      <div className="agent-meta-item">
+                        <span className="agent-meta-label">{t.agentThinking}</span>
+                        <span className="agent-meta-val">{ag.thinking}</span>
+                      </div>
+                      <div className="agent-meta-item">
+                        <span className="agent-meta-label">{t.agentPrimaryModel}</span>
+                        <span className="agent-meta-val">{ag.model}</span>
+                      </div>
+                    </div>
+
+                    <div className="agent-tools-container">
+                      <span className="agent-tools-label">{t.agentAuthorizedTools}:</span>
+                      <div className="agent-tools-pills">
+                        {ag.tools.map((tl) => (
+                          <code key={tl} className="tool-pill">
+                            {tl}
+                          </code>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* ----------------------------------------------------------------- */}
+            {/* SPECIAL COMMANDS & MODES SECTION                                  */}
+            {/* ----------------------------------------------------------------- */}
+            <section className="commands-section" id="commands" aria-labelledby="commands-title">
+              <p className="eyebrow">{t.commandsEyebrow}</p>
+              <h2 id="commands-title">{t.commandsHeading}</h2>
+              <p className="section-lede">{t.commandsLede}</p>
+
+              <div className="commands-grid">
+                {t.specialCommandsList.map((cmd) => (
+                  <div key={cmd.name} className="command-card glass-card">
+                    <div className="command-header">
+                      <code className="command-name">{cmd.name}</code>
+                      <span className={`command-badge ${cmd.badgeClass}`}>{cmd.tag}</span>
+                    </div>
+                    <div className="command-palette-info">
+                      <span className="palette-dot" />
+                      <span className="palette-label">{cmd.colors}</span>
+                    </div>
+                    <p className="command-desc">{cmd.description}</p>
+                    <div className="command-example">
+                      <span className="example-prompt">Ex:</span>
+                      <code>{cmd.usage}</code>
+                      <button
+                        type="button"
+                        className="btn-cmd-copy"
+                        onClick={() => copy(`cmd-${cmd.name}`, cmd.usage)}
+                        aria-label={`${t.copyLabel}: ${cmd.usage}`}
+                      >
+                        {noticeId === `cmd-${cmd.name}` ? <CheckIcon /> : <CopyIcon />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
 
@@ -524,7 +635,9 @@ export default function App() {
               </div>
             </section>
 
-            {/* MODEL PROVIDERS */}
+            {/* ----------------------------------------------------------------- */}
+            {/* MODEL PROVIDERS SECTION                                           */}
+            {/* ----------------------------------------------------------------- */}
             <section className="providers" aria-labelledby="providers-eyebrow">
               <p className="eyebrow" id="providers-eyebrow">
                 {t.providersEyebrow}
@@ -548,7 +661,9 @@ export default function App() {
               <p className="providers-note">{t.providersNote}</p>
             </section>
 
-            {/* FEATURES */}
+            {/* ----------------------------------------------------------------- */}
+            {/* FEATURES SECTION                                                  */}
+            {/* ----------------------------------------------------------------- */}
             <section className="features" id="features" aria-labelledby="features-title">
               <p className="eyebrow">{t.featuresEyebrow}</p>
               <h2 id="features-title">{t.featuresHeading}</h2>
@@ -586,34 +701,10 @@ export default function App() {
                 </div>
               </div>
             </section>
-            {/* SPECIAL COMMANDS & MODES SECTION */}
-            <section className="commands-section" id="commands" aria-labelledby="commands-title">
-              <p className="eyebrow">{t.commandsEyebrow}</p>
-              <h2 id="commands-title">{t.commandsHeading}</h2>
-              <p className="section-lede">{t.commandsLede}</p>
 
-              <div className="commands-grid">
-                {t.specialCommandsList.map((cmd) => (
-                  <div key={cmd.name} className="command-card glass-card">
-                    <div className="command-header">
-                      <code className="command-name">{cmd.name}</code>
-                      <span className={`command-badge ${cmd.badgeClass}`}>{cmd.tag}</span>
-                    </div>
-                    <div className="command-palette-info">
-                      <span className="palette-dot" />
-                      <span className="palette-label">{cmd.colors}</span>
-                    </div>
-                    <p className="command-desc">{cmd.description}</p>
-                    <div className="command-example">
-                      <span className="example-prompt">Ex:</span>
-                      <code>{cmd.usage}</code>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* WHY OHMYSHARK */}
+            {/* ----------------------------------------------------------------- */}
+            {/* WHY OHMYSHARK SECTION                                             */}
+            {/* ----------------------------------------------------------------- */}
             <section className="changes" id="changes" aria-labelledby="changes-title">
               <p className="eyebrow">{t.changesEyebrow}</p>
               <h2 id="changes-title">{t.changesHeading}</h2>
@@ -630,7 +721,9 @@ export default function App() {
               </div>
             </section>
 
-            {/* LINEAGE */}
+            {/* ----------------------------------------------------------------- */}
+            {/* LINEAGE SECTION                                                   */}
+            {/* ----------------------------------------------------------------- */}
             <section className="lineage" id="lineage" aria-labelledby="lineage-title">
               <p className="eyebrow">{t.lineageEyebrow}</p>
               <h2 id="lineage-title">{t.lineageHeading}</h2>
@@ -644,7 +737,9 @@ export default function App() {
           </div>
         </main>
 
-        {/* SITE FOOTER */}
+        {/* ----------------------------------------------------------------- */}
+        {/* SITE FOOTER                                                       */}
+        {/* ----------------------------------------------------------------- */}
         <footer className="site-footer">
           <div className="wrap footer-inner">
             <div className="footer-brand">

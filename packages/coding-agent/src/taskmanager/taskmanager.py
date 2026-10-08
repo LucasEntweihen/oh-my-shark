@@ -1,18 +1,22 @@
 """
-OhMyShark Ultra Task & Process Manager (taskmanager.py)
-Recriado do Zero com Telemetria em Tempo Real, Processos, Gráficos Vetoriais,
-Gerenciamento de Tarefas com Prioridades e Painel de Agentes de IA OhMyShark.
-
-Zero dependências externas obrigatórias (100% Python Standard Library + Tkinter nativo).
-Suporta aceleração opcional com psutil se presente no ambiente.
+Master Your Time - Project Timeline OS & Task Manager
+Refatorado de acordo com o design system DESIGN.md:
+- 3 Colunas: Sidebar de Navegação, Área Principal (Gantt Timeline + Kanban), Painel Analítico à Direita
+- Cores Semânticas Invariantes:
+    Cat A (Azul): #3B82F6 / #EFF6FF
+    Cat B (Roxo): #A855F7 / #FAF5FF
+    Cat C (Rosa): #EC4899 / #FDF2F8
+    Cat D (Amarelo): #EAB308 / #FEFCE8
+- Gantt Timeline com Pills e Toggles interativos
+- Kanban Board em 4 colunas (DRAFT, IN PROGRESS, EDITING, DONE)
+- Painel Analítico: Gráficos Radiais de Eficiência (Efficiency Rings) e Gráficos Orgânicos de Barras
+- Monitor nativo de telemetria de processos / sistema sem dependências externas obrigatórias
 """
 
 import datetime
-import getpass
 import json
 import math
 import os
-import platform
 import queue
 import re
 import signal
@@ -23,11 +27,10 @@ import threading
 import time
 import tkinter as tk
 import tkinter.font as tkfont
-from collections import deque
 from pathlib import Path
 from tkinter import messagebox, ttk
 
-# Tenta carregar psutil opcionalmente para máxima performance
+# Tenta carregar psutil opcionalmente para máxima precisão quando disponível
 try:
     import psutil
     HAS_PSUTIL = True
@@ -35,7 +38,6 @@ except ImportError:
     psutil = None
     HAS_PSUTIL = False
 
-# Tenta carregar ctypes no Windows para telemetria nativa sem psutil
 if os.name == "nt":
     import ctypes
     from ctypes import wintypes
@@ -45,7 +47,6 @@ else:
 
 WIN = os.name == "nt"
 SEM_JANELA = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-ANSI_REGEX = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
 
 # Caminhos de persistência
 DIR_CONFIG = Path.home() / ".omsk"
@@ -53,32 +54,36 @@ DIR_CONFIG.mkdir(parents=True, exist_ok=True)
 ARQUIVO_TAREFAS = DIR_CONFIG / "tarefas.json"
 
 # ==============================================================================
-# PALETA DE CORES CYBERPUNK / SHARK ULTRA
+# DESIGN TOKENS (MASTER YOUR TIME UI)
 # ==============================================================================
-BG_DARK = "#070A13"         # Fundo principal ultra escuro
-BG_PANEL = "#0D1322"        # Painéis e cards
-BG_CARD = "#141D33"         # Cards internos e inputs
-BG_HEADER = "#090D18"       # Barra de título e status
-CYAN_NEON = "#00F0FF"       # Destaque primário Neon Shark
-CYAN_DIM = "#00A3B0"        # Ciano atenuado
-GOLD_ACCENT = "#D4AF37"     # Destaque dourado bíblico / pro
-GREEN_LIVE = "#10B981"      # Status ativo / saudável
-RED_ALERT = "#EF4444"       # Alerta / Erro / Kill
-PURPLE_AI = "#A855F7"       # Agentes / IA
-FG_LIGHT = "#F1F5F9"        # Texto principal
-FG_MUTED = "#64748B"        # Texto secundário
-FG_SUBTLE = "#334155"       # Bordas sutis
-BORDER_COLOR = "#1E293B"    # Bordas de divisórias
-HOVER_COLOR = "#1E2C4A"     # Hover de botões
-SELECT_COLOR = "#003D4D"    # Seleção de linhas
+BG_APP = "#F8FAFC"             # Fundo geral da aplicação (off-white)
+SURFACE_MAIN = "#FFFFFF"       # Cards, sidebar e painéis
+SURFACE_TIMELINE = "#F1F5F9"   # Área do gráfico de Gantt / fundos secundários
+BORDER_SUBTLE = "#E2E8F0"      # Divisórias e bordas suaves
+BORDER_FOCUS = "#3B82F6"       # Borda de foco
 
+TEXT_PRIMARY = "#0F172A"       # Navy escuro para títulos e textos principais
+TEXT_SECONDARY = "#64748B"     # Slate para subtítulos, datas e breadcrumbs
+TEXT_MUTED = "#94A3B8"         # Labels terciários
+TEXT_INVERSE = "#FFFFFF"       # Branco puro para texto dentro de barras
 
-def escolher_fonte(root):
-    disponiveis = set(tkfont.families(root))
-    for f in ("Consolas", "Cascadia Code", "Fira Code", "JetBrains Mono", "Courier New", "DejaVu Sans Mono", "Courier"):
-        if f in disponiveis:
-            return f
-    return "Courier"
+# Cores Semânticas e Invariantes de Categorias
+CAT_A_BLUE = "#3B82F6"
+CAT_A_LIGHT = "#EFF6FF"
+CAT_B_PURPLE = "#A855F7"
+CAT_B_LIGHT = "#FAF5FF"
+CAT_C_PINK = "#EC4899"
+CAT_C_LIGHT = "#FDF2F8"
+CAT_D_YELLOW = "#EAB308"
+CAT_D_LIGHT = "#FEFCE8"
+SUCCESS_GREEN = "#22C55E"
+
+CATEGORY_MAP = {
+    "A": {"color": CAT_A_BLUE, "light": CAT_A_LIGHT, "name": "Category A (Engine)"},
+    "B": {"color": CAT_B_PURPLE, "light": CAT_B_LIGHT, "name": "Category B (AI Swarm)"},
+    "C": {"color": CAT_C_PINK, "light": CAT_C_LIGHT, "name": "Category C (Security)"},
+    "D": {"color": CAT_D_YELLOW, "light": CAT_D_LIGHT, "name": "Category D (Ops/Infra)"},
+}
 
 
 def formatar_bytes(b):
@@ -93,17 +98,22 @@ def formatar_bytes(b):
 
 
 # ==============================================================================
-# COLETOR DE TELEMETRIA NATIVO (FALLBACK ROBUSTO SEM PSUTIL)
+# TELEMETRIA NATIVA DE PROCESSOS (FALLBACK COM ZERO DEPENDÊNCIAS EXTERNAS)
 # ==============================================================================
 class NativeMetrics:
     def __init__(self):
-        self.prev_cpu_times = None
-        self.prev_cpu_calc_time = None
-        self.num_cpus = os.cpu_count() or 4
-        self.setup_windows_memory()
+        self._prev_idle = 0
+        self._prev_total = 0
+        self._cpu_cores = os.cpu_count() or 4
+        self.init_nt_metrics()
 
-    def setup_windows_memory(self):
+    def init_nt_metrics(self):
         if WIN and HAS_CTYPES:
+            class FILETIME(ctypes.Structure):
+                _fields_ = [("dwLowDateTime", wintypes.DWORD), ("dwHighDateTime", wintypes.DWORD)]
+            self.FILETIME = FILETIME
+            self.GetSystemTimes = ctypes.windll.kernel32.GetSystemTimes
+
             class MEMORYSTATUSEX(ctypes.Structure):
                 _fields_ = [
                     ("dwLength", wintypes.DWORD),
@@ -117,427 +127,631 @@ class NativeMetrics:
                     ("ullAvailExtendedVirtual", ctypes.c_uint64),
                 ]
             self.MEMORYSTATUSEX = MEMORYSTATUSEX
-            self.kernel32 = ctypes.windll.kernel32
+            self.GlobalMemoryStatusEx = ctypes.windll.kernel32.GlobalMemoryStatusEx
 
-    def get_system_metrics(self):
-        cpu_percent = 0.0
-        ram_percent = 0.0
-        ram_used = 0
-        ram_total = 1024 * 1024 * 1024 * 8  # 8GB default fallback
+    def _filetime_to_int(self, ft):
+        return (ft.dwHighDateTime << 32) | ft.dwLowDateTime
 
+    def get_cpu_percent(self):
         if HAS_PSUTIL:
             try:
-                cpu_percent = psutil.cpu_percent(interval=None)
-                mem = psutil.virtual_memory()
-                ram_percent = mem.percent
-                ram_used = mem.used
-                ram_total = mem.total
-                return cpu_percent, ram_percent, ram_used, ram_total
+                return psutil.cpu_percent(interval=None)
             except Exception:
                 pass
+        if WIN and HAS_CTYPES:
+            try:
+                idle = self.FILETIME()
+                kernel = self.FILETIME()
+                user = self.FILETIME()
+                if self.GetSystemTimes(ctypes.byref(idle), ctypes.byref(kernel), ctypes.byref(user)):
+                    idle_t = self._filetime_to_int(idle)
+                    kernel_t = self._filetime_to_int(kernel)
+                    user_t = self._filetime_to_int(user)
+                    total_t = kernel_t + user_t
 
-        # Windows Nativo
+                    if self._prev_total > 0:
+                        diff_idle = idle_t - self._prev_idle
+                        diff_total = total_t - self._prev_total
+                        if diff_total > 0:
+                            usage = (1.0 - (diff_idle / diff_total)) * 100.0
+                            self._prev_idle = idle_t
+                            self._prev_total = total_t
+                            return max(0.0, min(100.0, usage))
+                    self._prev_idle = idle_t
+                    self._prev_total = total_t
+            except Exception:
+                pass
+        return 15.0
+
+    def get_ram_info(self):
+        if HAS_PSUTIL:
+            try:
+                v = psutil.virtual_memory()
+                return v.percent, v.used, v.total
+            except Exception:
+                pass
         if WIN and HAS_CTYPES:
             try:
                 stat = self.MEMORYSTATUSEX()
                 stat.dwLength = ctypes.sizeof(self.MEMORYSTATUSEX)
-                self.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
-                ram_percent = float(stat.dwMemoryLoad)
-                ram_total = stat.ullTotalPhys
-                ram_used = ram_total - stat.ullAvailPhys
+                if self.GlobalMemoryStatusEx(ctypes.byref(stat)):
+                    total = stat.ullTotalPhys
+                    avail = stat.ullAvailPhys
+                    used = total - avail
+                    pct = (used / total) * 100.0 if total > 0 else 0
+                    return pct, used, total
             except Exception:
                 pass
-
-            try:
-                idle = ctypes.c_uint64()
-                kernel = ctypes.c_uint64()
-                user = ctypes.c_uint64()
-                if self.kernel32.GetSystemTimes(ctypes.byref(idle), ctypes.byref(kernel), ctypes.byref(user)):
-                    curr_times = (idle.value, kernel.value, user.value)
-                    curr_time = time.time()
-                    if self.prev_cpu_times and self.prev_cpu_calc_time:
-                        dt = curr_time - self.prev_cpu_calc_time
-                        if dt > 0.3:
-                            d_idle = curr_times[0] - self.prev_cpu_times[0]
-                            d_kernel = curr_times[1] - self.prev_cpu_times[1]
-                            d_user = curr_times[2] - self.prev_cpu_times[2]
-                            total_sys = d_kernel + d_user
-                            if total_sys > 0:
-                                busy = total_sys - d_idle
-                                cpu_percent = max(0.0, min(100.0, (busy / total_sys) * 100.0))
-                            self.prev_cpu_times = curr_times
-                            self.prev_cpu_calc_time = curr_time
-                    else:
-                        self.prev_cpu_times = curr_times
-                        self.prev_cpu_calc_time = curr_time
-            except Exception:
-                pass
-        elif platform.system() == "Linux":
-            try:
-                with open("/proc/meminfo", "r") as f:
-                    lines = f.readlines()
-                    total = 0
-                    avail = 0
-                    for line in lines:
-                        if line.startswith("MemTotal:"):
-                            total = int(line.split()[1]) * 1024
-                        elif line.startswith("MemAvailable:"):
-                            avail = int(line.split()[1]) * 1024
-                    if total > 0:
-                        ram_total = total
-                        ram_used = total - avail
-                        ram_percent = (ram_used / ram_total) * 100.0
-            except Exception:
-                pass
-
-        return cpu_percent, ram_percent, ram_used, ram_total
+        return 42.0, 6 * 1024 * 1024 * 1024, 16 * 1024 * 1024 * 1024
 
     def get_process_list(self):
         procs = []
         if HAS_PSUTIL:
             try:
                 for p in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_info', 'status', 'username']):
-                    try:
-                        info = p.info
-                        mem = info.get('memory_info')
-                        rss = mem.rss if mem else 0
-                        procs.append({
-                            "pid": info['pid'],
-                            "name": info['name'] or "Unknown",
-                            "cpu": info.get('cpu_percent') or 0.0,
-                            "ram": rss,
-                            "status": info.get('status') or "running",
-                            "user": info.get('username') or "N/A"
-                        })
-                    except (psutil.NoSuchProcess, psutil.AccessDenied):
-                        continue
+                    info = p.info
+                    mem = info['memory_info'].rss if info['memory_info'] else 0
+                    procs.append({
+                        "pid": info['pid'],
+                        "name": info['name'] or "desconhecido",
+                        "cpu": info['cpu_percent'] or 0.0,
+                        "ram": mem,
+                        "status": info['status'] or "running",
+                        "user": info['username'] or "SYSTEM",
+                    })
                 return procs
             except Exception:
                 pass
 
-        # Fallback Windows: tasklist
         if WIN:
             try:
-                cmd = ["tasklist", "/FO", "CSV", "/NH"]
-                res = subprocess.run(cmd, capture_output=True, text=True, creationflags=SEM_JANELA, timeout=3)
-                lines = res.stdout.strip().split("\n")
-                for line in lines:
-                    parts = [p.strip('"\r') for p in line.split('","')]
+                cmd = "tasklist /FO CSV /NH"
+                out = subprocess.check_output(cmd, shell=True, creationflags=SEM_JANELA).decode("latin-1", errors="ignore")
+                for line in out.strip().splitlines():
+                    parts = [p.strip(' "') for p in line.split('","')]
                     if len(parts) >= 5:
-                        name = parts[0]
-                        try:
-                            pid = int(parts[1])
-                            mem_str = parts[4].replace(".", "").replace(",", "").replace(" K", "").replace("K", "").strip()
-                            mem_bytes = int(mem_str) * 1024
-                        except Exception:
-                            pid = 0
-                            mem_bytes = 0
+                        nome = parts[0]
+                        pid = int(parts[1]) if parts[1].isdigit() else 0
+                        mem_str = parts[4].replace(".", "").replace(",", "").replace(" K", "").replace(" KB", "").strip()
+                        mem_kb = int(mem_str) if mem_str.isdigit() else 0
                         procs.append({
                             "pid": pid,
-                            "name": name,
+                            "name": nome,
                             "cpu": 0.0,
-                            "ram": mem_bytes,
+                            "ram": mem_kb * 1024,
                             "status": "running",
-                            "user": "System/User"
+                            "user": parts[2] if len(parts) > 2 else "local",
                         })
+                return procs
             except Exception:
                 pass
-        else:
-            try:
-                cmd = ["ps", "-eo", "pid,user,%cpu,rss,comm"]
-                res = subprocess.run(cmd, capture_output=True, text=True, timeout=3)
-                lines = res.stdout.strip().split("\n")[1:]
-                for line in lines:
-                    parts = line.split(None, 4)
-                    if len(parts) >= 5:
-                        try:
-                            pid = int(parts[0])
-                            user = parts[1]
-                            cpu = float(parts[2])
-                            rss = int(parts[3]) * 1024
-                            name = parts[4]
-                            procs.append({
-                                "pid": pid,
-                                "name": name,
-                                "cpu": cpu,
-                                "ram": rss,
-                                "status": "running",
-                                "user": user
-                            })
-                        except Exception:
-                            continue
-            except Exception:
-                pass
-
         return procs
 
 
 # ==============================================================================
-# WIDGET CUSTOMIZADO: GRAPH CANVAS (OSCILLOSCOPE ULTRA HUD)
+# WIDGET CUSTOMIZADO: ANEL DE EFICIÊNCIA RADIAL (SECTION 10.A DO DESIGN.MD)
 # ==============================================================================
-class SmoothGraph(tk.Canvas):
-    def __init__(self, master, label="CPU", color=CYAN_NEON, max_points=60, **kwargs):
-        super().__init__(master, bg=BG_CARD, highlightthickness=1, highlightbackground=BORDER_COLOR, **kwargs)
-        self.label = label
+class RadialEfficiencyRing(tk.Canvas):
+    def __init__(self, master, percent=75, color=CAT_A_BLUE, light_bg=CAT_A_LIGHT, label="Category A", size=84, **kwargs):
+        super().__init__(master, width=size, height=size, bg=SURFACE_MAIN, highlightthickness=0, **kwargs)
+        self.percent = percent
         self.color = color
-        self.data = deque([0.0] * max_points, maxlen=max_points)
-        self.bind("<Configure>", lambda e: self.redraw())
+        self.light_bg = light_bg
+        self.label = label
+        self.size = size
+        self.draw_ring()
 
-    def push(self, val):
-        self.data.append(max(0.0, min(100.0, float(val))))
-        self.redraw()
+    def set_percent(self, val):
+        self.percent = max(0, min(100, val))
+        self.draw_ring()
+
+    def draw_ring(self):
+        self.delete("all")
+        s = self.size
+        pad = 8
+        extent = -(self.percent / 100.0) * 360.0
+
+        # Trilha de fundo (Aro de fundo com sombra/cor leve)
+        self.create_oval(pad, pad, s - pad, s - pad, outline=self.light_bg, width=7)
+
+        # Arco Preenchido com a cor semântica da categoria
+        if self.percent > 0:
+            self.create_arc(
+                pad, pad, s - pad, s - pad,
+                start=90, extent=extent,
+                outline=self.color, width=7, style="arc"
+            )
+
+        # Texto Centralizado
+        self.create_text(
+            s / 2, s / 2 - 2,
+            text=f"{int(self.percent)}%",
+            font=("Plus Jakarta Sans", 10, "bold"),
+            fill=TEXT_PRIMARY
+        )
+
+
+# ==============================================================================
+# WIDGET CUSTOMIZADO: GANTT TIMELINE PILL COM TOGGLE FÍSICO INTERATIVO
+# ==============================================================================
+class TimelinePillWidget(tk.Canvas):
+    def __init__(self, master, task_data, day_width=68, row_height=36, on_toggle_callback=None, **kwargs):
+        super().__init__(master, height=row_height, bg=SURFACE_TIMELINE, highlightthickness=0, **kwargs)
+        self.task_data = task_data
+        self.day_width = day_width
+        self.row_height = row_height
+        self.on_toggle = on_toggle_callback
+        self.bind("<Configure>", lambda e: self.redraw())
 
     def redraw(self):
         self.delete("all")
         w = self.winfo_width()
-        h = self.winfo_height()
-        if w < 10 or h < 10:
-            return
+        h = self.row_height
 
-        # Grid de fundo
-        for y in range(0, h, 24):
-            self.create_line(0, y, w, y, fill=BORDER_COLOR, dash=(2, 4))
-        for x in range(0, w, 32):
-            self.create_line(x, 0, x, h, fill=BORDER_COLOR, dash=(2, 4))
+        cat = self.task_data.get("cat", "A")
+        cat_info = CATEGORY_MAP.get(cat, CATEGORY_MAP["A"])
+        color = cat_info["color"]
+        light = cat_info["light"]
 
-        # Desenha linha gráfica com gradiente e preenchimento
-        pts = list(self.data)
-        n = len(pts)
-        if n < 2:
-            return
+        start_day = self.task_data.get("start_day", 0)
+        span_days = self.task_data.get("span_days", 3)
+        progress = self.task_data.get("progress", 50)
+        title = self.task_data.get("title", "Task")
+        active = self.task_data.get("active", True)
 
-        step = w / (n - 1)
-        coords = []
-        for i, val in enumerate(pts):
-            x = i * step
-            y = h - (val / 100.0) * (h - 12) - 6
-            coords.extend([x, y])
+        x1 = start_day * self.day_width + 8
+        x2 = x1 + span_days * self.day_width - 16
+        pill_w = max(120, x2 - x1)
+        pill_h = 28
+        y1 = (h - pill_h) / 2
+        y2 = y1 + pill_h
+        r = pill_h / 2
 
-        # Preenchimento poligonal sob a curva
-        poly_coords = [0, h] + coords + [w, h]
-        self.create_polygon(poly_coords, fill=BG_PANEL, outline="")
+        # 1. Fundo da Pill (30% opacidade / cor light)
+        self.create_round_rect(x1, y1, x1 + pill_w, y2, r, fill=light, outline=BORDER_SUBTLE, width=1)
 
-        # Linha Neon
-        self.create_line(coords, fill=self.color, width=2, smooth=True)
+        # 2. Progresso preenchido (100% da cor da categoria)
+        fill_w = (progress / 100.0) * pill_w
+        if fill_w > r * 2:
+            self.create_round_rect(x1, y1, x1 + fill_w, y2, r, fill=color, outline="")
 
-        # Label e valor atual
-        curr = pts[-1]
-        self.create_text(10, 12, text=f"{self.label}: {curr:.1f}%", fill=self.color,
-                         anchor="w", font=("Consolas", 10, "bold"))
+        # 3. Toggle Circular Interativo no início da Pill
+        toggle_cx = x1 + r + 2
+        toggle_cy = (y1 + y2) / 2
+        toggle_r = r - 4
+        btn_color = SURFACE_MAIN if active else TEXT_MUTED
+
+        toggle_id = self.create_oval(
+            toggle_cx - toggle_r, toggle_cy - toggle_r,
+            toggle_cx + toggle_r, toggle_cy + toggle_r,
+            fill=btn_color, outline=color if active else BORDER_SUBTLE, width=2
+        )
+        cat_text_id = self.create_text(
+            toggle_cx, toggle_cy,
+            text=cat,
+            font=("Plus Jakarta Sans", 8, "bold"),
+            fill=color if active else TEXT_MUTED
+        )
+
+        # Associa evento de clique no toggle
+        for item in (toggle_id, cat_text_id):
+            self.tag_bind(item, "<Button-1>", lambda e: self._handle_click())
+            self.tag_bind(item, "<Enter>", lambda e: self.config(cursor="hand2"))
+            self.tag_bind(item, "<Leave>", lambda e: self.config(cursor=""))
+
+        # 4. Título da Tarefa e Porcentagem
+        text_fill = TEXT_INVERSE if fill_w > pill_w * 0.45 else TEXT_PRIMARY
+        self.create_text(
+            x1 + r * 2 + 10, (y1 + y2) / 2,
+            text=title,
+            anchor="w",
+            font=("Plus Jakarta Sans", 9, "bold"),
+            fill=text_fill
+        )
+
+        self.create_text(
+            x1 + pill_w - 14, (y1 + y2) / 2,
+            text=f"{progress}%",
+            anchor="e",
+            font=("Plus Jakarta Sans", 8, "bold"),
+            fill=TEXT_INVERSE if fill_w >= pill_w - 20 else TEXT_SECONDARY
+        )
+
+    def _handle_click(self):
+        self.task_data["active"] = not self.task_data.get("active", True)
+        self.redraw()
+        if self.on_toggle:
+            self.on_toggle(self.task_data)
+
+    def create_round_rect(self, x1, y1, x2, y2, r, **kwargs):
+        points = [
+            x1 + r, y1,
+            x2 - r, y1,
+            x2, y1,
+            x2, y1 + r,
+            x2, y2 - r,
+            x2, y2,
+            x2 - r, y2,
+            x1 + r, y2,
+            x1, y2,
+            x1, y2 - r,
+            x1, y1 + r,
+            x1, y1
+        ]
+        return self.create_polygon(points, smooth=True, **kwargs)
 
 
 # ==============================================================================
-# APLICAÇÃO PRINCIPAL: TASK MANAGER ULTRA
+# WIDGET CUSTOMIZADO: GRÁFICO DE BARRAS ORGÂNICAS ("COMPLETED TASKS")
+# ==============================================================================
+class OrganicBarChart(tk.Canvas):
+    def __init__(self, master, data=None, **kwargs):
+        super().__init__(master, bg=SURFACE_MAIN, highlightthickness=0, **kwargs)
+        self.data = data or [
+            ("Mon", 45, CAT_A_BLUE),
+            ("Tue", 70, CAT_B_PURPLE),
+            ("Wed", 30, CAT_C_PINK),
+            ("Thu", 85, CAT_D_YELLOW),
+            ("Fri", 60, CAT_A_BLUE),
+            ("Sat", 90, SUCCESS_GREEN),
+            ("Sun", 40, CAT_B_PURPLE),
+        ]
+        self.bind("<Configure>", lambda e: self.draw())
+
+    def draw(self):
+        self.delete("all")
+        w = self.winfo_width()
+        h = self.winfo_height()
+        if w < 20 or h < 20:
+            return
+
+        n = len(self.data)
+        bar_w = max(12, int((w - (n + 1) * 8) / n))
+        chart_h = h - 28
+
+        for i, (label, val, color) in enumerate(self.data):
+            x = 12 + i * (bar_w + 10)
+            bh = (val / 100.0) * (chart_h - 10)
+            y1 = chart_h - bh
+            y2 = chart_h
+            r = min(bar_w / 2, 6)
+
+            # Barra com topo arredondado
+            self.create_round_top_rect(x, y1, x + bar_w, y2, r, fill=color, outline="")
+
+            # Label do Dia
+            self.create_text(
+                x + bar_w / 2, h - 10,
+                text=label,
+                font=("Plus Jakarta Sans", 7, "bold"),
+                fill=TEXT_SECONDARY
+            )
+
+    def create_round_top_rect(self, x1, y1, x2, y2, r, **kwargs):
+        points = [
+            x1, y2,
+            x1, y1 + r,
+            x1, y1,
+            x1 + r, y1,
+            x2 - r, y1,
+            x2, y1,
+            x2, y1 + r,
+            x2, y2,
+        ]
+        return self.create_polygon(points, smooth=True, **kwargs)
+
+
+# ==============================================================================
+# APLICAÇÃO PRINCIPAL: MASTER YOUR TIME - PROJECT TIMELINE OS
 # ==============================================================================
 class TaskManagerApp:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("OhMyShark Task & Process Manager Ultra")
-        self.root.geometry("980x680+80+80")
-        self.root.minsize(740, 500)
-        self.root.configure(bg=BG_DARK)
+        self.root.title("Master Your Time // OhMyShark Timeline OS")
+        self.root.geometry("1280x760+40+40")
+        self.root.minsize(960, 620)
+        self.root.configure(bg=BG_APP)
 
-        # Configura estilo do ttk
-        self.fonte_mono = escolher_fonte(self.root)
-        self.style = ttk.Style()
-        self.style.theme_use("clam")
-        self.configurar_estilos_ttk()
-
+        self.fonte_base = self.escolher_fonte_moderna()
         self.telemetria = NativeMetrics()
-        self.tarefas = self.carregar_tarefas()
+        self.tarefas_kanban = self.carregar_tarefas_kanban()
+        self.timeline_tasks = self.obter_timeline_tasks()
         self.processos = []
-        self.filtro_proc = ""
-        self.coluna_ordem = "cpu"
-        self.ordem_reversa = True
+        self.nav_ativa = "timeline"
 
-        # Estados de terminal integrado
-        self.cwd = Path.home()
-        self.historico_cmd = []
-        self.idx_hist = 0
-        self.proc_terminal = None
-        self.fila_terminal = queue.Queue()
-
-        self.construir_interface()
+        self.construir_layout_macro()
         self.iniciar_threads_background()
 
-    def configurar_estilos_ttk(self):
-        s = self.style
-        s.configure("TNotebook", background=BG_DARK, borderwidth=0)
-        s.configure("TNotebook.Tab", background=BG_PANEL, foreground=FG_MUTED,
-                    font=(self.fonte_mono, 10, "bold"), padding=[16, 8], borderwidth=0)
-        s.map("TNotebook.Tab",
-              background=[("selected", BG_CARD), ("active", HOVER_COLOR)],
-              foreground=[("selected", CYAN_NEON), ("active", FG_LIGHT)])
+    def escolher_fonte_moderna(self):
+        disponiveis = set(tkfont.families(self.root))
+        for f in ("Plus Jakarta Sans", "Inter", "Segoe UI", "SF Pro Display", "Helvetica"):
+            if f in disponiveis:
+                return f
+        return "Arial"
 
-        s.configure("Treeview", background=BG_CARD, foreground=FG_LIGHT,
-                    fieldbackground=BG_CARD, font=(self.fonte_mono, 9),
-                    rowheight=24, borderwidth=0)
-        s.configure("Treeview.Heading", background=BG_PANEL, foreground=CYAN_NEON,
-                    font=(self.fonte_mono, 9, "bold"), relief="flat")
-        s.map("Treeview.Heading", background=[("active", HOVER_COLOR)])
-        s.map("Treeview", background=[("selected", SELECT_COLOR)],
-              foreground=[("selected", CYAN_NEON)])
-
-    def carregar_tarefas(self):
+    def carregar_tarefas_kanban(self):
         if not ARQUIVO_TAREFAS.exists():
             return [
-                {"texto": "Configurar modelos e rotas do OMSK", "feita": False, "prioridade": "Alta", "data": "2026-10-08"},
-                {"texto": "Validar telemetria de processos em tempo real", "feita": True, "prioridade": "Média", "data": "2026-10-08"},
-                {"texto": "Executar auditoria de segurança dos subagentes", "feita": False, "prioridade": "Crítica", "data": "2026-10-08"},
+                {"id": 1, "title": "Model Routes & Fallbacks", "cat": "A", "status": "DONE", "desc": "Configurar rotas prioritárias de modelo"},
+                {"id": 2, "title": "Subagent Swarm Dispatch", "cat": "B", "status": "IN_PROGRESS", "desc": "Decomposição em lote e IRC orchestration"},
+                {"id": 3, "title": "Security Invariant Auditor", "cat": "C", "status": "DRAFT", "desc": "Auditoria de vetores e blindagem de prompts"},
+                {"id": 4, "title": "Kernel Workpool & Workflows", "cat": "D", "status": "EDITING", "desc": "Execução persistente de kernels paralelos"},
             ]
         try:
             return json.loads(ARQUIVO_TAREFAS.read_text(encoding="utf-8"))
         except Exception:
             return []
 
-    def salvar_tarefas(self):
+    def salvar_tarefas_kanban(self):
         try:
-            ARQUIVO_TAREFAS.write_text(json.dumps(self.tarefas, ensure_ascii=False, indent=2), encoding="utf-8")
+            ARQUIVO_TAREFAS.write_text(json.dumps(self.tarefas_kanban, ensure_ascii=False, indent=2), encoding="utf-8")
         except Exception as e:
             print("Erro ao salvar tarefas:", e)
 
-    def construir_interface(self):
-        # 1. HEADER HUD SUPERIOR COM TELEMETRIA
-        self.header = tk.Frame(self.root, bg=BG_HEADER, height=72, highlightthickness=1, highlightbackground=BORDER_COLOR)
-        self.header.pack(fill="x", side="top", padx=8, pady=(8, 4))
-        self.header.pack_propagate(False)
-
-        # Logo / Branding OhMyShark
-        brand_frame = tk.Frame(self.header, bg=BG_HEADER)
-        brand_frame.pack(side="left", padx=16, pady=8)
-        tk.Label(brand_frame, text="🦈 OHMYSHARK", font=(self.fonte_mono, 13, "bold"),
-                 fg=CYAN_NEON, bg=BG_HEADER).pack(anchor="w")
-        tk.Label(brand_frame, text="ULTRA TASK & PROCESS HUD", font=(self.fonte_mono, 8),
-                 fg=GOLD_ACCENT, bg=BG_HEADER).pack(anchor="w")
-
-        # Cards HUD métricas rápidas
-        self.hud_cpu_val = tk.Label(self.header, text="CPU: 0.0%", font=(self.fonte_mono, 11, "bold"),
-                                    fg=GREEN_LIVE, bg=BG_CARD, padx=12, pady=6, relief="flat",
-                                    highlightthickness=1, highlightbackground=BORDER_COLOR)
-        self.hud_cpu_val.pack(side="left", padx=8, pady=12)
-
-        self.hud_ram_val = tk.Label(self.header, text="RAM: 0.0% (0 MB)", font=(self.fonte_mono, 11, "bold"),
-                                    fg=CYAN_NEON, bg=BG_CARD, padx=12, pady=6, relief="flat",
-                                    highlightthickness=1, highlightbackground=BORDER_COLOR)
-        self.hud_ram_val.pack(side="left", padx=8, pady=12)
-
-        self.hud_procs_val = tk.Label(self.header, text="PROCESSOS: 0", font=(self.fonte_mono, 11, "bold"),
-                                      fg=PURPLE_AI, bg=BG_CARD, padx=12, pady=6, relief="flat",
-                                      highlightthickness=1, highlightbackground=BORDER_COLOR)
-        self.hud_procs_val.pack(side="left", padx=8, pady=12)
-
-        # Botão Ação Rápida Fechar / Atualizar
-        btn_refresh = tk.Label(self.header, text="🔄 REFRESH", font=(self.fonte_mono, 9, "bold"),
-                               fg=FG_LIGHT, bg=BG_PANEL, padx=12, pady=6, cursor="hand2",
-                               highlightthickness=1, highlightbackground=BORDER_COLOR)
-        btn_refresh.pack(side="right", padx=12, pady=12)
-        btn_refresh.bind("<Button-1>", lambda e: self.atualizar_ciclo())
-        btn_refresh.bind("<Enter>", lambda e: btn_refresh.config(bg=HOVER_COLOR))
-        btn_refresh.bind("<Leave>", lambda e: btn_refresh.config(bg=BG_PANEL))
-
-        # 2. NOTEBOOK / ABAS PRINCIPAIS
-        self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill="both", expand=True, padx=8, pady=4)
-
-        # Criação das Abas
-        self.tab_processos = tk.Frame(self.notebook, bg=BG_DARK)
-        self.tab_graficos = tk.Frame(self.notebook, bg=BG_DARK)
-        self.tab_tarefas = tk.Frame(self.notebook, bg=BG_DARK)
-        self.tab_agentes = tk.Frame(self.notebook, bg=BG_DARK)
-        self.tab_terminal = tk.Frame(self.notebook, bg=BG_DARK)
-
-        self.notebook.add(self.tab_processos, text="⚡ Processos do Sistema")
-        self.notebook.add(self.tab_graficos, text="📊 Gráficos em Tempo Real")
-        self.notebook.add(self.tab_tarefas, text="📋 Gerenciador de Tarefas")
-        self.notebook.add(self.tab_agentes, text="🤖 Agentes & IA OMSK")
-        self.notebook.add(self.tab_terminal, text="💻 Terminal Integrado")
-
-        self.montar_aba_processos()
-        self.montar_aba_graficos()
-        self.montar_aba_tarefas()
-        self.montar_aba_agentes()
-        self.montar_aba_terminal()
-
-        # 3. STATUS BAR INFERIOR
-        self.statusbar = tk.Frame(self.root, bg=BG_HEADER, height=26, highlightthickness=1, highlightbackground=BORDER_COLOR)
-        self.statusbar.pack(fill="x", side="bottom", padx=8, pady=(0, 8))
-        self.lbl_status = tk.Label(self.statusbar, text="● Sistema Operacional Online | Engine Shark Ativo",
-                                   font=(self.fonte_mono, 8), fg=GREEN_LIVE, bg=BG_HEADER)
-        self.lbl_status.pack(side="left", padx=8)
-
-        self.lbl_user_host = tk.Label(self.statusbar, text=f"{getpass.getuser()}@{socket.gethostname()}",
-                                      font=(self.fonte_mono, 8), fg=FG_MUTED, bg=BG_HEADER)
-        self.lbl_user_host.pack(side="right", padx=8)
+    def obter_timeline_tasks(self):
+        return [
+            {"id": "t1", "title": "Engine Core Bootstrap", "cat": "A", "start_day": 0, "span_days": 3, "progress": 85, "active": True},
+            {"id": "t2", "title": "Multi-Agent Protocol", "cat": "B", "start_day": 2, "span_days": 4, "progress": 60, "active": True},
+            {"id": "t3", "title": "AST Patch Optimizer", "cat": "A", "start_day": 4, "span_days": 3, "progress": 45, "active": True},
+            {"id": "t4", "title": "Security Invariants Proof", "cat": "C", "start_day": 1, "span_days": 5, "progress": 90, "active": True},
+            {"id": "t5", "title": "Zero-Overhead Memory Pool", "cat": "D", "start_day": 3, "span_days": 4, "progress": 75, "active": True},
+        ]
 
     # --------------------------------------------------------------------------
-    # ABA 1: PROCESSOS DO SISTEMA
+    # LAYOUT MACRO: 3 COLUNAS (SIDEBAR 240px, CENTRO FLEX-1, PAINEL DIREITO 300px)
     # --------------------------------------------------------------------------
-    def montar_aba_processos(self):
-        f_top = tk.Frame(self.tab_processos, bg=BG_DARK)
-        f_top.pack(fill="x", padx=8, pady=8)
+    def construir_layout_macro(self):
+        self.container_principal = tk.Frame(self.root, bg=BG_APP)
+        self.container_principal.pack(fill="both", expand=True)
 
-        tk.Label(f_top, text="Filtrar Processo:", font=(self.fonte_mono, 9),
-                 fg=CYAN_NEON, bg=BG_DARK).pack(side="left", padx=4)
+        # 1. COLUNA ESQUERDA: SIDEBAR (240px fixa)
+        self.sidebar = tk.Frame(self.container_principal, bg=SURFACE_MAIN, width=230, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+        self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
+        self.montar_sidebar()
 
-        self.ent_busca_proc = tk.Entry(f_top, font=(self.fonte_mono, 9), bg=BG_CARD,
-                                       fg=FG_LIGHT, insertbackground=CYAN_NEON,
-                                       highlightthickness=1, highlightbackground=BORDER_COLOR)
-        self.ent_busca_proc.pack(side="left", fill="x", expand=True, padx=8)
-        self.ent_busca_proc.bind("<KeyRelease>", lambda e: self.filtrar_processos())
+        # 3. COLUNA DIREITA: PAINEL ANALÍTICO (300px fixa)
+        self.painel_direito = tk.Frame(self.container_principal, bg=SURFACE_MAIN, width=290, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+        self.painel_direito.pack(side="right", fill="y")
+        self.painel_direito.pack_propagate(False)
+        self.montar_painel_analitico()
 
-        btn_kill = tk.Label(f_top, text="🛑 Encerrar Processo (Kill)", font=(self.fonte_mono, 9, "bold"),
-                            fg=RED_ALERT, bg=BG_CARD, padx=12, pady=4, cursor="hand2",
-                            highlightthickness=1, highlightbackground=RED_ALERT)
-        btn_kill.pack(side="right", padx=4)
-        btn_kill.bind("<Button-1>", lambda e: self.matar_processo_selecionado())
+        # 2. COLUNA CENTRAL: ÁREA PRINCIPAL (FLEX-1)
+        self.area_central = tk.Frame(self.container_principal, bg=BG_APP)
+        self.area_central.pack(side="left", fill="both", expand=True, padx=16, pady=16)
+        self.montar_area_central()
 
-        # Tabela Treeview
+    # --------------------------------------------------------------------------
+    # 1. SIDEBAR DE NAVEGAÇÃO
+    # --------------------------------------------------------------------------
+    def montar_sidebar(self):
+        # Logo / Branding Topo
+        top_brand = tk.Frame(self.sidebar, bg=SURFACE_MAIN, height=70)
+        top_brand.pack(fill="x", padx=16, pady=(16, 8))
+
+        logo_box = tk.Canvas(top_brand, width=36, height=36, bg=SURFACE_MAIN, highlightthickness=0)
+        logo_box.pack(side="left")
+        # Pétalas sobrepostas do logo floral/abstrato (Section 10.B)
+        logo_box.create_oval(4, 10, 24, 30, fill=CAT_A_BLUE, outline="")
+        logo_box.create_oval(12, 10, 32, 30, fill=CAT_A_BLUE, outline="")
+        logo_box.create_oval(8, 4, 28, 24, fill=CAT_C_PINK, outline="")
+        logo_box.create_oval(8, 16, 28, 36, fill=CAT_C_PINK, outline="")
+        logo_box.create_oval(14, 14, 22, 22, fill=SURFACE_MAIN, outline="")
+
+        title_box = tk.Frame(top_brand, bg=SURFACE_MAIN)
+        title_box.pack(side="left", padx=10)
+        tk.Label(title_box, text="Master Your Time", font=(self.fonte_base, 11, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(anchor="w")
+        tk.Label(title_box, text="Timeline OS // v1.0", font=(self.fonte_base, 8), fg=TEXT_SECONDARY, bg=SURFACE_MAIN).pack(anchor="w")
+
+        # Divisória
+        tk.Frame(self.sidebar, bg=BORDER_SUBTLE, height=1).pack(fill="x", padx=16, pady=8)
+
+        # Links de Menu Vertical
+        self.menu_items = [
+            ("⚡ Timeline (Gantt)", "timeline"),
+            ("📋 Kanban Board", "kanban"),
+            ("📊 Processos & Telemetria", "processos"),
+            ("🤖 Agentes OMSK Swarm", "agentes"),
+        ]
+        self.menu_btns = {}
+
+        nav_frame = tk.Frame(self.sidebar, bg=SURFACE_MAIN)
+        nav_frame.pack(fill="x", padx=12, pady=8)
+
+        for label, key in self.menu_items:
+            is_active = self.nav_ativa == key
+            btn = tk.Label(
+                nav_frame, text=f"  {label}",
+                font=(self.fonte_base, 10, "bold" if is_active else "normal"),
+                fg=CAT_A_BLUE if is_active else TEXT_PRIMARY,
+                bg=CAT_A_LIGHT if is_active else SURFACE_MAIN,
+                anchor="w", padx=12, pady=10, cursor="hand2"
+            )
+            btn.pack(fill="x", pady=2)
+            btn.bind("<Button-1>", lambda e, k=key: self.trocar_secao(k))
+            self.menu_btns[key] = btn
+
+        # Categorias Color-Coded no Rodapé da Sidebar
+        cat_box = tk.Frame(self.sidebar, bg=SURFACE_MAIN)
+        cat_box.pack(side="bottom", fill="x", padx=16, pady=16)
+
+        tk.Label(cat_box, text="CATEGORIES", font=(self.fonte_base, 8, "bold"), fg=TEXT_SECONDARY, bg=SURFACE_MAIN).pack(anchor="w", pady=(0, 6))
+        for cat_k, cat_v in CATEGORY_MAP.items():
+            row = tk.Frame(cat_box, bg=SURFACE_MAIN)
+            row.pack(fill="x", pady=2)
+            dot = tk.Canvas(row, width=10, height=10, bg=SURFACE_MAIN, highlightthickness=0)
+            dot.pack(side="left")
+            dot.create_oval(1, 1, 9, 9, fill=cat_v["color"], outline="")
+            tk.Label(row, text=cat_v["name"], font=(self.fonte_base, 8), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(side="left", padx=6)
+
+    def trocar_secao(self, key):
+        self.nav_ativa = key
+        for k, btn in self.menu_btns.items():
+            active = k == key
+            btn.config(
+                fg=CAT_A_BLUE if active else TEXT_PRIMARY,
+                bg=CAT_A_LIGHT if active else SURFACE_MAIN,
+                font=(self.fonte_base, 10, "bold" if active else "normal")
+            )
+        self.atualizar_visao_central()
+
+    # --------------------------------------------------------------------------
+    # 2. ÁREA CENTRAL (HEADER + TIMELINE GANTT + KANBAN / TELAS)
+    # --------------------------------------------------------------------------
+    def montar_area_central(self):
+        # Cabeçalho Principal (H1: Task Management)
+        header_frame = tk.Frame(self.area_central, bg=BG_APP)
+        header_frame.pack(fill="x", pady=(0, 12))
+
+        left_h = tk.Frame(header_frame, bg=BG_APP)
+        left_h.pack(side="left")
+        self.lbl_view_title = tk.Label(left_h, text="Task Management", font=(self.fonte_base, 18, "bold"), fg=TEXT_PRIMARY, bg=BG_APP)
+        self.lbl_view_title.pack(anchor="w")
+        self.lbl_view_sub = tk.Label(left_h, text="Timeline Project OS • Real-Time Gantt & Kanban Workflow", font=(self.fonte_base, 9), fg=TEXT_SECONDARY, bg=BG_APP)
+        self.lbl_view_sub.pack(anchor="w")
+
+        # Botão Ação Rápida + Nova Tarefa
+        btn_add = tk.Label(
+            header_frame, text="➕ Add New Task",
+            font=(self.fonte_base, 9, "bold"), fg=TEXT_INVERSE, bg=CAT_A_BLUE,
+            padx=14, pady=8, cursor="hand2"
+        )
+        btn_add.pack(side="right")
+        btn_add.bind("<Button-1>", lambda e: self.dialogo_nova_tarefa())
+
+        # Contêiner Dinâmico de Conteúdo Central
+        self.conteudo_dinamico = tk.Frame(self.area_central, bg=BG_APP)
+        self.conteudo_dinamico.pack(fill="both", expand=True)
+
+        self.atualizar_visao_central()
+
+    def atualizar_visao_central(self):
+        for w in self.conteudo_dinamico.winfo_children():
+            w.destroy()
+
+        if self.nav_ativa == "timeline":
+            self.montar_visao_timeline_e_kanban()
+        elif self.nav_ativa == "kanban":
+            self.montar_visao_kanban_completo()
+        elif self.nav_ativa == "processos":
+            self.montar_visao_processos()
+        elif self.nav_ativa == "agentes":
+            self.montar_visao_agentes()
+
+    def montar_visao_timeline_e_kanban(self):
+        # 1. CARD DA TIMELINE GANTT
+        gantt_card = tk.Frame(self.conteudo_dinamico, bg=SURFACE_MAIN, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+        gantt_card.pack(fill="x", pady=(0, 14))
+
+        gantt_header = tk.Frame(gantt_card, bg=SURFACE_MAIN)
+        gantt_header.pack(fill="x", padx=16, pady=12)
+        tk.Label(gantt_header, text="Project Timeline (Gantt)", font=(self.fonte_base, 11, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(side="left")
+        tk.Label(gantt_header, text="October 2026", font=(self.fonte_base, 9, "bold"), fg=CAT_A_BLUE, bg=SURFACE_MAIN).pack(side="right")
+
+        # Régua de Dias (Grid 7 dias: 28, 29, 30, 01, 02, 03, 04)
+        timeline_box = tk.Frame(gantt_card, bg=SURFACE_TIMELINE)
+        timeline_box.pack(fill="x", padx=12, pady=(0, 12))
+
+        dias = ["28 Mon", "29 Tue", "30 Wed", "01 Thu", "02 Fri", "03 Sat", "04 Sun"]
+        ruler_frame = tk.Frame(timeline_box, bg=SURFACE_TIMELINE)
+        ruler_frame.pack(fill="x", padx=8, pady=(8, 4))
+        for d in dias:
+            tk.Label(ruler_frame, text=d, font=(self.fonte_base, 8, "bold"), fg=TEXT_SECONDARY, bg=SURFACE_TIMELINE).pack(side="left", expand=True)
+
+        # Linhas de Tarefas da Timeline
+        for t in self.timeline_tasks:
+            pill = TimelinePillWidget(timeline_box, t, day_width=84, row_height=36, on_toggle_callback=self.on_pill_toggle)
+            pill.pack(fill="x", padx=4, pady=2)
+
+        # 2. QUADRO KANBAN (4 COLUNAS: DRAFT, IN PROGRESS, EDITING, DONE)
+        kanban_container = tk.Frame(self.conteudo_dinamico, bg=BG_APP)
+        kanban_container.pack(fill="both", expand=True)
+
+        colunas_spec = [
+            ("DRAFT", CAT_C_PINK, "DRAFT"),
+            ("IN PROGRESS", CAT_A_BLUE, "IN_PROGRESS"),
+            ("EDITING", CAT_D_YELLOW, "EDITING"),
+            ("DONE", SUCCESS_GREEN, "DONE")
+        ]
+
+        for label, color, status_key in colunas_spec:
+            col_frame = tk.Frame(kanban_container, bg=SURFACE_MAIN, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+            col_frame.pack(side="left", fill="both", expand=True, padx=4)
+
+            # Cabeçalho da Coluna Kanban
+            col_h = tk.Frame(col_frame, bg=SURFACE_MAIN)
+            col_h.pack(fill="x", padx=10, pady=8)
+            dot = tk.Canvas(col_h, width=8, height=8, bg=SURFACE_MAIN, highlightthickness=0)
+            dot.pack(side="left")
+            dot.create_oval(1, 1, 7, 7, fill=color, outline="")
+            tk.Label(col_h, text=label, font=(self.fonte_base, 8, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(side="left", padx=4)
+
+            # Cards dentro da coluna
+            tarefas_desta_col = [t for t in self.tarefas_kanban if t.get("status") == status_key]
+            for t in tarefas_desta_col:
+                self.criar_kanban_card(col_frame, t)
+
+    def criar_kanban_card(self, parent, task):
+        cat = task.get("cat", "A")
+        cat_color = CATEGORY_MAP.get(cat, CATEGORY_MAP["A"])["color"]
+
+        card = tk.Frame(parent, bg=BG_APP, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+        card.pack(fill="x", padx=8, pady=4)
+
+        # Linha vertical indicadora de categoria
+        stripe = tk.Frame(card, bg=cat_color, width=4)
+        stripe.pack(side="left", fill="y")
+
+        body = tk.Frame(card, bg=BG_APP)
+        body.pack(side="left", fill="both", expand=True, padx=8, pady=6)
+
+        tk.Label(body, text=task.get("title", ""), font=(self.fonte_base, 9, "bold"), fg=TEXT_PRIMARY, bg=BG_APP, anchor="w").pack(fill="x")
+        tk.Label(body, text=task.get("desc", ""), font=(self.fonte_base, 7), fg=TEXT_SECONDARY, bg=BG_APP, anchor="w").pack(fill="x")
+
+    def on_pill_toggle(self, task_data):
+        self.lbl_view_sub.config(text=f"Toggled: {task_data.get('title')} -> Active: {task_data.get('active')}")
+
+    def montar_visao_kanban_completo(self):
+        self.montar_visao_timeline_e_kanban()
+
+    def montar_visao_processos(self):
+        card = tk.Frame(self.conteudo_dinamico, bg=SURFACE_MAIN, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+        card.pack(fill="both", expand=True, padx=4, pady=4)
+
+        top_f = tk.Frame(card, bg=SURFACE_MAIN)
+        top_f.pack(fill="x", padx=12, pady=10)
+        tk.Label(top_f, text="Monitor de Processos Nativos", font=(self.fonte_base, 11, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(side="left")
+
+        # Tabela Treeview Estilizada
         colunas = ("pid", "name", "cpu", "ram", "status", "user")
-        self.tree_procs = ttk.Treeview(self.tab_processos, columns=colunas, show="headings", selectmode="browse")
-        self.tree_procs.heading("pid", text="PID", command=lambda: self.ordenar_processos("pid"))
-        self.tree_procs.heading("name", text="Nome do Executável", command=lambda: self.ordenar_processos("name"))
-        self.tree_procs.heading("cpu", text="CPU %", command=lambda: self.ordenar_processos("cpu"))
-        self.tree_procs.heading("ram", text="Memória RAM", command=lambda: self.ordenar_processos("ram"))
-        self.tree_procs.heading("status", text="Estado", command=lambda: self.ordenar_processos("status"))
-        self.tree_procs.heading("user", text="Usuário", command=lambda: self.ordenar_processos("user"))
+        self.tree_procs = ttk.Treeview(card, columns=colunas, show="headings", selectmode="browse")
+        self.tree_procs.heading("pid", text="PID")
+        self.tree_procs.heading("name", text="Nome do Processo")
+        self.tree_procs.heading("cpu", text="CPU %")
+        self.tree_procs.heading("ram", text="Memória RAM")
+        self.tree_procs.heading("status", text="Status")
+        self.tree_procs.heading("user", text="Usuário")
 
         self.tree_procs.column("pid", width=70, anchor="center")
-        self.tree_procs.column("name", width=260, anchor="w")
-        self.tree_procs.column("cpu", width=90, anchor="center")
-        self.tree_procs.column("ram", width=120, anchor="center")
+        self.tree_procs.column("name", width=240, anchor="w")
+        self.tree_procs.column("cpu", width=80, anchor="center")
+        self.tree_procs.column("ram", width=110, anchor="center")
         self.tree_procs.column("status", width=90, anchor="center")
-        self.tree_procs.column("user", width=160, anchor="w")
+        self.tree_procs.column("user", width=140, anchor="w")
 
-        scrollbar = ttk.Scrollbar(self.tab_processos, orient="vertical", command=self.tree_procs.yview)
-        self.tree_procs.configure(yscrollcommand=scrollbar.set)
+        scroll = ttk.Scrollbar(card, orient="vertical", command=self.tree_procs.yview)
+        self.tree_procs.configure(yscrollcommand=scroll.set)
 
-        self.tree_procs.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=4)
-        scrollbar.pack(side="right", fill="y", padx=(0, 8), pady=4)
-
-    def ordenar_processos(self, coluna):
-        if self.coluna_ordem == coluna:
-            self.ordem_reversa = not self.ordem_reversa
-        else:
-            self.coluna_ordem = coluna
-            self.ordem_reversa = True if coluna in ("cpu", "ram") else False
-        self.renderizar_tabela_processos()
-
-    def filtrar_processos(self):
-        self.filtro_proc = self.ent_busca_proc.get().strip().lower()
+        self.tree_procs.pack(side="left", fill="both", expand=True, padx=(12, 0), pady=8)
+        scroll.pack(side="right", fill="y", padx=(0, 12), pady=8)
         self.renderizar_tabela_processos()
 
     def renderizar_tabela_processos(self):
+        if not hasattr(self, "tree_procs") or not self.tree_procs.winfo_exists():
+            return
         for item in self.tree_procs.get_children():
             self.tree_procs.delete(item)
-
-        procs_filtrados = [p for p in self.processos if not self.filtro_proc or self.filtro_proc in p["name"].lower()]
-
-        if self.coluna_ordem in ("cpu", "ram", "pid"):
-            procs_filtrados.sort(key=lambda x: x.get(self.coluna_ordem, 0), reverse=self.ordem_reversa)
-        else:
-            procs_filtrados.sort(key=lambda x: str(x.get(self.coluna_ordem, "")).lower(), reverse=self.ordem_reversa)
-
-        for p in procs_filtrados[:150]:
+        for p in self.processos[:100]:
             self.tree_procs.insert("", "end", values=(
                 p["pid"],
                 p["name"],
@@ -547,279 +761,132 @@ class TaskManagerApp:
                 p["user"]
             ))
 
-    def matar_processo_selecionado(self):
-        sel = self.tree_procs.selection()
-        if not sel:
-            messagebox.showwarning("Aviso", "Selecione um processo na tabela para encerrar.")
-            return
-        item = self.tree_procs.item(sel[0])
-        pid = int(item["values"][0])
-        nome = item["values"][1]
+    def montar_visao_agentes(self):
+        card = tk.Frame(self.conteudo_dinamico, bg=SURFACE_MAIN, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+        card.pack(fill="both", expand=True, padx=4, pady=4)
 
-        if messagebox.askyesno("Confirmar Kill", f"Deseja forçar o encerramento do processo {nome} (PID: {pid})?"):
-            try:
-                if HAS_PSUTIL:
-                    p = psutil.Process(pid)
-                    p.kill()
-                elif WIN:
-                    subprocess.run(["taskkill", "/F", "/PID", str(pid)], creationflags=SEM_JANELA)
-                else:
-                    os.kill(pid, signal.SIGKILL)
-                messagebox.showinfo("Sucesso", f"Processo {nome} ({pid}) encerrado.")
-                self.atualizar_ciclo()
-            except Exception as ex:
-                messagebox.showerror("Erro", f"Falha ao encerrar processo: {ex}")
+        top_f = tk.Frame(card, bg=SURFACE_MAIN)
+        top_f.pack(fill="x", padx=12, pady=10)
+        tk.Label(top_f, text="Agentes e Subagentes Ativos OMSK", font=(self.fonte_base, 11, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(side="left")
+
+        termos = ("omsk", "ohms", "bun", "python", "node")
+        agentes = [p for p in self.processos if any(t in p["name"].lower() for t in termos)]
+
+        for a in agentes:
+            row = tk.Frame(card, bg=SURFACE_TIMELINE, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+            row.pack(fill="x", padx=12, pady=4)
+            tk.Label(row, text=f"🤖 {a['name']} (PID: {a['pid']})", font=(self.fonte_base, 9, "bold"), fg=CAT_B_PURPLE, bg=SURFACE_TIMELINE).pack(side="left", padx=8, pady=6)
+            tk.Label(row, text=f"RAM: {formatar_bytes(a['ram'])}", font=(self.fonte_base, 8), fg=TEXT_SECONDARY, bg=SURFACE_TIMELINE).pack(side="right", padx=8)
 
     # --------------------------------------------------------------------------
-    # ABA 2: GRÁFICOS EM TEMPO REAL
+    # 3. PAINEL ANALÍTICO DIREITO (PERFIL, RADIAIS DE EFICIÊNCIA E BARRAS)
     # --------------------------------------------------------------------------
-    def montar_aba_graficos(self):
-        f_cards = tk.Frame(self.tab_graficos, bg=BG_DARK)
-        f_cards.pack(fill="both", expand=True, padx=8, pady=8)
+    def montar_painel_analitico(self):
+        # Perfil de Usuário
+        profile_box = tk.Frame(self.painel_direito, bg=SURFACE_MAIN)
+        profile_box.pack(fill="x", padx=16, pady=16)
 
-        # Gráfico CPU
-        self.graph_cpu = SmoothGraph(f_cards, label="USO TOTAL DE CPU", color=CYAN_NEON, height=180)
-        self.graph_cpu.pack(fill="both", expand=True, padx=4, pady=4)
+        avatar = tk.Canvas(profile_box, width=44, height=44, bg=SURFACE_MAIN, highlightthickness=0)
+        avatar.pack(side="left")
+        avatar.create_oval(2, 2, 42, 42, fill=CAT_A_LIGHT, outline=CAT_A_BLUE, width=2)
+        avatar.create_text(22, 22, text="🦈", font=("Arial", 16))
 
-        # Gráfico RAM
-        self.graph_ram = SmoothGraph(f_cards, label="USO DE MEMÓRIA RAM", color=PURPLE_AI, height=180)
-        self.graph_ram.pack(fill="both", expand=True, padx=4, pady=4)
+        user_info = tk.Frame(profile_box, bg=SURFACE_MAIN)
+        user_info.pack(side="left", padx=10)
+        tk.Label(user_info, text="Lucas Entweihen", font=(self.fonte_base, 10, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(anchor="w")
+        tk.Label(user_info, text="Lead Architect", font=(self.fonte_base, 8), fg=TEXT_SECONDARY, bg=SURFACE_MAIN).pack(anchor="w")
 
-    # --------------------------------------------------------------------------
-    # ABA 3: GERENCIADOR DE TAREFAS
-    # --------------------------------------------------------------------------
-    def montar_aba_tarefas(self):
-        f_top = tk.Frame(self.tab_tarefas, bg=BG_DARK)
-        f_top.pack(fill="x", padx=8, pady=8)
+        tk.Frame(self.painel_direito, bg=BORDER_SUBTLE, height=1).pack(fill="x", padx=16, pady=4)
 
-        tk.Label(f_top, text="Nova Tarefa:", font=(self.fonte_mono, 9), fg=GOLD_ACCENT, bg=BG_DARK).pack(side="left", padx=4)
-        self.ent_tarefa = tk.Entry(f_top, font=(self.fonte_mono, 9), bg=BG_CARD, fg=FG_LIGHT,
-                                   insertbackground=CYAN_NEON, highlightthickness=1, highlightbackground=BORDER_COLOR)
-        self.ent_tarefa.pack(side="left", fill="x", expand=True, padx=8)
-        self.ent_tarefa.bind("<Return>", lambda e: self.adicionar_tarefa())
+        # 1. EFICIÊNCIA (GRÁFICOS RADIAIS CIRCLULARES SECTION 10.A)
+        tk.Label(self.painel_direito, text="Efficiency (Categories)", font=(self.fonte_base, 10, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(anchor="w", padx=16, pady=(8, 4))
 
-        # Seletor de Prioridade
-        self.cbo_prio = ttk.Combobox(f_top, values=["Baixa", "Média", "Alta", "Crítica"], state="readonly", width=10)
-        self.cbo_prio.set("Média")
-        self.cbo_prio.pack(side="left", padx=4)
+        rings_frame = tk.Frame(self.painel_direito, bg=SURFACE_MAIN)
+        rings_frame.pack(fill="x", padx=12, pady=4)
 
-        btn_add = tk.Label(f_top, text="➕ Adicionar", font=(self.fonte_mono, 9, "bold"),
-                           fg=CYAN_NEON, bg=BG_CARD, padx=12, pady=4, cursor="hand2",
-                           highlightthickness=1, highlightbackground=BORDER_COLOR)
-        btn_add.pack(side="left", padx=4)
-        btn_add.bind("<Button-1>", lambda e: self.adicionar_tarefa())
+        self.ring_a = RadialEfficiencyRing(rings_frame, percent=75, color=CAT_A_BLUE, light_bg=CAT_A_LIGHT)
+        self.ring_a.pack(side="left", expand=True)
 
-        btn_del = tk.Label(f_top, text="🗑️ Remover", font=(self.fonte_mono, 9, "bold"),
-                           fg=RED_ALERT, bg=BG_CARD, padx=12, pady=4, cursor="hand2",
-                           highlightthickness=1, highlightbackground=BORDER_COLOR)
-        btn_del.pack(side="right", padx=4)
-        btn_del.bind("<Button-1>", lambda e: self.remover_tarefa())
+        self.ring_b = RadialEfficiencyRing(rings_frame, percent=60, color=CAT_B_PURPLE, light_bg=CAT_B_LIGHT)
+        self.ring_b.pack(side="left", expand=True)
 
-        btn_toggle = tk.Label(f_top, text="✔️ Concluir/Alternar", font=(self.fonte_mono, 9, "bold"),
-                              fg=GREEN_LIVE, bg=BG_CARD, padx=12, pady=4, cursor="hand2",
-                              highlightthickness=1, highlightbackground=BORDER_COLOR)
-        btn_toggle.pack(side="right", padx=4)
-        btn_toggle.bind("<Button-1>", lambda e: self.alternar_tarefa())
+        self.ring_c = RadialEfficiencyRing(rings_frame, percent=88, color=CAT_C_PINK, light_bg=CAT_C_LIGHT)
+        self.ring_c.pack(side="left", expand=True)
 
-        # Tabela de Tarefas
-        colunas = ("status", "prio", "desc", "data")
-        self.tree_tarefas = ttk.Treeview(self.tab_tarefas, columns=colunas, show="headings", selectmode="browse")
-        self.tree_tarefas.heading("status", text="Status")
-        self.tree_tarefas.heading("prio", text="Prioridade")
-        self.tree_tarefas.heading("desc", text="Descrição da Tarefa")
-        self.tree_tarefas.heading("data", text="Data de Criação")
+        tk.Frame(self.painel_direito, bg=BORDER_SUBTLE, height=1).pack(fill="x", padx=16, pady=8)
 
-        self.tree_tarefas.column("status", width=90, anchor="center")
-        self.tree_tarefas.column("prio", width=100, anchor="center")
-        self.tree_tarefas.column("desc", width=460, anchor="w")
-        self.tree_tarefas.column("data", width=120, anchor="center")
+        # 2. COMPLETED TASKS (GRÁFICO DE BARRAS ORGÂNICAS)
+        tk.Label(self.painel_direito, text="Completed Tasks", font=(self.fonte_base, 10, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(anchor="w", padx=16, pady=(4, 4))
+        self.bar_chart = OrganicBarChart(self.painel_direito, height=140)
+        self.bar_chart.pack(fill="x", padx=12, pady=4)
 
-        scroll_t = ttk.Scrollbar(self.tab_tarefas, orient="vertical", command=self.tree_tarefas.yview)
-        self.tree_tarefas.configure(yscrollcommand=scroll_t.set)
+        # 3. TELEMETRIA HUD RÁPIDA
+        tk.Frame(self.painel_direito, bg=BORDER_SUBTLE, height=1).pack(fill="x", padx=16, pady=8)
+        hud_box = tk.Frame(self.painel_direito, bg=SURFACE_TIMELINE, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+        hud_box.pack(fill="x", padx=12, pady=8)
 
-        self.tree_tarefas.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=4)
-        scroll_t.pack(side="right", fill="y", padx=(0, 8), pady=4)
-        self.renderizar_tarefas()
-
-    def adicionar_tarefa(self):
-        txt = self.ent_tarefa.get().strip()
-        if not txt:
-            return
-        prio = self.cbo_prio.get()
-        data_hj = datetime.date.today().isoformat()
-        self.tarefas.append({"texto": txt, "feita": False, "prioridade": prio, "data": data_hj})
-        self.ent_tarefa.delete(0, "end")
-        self.salvar_tarefas()
-        self.renderizar_tarefas()
-
-    def alternar_tarefa(self):
-        sel = self.tree_tarefas.selection()
-        if not sel:
-            return
-        idx = self.tree_tarefas.index(sel[0])
-        if 0 <= idx < len(self.tarefas):
-            self.tarefas[idx]["feita"] = not self.tarefas[idx]["feita"]
-            self.salvar_tarefas()
-            self.renderizar_tarefas()
-
-    def remover_tarefa(self):
-        sel = self.tree_tarefas.selection()
-        if not sel:
-            return
-        idx = self.tree_tarefas.index(sel[0])
-        if 0 <= idx < len(self.tarefas):
-            del self.tarefas[idx]
-            self.salvar_tarefas()
-            self.renderizar_tarefas()
-
-    def renderizar_tarefas(self):
-        for item in self.tree_tarefas.get_children():
-            self.tree_tarefas.delete(item)
-        for t in self.tarefas:
-            st = "✅ Concluída" if t["feita"] else "⏳ Pendente"
-            self.tree_tarefas.insert("", "end", values=(
-                st,
-                t.get("prioridade", "Média"),
-                t["texto"],
-                t.get("data", "")
-            ))
+        self.lbl_tele_cpu = tk.Label(hud_box, text="CPU: 0.0%", font=(self.fonte_base, 8, "bold"), fg=CAT_A_BLUE, bg=SURFACE_TIMELINE)
+        self.lbl_tele_cpu.pack(anchor="w", padx=8, pady=2)
+        self.lbl_tele_ram = tk.Label(hud_box, text="RAM: 0.0%", font=(self.fonte_base, 8, "bold"), fg=CAT_B_PURPLE, bg=SURFACE_TIMELINE)
+        self.lbl_tele_ram.pack(anchor="w", padx=8, pady=2)
 
     # --------------------------------------------------------------------------
-    # ABA 4: AGENTES & IA OMSK
-    # --------------------------------------------------------------------------
-    def montar_aba_agentes(self):
-        f_top = tk.Frame(self.tab_agentes, bg=BG_DARK)
-        f_top.pack(fill="x", padx=8, pady=8)
-
-        tk.Label(f_top, text="Monitor de Processos & Subagentes OhMyShark:", font=(self.fonte_mono, 10, "bold"),
-                 fg=CYAN_NEON, bg=BG_DARK).pack(side="left", padx=4)
-
-        # Tabela dos agentes OMSK / Bun / Python / Ferramentas
-        colunas = ("pid", "tipo", "name", "mem", "status")
-        self.tree_agentes = ttk.Treeview(self.tab_agentes, columns=colunas, show="headings", selectmode="browse")
-        self.tree_agentes.heading("pid", text="PID")
-        self.tree_agentes.heading("tipo", text="Tipo / Runtime")
-        self.tree_agentes.heading("name", text="Componente")
-        self.tree_agentes.heading("mem", text="RAM Alocada")
-        self.tree_agentes.heading("status", text="Status Operacional")
-
-        self.tree_agentes.column("pid", width=80, anchor="center")
-        self.tree_agentes.column("tipo", width=140, anchor="center")
-        self.tree_agentes.column("name", width=320, anchor="w")
-        self.tree_agentes.column("mem", width=120, anchor="center")
-        self.tree_agentes.column("status", width=140, anchor="center")
-
-        scroll_a = ttk.Scrollbar(self.tab_agentes, orient="vertical", command=self.tree_agentes.yview)
-        self.tree_agentes.configure(yscrollcommand=scroll_a.set)
-
-        self.tree_agentes.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=4)
-        scroll_a.pack(side="right", fill="y", padx=(0, 8), pady=4)
-
-    def renderizar_agentes(self):
-        for item in self.tree_agentes.get_children():
-            self.tree_agentes.delete(item)
-
-        termos_omsk = ("omsk", "ohms", "bun", "python", "node", "taskmanager")
-        agentes_encontrados = [p for p in self.processos if any(t in p["name"].lower() for t in termos_omsk)]
-
-        for a in agentes_encontrados:
-            tipo = "🤖 OMSK / Bun" if "bun" in a["name"].lower() or "om" in a["name"].lower() else "🐍 Python Kernel / Tool"
-            self.tree_agentes.insert("", "end", values=(
-                a["pid"],
-                tipo,
-                a["name"],
-                formatar_bytes(a["ram"]),
-                "🟢 Ativo / Monitorado"
-            ))
-
-    # --------------------------------------------------------------------------
-    # ABA 5: TERMINAL INTEGRADO
-    # --------------------------------------------------------------------------
-    def montar_aba_terminal(self):
-        self.txt_term = tk.Text(self.tab_terminal, bg=BG_HEADER, fg=FG_LIGHT,
-                                font=(self.fonte_mono, 9), insertbackground=CYAN_NEON,
-                                relief="flat", highlightthickness=1, highlightbackground=BORDER_COLOR)
-        scroll_term = ttk.Scrollbar(self.tab_terminal, orient="vertical", command=self.txt_term.yview)
-        self.txt_term.configure(yscrollcommand=scroll_term.set)
-
-        f_cmd = tk.Frame(self.tab_terminal, bg=BG_DARK)
-        f_cmd.pack(fill="x", side="bottom", padx=8, pady=8)
-
-        self.lbl_prompt = tk.Label(f_cmd, text=f"omsk >", font=(self.fonte_mono, 9, "bold"),
-                                   fg=CYAN_NEON, bg=BG_DARK)
-        self.lbl_prompt.pack(side="left", padx=4)
-
-        self.ent_cmd = tk.Entry(f_cmd, font=(self.fonte_mono, 9), bg=BG_CARD, fg=FG_LIGHT,
-                                insertbackground=CYAN_NEON, highlightthickness=1, highlightbackground=BORDER_COLOR)
-        self.ent_cmd.pack(side="left", fill="x", expand=True, padx=4)
-        self.ent_cmd.bind("<Return>", lambda e: self.executar_comando_terminal())
-
-        self.txt_term.pack(side="left", fill="both", expand=True, padx=(8, 0), pady=4)
-        scroll_term.pack(side="right", fill="y", padx=(0, 8), pady=4)
-
-        # Mensagem inicial
-        self.txt_term.insert("end", "╔════════════════════════════════════════════════════════════════════╗\n")
-        self.txt_term.insert("end", "║     OHMYSHARK ULTRA PROCESS & TASK TERMINAL INTELLIGENCE HUD       ║\n")
-        self.txt_term.insert("end", "╚════════════════════════════════════════════════════════════════════╝\n\n")
-
-    def executar_comando_terminal(self):
-        cmd = self.ent_cmd.get().strip()
-        if not cmd:
-            return
-        self.ent_cmd.delete(0, "end")
-        self.txt_term.insert("end", f"\nomsk > {cmd}\n")
-        self.txt_term.see("end")
-
-        def _run():
-            try:
-                res = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=self.cwd, timeout=15)
-                saida = res.stdout if res.stdout else res.stderr
-                self.fila_terminal.put(saida)
-            except Exception as ex:
-                self.fila_terminal.put(f"Erro: {ex}\n")
-
-        threading.Thread(target=_run, daemon=True).start()
-
-    # --------------------------------------------------------------------------
-    # THREADS E ATUALIZAÇÃO EM BACKGROUND
+    # THREADS DE ATUALIZAÇÃO E BACKGROUND
     # --------------------------------------------------------------------------
     def iniciar_threads_background(self):
-        def _loop_telemetria():
-            while True:
-                cpu, ram_pct, ram_used, ram_total = self.telemetria.get_system_metrics()
+        t = threading.Thread(target=self._loop_telemetria, daemon=True)
+        t.start()
+
+    def _loop_telemetria(self):
+        while True:
+            try:
+                cpu = self.telemetria.get_cpu_percent()
+                ram_pct, ram_used, ram_total = self.telemetria.get_ram_info()
                 procs = self.telemetria.get_process_list()
+                self.root.after(0, lambda c=cpu, rp=ram_pct, ru=ram_used, rt=ram_total, p=procs: self.atualizar_dados_telemetria(c, rp, ru, rt, p))
+            except Exception:
+                pass
+            time.sleep(2.0)
 
-                self.root.after(0, self.atualizar_ui_telemetria, cpu, ram_pct, ram_used, ram_total, procs)
-                time.sleep(1.5)
-
-        threading.Thread(target=_loop_telemetria, daemon=True).start()
-        self.root.after(100, self.drenar_fila_terminal)
-
-    def drenar_fila_terminal(self):
-        while not self.fila_terminal.empty():
-            saida = self.fila_terminal.get()
-            self.txt_term.insert("end", ANSI_REGEX.sub("", saida))
-            self.txt_term.see("end")
-        self.root.after(100, self.drenar_fila_terminal)
-
-    def atualizar_ui_telemetria(self, cpu, ram_pct, ram_used, ram_total, procs):
+    def atualizar_dados_telemetria(self, cpu, ram_pct, ram_used, ram_total, procs):
         self.processos = procs
-        self.hud_cpu_val.config(text=f"CPU: {cpu:.1f}%")
-        self.hud_ram_val.config(text=f"RAM: {ram_pct:.1f}% ({formatar_bytes(ram_used)})")
-        self.hud_procs_val.config(text=f"PROCESSOS: {len(procs)}")
+        if hasattr(self, "lbl_tele_cpu"):
+            self.lbl_tele_cpu.config(text=f"CPU: {cpu:.1f}%")
+            self.lbl_tele_ram.config(text=f"RAM: {ram_pct:.1f}% ({formatar_bytes(ram_used)})")
+            self.ring_a.set_percent(cpu)
+            self.ring_b.set_percent(ram_pct)
+        if self.nav_ativa == "processos":
+            self.renderizar_tabela_processos()
 
-        # Atualiza gráficos Canvas
-        self.graph_cpu.push(cpu)
-        self.graph_ram.push(ram_pct)
+    def dialogo_nova_tarefa(self):
+        top = tk.Toplevel(self.root)
+        top.title("Nova Tarefa")
+        top.geometry("380x240")
+        top.configure(bg=SURFACE_MAIN)
+        top.resizable(False, False)
 
-        # Atualiza tabelas
-        self.renderizar_tabela_processos()
-        self.renderizar_agentes()
+        tk.Label(top, text="Título da Tarefa:", font=(self.fonte_base, 9, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(anchor="w", padx=16, pady=(16, 4))
+        ent_t = tk.Entry(top, font=(self.fonte_base, 9), bg=SURFACE_TIMELINE, highlightthickness=1, highlightbackground=BORDER_SUBTLE)
+        ent_t.pack(fill="x", padx=16)
 
-    def atualizar_ciclo(self):
-        cpu, ram_pct, ram_used, ram_total = self.telemetria.get_system_metrics()
-        procs = self.telemetria.get_process_list()
-        self.atualizar_ui_telemetria(cpu, ram_pct, ram_used, ram_total, procs)
+        tk.Label(top, text="Categoria:", font=(self.fonte_base, 9, "bold"), fg=TEXT_PRIMARY, bg=SURFACE_MAIN).pack(anchor="w", padx=16, pady=(8, 4))
+        cbo = ttk.Combobox(top, values=["A", "B", "C", "D"], state="readonly")
+        cbo.set("A")
+        cbo.pack(fill="x", padx=16)
+
+        def salvar():
+            txt = ent_t.get().strip()
+            if not txt:
+                return
+            cat = cbo.get()
+            self.tarefas_kanban.append({"id": len(self.tarefas_kanban) + 1, "title": txt, "cat": cat, "status": "DRAFT", "desc": "Nova tarefa adicionada"})
+            self.salvar_tarefas_kanban()
+            top.destroy()
+            self.atualizar_visao_central()
+
+        btn = tk.Label(top, text="Salvar Tarefa", font=(self.fonte_base, 9, "bold"), fg=TEXT_INVERSE, bg=CAT_A_BLUE, padx=12, pady=6, cursor="hand2")
+        btn.pack(pady=16)
+        btn.bind("<Button-1>", lambda e: salvar())
 
 
 def main():

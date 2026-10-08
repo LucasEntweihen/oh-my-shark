@@ -1227,6 +1227,221 @@ h2 {
 }
 
 /* -------------------------------------------------------------------------- */
+/* AGENT ROSTER SECTION                                                      */
+/* -------------------------------------------------------------------------- */
+
+.agents-section {
+  padding: clamp(3rem, 6vw, 5.5rem) 0 2rem;
+}
+
+.agents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.agent-card {
+  padding: 1.5rem;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  position: relative;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+[data-theme="light"] .agent-card {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.agent-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--agent-accent, #00e5ff);
+  opacity: 0.4;
+  transition: opacity 0.25s ease, height 0.25s ease;
+}
+
+.agent-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--agent-accent, rgba(0, 229, 255, 0.5));
+  box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.4), 0 0 20px 0 rgba(0, 229, 255, 0.15);
+}
+
+.agent-card:hover::before,
+.agent-card.is-active-card::before {
+  opacity: 1;
+  height: 3px;
+}
+
+.agent-card.is-active-card {
+  border-color: var(--agent-accent, #00e5ff);
+  box-shadow: 0 0 24px 0 rgba(0, 229, 255, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.agent-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.agent-avatar-sphere {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.agent-handle-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.agent-handle {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--agent-accent, var(--accent-cyan));
+}
+
+.btn-agent-handle-copy {
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.btn-agent-handle-copy:hover {
+  color: var(--glow-primary);
+}
+
+.btn-agent-handle-copy .action-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.agent-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--glow-primary);
+  letter-spacing: -0.02em;
+}
+
+.agent-role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.agent-motto {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--glow-primary);
+  opacity: 0.85;
+}
+
+.agent-desc {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  flex-grow: 1;
+}
+
+.agent-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+[data-theme="light"] .agent-meta-grid {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.agent-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.agent-meta-label {
+  color: var(--text-faint);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.agent-meta-val {
+  color: var(--glow-primary);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agent-tools-container {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.agent-tools-label {
+  color: var(--text-faint);
+}
+
+.agent-tools-pills {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.tool-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  color: var(--glow-primary);
+}
+
+[data-theme="light"] .tool-pill {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* -------------------------------------------------------------------------- */
 /* COMMANDS & SPECIAL MODES SECTION                                           */
 /* -------------------------------------------------------------------------- */
 
@@ -1363,14 +1578,45 @@ h2 {
   font-size: 0.78rem;
   display: flex;
   gap: 0.5rem;
-  align-items: baseline;
+  align-items: center;
   overflow-x: auto;
+}
+
+.command-example code {
+  flex: 1;
+  white-space: nowrap;
+  overflow-x: auto;
+  color: var(--glow-primary);
+}
+
+.btn-cmd-copy {
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-cmd-copy:hover {
+  color: var(--accent-cyan);
+}
+
+.btn-cmd-copy .action-icon {
+  width: 14px;
+  height: 14px;
 }
 
 .example-prompt {
   color: var(--text-faint);
   font-size: 0.7rem;
   text-transform: uppercase;
+  flex-shrink: 0;
 }
 /* -------------------------------------------------------------------------- */
 /* RESPONSIVENESS (MOBILE / TABLET ADAPTATION PER DESIGN.MD)                  */
