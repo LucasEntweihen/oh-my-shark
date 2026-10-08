@@ -107,21 +107,21 @@ function npmPack(lock: NativeLock, tag: string, cwd: string): string {
 	if (!entry) throw new Error(`Tag ${tag} is not in the native inputs lock`);
 	const proc = Bun.spawnSync(
 		[
-			"npm",
+			"npm.cmd",
 			"pack",
 			`${entry.name}@${lock.version}`,
 			"--ignore-scripts",
 			"--registry",
 			lock.registry,
 			"--pack-destination",
-			cwd,
+			".",
 		],
 		{ cwd, stdout: "pipe", stderr: "pipe" },
 	);
 	if (proc.exitCode !== 0) {
 		throw new Error(`npm pack ${entry.name}@${lock.version} failed:\n${proc.stderr.toString()}`);
 	}
-	const file = proc.stdout.toString().trim().split("\n").at(-1)!;
+	const file = proc.stdout.toString().trim().split(/\r?\n/).at(-1)!.trim();
 	const tarPath = path.join(cwd, file);
 	if (!fs.existsSync(tarPath)) throw new Error(`npm pack did not produce ${tarPath}`);
 	return tarPath;
