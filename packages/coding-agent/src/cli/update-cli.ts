@@ -457,10 +457,22 @@ export async function getLatestRelease(
 		throw new Error(`Malformed GitHub release response for ${REPO}: expected an array`);
 	}
 
-	const data = dataList.find((r: unknown) => isRecord(r) && r.prerelease !== true && parseProductTag(r.tag_name));
-	if (!data) {
+	const candidates = dataList
+		.filter((r: unknown) => isRecord(r) && r.draft !== true && r.prerelease !== true && parseProductTag(r.tag_name))
+		.map((r: unknown) => {
+			const rec = r as Record<string, unknown>;
+			const tag = String(rec.tag_name);
+			const ver = parseProductTag(tag)!;
+			return { record: rec, tag, version: ver };
+		});
+
+	candidates.sort((a, b) => compareVersions(b.version, a.version));
+
+	const best = candidates[0];
+	if (!best) {
 		throw new Error(`No stable ${TAG_PREFIX}<semver> release found in recent releases for ${REPO}`);
 	}
+	const data = best.record;
 	const version = parseProductTag(data.tag_name);
 	if (!version) {
 		throw new Error(`GitHub release with ${data.tag_name} is not an ${TAG_PREFIX}<semver> release`);
