@@ -1,274 +1,445 @@
-    # YAML Front Matter - Design Tokens de Alta Fidelidade
-    version: "1.0.0-omega"
-    name: "Project Prism: The Deep Web Spectrum"
-    description: "Design System arquitetônico focado em refração ótica avançada (Glassmorphism físico), topografia de dados 3D em wireframe e renderização espectral de luz visível."
-    colors:
-      background:
-        deep_space: "#030305"
-        abyss_core: "#000000"
-        glass_surface: "rgba(255, 255, 255, 0.0)" # Opacidade zero, baseia-se em blur/noise
-      spectrum:
-        ray_ultraviolet: "#4A00E0"
-        ray_indigo: "#3B11A4"
-        ray_blue: "#0055FF"
-        ray_cyan: "#00E5FF"
-        ray_green: "#00FF66"
-        ray_yellow: "#FFEA00"
-        ray_orange: "#FF6600"
-        ray_red: "#FF0033"
-      typography:
-        primary_glow: "#FFFFFF"
-        secondary_muted: "rgba(255, 255, 255, 0.6)"
-        accent_data: "#FF1744"
-      ui_accents:
-        glass_border: "rgba(255, 255, 255, 0.15)"
-        light_leak: "rgba(255, 255, 255, 0.05)"
-    typography:
-      display_mono:
-        fontFamily: "'Space Mono', 'JetBrains Mono', monospace"
-        fontWeight: "700"
-        letterSpacing: "-0.05em"
-      body_sans:
-        fontFamily: "'Inter', system-ui, sans-serif"
-        fontWeight: "400"
-        letterSpacing: "0.01em"
-      data_labels:
-        fontFamily: "'Fira Code', monospace"
-        fontSize: "0.75rem"
-        textTransform: "uppercase"
-    spacing:
-      base_unit: "8px"
-      micro: "2px"
-      macro: "142px" # Baseado no maior blur de camada
-    physics_engine:
-      glass:
-        refraction: 70
-        depth: 55
-        dispersion: 27
-        frost: 60
-      noise:
-        size: 1
-        density: 100
-        opacity: 0.10
-        color: "#FFFFFF"
-      layer_blurs: [14, 30, 40, 52, 70, 142]
-      blend_mode: "plus-lighter"
-    shapes:
-      glass_card_radius: "24px"
-      prism_angle: "-45deg"
+YAML Front Matter - Design Tokens
 
-# DESIGN.md: PROJECT PRISM - DEEP WEB SPECTRUM
+version: "1.0.0"
+name: "Neuro-Task Horizon: Gerenciador de Tarefas Dark Mode"
+description: "Design system absoluto para um gerenciador de tarefas imersivo. Fundo escuro profundo, detalhes neons e componentes que fundem produtividade com elementos de redes neurais e cosmos."
 
-Este documento serve como a **Fonte Única de Verdade (Single Source of Truth - SSOT)** para o desenvolvimento desta aplicação. Ele foi elaborado com nível máximo de profundidade técnica e teórica para agentes de IA e engenheiros humanos. A interface une a densidade de dados da "Deep Web" (wireframes caóticos) com a pureza física da ótica (dispersão prismática e glassmorphism refrativo).
+colors:
+background:
+base: "#22242B" # Fundo principal da aplicação
+surface: "#2A2D36" # Fundo dos cards e painéis elevados
+surface_hover: "#323640"
+sidebar: "#1E1F26"
+text:
+primary: "#FFFFFF"
+secondary: "#8A8C95"
+muted: "#5A5C63"
+accents:
+red_alert: "#E53935" # Usado no glitch e botões de pausa
+yellow_warn: "#FFB300" # Progress bars, status pending
+blue_info: "#1E88E5" # Tags, avatares
+green_success: "#43A047" # Tasks concluídas
+cyan_glitch: "#00E5FF" # Faixa sobre os olhos da estátua (Imagem 2)
+galaxy:
+purple_core: "#9C27B0" # Núcleo da galáxia (Imagem 3)
+magenta_glow: "#E040FB"
+deep_space: "#0A0514"
 
-## 1. As Heurísticas de Usabilidade e Física
+typography:
+fontFamily:
+display: "'Space Grotesk', system-ui, sans-serif"
+body: "'Inter', 'Public Sans Regular', sans-serif"
+mono: "'JetBrains Mono', monospace"
+baseSize: "16px"
+scale:
+h1: "2.5rem"
+h2: "1.5rem"
+h3: "1.25rem"
+body: "1rem"
+sm: "0.875rem"
+xs: "0.75rem"
 
-* **Correspondência com o Mundo Real (Física Ótica):** A interface não usa "sombras" ou "fundos" arbitrários. O layout opera sob as leis da termodinâmica visual e dispersão de Rayleigh. Painéis de vidro devem *distorcer* e *desfocar* o fundo, não apenas escurecê-lo.
-* **Visibilidade do Status do Sistema (Dados):** Como visto no *mesh* da Deep Web, pontos de dados anômalos são marcados com vermelho (`#FF1744`) e interligados por vértices brancos e azuis. O usuário sempre sabe a magnitude dos dados (ex: "7500+ TB").
-* **Estética e Design Minimalista (Lei de Hick):** O caos da malha de dados e o brilho do espectro são contrastados por tipografia estritamente contida em painéis de vidro translúcido. A carga cognitiva é reduzida agrupando informações em *glass cards*.
-* **Controle de Iluminação:** O usuário deve sentir que a luz emana de trás da tela. O *blend-mode: plus-lighter* (ou `color-dodge`) é fundamental.
+spacing:
+base: "8px"
+half: "4px"
+scales:
+xs: "4px"
+sm: "8px"
+md: "16px"
+lg: "24px"
+xl: "32px"
+xxl: "48px"
 
-## 2. Estrutura Visual e Lógica dos Elementos da Tela (Z-Index Hierarchy)
+shapes:
+radius_sm: "4px"
+radius_md: "12px" # Padrão para os cards do gerenciador
+radius_lg: "20px"
+radius_full: "9999px" # Avatares e botões de rádio
 
-A arquitetura é dividida em eixos Z (profundidade) formados por 3 macros-camadas:
+DESIGN.md: Neuro-Task Horizon
 
-1. **Z-0 (O Abismo - Background):** Fundo ultra-escuro (`#030305`). Hospeda o *Mesh Topográfico 3D* (Surface Web vs. Deep Web) de aspecto wireframe (linhas brancas com nós azuis/vermelhos).
-2. **Z-10 (O Espectro - Midground):** O feixe de luz densa que cruza a tela em diagonal (45 graus). Composto por 8 bandas de cor (do roxo profundo ao vermelho incandescente), utilizando *noise* e granulação.
-3. **Z-20 (A Lente - Foreground):** Interface do usuário (UI). Painéis de vidro (*Glassmorphism*) quadrados ou com bordas suavemente arredondadas (`24px`). Estes painéis interceptam a luz de Z-10, aplicando os cálculos físicos de refração, *frost* e *layer blurs* exponenciais.
+Este documento é a especificação técnica visual, comportamental e arquitetural definitiva. Ele instrui agentes de IA a gerarem código sem desvios ("drift"), garantindo que a aplicação seja construída de forma idêntica à visão estrutural proposta pelas imagens de referência.
 
-## 3. Disposição dos Elementos Gráficos, Proporções e Tamanhos
+1. Visão Geral e Atmosfera (Mood)
 
-* **Grid e Espaçamento:** Baseado em módulo de 8px. No entanto, o layout é essencialmente **assimétrico e espacial**. O espectro de luz corta o grid, quebrando a rigidez.
-* **Proporções do Vidro:** Os cartões de vidro devem seguir a Proporção Áurea (1.618) sempre que possível, ou formatos perfeitamente quadráticos (1:1) para se assemelharem a prismas físicos.
-* **Tipografia:** `Space Mono` ou `JetBrains Mono` dominam os numerais e *labels* de dados ("19TB", "7500+ TB"). `Inter` é reservada para descrições longas ("The visible light spectrum is the segment..."). O *tracking* (espaçamento de letras) em monospaces deve ser negativo (`-0.05em`) para criar blocos compactos de dados.
+O design é um Dark Mode funcional e profundo, que evita o preto absoluto (#000000) em favor de tons de grafite/chumbo (#22242B), reduzindo a fadiga visual. A atmosfera combina a produtividade de um dashboard corporativo rigoroso (Imagem 1) com áreas de imersão visual extremas — inteligência artificial representada por uma escultura clássica cibernética (Imagem 2) e um painel de metaverso galáctico (Imagem 3).
 
-## 4. As Cores e Comportamento Luminoso
+2. As Heurísticas de Nielsen Aplicadas
 
-Esqueça preenchimentos sólidos. Cores aqui são propriedades de emissão de luz.
+Visibilidade do Status do Sistema: Barras de progresso ("Task Done: 25/50" com a barra vermelha) informam instantaneamente o andamento.
 
-* O Espectro é progressivo: `#4A00E0` -> `#3B11A4` -> `#0055FF` -> `#00E5FF` -> `#00FF66` -> `#FFEA00` -> `#FF6600` -> `#FF0033`.
-* As bordas dos painéis de vidro recebem um gradiente linear finíssimo (`1px`) refletindo a luz adjacente (ex: borda superior esquerda branca pura com 40% de opacidade, borda inferior direita preta com 20% de opacidade para simular chanfro 3D).
+Correspondência com o Mundo Real: Ícones reconhecíveis (Dashboard, Calendário, Relógio). A linguagem é direta.
 
-## 5. Níveis de Acessibilidade (Maximização sem Comprometimento)
+Controle e Liberdade: Botões de pausa/play vermelhos nas tarefas ativas ("25m 20s" - Imagem 1) permitem interrupção imediata.
 
-O *Glassmorphism* é historicamente inimigo do contraste (WCAG). Para aprimorar isso ao máximo:
+Consistência e Padrões: Todas as tags usam a mesma tipografia e bordas arredondadas. O menu lateral mantém-se estático e previsível.
 
-1. **Dynamic Text Inversion:** O texto dentro do vidro deve usar `mix-blend-mode: difference` se o espectro de luz passar exatamente por trás dele com alta luminância (ex: zona amarela/verde).
-2. **Backdrop Saturation:** O painel de vidro deve forçar um `backdrop-filter: blur(142px) saturate(150%) brightness(0.8)`. Isso escurece e funde a luz por trás, garantindo que o texto branco primário mantenha uma proporção de 4.5:1.
-3. **Borders for Bounds:** Usuários com deficiência visual dependem de limites claros. A borda de `1px rgba(255,255,255,0.15)` e um sutil `box-shadow` inset são obrigatórios e não-negociáveis.
+Prevenção de Erros: Ações destrutivas ficam ocultas no menu de três pontos (⋮) e exigem confirmação.
 
-## 6. Dados de Responsividade
+Reconhecimento em vez de Memorização: O menu lateral expõe as seções abertamente em vez de escondê-las sob menus complexos.
 
-* **Mobile (< 768px):** O espectro de luz muda de um ângulo de 45 graus para 90 graus (vertical), descendo do topo como um scanner. O mesh 3D da Deep Web é transladado para o fundo e reduzido a 40% da opacidade.
-* **Tablet (768px - 1024px):** O prisma centra-se. *Glass cards* empilham-se em coluna única larga.
-* **Desktop (> 1024px):** Layout livre. Espectro em diagonal cortante. Cartões de vidro flutuam em coordenadas fixas absolutas interativas.
-* **Ultrawide (> 2000px):** O mesh 3D se expande infinitamente em fractais utilizando WebGL/Canvas (se aplicável), enquanto a UI permanece contida em um max-width de 1440px.
+Flexibilidade e Eficiência: O campo de busca (Search) no topo permite navegação rápida via atalhos de teclado (ex: Cmd + K).
 
-## 7. Animações, Efeitos Visuais e Scroll
+Design Estético e Minimalista: Fundo liso, sem texturas ruidosas na UI principal. Elementos visuais densos são isolados em seus próprios contextos.
 
-* **Efeito Parallax Base:** O fundo 3D (Deep Web) move-se a 10% da velocidade do scroll (`translateY`). O espectro de luz move-se a 30%. O vidro move-se a 100%. Isso cria uma profundidade de campo (Depth of Field) extrema.
-* **Turbulence Animation:** O *noise* (ruído) sobre a luz e o vidro não é estático. Requer uma animação CSS no SVG `<feTurbulence>` atualizando o `baseFrequency` sutilmente a cada segundo (efeito de poeira estelar/estática de radiação cósmica).
-* **Hover no Glass:** Ao passar o mouse, o *refraction* e *layer blur* aumentam. O painel aproxima-se do usuário (`transform: scale(1.02) translateY(-5px)`). O raio de luz subjacente reage ao cursor (rastreamento de ponteiro).
+Diagnóstico e Recuperação de Erros: Estados vazios (Empty states) mostram grafismos sutis (SVGs simples) e um botão claro de "Criar nova tarefa".
 
-## 8. Padrões, Componentes e Falta de Padrões (Antipatterns)
+Ajuda e Documentação: Ícone de sino e perfil no topo direito oferecem acesso rápido a tooltips e configurações.
 
-* **Componente Principal (`<GlassPrismCard>`):**
-  * Requer múltiplas sombras compostas para simular volume 3D: `box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37), inset 0 1px 2px rgba(255, 255, 255, 0.15)`.
-  * Filtros complexos baseados na imagem 3 de referência: 5 camadas de *Layer Blur* (Uniform e Progressive) com intensidades (40, 70, 52, 30, 142).
-* **Antipattern (Falta de Padrões - NÃO FAZER):**
-  * **Flat Design é Proibido:** Nenhuma cor sólida opaca sobreposta.
-  * **Drop Shadows opacas e curtas:** Proibidas. Sombras devem ser difusas, macias e gigantes.
-  * **Arredondamentos irregulares:** Não misture cantos pontiagudos com cantos arredondados na mesma *glass card*.
+3. Estrutura Visual e Lógica dos Elementos (Layout)
 
-## 9. Tecnologias a serem Utilizadas
+A interface adota um layout Masonry/Grid assimétrico.
 
-* **Markup/Styling:** HTML5 + CSS3 Avançado (ou TailwindCSS v4 com configurações extensivas de `@theme` e plugins de filtro de backdrop).
-* **Visualização 3D/Canvas:** Three.js ou React Three Fiber (R3F) para a renderização exata do *mesh* topográfico da Deep Web, caso a performance em SVG torne-se proibitiva devido a milhares de nós.
-* **Vetorização:** SVG puro e complexo em linha (`<svg>`) para a refração do espectro e geração procedural de ruído.
+Sidebar (Esquerda): Largura fixa de 260px. Fundo #1E1F26. Contém a logo geométrica []3, um botão primário com texto vermelho ("DASHBOARD") e itens de menu alinhados com ícones monocromáticos e texto #8A8C95.
 
-## 10. Criação e Replicação SVG SIMULTÂNEA (Crucial e Mandatório)
+Top Bar (Superior): Altura de 80px. Fundo transparente. Barra de busca com lupa à esquerda e ícones de ação (Sino, Avatar) à direita.
 
-Para replicar o Espectro de Luz Perfeito (com granulação e degradê diagonal contínuo) e a lente prismática que curva a luz, você **DEVE** utilizar o código SVG abaixo. Ele combina a Forma 1 (Replicação detalhada) e a Forma 2 (Múltiplos Gradient/Radial e Volume 3D).
+Grid Principal (Centro e Direita): Um CSS Grid com gap: 24px.
 
-    <!-- SVG COMPLEXO: ESPECTRO DE LUZ E REFRAÇÃO (PROJECT PRISM) -->
-    <svg width="100%" height="100%" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" style="background: #030305;">
-    
-      <defs>
-        <!-- Filtro de Ruído (Noise/Grain) idêntico à referência "Fast Design" -->
-        <filter id="film-grain" x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
-          <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.10 0" />
-          <feComposite operator="in" in2="SourceGraphic" result="monoNoise"/>
-          <feBlend mode="screen" in="monoNoise" in2="SourceGraphic" />
-        </filter>
-    
-        <!-- Gradiente Angular Múltiplo para o Espectro de Luz Visível -->
-        <linearGradient id="spectrum-beam" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#4A00E0" stop-opacity="0"/>
-          <stop offset="10%" stop-color="#3B11A4"/>
-          <stop offset="25%" stop-color="#0055FF"/>
-          <stop offset="40%" stop-color="#00E5FF"/>
-          <stop offset="55%" stop-color="#00FF66"/>
-          <stop offset="70%" stop-color="#FFEA00"/>
-          <stop offset="85%" stop-color="#FF6600"/>
-          <stop offset="100%" stop-color="#FF0033"/>
-        </linearGradient>
-    
-        <!-- Simulação 3D de Volume de Luz (Radial Brilliance) -->
-        <radialGradient id="light-bloom" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.4" />
-          <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
-        </radialGradient>
-    
-        <!-- Filtro de Glassmorphism Extremo (Refraction, Dispersion, Frost) -->
-        <filter id="glass-refraction" x="-20%" y="-20%" width="140%" height="140%">
-          <!-- Frost/Blur pesado de 142px equivalente (reduzido proporcionalmente para a viewBox SVG) -->
-          <feGaussianBlur stdDeviation="30" in="SourceGraphic" result="blurLayer1" />
-          <feGaussianBlur stdDeviation="15" in="SourceGraphic" result="blurLayer2" />
-          <!-- Mistura para dispersão -->
-          <feBlend mode="plus-lighter" in="blurLayer1" in2="blurLayer2" result="glassBase"/>
-          <!-- Adição de luz ambiente especular no vidro -->
-          <feComponentTransfer in="glassBase" result="brightGlass">
-            <feFuncA type="linear" slope="0.8"/>
-          </feComponentTransfer>
-        </filter>
-    
-        <!-- Gradiente da Borda do Vidro (Chanfro e reflexão de luz) -->
-        <linearGradient id="glass-border" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.5"/>
-          <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.05"/>
-          <stop offset="100%" stop-color="#000000" stop-opacity="0.3"/>
-        </linearGradient>
-      </defs>
-    
-      <!-- 1. CAMADA DE FUNDO (Background Void) -->
-      <rect width="100%" height="100%" fill="#030305" />
-    
-      <!-- 2. CAMADA DO ESPECTRO DE LUZ (Simultânea: Fiel + Múltiplos Gradientes e Ruído) -->
-      <!-- A luz incide do canto inferior esquerdo para o superior direito -->
-      <g filter="url(#film-grain)">
-        <!-- Feixe Central Expandido -->
-        <polygon points="200,1080 600,1080 1920,400 1920,0" fill="url(#spectrum-beam)" style="mix-blend-mode: screen;" />
-    
-        <!-- Linhas de fatiamento do espectro (Simulando dispersão do prisma - Imagem 2 e 3) -->
-        <!-- Estas faixas dão o efeito de "raios" separados e diagonais -->
-        <polygon points="100,1080 150,1080 1920,100 1920,-50" fill="#4A00E0" opacity="0.6"/>
-        <polygon points="150,1080 250,1080 1920,200 1920,100" fill="#0055FF" opacity="0.7"/>
-        <polygon points="250,1080 350,1080 1920,300 1920,200" fill="#00E5FF" opacity="0.8"/>
-        <polygon points="350,1080 450,1080 1920,400 1920,300" fill="#00FF66" opacity="0.9"/>
-        <polygon points="450,1080 550,1080 1920,500 1920,400" fill="#FFEA00" opacity="0.95"/>
-        <polygon points="550,1080 600,1080 1920,600 1920,500" fill="#FF0033" opacity="0.8"/>
-    
-        <!-- Bloom Radial (Brilho intenso no ponto de refração) -->
-        <circle cx="960" cy="540" r="400" fill="url(#light-bloom)" style="mix-blend-mode: screen;" />
-      </g>
-    
-      <!-- 3. CAMADA DO PRISMA/VIDRO (Foreground) -->
-      <!-- O cartão central com refração (Imagem 3) -->
-      <g transform="translate(710, 340)">
-        <!-- Sombra de Volume 3D subjacente -->
-        <rect x="0" y="20" width="500" height="400" rx="32" fill="#000" opacity="0.4" filter="blur(25px)" />
-    
-        <!-- O Vidro em si (Utilizando backdrop no CSS na prática, mas simulado aqui no SVG com overlay e borda) -->
-        <!-- Na implementação real de HTML, usa-se: backdrop-filter: blur(142px) -->
-        <rect x="0" y="0" width="500" height="400" rx="32" fill="rgba(255, 255, 255, 0.02)" stroke="url(#glass-border)" stroke-width="2" />
-    
-        <!-- Reflexão de luz (Highlight 3D) no canto do vidro -->
-        <path d="M 0 60 A 32 32 0 0 1 32 0 L 150 0 C 80 0 0 80 0 150 Z" fill="#FFFFFF" opacity="0.1" />
-    
-        <!-- Textos da Interface simulados (Imagem 3 e dados da Imagem 1) -->
-        <text x="40" y="60" fill="#FFFFFF" font-family="Space Mono, monospace" font-size="14" font-weight="700" letter-spacing="2">2026 EDITION</text>
-        <text x="320" y="60" fill="#FFFFFF" opacity="0.6" font-family="Inter, sans-serif" font-size="14">Reflect wealth</text>
-    
-        <text x="40" y="300" fill="#FFFFFF" font-family="Space Mono, monospace" font-size="12" opacity="0.5">Bitcoin tens.</text>
-        <text x="40" y="325" fill="#FFFFFF" font-family="Space Mono, monospace" font-size="24" font-weight="700">$34,003.72</text>
-    
-        <!-- Macro Typography Background (F1) -->
-        <text x="350" y="360" fill="#FFFFFF" opacity="0.2" font-family="Inter, sans-serif" font-size="120" font-weight="100">F1</text>
-      </g>
-    </svg>
+Coluna 1 (Projetos): Cards largos contendo ícones (Google, Slack), tags de progresso, barra de loading, e avatares empilhados (overlap).
 
-## 11. Imagens Realistas e Fallbacks (A Malha Topográfica)
+Coluna 2 (Lista e Tracker): Lista enumerada (01 a 07) com botões de rádio e ícones de status amarelos. Abaixo, o tracker de tempo.
 
-Caso a imagem topográfica e distorcida ("SURFACE WEB / THE DEEP WEB" - Imagem 1) não possa ser replicada fluidamente por milhares de nós SVG ou gere sobrecarga de processamento no navegador:
+Coluna 3 (Widgets): Calendário estilizado ("Feb 2020") com botão de data ativa em vermelho sólido. Lista de mensagens com avatares circulares e texto truncado.
 
-1. **Onde e como deve ser utilizada:** A malha deve ser usada estritamente como `background-image` num container com `z-index: 0`, possuindo `mix-blend-mode: screen` ou `color-dodge`, opacidade fixada em `0.35`, para garantir que não sufoque a legibilidade da interface.
-2. **Onde procurar FORA DO DOCUMENTO:** Você deve acessar bancos de assets como Unsplash, Adobe Stock ou ferramentas generativas (Midjourney/DALL-E).
-3. **Texto exato de pesquisa:** `"Abstract 3D digital topographic terrain mesh, glowing neon white and blue wireframe on black background, particle network deep web concept, high resolution, sci-fi data visualization."`
-4. **Especificação de uso no código:**
+4. Disposição e Profundidade (Tonal Layers)
+
+Não usaremos sombras pesadas (box-shadow). A profundidade 3D é simulada estritamente através do contraste de Camadas Tonais.
+O z-index flui da seguinte forma:
+
+z-index: 0: Background principal (#22242B).
+
+z-index: 10: Cards da superfície (#2A2D36).
+
+z-index: 20: Elementos interativos nos cards (Tags escuras, botões, ícones de progresso).
+
+z-index: 30: Tooltips e Menus suspensos flutuantes flutuando (estes sim, levam uma leve box-shadow: 0 8px 32px rgba(0,0,0,0.4)).
+
+5. Proporções e Tamanhos
+
+O sistema obedece a uma escala rígida baseada em múltiplos de 8px.
+
+Cards: Têm padding interno de 24px (p-6 no Tailwind).
+
+Avatares: Tamanho fixo de 32pxx32px no grid de projetos, e 40pxx40px nas mensagens.
+
+Barras de Progresso: Altura restrita a 4px.
+
+Linhas separadoras (Dividers): Usam altura de 1px e cor #323640.
+
+6. A Tipografia
+
+Inter (Sans-serif): Usada em 90% da UI. Fornece neutralidade. Tamanhos variam de 12px (tags) a 16px (texto padrão).
+
+JetBrains Mono: Exclusivo para cronômetros ("25m 20s") e números estritos de log ("Task Done: 30 / 30").
+
+Espaçamento de Letras (Tracking): Labels em maiúsculas (ex: "HIGH", "COMPLETED") devem ter letter-spacing: 0.05em para melhorar a legibilidade.
+
+7. As Cores (Aplicação Estrita)
+
+As cores dos botões de progresso não são aleatórias:
+
+#E53935 (Vermelho) = Atrasado, Crítico, Pausa. (Aplicado no dia "05" do calendário).
+
+#FFB300 (Amarelo) = Em andamento, Atenção.
+
+#43A047 (Verde) = Concluído.
+
+Textos secundários NUNCA devem ser opacidade de branco (ex: rgba(255,255,255,0.5)). Use cores hexadecimais sólidas como #8A8C95 para evitar custos de re-renderização e garantir contraste exato.
+
+8. Níveis de Acessibilidade
+
+Melhorar a acessibilidade de um Dark Mode sem destruir o design requer sutileza:
+
+Contraste (WCAG AA): O texto cinza #8A8C95 sobre fundo #2A2D36 garante uma taxa de contraste aceitável (~4.5:1).
+
+Focus Rings: O contorno padrão do navegador deve ser substituído. Quando o usuário navegar via TAB, o elemento focado receberá um outline: 2px solid #00E5FF; outline-offset: 2px; (Ciano neon, referenciando o glitch da estátua).
+
+ARIA Labels: Componentes visuais como a barra de progresso devem ter role="progressbar", aria-valuenow="50" e aria-valuemin="0".
+
+Prefers-Reduced-Motion: Respeitar essa media query, desligando as animações da galáxia e dos glitches caso ativada.
+
+9. Dados de Responsividade
+
+Mobile (< 768px): A Sidebar se transforma em um "Hamburger Menu" oculto. O CSS Grid das tarefas vira 1 coluna única (100% de largura). Os avatares de projetos exibem no máximo 3 rostos + contador (ex: "+5").
+
+Tablet (768px - 1024px): A Sidebar vira "Mini" (apenas ícones, sem texto, largura de 80px). O Grid passa a 2 colunas.
+
+Desktop (> 1024px): Layout completo, sidebar fixa de 260px, grid de 3 a 4 colunas expansíveis.
+
+10. As Animações e Eventos de Scroll
+
+Microinterações: Botões e ícones devem ter transição de 150ms ease-in-out mudando cor ou leve transform: translateY(-2px).
+
+Listas (Staggered Fade In): Ao carregar o dashboard, as tarefas da lista "My Tasks" devem surgir com um delay sequencial (0ms, 50ms, 100ms) deslizando levemente de baixo para cima (fade-up).
+
+Scroll: A barra de rolagem (scrollbar) deve ser estilizada: fina (6px), track em #22242B e thumb em #323640, bordas arredondadas.
+
+11. Componentes, Padrões e Falta de Padrões
+
+Padrões (Do):
+
+Avatar Stacks: Agrupamentos de usuários (ex: time do Slack) são feitos usando margem negativa à esquerda (-ml-3 no Tailwind) com uma borda sólida da cor do background (border-2 border-[#2A2D36]) para criar recorte visual (overlap perfeito).
+
+Tags: Devem ter padding mínimo (px-2 py-1), fonte em 10px ou 12px uppercase, border de 1px com cor sutil e fundo transparente ou com opacidade de 10% da cor da borda.
+
+Falta de Padrões / Antipatterns (Don't):
+
+NÃO utilize degradês nos fundos dos cards. O UI design do dashboard é estritamente "Flat" com cores sólidas.
+
+NÃO coloque textos primários brancos puros (#FFFFFF) grandes sobre o fundo puro preto. Causa halação (glow ocular) no escuro.
+
+NÃO utilize sombras genéricas (box-shadow: 0px 4px 10px rgba(0,0,0,0.1)). Elas desaparecem em fundos #22242B.
+
+12. Ícones e Tecnologias
+
+Ícones: Utilizar biblioteca Lucide React ou Phosphor Icons renderizados inline como SVG, manipulados via currentColor com stroke-width: 1.5 ou 2.
+
+Stack: Next.js (React), Tailwind CSS v4, Framer Motion (para a entrada fluida das listas) e D3.js ou Three.js caso os SVGs exijam manipulação pesada de dados (para os grafos).
+
+13. Quantidade de Telas e Estrutura de Pastas
+
+Quantidade: 3 Telas principais.
+
+/dashboard (O Gerenciador Base - Imagem 1)
+
+/neural-insights (Visualização de AI/Produtividade - Imagem 2)
+
+/metaverse-projects (Área de projetos Blockchain/Web3 - Imagem 3).
+
+Estrutura Lógica:
+
+/src
+  /components
+    /layout (Sidebar, Header)
+    /ui (Button, Badge, Avatar)
+    /widgets (Calendar, TaskList, ProgressCard)
+    /complex-graphics (NeuralBust, GalaxySpiral)
+  /styles
+    globals.css
+  /lib
+    utils.ts
+
+
+14. A REGRA DE OURO: REPLICAÇÃO DE ELEMENTOS COMPLEXOS
+
+O escopo exige a incorporação da Imagem 2 (Rede Neural / Estátua) e da Imagem 3 (Galáxia) de forma simultânea (como Vetor SVG intrincado e como instrução de Imagem Real).
+
+14.1 O Busto Neural (Baseado na Imagem 2)
+
+Esta representação visualiza o processamento algorítmico de tarefas.
+
+A) REPLICAÇÃO EM SVG (Profundidade, Múltiplos Gradientes e Sombras)
+
+Abaixo está o código para desenhar os cubos complexos da rede, as linhas neurais conectoras e a silhueta geométrica da estátua clássica, utilizando recursos super avançados do SVG (Filtros, Masks, Linear e Radial Gradients):
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <!-- Filtro de Ruído para o fundo do gráfico -->
+    <filter id="noiseFilter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.1 0" />
+    </filter>
+
+    <!-- Gradientes para a fita Glitch Cyan no olho da estátua -->
+    <linearGradient id="glitchCyan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.8"/>
+      <stop offset="50%" stop-color="#1DE9B6" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#00B0FF" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <!-- Gradiente Radial para o brilho dos Nós (Cubos) Amarelos e Laranjas -->
+    <radialGradient id="nodeGlowYellow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFD600" stop-opacity="1"/>
+      <stop offset="40%" stop-color="#FF9100" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FF6D00" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Gradiente Linear 3D para as faces dos cubos rosas/roxos -->
+    <linearGradient id="cubeFaceTop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E040FB" />
+      <stop offset="100%" stop-color="#D500F9" />
+    </linearGradient>
+    <linearGradient id="cubeFaceLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9C27B0" />
+      <stop offset="100%" stop-color="#6A1B9A" />
+    </linearGradient>
+    <linearGradient id="cubeFaceRight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4A148C" />
+      <stop offset="100%" stop-color="#311B92" />
+    </linearGradient>
+
+    <!-- Filtro de Sombra (Drop Shadow) para volume 3D nas conexões -->
+    <filter id="wireShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="5" stdDeviation="3" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Fundo texturizado com CSS Grid renderizado no SVG -->
+  <rect width="100%" height="100%" fill="#D1D4D7" />
+  <rect width="100%" height="100%" style="mix-blend-mode: multiply;" filter="url(#noiseFilter)" />
+
+  <!-- Wireframes / Linhas de Conexão Neurais -->
+  <g stroke="#333333" stroke-width="1.5" filter="url(#wireShadow)">
+    <line x1="200" y1="150" x2="350" y2="80" />
+    <line x1="350" y1="80" x2="550" y2="120" />
+    <line x1="200" y1="150" x2="150" y2="300" />
+    <line x1="150" y1="300" x2="280" y2="400" />
+    <line x1="280" y1="400" x2="450" y2="320" />
+    <line x1="550" y1="120" x2="650" y2="250" />
+    <line x1="650" y1="250" x2="450" y2="320" />
+    <line x1="450" y1="320" x2="350" y2="80" />
+    <line x1="280" y1="400" x2="650" y2="450" />
+  </g>
+
+  <!-- Brilhos sob os cubos principais (Glow 3D) -->
+  <circle cx="350" cy="80" r="40" fill="url(#nodeGlowYellow)" style="mix-blend-mode: screen;" />
+  <circle cx="650" cy="250" r="50" fill="url(#nodeGlowYellow)" style="mix-blend-mode: screen;" />
+  <circle cx="280" cy="400" r="35" fill="url(#nodeGlowYellow)" style="mix-blend-mode: screen;" />
+
+  <!-- Componente Cubo 3D (Replicável) posicionado em X:550, Y:120 -->
+  <g transform="translate(550, 120)">
+    <!-- Top Face -->
+    <polygon points="0,-15 15,-7 0,0 -15,-7" fill="url(#cubeFaceTop)" />
+    <!-- Left Face -->
+    <polygon points="-15,-7 0,0 0,15 -15,7" fill="url(#cubeFaceLeft)" />
+    <!-- Right Face -->
+    <polygon points="0,0 15,-7 15,7 0,15" fill="url(#cubeFaceRight)" />
+    <!-- Arestas pretas para destacar o volume low-poly -->
+    <polyline points="-15,-7 0,0 15,-7" fill="none" stroke="#000" stroke-width="0.5"/>
+    <line x1="0" y1="0" x2="0" y2="15" stroke="#000" stroke-width="0.5"/>
+  </g>
   
-      .deep-web-mesh-bg {
-        position: absolute;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background-image: url('/assets/images/3d-mesh-wireframe.jpg');
-        background-size: cover;
-        background-position: center;
-        mix-blend-mode: screen;
-        opacity: 0.35;
-        filter: contrast(120%) brightness(0.8) sepia(20%) hue-rotate(180deg); /* Ajuste para o tom azul/frio */
-        z-index: -1;
-      }
-  
+  <!-- Outro cubo posicionado -->
+  <g transform="translate(150, 300) scale(1.2)">
+    <polygon points="0,-15 15,-7 0,0 -15,-7" fill="url(#cubeFaceTop)" />
+    <polygon points="-15,-7 0,0 0,15 -15,7" fill="url(#cubeFaceLeft)" />
+    <polygon points="0,0 15,-7 15,7 0,15" fill="url(#cubeFaceRight)" />
+  </g>
 
-## 12. Ícones e Tipologia Visual
+  <!-- Silhueta Geometrizada do Busto Clássico (Davi de Michelangelo estilizado) -->
+  <path d="M 350 550 C 350 480, 320 450, 340 380 C 360 310, 380 280, 420 250 C 460 220, 500 240, 510 300 C 520 360, 480 400, 470 450 C 460 500, 490 550, 490 550 Z" fill="#E0E0E0" filter="url(#wireShadow)"/>
+  <!-- Sombras do rosto -->
+  <path d="M 380 320 C 390 350, 410 380, 400 420" fill="none" stroke="#9E9E9E" stroke-width="15" stroke-linecap="round"/>
 
-Ícones não devem ser sólidos nem "fofos" (rounded flat icons).
+  <!-- Faixa Glitch Ciano censurando os olhos -->
+  <g transform="translate(0,0)">
+    <rect x="360" y="300" width="160" height="35" fill="url(#glitchCyan)" />
+    <!-- Ruído e deslocamento (Glitch effect parts) -->
+    <rect x="355" y="310" width="40" height="5" fill="#E040FB" />
+    <rect x="510" y="325" width="20" height="8" fill="#FFD600" />
+    <rect x="420" y="295" width="30" height="5" fill="#FFFFFF" />
+  </g>
 
-* Eles devem ser de linha finíssima (Stroke: `1px` ou `0.5px`).
-* Devem possuir um leve brilho nativo (Drop shadow de cor idêntica ao traço com blur de `4px` e spread de `0px`).
-* As junções devem ser exatas, pontiagudas, refletindo precisão militar e matemática (Cybernetic).
+  <!-- Fragmentos de Código (Textos sobrepostos) imitanto a Imagem 2 -->
+  <text x="50" y="100" font-family="monospace" font-size="10" fill="#333" opacity="0.6">const body = document.querySelector('body');</text>
+  <text x="50" y="115" font-family="monospace" font-size="10" fill="#333" opacity="0.6">const navLogo = document.querySelector('.nav');</text>
+</svg>
 
-## 13. Quantidade de Telas e Estrutura de Pastas
 
-Para suportar este volume de complexidade, o projeto assume uma arquitetura Single Page Application (SPA) multi-dashboard.
+B) UTILIZAÇÃO COMO IMAGEM MATRICIAL (Fallback Obrigatório)
 
-* **Quantidade de Telas Core:** 3 (Dashboard Principal/Visão Macro, Detalhamento de Nó/Visão Micro, Configurações de Espectro/Engine).
-* **Estrutura de Pastas Requerida:**
-  * `/src/core/physics/` -> Hooks e scripts (WebGL/Three.js) para gerenciar refrações em tempo real e o mouse tracking da luz.
-  * `/src/ui/components/glass/` -> Elementos base da UI. Arquivos independentes para o painel de vidro, bordas prismáticas e textos com blend mode.
-  * `/src/ui/styles/` -> Arquivos onde o YAML deste documento é transpilado (Tokens via Tailwind `@theme` ou CSS Custom Properties avançadas).
-  * `/public/assets/shaders/` -> Se a malha 3D for renderizada proceduralmente, os fragment shaders e vertex shaders residem aqui.
+Devido à textura granulada fotorealista da estátua e aos milhares de triângulos do wireframe na Imagem 2 original, renderizar isto via CSS/SVG pode fritar a CPU/GPU em dispositivos de baixo desempenho. É absolutamente necessário o uso de uma imagem.
 
-## Conclusão de Rigor
+Onde deve ser utilizada: Em um painel de destaque na rota /neural-insights, atuando como background expansivo (hero area) atrás dos gráficos de performance de tarefas concluídas.
 
-Este sistema não é "mais um site escuro com vidro". É uma simulação óptica. A renderização correta exige precisão nanométrica no controle de opacidade, ruído fractal e sobreposição de camadas de desfoque. Agentes de IA: Adiram rigorosamente aos parâmetros estipulados nos blocos de tokens e na lógica de SVG. O desvio das regras de luz resultará num *antipattern* de poluição visual.
+Onde procurar (FORA DO DOCUMENTO): Acesse bancos de imagens premium ou plataformas de assets 3D como Shutterstock, Adobe Stock, Envato Elements ou Unsplash.
+
+O Exato Texto de Pesquisa a ser utilizado: "Classical Greek statue bust with neon cyberpunk glitch eye bar and abstract 3D wireframe network nodes structure" ou "Vaporwave marble bust with deep learning neural network overlay concept".
+
+Forma de Uso (Especificação):
+A imagem deve ser recortada (fundo transparente .png ou .webp), colocada dentro de uma <div class="relative overflow-hidden">. A imagem deve receber no CSS mix-blend-mode: luminosity e uma sobreposição de camada <div class="absolute inset-0 bg-[#22242B] opacity-50"> para escurecê-la e encaixá-la harmoniosamente no Dark Mode do gerenciador de tarefas sem agredir a vista.
+
+14.2 A Galáxia "Crafty Metaverse" (Baseada na Imagem 3)
+
+Um painel etéreo e luminoso contrastando com o fundo escuro do gerenciador.
+
+A) REPLICAÇÃO EM SVG (Espirais, Opacidade e Radial Gradients)
+
+Simulando a refração, nuvens de poeira estelar e o núcleo supermassivo:
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" width="100%" height="100%">
+  <defs>
+    <radialGradient id="spaceBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1A0B2E" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#05010F" stop-opacity="1"/>
+    </radialGradient>
+
+    <!-- Núcleo galáctico hiper-brilhante -->
+    <radialGradient id="galaxyCore" cx="50%" cy="50%" r="30%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="1"/>
+      <stop offset="15%" stop-color="#E040FB" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#9C27B0" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#311B92" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Braços espirais em gradientes alongados -->
+    <radialGradient id="spiralArm" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#D500F9" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#4A148C" stop-opacity="0"/>
+    </radialGradient>
+    
+    <!-- Filtro Blur para criar a textura de nuvem de gás -->
+    <filter id="gasBlur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo do Espaço Profundo -->
+  <rect width="100%" height="100%" fill="url(#spaceBg)" />
+
+  <!-- Conexões em Constelação (Fundo) -->
+  <g stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="1">
+    <polyline points="100,50 150,120 80,180" />
+    <circle cx="100" cy="50" r="2" fill="#FFF" opacity="0.3"/>
+    <circle cx="150" cy="120" r="2" fill="#FFF" opacity="0.3"/>
+    <circle cx="80" cy="180" r="2" fill="#FFF" opacity="0.3"/>
+  </g>
+
+  <!-- Transformação para girar e achatar a espiral (Perspectiva 3D) -->
+  <g transform="translate(500, 250) scale(1, 0.4) rotate(-30)">
+    
+    <!-- Braço Espiral 1 -->
+    <path d="M 0 0 C 100 -50, 300 0, 400 200 C 500 400, 200 500, 0 450 C -200 400, -300 200, -100 50" 
+          fill="none" stroke="url(#spiralArm)" stroke-width="60" filter="url(#gasBlur)" />
+          
+    <!-- Braço Espiral 2 -->
+    <path d="M 0 0 C -100 50, -300 0, -400 -200 C -500 -400, -200 -500, 0 -450 C 200 -400, 300 -200, 100 -50" 
+          fill="none" stroke="url(#spiralArm)" stroke-width="60" filter="url(#gasBlur)" />
+          
+    <!-- Brilho Interno dos braços -->
+    <path d="M 0 0 C 80 -40, 200 0, 300 150" fill="none" stroke="#E040FB" stroke-width="20" filter="url(#gasBlur)" opacity="0.7"/>
+    <path d="M 0 0 C -80 40, -200 0, -300 -150" fill="none" stroke="#E040FB" stroke-width="20" filter="url(#gasBlur)" opacity="0.7"/>
+
+    <!-- Núcleo da Galáxia -->
+    <circle cx="0" cy="0" r="150" fill="url(#galaxyCore)" filter="url(#gasBlur)"/>
+  </g>
+
+  <!-- Partículas / Estrelas Sobrepostas (Efeito de Profundidade) -->
+  <g fill="#FFFFFF">
+    <!-- Tamanhos e opacidades variadas simulando estrelas -->
+    <circle cx="480" cy="240" r="2" opacity="1" />
+    <circle cx="520" cy="260" r="1.5" opacity="0.9" />
+    <circle cx="450" cy="270" r="3" opacity="0.8" filter="url(#gasBlur)"/>
+    <circle cx="550" cy="230" r="1" opacity="0.5" />
+    <!-- Espalhadas no canvas -->
+    <circle cx="200" cy="400" r="1.5" opacity="0.4" />
+    <circle cx="800" cy="100" r="1" opacity="0.6" />
+    <circle cx="700" cy="400" r="2" opacity="0.3" />
+  </g>
+</svg>
+
+
+B) UTILIZAÇÃO COMO IMAGEM MATRICIAL (Fallback Obrigatório)
+
+O SVG criado chega muito perto, mas a imagem 3 possui poeira estelar densa, efeitos de plasma realistas e texturas de milhares de estrelas impossíveis de vetorizar sem queda brutal de FPS. A imagem deve ser utilizada.
+
+Onde deve ser utilizada: Como banner envolvente no topo da rota /metaverse-projects (atrás do título "Crafty Metaverse" e do botão "Invest Now").
+
+Onde procurar (FORA DO DOCUMENTO): Plataformas como Freepik, Shutterstock, ou Adobe Stock.
+
+O Exato Texto de Pesquisa a ser utilizado: "Glowing purple spiral galaxy in deep space with blockchain abstract network connections high resolution".
+
+Forma de Uso (Especificação):
+A imagem fotorealista .jpg (comprimida via WebP) deverá ser definida como background-image da seção Hero.
+Obrigatório aplicar uma máscara CSS: mask-image: linear-gradient(to bottom, black 50%, transparent 100%); (ou equivalente -webkit-mask-image). Isso garantirá que a base da galáxia faça um fade out (esmaecimento) perfeito em direção à cor de fundo base da aplicação (#22242B), integrando o universo do metaverso ao grid rígido do gerenciador de tarefas sem cortes secos, criando uma percepção de tela imersiva 3D flutuante.
