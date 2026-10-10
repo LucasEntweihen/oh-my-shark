@@ -430,7 +430,7 @@ export async function getLatestRelease(
 
 	let response: Response;
 	try {
-		response = await fetchImpl(`${GITHUB_API}/repos/${REPO}/releases/latest`, {
+		response = await fetchImpl(`${GITHUB_API}/repos/${REPO}/releases`, {
 			headers,
 			signal: withTimeoutSignal(timeoutMs),
 		});
@@ -444,32 +444,6 @@ export async function getLatestRelease(
 		throw err;
 	}
 	if (response.status === 403 || response.status === 429) {
-		// Rate limit fallback: resolve latest release tag via GitHub web redirect (rate-limit immune)
-		try {
-			const webResponse = await fetchImpl(`https://github.com/${REPO}/releases/latest`, {
-				method: "HEAD",
-				redirect: "manual",
-				signal: withTimeoutSignal(timeoutMs),
-			});
-			const location = webResponse.headers.get("location");
-			if (location) {
-				const tagMatch = /\/releases\/tag\/([^/?#]+)/.exec(location);
-				if (tagMatch?.[1]) {
-					const tag = decodeURIComponent(tagMatch[1]);
-					const version = parseProductTag(tag);
-					if (version) {
-						return {
-							tag,
-							version,
-							dist: "binary",
-						};
-					}
-				}
-			}
-		} catch {
-			// web redirect fallback failed; proceed to report rate limit error
-		}
-
 		throw new Error(
 			"GitHub API rate limit exceeded while fetching release metadata; retry later or set GITHUB_TOKEN or GH_TOKEN",
 		);
@@ -478,19 +452,19 @@ export async function getLatestRelease(
 		throw new Error(`Failed to fetch release info for ${REPO}: ${response.statusText}`);
 	}
 
-	const data: unknown = await response.json();
-	if (!isRecord(data)) {
-		throw new Error(`Malformed GitHub release response for ${REPO}: expected an object`);
+	const dataList: unknown = await response.json();
+	if (!Array.isArray(dataList)) {
+		throw new Error(`Malformed GitHub release response for ${REPO}: expected an array`);
 	}
-	if (data.prerelease === true) {
-		throw new Error(`Latest ${REPO} release is a prerelease; refusing to install it on the stable channel`);
+
+	const data = dataList.find((r: unknown) => isRecord(r) && r.prerelease !== true && parseProductTag(r.tag_name));
+	if (!data) {
+		throw new Error(`No stable ${TAG_PREFIX}<semver> release found in recent releases for ${REPO}`);
 	}
 	const version = parseProductTag(data.tag_name);
 	if (!version) {
-		const seen = typeof data.tag_name === "string" ? `"${data.tag_name}"` : "a missing tag";
-		throw new Error(`GitHub release with ${seen} is not an ${TAG_PREFIX}<semver> release`);
+		throw new Error(`GitHub release with ${data.tag_name} is not an ${TAG_PREFIX}<semver> release`);
 	}
-
 	return {
 		tag: typeof data.tag_name === "string" && (data.tag_name.startsWith("omsk-v") || data.tag_name.startsWith("ohms-v"))
 			? data.tag_name

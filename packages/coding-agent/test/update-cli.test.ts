@@ -153,12 +153,13 @@ describe("parseProductTag", () => {
 });
 
 describe("getLatestRelease fork resolution", () => {
-	const METADATA_URL = "https://api.github.com/repos/LucasEntweihen/oh-my-shark/releases/latest";
+	const METADATA_URL = "https://api.github.com/repos/LucasEntweihen/oh-my-shark/releases";
 
-	function releaseFetch(payload: Record<string, unknown>, seen: string[]) {
+	function releaseFetch(payload: Record<string, unknown> | unknown[], seen: string[]) {
 		return async (input: string | URL | Request): Promise<Response> => {
 			seen.push(String(input));
-			return Response.json(payload);
+			const body = Array.isArray(payload) ? payload : [payload];
+			return Response.json(body);
 		};
 	}
 
@@ -190,7 +191,7 @@ describe("getLatestRelease fork resolution", () => {
 		const fetchImpl = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
 			seen.push(String(input));
 			authHeaders.push(new Headers(init?.headers).get("Authorization"));
-			return Response.json({ tag_name: "ohms-v0.0.3", draft: false, prerelease: false });
+			return Response.json([{ tag_name: "ohms-v0.0.3", draft: false, prerelease: false }]);
 		};
 
 		await getLatestRelease({ fetchImpl, githubToken: "test-token" });
@@ -202,17 +203,17 @@ describe("getLatestRelease fork resolution", () => {
 	it("rejects tags that are not ohms-v<semver> releases", async () => {
 		const seen: string[] = [];
 		await expect(
-			getLatestRelease({ fetchImpl: releaseFetch({ tag_name: "v18.1.8", draft: false, prerelease: false }, seen) }),
-		).rejects.toThrow("is not an ohms-v<semver> release");
+			getLatestRelease({ fetchImpl: releaseFetch([{ tag_name: "v18.1.8", draft: false, prerelease: false }], seen) }),
+		).rejects.toThrow("No stable ohms-v<semver> release found");
 	});
 
 	it("refuses a prerelease on the stable channel", async () => {
 		const seen: string[] = [];
 		await expect(
 			getLatestRelease({
-				fetchImpl: releaseFetch({ tag_name: "ohms-v0.0.4", draft: false, prerelease: true }, seen),
+				fetchImpl: releaseFetch([{ tag_name: "ohms-v0.0.4", draft: false, prerelease: true }], seen),
 			}),
-		).rejects.toThrow("prerelease");
+		).rejects.toThrow("No stable ohms-v<semver> release found");
 	});
 
 	it("reports that no canary channel exists without any network request", async () => {
