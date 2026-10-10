@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neuro-Task Horizon // Kanban Board</title>
+  <!-- Fontes de Alta Resolução e Tipografia Coesa: Space Grotesk, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ==============================================================================
+       DESIGN TOKENS (DESIGN.md)
+       ============================================================================== */
+    :root {
+      --bg-base: #22242B;
+      --bg-surface: #2A2D36;
+      --bg-surface-hover: #323640;
+      --bg-sidebar: #1E1F26;
+      --border-subtle: #323640;
+      --border-focus: #00E5FF;
+
+      --text-primary: #FFFFFF;
+      --text-secondary: #8A8C95;
+      --text-muted: #5A5C63;
+
+      --accent-red: #E53935;
+      --accent-yellow: #FFB300;
+      --accent-blue: #1E88E5;
+      --accent-green: #43A047;
+      --accent-cyan: #00E5FF;
+      --galaxy-purple: #9C27B0;
+      --galaxy-magenta: #E040FB;
+      --deep-space: #0A0514;
+
+      --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius-sm: 4px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+
+      /* Controlado pelo controle de opacidade de fundo */
+      --bg-opacity: 0.96;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Resolução nítida e renderização moderna */
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-primary);
+      background-color: var(--bg-base);
+      user-select: none;
+    }
+
+    /* Camada de Background Cósmico & Constelação (Canvas Animado e Efeitos de Galáxia) */
+    #space-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    /* Máscara de Opacidade Dinâmica da UI (Item 8: ajusta fundo sem afetar texto) */
+    .app-viewport {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      background: rgba(34, 36, 43, var(--bg-opacity));
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: background 0.15s ease-out;
+    }
+
+    /* TOP BAR (Header Minimalista, Altura 64px, Sem Nome de Usuário) */
+    .topbar {
+      height: 64px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(30, 31, 38, 0.7);
+      flex-shrink: 0;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1E88E5 0%, #00E5FF 100%);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+    }
+
+    .brand-logo svg {
+      width: 20px;
+      height: 20px;
+      fill: #ffffff;
+    }
+
+    .brand-info h1 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      background: rgba(0, 229, 255, 0.12);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      color: var(--accent-cyan);
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Ações do Topo */
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Controle de Opacidade do Fundo (Item 8) */
+    .opacity-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-surface);
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .opacity-control label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .opacity-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 80px;
+      height: 4px;
+      background: var(--border-subtle);
+      border-radius: var(--radius-full);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .opacity-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .opacity-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .btn-new-task {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #00E5FF 0%, #1E88E5 100%);
+      color: #0b0f19;
+      font-family: var(--font-body);
+      font-size: 0.825rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.12s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .btn-new-task:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+    }
+
+    .btn-new-task:active {
+      transform: translateY(0);
+    }
+
+    /* ÁREA DO KANBAN BOARD (Única aba em foco, 100% responsiva, sem poluição) */
+    .kanban-area {
+      flex: 1;
+      padding: 20px 24px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      display: flex;
+      gap: 20px;
+    }
+
+    /* Colunas do Kanban */
+    .kanban-column {
+      flex: 1;
+      min-width: 270px;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      background: rgba(42, 45, 54, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      overflow: hidden;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .kanban-column:hover {
+      border-color: rgba(0, 229, 255, 0.3);
+    }
+
+    .column-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(30, 31, 38, 0.5);
+    }
+
+    .column-title-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .col-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .col-dot.draft { background-color: var(--accent-yellow); box-shadow: 0 0 8px var(--accent-yellow); }
+    .col-dot.progress { background-color: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan); }
+    .col-dot.editing { background-color: var(--galaxy-magenta); box-shadow: 0 0 8px var(--galaxy-magenta); }
+    .col-dot.done { background-color: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+
+    .column-title {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+    }
+
+    .column-count {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--bg-surface);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+    }
+
+    /* Lista de Tarefas com Scroll Suave */
+    .column-tasks {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Scrollbar Estilizada (DESIGN.md Section 10) */
+    .column-tasks::-webkit-scrollbar {
+      width: 5px;
+    }
+    .column-tasks::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .column-tasks::-webkit-scrollbar-thumb {
+      background: var(--bg-surface-hover);
+      border-radius: var(--radius-full);
+    }
+
+    /* CARD DE TAREFA (Minimalista, Camada Tonal, Efeitos Rápidos 120ms) */
+    .task-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      cursor: grab;
+      position: relative;
+      overflow: hidden;
+      /* Microinteração ultra-ligeira */
+      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1),
+                  border-color 0.12s cubic-bezier(0.2, 0, 0, 1),
+                  box-shadow 0.12s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0, 229, 255, 0.4);
+      background: var(--bg-surface-hover);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .task-card:active {
+      cursor: grabbing;
+      transform: scale(0.98);
+    }
+
+    /* Faixa de Categoria Lateral */
+    .task-stripe {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+    }
+
+    .task-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .task-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    .task-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.6;
+      transition: opacity 0.1s ease;
+    }
+
+    .task-card:hover .task-actions {
+      opacity: 1;
+    }
+
+    .btn-card-action {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 2px 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: color 0.1s ease;
+    }
+
+    .btn-card-action:hover {
+      color: var(--accent-red);
+    }
+
+    .task-desc {
+      font-size: 0.775rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .task-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* Tags Coesas (DESIGN.md) */
+    .task-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid currentColor;
+      background: transparent;
+    }
+
+    /* Mover Entre Colunas */
+    .move-select {
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      padding: 3px 6px;
+      border-radius: var(--radius-sm);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.12s ease;
+    }
+
+    .move-select:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    /* MODAL DE NOVA TAREFA */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10, 5, 20, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      width: 90%;
+      max-width: 440px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+      padding: 24px;
+      transform: translateY(16px);
+      transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .modal-backdrop.active .modal-box {
+      transform: translateY(0);
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.775rem;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-base);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-family: var(--font-body);
+      outline: none;
+      transition: border-color 0.12s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 0.825rem;
+      transition: background 0.12s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-surface-hover);
+      color: var(--text-primary);
+    }
+
+    /* Responsividade Moderna */
+    @media (max-width: 900px) {
+      .kanban-area {
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .kanban-column {
+        max-width: 100%;
+        min-height: 220px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Canvas de Constelações e Galáxia Estelar em Background -->
+  <canvas id="space-canvas"></canvas>
+
+  <div class="app-viewport">
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>NEURO-TASK <span class="brand-tag">KANBAN OS</span></h1>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <!-- Controle Dinâmico de Opacidade da Tela (Sem afetar letras) -->
+        <div class="opacity-control" title="Ajuste a transparência da janela">
+          <label for="opacity-input">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 2a10 10 0 0 1 0 20Z"/>
+            </svg>
+            OPACIDADE
+          </label>
+          <input type="range" id="opacity-input" class="opacity-slider" min="0.25" max="1" step="0.01" value="0.96">
+        </div>
+
+        <button class="btn-new-task" id="btn-open-modal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Adicionar Tarefa
+        </button>
+      </div>
+    </header>
+
+    <!-- ÁREA EXCLUSIVA DE KANBAN BOARD (Item 10: Deixe somente a aba de kanban board) -->
+    <main class="kanban-area">
+      <!-- Coluna: DRAFT -->
+      <section class="kanban-column" data-status="DRAFT">
+        <div class="column-header">
+          <div class="column-title-box">
+            <div class="col-dot draft"></div>
+            <h2 class="column-title">Draft</h2>
+          </div>
+          <span class="column-count" id="count-DRAFT">0</span>
+        </div>
+        <div class="column-tasks" id="tasks-DRAFT"></div>
+      </section>
+
+      <!-- Coluna: IN PROGRESS -->
+      <section class="kanban-column" data-status="IN_PROGRESS">
+        <div class="column-header">
+          <div class="column-title-box">
+            <div class="col-dot progress"></div>
+            <h2 class="column-title">In Progress</h2>
+          </div>
+          <span class="column-count" id="count-IN_PROGRESS">0</span>
+        </div>
+        <div class="column-tasks" id="tasks-IN_PROGRESS"></div>
+      </section>
+
+      <!-- Coluna: EDITING -->
+      <section class="kanban-column" data-status="EDITING">
+        <div class="column-header">
+          <div class="column-title-box">
+            <div class="col-dot editing"></div>
+            <h2 class="column-title">Editing</h2>
+          </div>
+          <span class="column-count" id="count-EDITING">0</span>
+        </div>
+        <div class="column-tasks" id="tasks-EDITING"></div>
+      </section>
+
+      <!-- Coluna: DONE -->
+      <section class="kanban-column" data-status="DONE">
+        <div class="column-header">
+          <div class="column-title-box">
+            <div class="col-dot done"></div>
+            <h2 class="column-title">Done</h2>
+          </div>
+          <span class="column-count" id="count-DONE">0</span>
+        </div>
+        <div class="column-tasks" id="tasks-DONE"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal para Criação de Tarefa -->
+  <div class="modal-backdrop" id="task-modal">
+    <div class="modal-box">
+      <h3 class="modal-title">Nova Tarefa Cósmica</h3>
+      <form id="task-form">
+        <div class="form-group">
+          <label for="task-title-input">Título</label>
+          <input type="text" id="task-title-input" class="form-control" placeholder="Ex: Otimizar AST Swarm" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="task-desc-input">Descrição</label>
+          <input type="text" id="task-desc-input" class="form-control" placeholder="Detalhes técnicos da execução...">
+        </div>
+        <div class="form-group">
+          <label for="task-cat-select">Categoria Semântica</label>
+          <select id="task-cat-select" class="form-control">
+            <option value="A">Categoria A (Engine & Core)</option>
+            <option value="B">Categoria B (AI Swarm & Neural)</option>
+            <option value="C">Categoria C (Security Sentinel)</option>
+            <option value="D">Categoria D (Ops & Infra)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="task-status-select">Status Inicial</label>
+          <select id="task-status-select" class="form-control">
+            <option value="DRAFT">Draft</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="EDITING">Editing</option>
+            <option value="DONE">Done</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="btn-cancel-modal">Cancelar</button>
+          <button type="submit" class="btn-new-task">Salvar Tarefa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    /* ==============================================================================
+       MOTOR DE CONSTELAÇÕES E TEMA ESPACIAL (Item 14 & DESIGN.md)
+       Animação ultra-otimizada em Canvas com nós estelares e linhas orbitais
+       ============================================================================== */
+    const canvas = document.getElementById('space-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+
+    function resizeCanvas() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Partículas estelares da constelação
+    const STAR_COUNT = 65;
+    const stars = [];
+    for (let i = 0; i < STAR_COUNT; i++) {
+      stars.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: (Math.random() - 0.5) * 0.45,
+        radius: Math.random() * 1.8 + 0.8,
+        alpha: Math.random() * 0.6 + 0.3,
+        color: ['#00E5FF', '#E040FB', '#9C27B0', '#FFFFFF'][Math.floor(Math.random() * 4)]
+      });
+    }
+
+    function renderSpace() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Renderização das linhas de conexão (constelações galácticas)
+      for (let i = 0; i < stars.length; i++) {
+        for (let j = i + 1; j < stars.length; j++) {
+          const dx = stars[i].x - stars[j].x;
+          const dy = stars[i].y - stars[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            const lineAlpha = (1 - dist / 130) * 0.18;
+            ctx.beginPath();
+            ctx.moveTo(stars[i].x, stars[i].y);
+            ctx.lineTo(stars[j].x, stars[j].y);
+            ctx.strokeStyle = `rgba(0, 229, 255, ${lineAlpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Renderização das estrelas/nós
+      for (let i = 0; i < stars.length; i++) {
+        const s = stars[i];
+        s.x += s.vx;
+        s.y += s.vy;
+        if (s.x < 0) s.x = width;
+        if (s.x > width) s.x = 0;
+        if (s.y < 0) s.y = height;
+        if (s.y > height) s.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fillStyle = s.color;
+        ctx.shadowColor = s.color;
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      requestAnimationFrame(renderSpace);
+    }
+    requestAnimationFrame(renderSpace);
+
+    /* ==============================================================================
+       CONTROLE DE OPACIDADE DA TELA (Item 8)
+       Sem afetar textos/contrastes, alterando o backdrop da viewport
+       ============================================================================== */
+    const opacityInput = document.getElementById('opacity-input');
+    const rootStyle = document.documentElement.style;
+    opacityInput.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      rootStyle.setProperty('--bg-opacity', val);
+      // Notifica o backend se o endpoint nativo estiver disponível
+      fetch('/api/opacity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ opacity: val })
+      }).catch(() => {});
+    });
+
+    /* ==============================================================================
+       ESTADO E SINCRONIZAÇÃO DAS TAREFAS KANBAN
+       ============================================================================== */
+    const CATEGORIES = {
+      'A': { name: 'Engine Core', color: '#1E88E5' },
+      'B': { name: 'AI Swarm', color: '#9C27B0' },
+      'C': { name: 'Security Sentinel', color: '#E53935' },
+      'D': { name: 'Ops & Infra', color: '#FFB300' }
+    };
+
+    let tasks = [];
+
+    async function loadTasks() {
+      try {
+        const res = await fetch('/api/tasks');
+        if (res.ok) {
+          tasks = await res.json();
+          renderKanban();
+          return;
+        }
+      } catch (err) {}
+
+      // Fallback local se estiver offline ou em teste estático
+      const local = localStorage.getItem('omsk_kanban_tasks');
+      if (local) {
+        try { tasks = JSON.parse(local); } catch(e) {}
+      }
+      if (!tasks || tasks.length === 0) {
+        tasks = [
+          { id: 1, title: 'Model Routes & Fast Inference', cat: 'A', status: 'DONE', desc: 'Otimização de pipelines de raciocínio profundo.' },
+          { id: 2, title: 'Subagent Swarm Dispatch', cat: 'B', status: 'IN_PROGRESS', desc: 'Comunicação peer-to-peer via Hub IRC.' },
+          { id: 3, title: 'Security Invariant Auditor', cat: 'C', status: 'DRAFT', desc: 'Prevenção rigorosa de injeção de comandos e sandbox.' },
+          { id: 4, title: 'Kernel Workpool Multi-thread', cat: 'D', status: 'EDITING', desc: 'Pool de execução concorrente sem alocações inúteis.' }
+        ];
+      }
+      renderKanban();
+    }
+
+    async function saveTasks() {
+      localStorage.setItem('omsk_kanban_tasks', JSON.stringify(tasks));
+      try {
+        await fetch('/api/tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(tasks)
+        });
+      } catch (e) {}
+    }
+
+    function renderKanban() {
+      const statuses = ['DRAFT', 'IN_PROGRESS', 'EDITING', 'DONE'];
+      statuses.forEach(status => {
+        const container = document.getElementById(`tasks-${status}`);
+        const countSpan = document.getElementById(`count-${status}`);
+        const colTasks = tasks.filter(t => t.status === status);
+
+        countSpan.textContent = colTasks.length;
+        container.innerHTML = '';
+
+        colTasks.forEach((t, idx) => {
+          const cat = CATEGORIES[t.cat] || CATEGORIES['A'];
+          const card = document.createElement('article');
+          card.className = 'task-card';
+          // Delay ligeiro escalonado para microinteração ultra-rápida (120ms)
+          card.style.animationDelay = `${idx * 30}ms`;
+
+          card.innerHTML = `
+            <div class="task-stripe" style="background-color: ${cat.color};"></div>
+            <div class="task-header">
+              <h3 class="task-title">${escapeHtml(t.title)}</h3>
+              <div class="task-actions">
+                <button class="btn-card-action" title="Excluir tarefa" onclick="deleteTask(${t.id})">✕</button>
+              </div>
+            </div>
+            ${t.desc ? `<p class="task-desc">${escapeHtml(t.desc)}</p>` : ''}
+            <div class="task-footer">
+              <span class="task-tag" style="color: ${cat.color}; border-color: ${cat.color};">${cat.name}</span>
+              <select class="move-select" onchange="moveTask(${t.id}, this.value)">
+                <option value="DRAFT" ${t.status === 'DRAFT' ? 'selected' : ''}>Draft</option>
+                <option value="IN_PROGRESS" ${t.status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
+                <option value="EDITING" ${t.status === 'EDITING' ? 'selected' : ''}>Editing</option>
+                <option value="DONE" ${t.status === 'DONE' ? 'selected' : ''}>Done</option>
+              </select>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    window.moveTask = function(id, newStatus) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.status = newStatus;
+        saveTasks();
+        renderKanban();
+      }
+    };
+
+    window.deleteTask = function(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasks();
+      renderKanban();
+    };
+
+    // Gerenciamento de Modal de Nova Tarefa
+    const modal = document.getElementById('task-modal');
+    const btnOpenModal = document.getElementById('btn-open-modal');
+    const btnCancelModal = document.getElementById('btn-cancel-modal');
+    const taskForm = document.getElementById('task-form');
+
+    btnOpenModal.addEventListener('click', () => {
+      modal.classList.add('active');
+      document.getElementById('task-title-input').focus();
+    });
+
+    btnCancelModal.addEventListener('click', () => {
+      modal.classList.remove('active');
+      taskForm.reset();
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('active');
+        taskForm.reset();
+      }
+    });
+
+    taskForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('task-title-input').value.trim();
+      const desc = document.getElementById('task-desc-input').value.trim();
+      const cat = document.getElementById('task-cat-select').value;
+      const status = document.getElementById('task-status-select').value;
+
+      if (!title) return;
+
+      const newTask = {
+        id: Date.now(),
+        title,
+        desc,
+        cat,
+        status
+      };
+
+      tasks.push(newTask);
+      saveTasks();
+      renderKanban();
+
+      modal.classList.remove('active');
+      taskForm.reset();
+    });
+
+    // Tecla ESC fecha modal
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) {
+        modal.classList.remove('active');
+        taskForm.reset();
+      }
+    });
+
+    // Iniciar dados
+    loadTasks();
+  </script>
+</body>
+</html>
