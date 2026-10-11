@@ -38,7 +38,8 @@ const en = {
   heroTitle: "Your terminal agent. Tuned for the herd.",
   heroLede:
     "Install in minutes, code for hours. OhMyShark ships with a curated model setup, automatic fallbacks, and long sessions that stay sharp — no configuration rabbit hole.",
-  heroInstallCta: "Install",
+  heroDownloadExeCta: "Download App (.exe)",
+  heroInstallCta: "Install CLI",
   heroChangesCta: "Why OhMyShark",
 
   quickInstallHeader: "DEFINITIVE INSTALL COMMAND",
@@ -276,9 +277,9 @@ const pt: Strings = {
   heroTitle: "Seu agente de terminal. Afinado para o rebanho.",
   heroLede:
     "Instale em minutos, programe por horas. OhMyShark já vem com modelos configurados, fallbacks automáticos e sessões longas que não perdem o fio — sem labirinto de configuração.",
-  heroInstallCta: "Instalar",
+  heroDownloadExeCta: "Baixar App (.exe)",
+  heroInstallCta: "Instalar CLI",
   heroChangesCta: "Por que OhMyShark",
-
   quickInstallHeader: "COMANDO DEFINITIVO DE UMA LINHA",
   quickInstallSub: "Comando de uma linha compatível com PowerShell 5.1 e Core — cole e execute diretamente no terminal:",
   quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.26",
