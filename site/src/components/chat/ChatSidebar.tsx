@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Trash2, X, HardDrive } from "lucide-react";
+import { Plus, MessageSquare, Trash2, X, HardDrive, Download } from "lucide-react";
 import { Icon } from "../ui/Icon";
 import { AuroraCore } from "../aurora/AuroraCore";
 
@@ -22,12 +22,14 @@ interface ChatSidebarProps {
   onNewSession: () => void;
   onDeleteSession: (id: string) => void;
   onOpenFolderManager: () => void;
+  onOpenDownloadModal?: () => void;
   activeFolderName: string;
 }
 
 /**
  * Barra lateral de navegação multi-sessão e histórico (DESIGN.md Sec 5.1 e 10)
  * - Suporta criação de chats e sessões diferentes
+ * - Atalho para download do aplicativo desktop nativo (.exe)
  * - Recolhível e responsiva para telas pequenas
  * - Estética limpa sobre veludo escuro
  */
@@ -40,6 +42,7 @@ export function ChatSidebar({
   onNewSession,
   onDeleteSession,
   onOpenFolderManager,
+  onOpenDownloadModal,
   activeFolderName,
 }: ChatSidebarProps) {
   return (
@@ -150,8 +153,24 @@ export function ChatSidebar({
           })}
         </div>
 
-        {/* Rodapé da Sidebar: Pasta de Trabalho Ativa */}
-        <div className="p-3 border-t border-[var(--cor-borda)] bg-[var(--cor-fundo)]/30">
+        {/* Rodapé da Sidebar: App Download e Pasta Local */}
+        <div className="p-3 border-t border-[var(--cor-borda)] bg-[var(--cor-fundo)]/30 space-y-2">
+          {onOpenDownloadModal && (
+            <button
+              type="button"
+              onClick={onOpenDownloadModal}
+              className="w-full flex items-center justify-between p-2 rounded-xl text-xs font-semibold text-[var(--espectro-ciano)] bg-[var(--espectro-ciano)]/10 hover:bg-[var(--espectro-ciano)]/20 border border-[var(--espectro-ciano)]/30 transition-all cursor-pointer group"
+            >
+              <div className="flex items-center gap-2">
+                <Icon icon={Download} size="sm" />
+                <span>App Desktop (.exe)</span>
+              </div>
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--espectro-ciano)]/20 text-[var(--espectro-ciano)]">
+                v0.0.26
+              </span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onOpenFolderManager}

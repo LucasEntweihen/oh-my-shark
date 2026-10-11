@@ -7,6 +7,7 @@ import { MessageComposer, type AttachedFile } from "./components/chat/MessageCom
 import { ChatWelcome } from "./components/chat/ChatWelcome";
 import { WorkspaceFolderManager, type WorkspaceFolder } from "./components/modals/WorkspaceFolderManager";
 import { SystemPromptModal } from "./components/modals/SystemPromptModal";
+import { DownloadAppModal } from "./components/modals/DownloadAppModal";
 import { ReasoningLevelSelector } from "./components/ui/ReasoningLevelSelector";
 import { AVAILABLE_MODELS, type ModelSpec } from "./types/models";
 
@@ -80,6 +81,9 @@ export default function App() {
   const [globalPrompt, setGlobalPrompt] = useState(
     "Você é a Aurora AI, uma assistente de engenharia de software de alto nível. Responda em português brasileiro com clareza, rigor técnico e elegância."
   );
+
+  // Modal de Download do App Desktop .EXE
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   // Estados de Geração
   const [isGenerating, setIsGenerating] = useState(false);
@@ -232,6 +236,7 @@ export default function App() {
         onNewSession={handleNewSession}
         onDeleteSession={handleDeleteSession}
         onOpenFolderManager={() => setIsFolderModalOpen(true)}
+        onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
         activeFolderName={activeFolder.name}
       />
 
@@ -244,6 +249,7 @@ export default function App() {
           onSelectModel={handleModelSelect}
           onOpenSystemPrompt={() => setIsPromptModalOpen(true)}
           onOpenFolderManager={() => setIsFolderModalOpen(true)}
+          onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
           onNewSession={handleNewSession}
           activeFolderName={activeFolder.name}
           hasCustomPrompt={Boolean(activeSession.systemPrompt)}
@@ -270,6 +276,7 @@ export default function App() {
               <ChatWelcome
                 onSelectPrompt={(text) => handleSendMessage(text, [])}
                 onOpenFolderManager={() => setIsFolderModalOpen(true)}
+                onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
                 activeFolderName={activeFolder.name}
               />
             ) : (
@@ -332,6 +339,12 @@ export default function App() {
             prev.map((s) => (s.id === activeSessionId ? { ...s, systemPrompt: newSession } : s))
           );
         }}
+      />
+
+      {/* Modal de Download da Aplicação Desktop (.EXE) */}
+      <DownloadAppModal
+        isOpen={isDownloadModalOpen}
+        onClose={() => setIsDownloadModalOpen(false)}
       />
     </div>
   );

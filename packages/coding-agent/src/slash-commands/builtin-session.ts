@@ -19,6 +19,7 @@ import { handleTodoAcp } from "./helpers/todo";
 import { buildUsageReportText } from "./helpers/usage-report";
 import type { SlashCommandRuntime, SlashCommandSpec } from "./types";
 import { launchTaskManagerGui } from "../taskmanager/launcher";
+import { launchAuroraGuiApp } from "../aurora/launcher";
 
 async function handleUsageResetCommand(
 	arg: string,
@@ -648,6 +649,32 @@ export const BUILTIN_SESSION_SLASH_COMMANDS: ReadonlyArray<SlashCommandSpec> = [
 				runtime.ctx.showStatus("Task Manager GUI launched.");
 			} else {
 				runtime.ctx.showStatus(`Failed to launch Task Manager GUI: ${result.reason}`);
+			}
+		},
+	},
+	{
+		name: "aurora",
+		aliases: ["gui", "app", "desktop"],
+		icon: "window",
+		description: "Launch the Aurora AI Reactive Desktop Window GUI",
+		acpDescription: "Launch the Aurora AI Reactive Desktop Window GUI",
+		allowArgs: false,
+		handle: async (_command, runtime) => {
+			const result = await launchAuroraGuiApp(runtime.cwd);
+			if (result.ok) {
+				await runtime.output("Aurora AI Desktop GUI launched.");
+			} else {
+				await runtime.output(`Failed to launch Aurora AI Desktop GUI: ${result.reason}`);
+			}
+			return { consumed: true };
+		},
+		handleTui: async (_command, runtime) => {
+			runtime.ctx.editor.setText("");
+			const result = await launchAuroraGuiApp(runtime.ctx.sessionManager.getCwd());
+			if (result.ok) {
+				runtime.ctx.showStatus("Aurora AI Desktop GUI launched.");
+			} else {
+				runtime.ctx.showStatus(`Failed to launch Aurora AI Desktop GUI: ${result.reason}`);
 			}
 		},
 	},

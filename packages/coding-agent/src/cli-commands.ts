@@ -107,6 +107,17 @@ export const commands: CommandEntry[] = [
 		help: commandHelp.gitHelp,
 	},
 	{
+		name: "gui",
+		load: () => import("./commands/gui").then(m => m.default),
+		aliases: ["app", "aurora", "desktop"],
+		help: {
+			summary: "Launch the Aurora AI Desktop GUI Window Application",
+			usage: "omsk gui",
+			description: "Opens the reactive Aurora AI GUI desktop window application directly.",
+			examples: ["omsk gui", "omsk app", "omsk desktop"],
+		},
+	},
+	{
 		name: "grievances",
 		load: () => import("./commands/grievances").then(m => m.default),
 		help: commandHelp.grievancesHelp,

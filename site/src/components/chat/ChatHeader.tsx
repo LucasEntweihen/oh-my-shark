@@ -1,4 +1,4 @@
-import { Menu, Sliders, HardDrive, Plus } from "lucide-react";
+import { Menu, Sliders, HardDrive, Plus, Download } from "lucide-react";
 import { Icon } from "../ui/Icon";
 import { AuroraCore } from "../aurora/AuroraCore";
 import { ModelSelector } from "../ui/ModelSelector";
@@ -10,6 +10,7 @@ interface ChatHeaderProps {
   onSelectModel: (model: ModelSpec) => void;
   onOpenSystemPrompt: () => void;
   onOpenFolderManager: () => void;
+  onOpenDownloadModal: () => void;
   onNewSession: () => void;
   activeFolderName: string;
   hasCustomPrompt: boolean;
@@ -20,6 +21,7 @@ interface ChatHeaderProps {
  * Barra Superior / Header do Chat (DESIGN.md Sec 5.4)
  * - Identidade visual Aurora
  * - Seletor gráfico de modelo estilo Claude
+ * - Botão de Download do App Desktop (.exe)
  * - Acesso direto às configurações de Prompt de Sistema e Pastas Locais
  * - Ações essenciais sempre acessíveis sem depender de hover
  */
@@ -29,6 +31,7 @@ export function ChatHeader({
   onSelectModel,
   onOpenSystemPrompt,
   onOpenFolderManager,
+  onOpenDownloadModal,
   onNewSession,
   activeFolderName,
   hasCustomPrompt,
@@ -73,8 +76,20 @@ export function ChatHeader({
         />
       </div>
 
-      {/* Lado Direito: Pastas Locais e Prompt de Sistema */}
-      <div className="flex items-center gap-1.5">
+      {/* Lado Direito: Download App .exe, Pastas Locais e Prompt de Sistema */}
+      <div className="flex items-center gap-2">
+        {/* Botão de Destaque para Download do App .EXE */}
+        <button
+          type="button"
+          onClick={onOpenDownloadModal}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[var(--espectro-ciano)]/20 to-[var(--espectro-azul)]/20 border border-[var(--espectro-ciano)]/40 hover:border-[var(--espectro-ciano)] text-[var(--texto-principal)] hover:text-[var(--espectro-ciano)] text-xs font-bold transition-all shadow-[0_0_12px_rgba(0,229,255,0.15)] cursor-pointer active:scale-95"
+          title="Baixar OhMyShark Desktop (.exe para Windows)"
+        >
+          <Icon icon={Download} size="sm" className="text-[var(--espectro-ciano)]" />
+          <span className="hidden sm:inline">Baixar App (.exe)</span>
+          <span className="sm:hidden font-mono">.exe</span>
+        </button>
+
         {/* Botão de Diretório Local */}
         <button
           type="button"
