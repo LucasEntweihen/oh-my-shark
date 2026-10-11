@@ -1,0 +1,191 @@
+/* ==========================================================================
+   AURORA AI — DESIGN TOKENS (DESIGN.md & ICON_SYSTEM.md)
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* 4.1 Cores Principais */
+  --cor-fundo: #0A0A0C;
+  --cor-superficie: #121216;
+  --cor-superficie-elevada: #19191F;
+  --cor-campo: #1A1A20;
+  --cor-borda: rgba(255, 255, 255, 0.09);
+  --cor-borda-foco: #A5B4FC;
+
+  --texto-principal: #F2F2F5;
+  --texto-secundario: #B0B0BA;
+  --texto-terciario: #858590;
+  --texto-placeholder: #85858F;
+
+  --cor-usuario: #27272A;
+  --cor-sucesso: #34D399;
+  --cor-aviso: #FBBF24;
+  --cor-erro: #FB7185;
+
+  /* Espectro Aurora */
+  --espectro-violeta: #A78BFA;
+  --espectro-azul: #60A5FA;
+  --espectro-ciano: #22D3EE;
+  --espectro-verde: #34D399;
+  --espectro-amarelo: #FCD34D;
+  --espectro-laranja: #FB923C;
+  --espectro-vermelho: #FB7185;
+
+  --espectro-aurora: linear-gradient(
+    115deg,
+    #A78BFA 0%,
+    #60A5FA 18%,
+    #22D3EE 34%,
+    #34D399 50%,
+    #FCD34D 67%,
+    #FB923C 82%,
+    #FB7185 100%
+  );
+
+  /* Tipografia */
+  --fonte-interface: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --fonte-codigo: "JetBrains Mono", "Fira Code", ui-monospace, Consolas, monospace;
+
+  /* Raios de borda */
+  --raio-campo: 28px;
+  --raio-cartao: 20px;
+  --raio-popover: 16px;
+  --raio-botao-sm: 12px;
+  --raio-nucleo: 50%;
+
+  /* Transições e Movimento */
+  --duracao-rapida: 140ms;
+  --duracao-padrao: 220ms;
+  --duracao-suave: 360ms;
+  --duracao-longa: 600ms;
+  --duracao-ambiente: 4000ms;
+
+  --movimento-preciso: cubic-bezier(0.2, 0, 0, 1);
+  --movimento-elastico: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --movimento-suave: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  --largura-conversa: 860px;
+}
+
+/* Reset Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Scrollbar com estética Aurora */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Animação do Núcleo Aurora */
+@keyframes aurora-respira {
+  0%, 100% {
+    transform: scale(1);
+    filter: saturate(0.96);
+  }
+  50% {
+    transform: scale(1.03);
+    filter: saturate(1.15) brightness(1.05);
+  }
+}
+
+@keyframes aurora-ondula {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.aurora-core {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--espectro-aurora);
+  background-size: 200% 200%;
+  transition: all var(--duracao-suave) var(--movimento-suave);
+}
+
+.aurora-core::after {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(255, 255, 255, 0.45),
+    transparent 52%
+  );
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.aurora-core[data-estado="processando"] {
+  animation: aurora-respira 3.6s ease-in-out infinite, aurora-ondula 6s ease infinite;
+  box-shadow: 0 0 24px rgba(96, 165, 250, 0.35);
+}
+
+.aurora-core[data-estado="ocioso"] {
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.2);
+}
+
+.superficie-elevada {
+  background: var(--cor-superficie-elevada);
+  border: 1px solid var(--cor-borda);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.25),
+    0 12px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Efeito de borda com feixe de luz */
+.borda-espectro {
+  position: relative;
+}
+.borda-espectro::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--espectro-aurora);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+  .aurora-core {
+    animation: none !important;
+  }
+}
