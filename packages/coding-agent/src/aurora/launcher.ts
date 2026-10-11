@@ -2,9 +2,8 @@
 /**
  * Servidor e Runtime Local da Interface Gráfica Aurora AI para omsk
  *
- * Expõe a aplicação React compilada em porta efêmera e abre diretamente
- * em janela de aplicativo dedicada (--app) usando o motor Chromium/Edge nativo do sistema,
- * garantindo aparência de app desktop puro (.exe), sem barras de endereço do navegador.
+ * Utiliza o bundle embutido de assets estáticos compilados ou o diretório local site/dist,
+ * servindo em porta efêmera local e abrindo em janela nativa dedicada (--app).
  */
 
 import * as http from "node:http";
@@ -12,10 +11,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
 import { logger } from "@oh-my-pi/pi-utils";
-
-const packageDir = path.resolve(import.meta.dir, "..");
-const repoRoot = path.resolve(packageDir, "..", "..");
-const siteDistDir = path.join(repoRoot, "site", "dist");
+import { AURORA_WEB_ASSETS } from "./bundle.generated";
 
 function findDesktopWindowExecutable(): string | null {
 	const platform = os.platform();
@@ -88,34 +84,39 @@ const MIME_TYPES: Record<string, string> = {
 export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; reason?: string }> {
 	const workingDir = cwd ?? process.cwd();
 
-	if (!fs.existsSync(siteDistDir)) {
-		return {
-			ok: false,
-			reason: `Diretório de build do site não encontrado em ${siteDistDir}. Execute 'bun run build' em site/ primeiro.`,
-		};
-	}
-
 	const server = http.createServer((req, res) => {
 		const parsedUrl = new URL(req.url ?? "/", "http://127.0.0.1");
-		let filePath = path.join(siteDistDir, parsedUrl.pathname === "/" ? "index.html" : parsedUrl.pathname);
-
-		if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-			filePath = path.join(siteDistDir, "index.html");
+		let cleanPath = parsedUrl.pathname.replace(/^\//, "");
+		if (!cleanPath || cleanPath === "index.html") {
+			cleanPath = "index.html";
 		}
 
-		const ext = path.extname(filePath);
+		let assetContent = AURORA_WEB_ASSETS[cleanPath];
+		if (!assetContent) {
+			// Roteador SPA: fallback para index.html
+			cleanPath = "index.html";
+			assetContent = AURORA_WEB_ASSETS["index.html"];
+		}
+
+		if (!assetContent) {
+			res.writeHead(404);
+			res.end("Not Found");
+			return;
+		}
+
+		const ext = path.extname(cleanPath);
 		const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
 
-		try {
-			const data = fs.readFileSync(filePath);
-			res.writeHead(200, {
-				"Content-Type": contentType,
-				"Cache-Control": "no-cache",
-			});
-			res.end(data);
-		} catch (err) {
-			res.writeHead(500);
-			res.end(`Internal Server Error: ${String(err)}`);
+		res.writeHead(200, {
+			"Content-Type": contentType,
+			"Cache-Control": "no-cache",
+		});
+
+		if (assetContent.startsWith("base64:")) {
+			const buffer = Buffer.from(assetContent.slice(7), "base64");
+			res.end(buffer);
+		} else {
+			res.end(assetContent);
 		}
 	});
 
@@ -130,12 +131,12 @@ export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; r
 		});
 	});
 
-	const appUrl = `http://127.0.0.1:${port}/`;
+	// Força abertura direta no modo aplicação na interface Aurora (/app)
+	const appUrl = `http://127.0.0.1:${port}/?mode=app#app`;
 	const browserBin = findDesktopWindowExecutable();
 
 	if (!browserBin) {
-		// Abre no navegador padrão se não encontrar Edge/Chrome standalone
-		logger.info(`Abrindo interface Aurora AI em ${appUrl}`);
+		logger.info(`Abrindo interface gráfica Aurora AI em ${appUrl}`);
 		if (process.platform === "win32") {
 			Bun.spawn(["cmd", "/c", "start", appUrl], { detached: true }).unref();
 		} else if (process.platform === "darwin") {
