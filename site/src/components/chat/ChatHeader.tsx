@@ -2,12 +2,19 @@ import { Menu, Sliders, HardDrive, Plus, Download } from "lucide-react";
 import { Icon } from "../ui/Icon";
 import { AuroraCore } from "../aurora/AuroraCore";
 import { ModelSelector } from "../ui/ModelSelector";
-import type { ModelSpec } from "../../types/models";
+import type { OmskModel } from "../../lib/omsk-api";
 
 interface ChatHeaderProps {
   onToggleSidebar: () => void;
-  currentModelId: string;
-  onSelectModel: (model: ModelSpec) => void;
+  currentModel: OmskModel | null;
+  models: OmskModel[];
+  providers: string[];
+  selectedProvider: string;
+  onSelectProvider: (provider: string) => void;
+  onSelectModel: (model: OmskModel) => void;
+  onConfigureProvider: () => void;
+  onRefreshModels: () => void;
+  isLoadingModels?: boolean;
   onOpenSystemPrompt: () => void;
   onOpenFolderManager: () => void;
   onOpenDownloadModal: () => void;
@@ -20,15 +27,21 @@ interface ChatHeaderProps {
 /**
  * Barra Superior / Header do Chat (DESIGN.md Sec 5.4)
  * - Identidade visual Aurora
- * - Seletor gráfico de modelo estilo Claude
+ * - Seletor gráfico de modelos reais do OMSK com provedores
  * - Botão de Download do App Desktop (.exe)
  * - Acesso direto às configurações de Prompt de Sistema e Pastas Locais
- * - Ações essenciais sempre acessíveis sem depender de hover
  */
 export function ChatHeader({
   onToggleSidebar,
-  currentModelId,
+  currentModel,
+  models,
+  providers,
+  selectedProvider,
+  onSelectProvider,
   onSelectModel,
+  onConfigureProvider,
+  onRefreshModels,
+  isLoadingModels = false,
   onOpenSystemPrompt,
   onOpenFolderManager,
   onOpenDownloadModal,
@@ -68,11 +81,18 @@ export function ChatHeader({
         </button>
       </div>
 
-      {/* Centro: Seletor Gráfico de Modelo Estilo Claude */}
+      {/* Centro: Seletor Gráfico de Modelo Real do OMSK */}
       <div className="flex items-center justify-center">
         <ModelSelector
-          currentModelId={currentModelId}
+          currentModel={currentModel}
+          models={models}
+          providers={providers}
+          selectedProvider={selectedProvider}
+          onSelectProvider={onSelectProvider}
           onSelectModel={onSelectModel}
+          onConfigureProvider={onConfigureProvider}
+          onRefresh={onRefreshModels}
+          isLoading={isLoadingModels}
         />
       </div>
 

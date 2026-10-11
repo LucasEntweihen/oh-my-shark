@@ -8,8 +8,15 @@ import { ChatWelcome } from "./components/chat/ChatWelcome";
 import { WorkspaceFolderManager, type WorkspaceFolder } from "./components/modals/WorkspaceFolderManager";
 import { SystemPromptModal } from "./components/modals/SystemPromptModal";
 import { DownloadAppModal } from "./components/modals/DownloadAppModal";
+import { ConfigureProviderModal } from "./components/modals/ConfigureProviderModal";
 import { ReasoningLevelSelector } from "./components/ui/ReasoningLevelSelector";
-import { AVAILABLE_MODELS, type ModelSpec } from "./types/models";
+import {
+  fetchOmskModels,
+  selectOmskModel,
+  streamOmskChat,
+  abortOmskChat,
+  type OmskModel,
+} from "./lib/omsk-api";
 
 const INITIAL_FOLDERS: WorkspaceFolder[] = [
   { id: "f1", name: "oh-my-shark", path: "C:/Users/guerr/Downloads/oh-my-shark/oh-my-shark", isDefault: true },
@@ -20,56 +27,29 @@ const INITIAL_FOLDERS: WorkspaceFolder[] = [
 const INITIAL_SESSIONS: ChatSession[] = [
   {
     id: "sess-1",
-    title: "Arquitetura e Engenharia de Software",
-    updatedAt: "Há pouco",
-    modelId: "claude-3-7-sonnet",
+    title: "Sessão Ativa OMSK",
+    updatedAt: "Agora",
+    modelId: "",
     thinkingLevelId: "high",
-    systemPrompt: "Foco em tipagem estrita TypeScript sem 'any', elegância e performance nativa.",
-    folderId: "f1",
-    messageCount: 2,
-  },
-  {
-    id: "sess-2",
-    title: "Auditoria de Segurança",
-    updatedAt: "Ontem",
-    modelId: "o3-mini",
-    thinkingLevelId: "medium",
-    systemPrompt: "Auditar inputs e fluxo de dados.",
+    systemPrompt: "",
     folderId: "f1",
     messageCount: 0,
   },
 ];
 
-const INITIAL_MESSAGES: Record<string, Message[]> = {
-  "sess-1": [
-    {
-      id: "m-1",
-      sender: "user",
-      content: "Como podemos estruturar a interface gráfica da Aurora AI respeitando o DESIGN.md e o ICON_SYSTEM.md?",
-      timestamp: "10:42",
-    },
-    {
-      id: "m-2",
-      sender: "assistant",
-      content:
-        "A interface da Aurora AI foi estruturada com base no princípio de 'luz sobre veludo': fundo neutro profundo (#0A0A0C), superfícies discretas (#121216) e refração espectral controlada.\n\nPrincipais pilares implementados:\n1. **Seletor de Modelo Estilo Claude**: Escolha rápida e visual dos modelos disponíveis.\n2. **Seletor Gráfico de Raciocínio**: Barras espectrais que mostram com exatidão a profundidade do pensamento suportada pelo modelo.\n3. **Visualizador de Pensamento**: Traço de reflexão expansível para auditar o raciocínio da IA.\n4. **Prompt de Sistema**: Configuração granular global ou por sessão.\n5. **Pastas Locais & Anexos**: Conexão com diretórios do seu computador e suporte a arquivos e imagens.",
-      thought:
-        "Analisando requisitos do usuário:\n- Fazer perguntas normalmente: OK (MessageComposer)\n- Criar chats e sessões: OK (ChatSidebar)\n- Ver melhor forma de pensamento da IA: OK (ThoughtViewer com traço expansível)\n- Controlar prompt de sistema da IA global e por chat: OK (SystemPromptModal)\n- Anexar imagens e arquivos: OK (Preview com thumbnails)\n- Referenciar pastas do computador: OK (WorkspaceFolderManager)\n- Chamar comandos, skills, agentes: OK (Autocomplete inteligente)\n- Escolher nível de raciocínio de forma gráfica: OK (ReasoningLevelSelector)\n- Escolher modelo de forma simples como no Claude: OK (ModelSelector)\n- Usar ICON_SYSTEM.md: OK (1.5px stroke, terminadores redondos, Lucide com wrapper Icon)",
-      timestamp: "10:43",
-      modelName: "Claude 3.7 Sonnet (High Reasoning)",
-    },
-  ],
-};
-
 export function AuroraApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>(INITIAL_SESSIONS);
   const [activeSessionId, setActiveSessionId] = useState<string>("sess-1");
-  const [messagesMap, setMessagesMap] = useState<Record<string, Message[]>>(INITIAL_MESSAGES);
+  const [messagesMap, setMessagesMap] = useState<Record<string, Message[]>>({ "sess-1": [] });
 
-  // Modelos e Raciocínio
-  const [currentModel, setCurrentModel] = useState<ModelSpec>(AVAILABLE_MODELS[0]);
+  // Modelos e Providers REAIS do OMSK
+  const [models, setModels] = useState<OmskModel[]>([]);
+  const [providers, setProviders] = useState<string[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<string>("all");
+  const [currentModel, setCurrentModel] = useState<OmskModel | null>(null);
   const [currentThinkingLevel, setCurrentThinkingLevel] = useState<string>("high");
+  const [isLoadingModels, setIsLoadingModels] = useState(true);
 
   // Diretórios locais
   const [folders, setFolders] = useState<WorkspaceFolder[]>(INITIAL_FOLDERS);
@@ -78,12 +58,11 @@ export function AuroraApp() {
 
   // Prompt de Sistema
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
-  const [globalPrompt, setGlobalPrompt] = useState(
-    "Você é a Aurora AI, uma assistente de engenharia de software de alto nível. Responda em português brasileiro com clareza, rigor técnico e elegância."
-  );
+  const [globalPrompt, setGlobalPrompt] = useState("");
 
-  // Modal de Download do App Desktop .EXE
+  // Modais de Download e Configuração de Provedor
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [isConfigureProviderOpen, setIsConfigureProviderOpen] = useState(false);
 
   // Estados de Geração
   const [isGenerating, setIsGenerating] = useState(false);
@@ -95,18 +74,43 @@ export function AuroraApp() {
   const activeFolder =
     folders.find((f) => f.id === activeFolderId) || folders[0];
 
+  // Carrega os modelos reais do backend OMSK
+  const loadModels = async () => {
+    setIsLoadingModels(true);
+    const data = await fetchOmskModels();
+    setIsLoadingModels(false);
+
+    if (data.ok && data.models.length > 0) {
+      setModels(data.models);
+      setProviders(data.providers);
+
+      // Define modelo padrão real
+      if (!currentModel) {
+        const defaultModel = data.models[0];
+        setCurrentModel(defaultModel);
+        if (defaultModel.thinking.length > 0) {
+          setCurrentThinkingLevel(defaultModel.thinking[defaultModel.thinking.length - 1]);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadModels();
+  }, []);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeMessages, isGenerating]);
 
-  // Criação de Nova Sessão / Chat
+  // Criação de Nova Sessão
   const handleNewSession = () => {
     const newId = `sess-${Date.now()}`;
     const newSession: ChatSession = {
       id: newId,
       title: "Nova Conversa",
       updatedAt: "Agora",
-      modelId: currentModel.id,
+      modelId: currentModel?.id || "",
       thinkingLevelId: currentThinkingLevel,
       systemPrompt: "",
       folderId: activeFolderId,
@@ -126,8 +130,23 @@ export function AuroraApp() {
     }
   };
 
-  // Envio de Mensagem com Simulação de Raciocínio e Resposta
-  const handleSendMessage = (content: string, attachments: AttachedFile[]) => {
+  // Seleciona modelo no frontend e notifica o backend OMSK
+  const handleModelSelect = async (model: OmskModel) => {
+    setCurrentModel(model);
+    const nextThinking = model.thinking.length > 0 ? model.thinking[model.thinking.length - 1] : "off";
+    setCurrentThinkingLevel(nextThinking);
+    await selectOmskModel(model.provider, model.id, nextThinking);
+  };
+
+  const handleThinkingLevelSelect = async (levelId: string) => {
+    setCurrentThinkingLevel(levelId);
+    if (currentModel) {
+      await selectOmskModel(currentModel.provider, currentModel.id, levelId);
+    }
+  };
+
+  // Envio de Mensagem com Streaming SSE REAL do OMSK
+  const handleSendMessage = async (content: string, attachments: AttachedFile[]) => {
     const userMsgId = `user-${Date.now()}`;
     const userMsg: Message = {
       id: userMsgId,
@@ -137,7 +156,6 @@ export function AuroraApp() {
       attachments,
     };
 
-    // Atualiza título da sessão se for a primeira mensagem
     if (activeMessages.length === 0) {
       const newTitle = content.slice(0, 32) || "Conversa";
       setSessions((prev) =>
@@ -150,11 +168,9 @@ export function AuroraApp() {
       id: aiMsgId,
       sender: "assistant",
       content: "",
-      thought: currentModel.hasThinking
-        ? `Iniciando raciocínio com ${currentModel.name} no nível [${currentThinkingLevel}]...\nPasta de trabalho ativa: ${activeFolder.path}\nVerificando diretrizes de prompt e contexto...`
-        : undefined,
+      thought: "",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      modelName: `${currentModel.name} ${currentModel.hasThinking ? `(${currentThinkingLevel})` : ""}`,
+      modelName: currentModel ? `${currentModel.name} (${currentModel.provider})` : "OMSK Model",
       isGenerating: true,
     };
 
@@ -165,63 +181,81 @@ export function AuroraApp() {
 
     setIsGenerating(true);
 
-    // Simulação progressiva da resposta
-    setTimeout(() => {
-      let simulatedResponse = `Entendido! Analisei sua solicitação com base no modelo **${currentModel.name}** utilizando o contexto da pasta \`${activeFolder.name}\`.\n\n`;
+    let accumulatedText = "";
+    let accumulatedThought = "";
 
-      if (content.startsWith("/")) {
-        simulatedResponse += `⚡ **Comando Reconhecido**: \`${content.split(" ")[0]}\` disparado com sucesso.\n`;
+    await streamOmskChat(
+      content,
+      {
+        onThinkingDelta: (delta) => {
+          accumulatedThought += delta;
+          setMessagesMap((prev) => ({
+            ...prev,
+            [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
+              m.id === aiMsgId ? { ...m, thought: accumulatedThought } : m
+            ),
+          }));
+        },
+        onTextDelta: (delta) => {
+          accumulatedText += delta;
+          setMessagesMap((prev) => ({
+            ...prev,
+            [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
+              m.id === aiMsgId ? { ...m, content: accumulatedText } : m
+            ),
+          }));
+        },
+        onToolStart: (toolName) => {
+          accumulatedText += `\n> ⚙️ *Executando ferramenta:* \`${toolName}\`...\n\n`;
+          setMessagesMap((prev) => ({
+            ...prev,
+            [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
+              m.id === aiMsgId ? { ...m, content: accumulatedText } : m
+            ),
+          }));
+        },
+        onDone: () => {
+          setIsGenerating(false);
+          setMessagesMap((prev) => ({
+            ...prev,
+            [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
+              m.id === aiMsgId ? { ...m, isGenerating: false } : m
+            ),
+          }));
+        },
+        onError: (err) => {
+          setIsGenerating(false);
+          setMessagesMap((prev) => ({
+            ...prev,
+            [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
+              m.id === aiMsgId
+                ? {
+                    ...m,
+                    content: m.content ? `${m.content}\n\n❌ Erro: ${err}` : `❌ Erro do OMSK: ${err}`,
+                    isGenerating: false,
+                  }
+                : m
+            ),
+          }));
+        },
+      },
+      {
+        model: currentModel ? { provider: currentModel.provider, id: currentModel.id } : undefined,
+        thinkingLevel: currentThinkingLevel,
+        systemPrompt: activeSession.systemPrompt || globalPrompt || undefined,
       }
-      if (content.includes("@")) {
-        simulatedResponse += `🤖 **Especialista Invocado**: Roteando sub-tarefas com contratos estritos de entrada e saída.\n`;
-      }
-
-      simulatedResponse += `A arquitetura segue em total conformidade com o **DESIGN.md** e o **ICON_SYSTEM.md**, com tokens estritos, zero atrasos de interface e suporte responsivo completo.`;
-
-      const completedThought = currentModel.hasThinking
-        ? `Cadeia de pensamento concluída com sucesso:\n- Tokens avaliados sob janela de ${currentModel.contextWindow}\n- Modelo: ${currentModel.name}\n- Prompt de sistema aplicado: ${activeSession.systemPrompt || globalPrompt}`
-        : undefined;
-
-      setMessagesMap((prev) => ({
-        ...prev,
-        [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
-          m.id === aiMsgId
-            ? {
-                ...m,
-                content: simulatedResponse,
-                thought: completedThought,
-                isGenerating: false,
-              }
-            : m
-        ),
-      }));
-      setIsGenerating(false);
-    }, 1200);
+    );
   };
 
-  const handleStopGeneration = () => {
+  const handleStopGeneration = async () => {
+    await abortOmskChat();
     setIsGenerating(false);
     setMessagesMap((prev) => ({
       ...prev,
       [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
-        m.isGenerating
-          ? {
-              ...m,
-              content: m.content || "Geração interrompida pelo usuário.",
-              isGenerating: false,
-            }
-          : m
+        m.isGenerating ? { ...m, isGenerating: false } : m
       ),
     }));
-  };
-
-  const handleModelSelect = (model: ModelSpec) => {
-    setCurrentModel(model);
-    if (model.thinkingLevels && model.thinkingLevels.length > 0) {
-      setCurrentThinkingLevel(model.thinkingLevels[model.thinkingLevels.length - 1].id);
-    } else {
-      setCurrentThinkingLevel("off");
-    }
   };
 
   return (
@@ -242,11 +276,18 @@ export function AuroraApp() {
 
       {/* Janela Principal do Chat */}
       <div className="flex-1 flex flex-col h-full min-w-0 bg-[var(--cor-fundo)] relative">
-        {/* Cabeçalho Superior */}
+        {/* Cabeçalho Superior Conectado ao OMSK Real */}
         <ChatHeader
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          currentModelId={currentModel.id}
+          currentModel={currentModel}
+          models={models}
+          providers={providers}
+          selectedProvider={selectedProvider}
+          onSelectProvider={setSelectedProvider}
           onSelectModel={handleModelSelect}
+          onConfigureProvider={() => setIsConfigureProviderOpen(true)}
+          onRefreshModels={loadModels}
+          isLoadingModels={isLoadingModels}
           onOpenSystemPrompt={() => setIsPromptModalOpen(true)}
           onOpenFolderManager={() => setIsFolderModalOpen(true)}
           onOpenDownloadModal={() => setIsDownloadModalOpen(true)}
@@ -256,14 +297,14 @@ export function AuroraApp() {
           isGenerating={isGenerating}
         />
 
-        {/* Barra Gráfica de Raciocínio (Caso o modelo suporte) */}
-        {currentModel.hasThinking && (
+        {/* Barra Gráfica de Nível de Raciocínio Real */}
+        {currentModel && currentModel.reasoning && (
           <div className="px-4 py-2 bg-[var(--cor-superficie)]/40 border-b border-[var(--cor-borda)]/60">
             <div className="max-w-4xl mx-auto">
               <ReasoningLevelSelector
                 model={currentModel}
                 currentLevelId={currentThinkingLevel}
-                onSelectLevel={setCurrentThinkingLevel}
+                onSelectLevel={handleThinkingLevelSelect}
               />
             </div>
           </div>
@@ -339,6 +380,14 @@ export function AuroraApp() {
             prev.map((s) => (s.id === activeSessionId ? { ...s, systemPrompt: newSession } : s))
           );
         }}
+      />
+
+      {/* Modal para Configurar Provedores e Chaves de API Reais */}
+      <ConfigureProviderModal
+        isOpen={isConfigureProviderOpen}
+        onClose={() => setIsConfigureProviderOpen(false)}
+        onSuccess={loadModels}
+        existingProviders={providers}
       />
 
       {/* Modal de Download da Aplicação Desktop (.EXE) */}

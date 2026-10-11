@@ -1,17 +1,12 @@
 #!/usr/bin/env bun
 /**
- * Servidor e Runtime Local da Interface Gráfica Aurora AI para omsk
- *
- * Utiliza o bundle embutido de assets estáticos compilados ou o diretório local site/dist,
- * servindo em porta efêmera local e abrindo em janela nativa dedicada (--app).
+ * Launcher oficial da interface Aurora AI com Backend Real OMSK integrado.
  */
-
-import * as http from "node:http";
+import * as os from "node:os";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as os from "node:os";
 import { logger } from "@oh-my-pi/pi-utils";
-import { AURORA_WEB_ASSETS } from "./bundle.generated";
+import { createAuroraHttpServer } from "./server";
 
 function findDesktopWindowExecutable(): string | null {
 	const platform = os.platform();
@@ -46,7 +41,6 @@ function findDesktopWindowExecutable(): string | null {
 			if (fs.existsSync(cand)) return cand;
 		}
 	} else {
-		// Linux
 		const binaries = [
 			"microsoft-edge",
 			"google-chrome",
@@ -69,101 +63,48 @@ function findDesktopWindowExecutable(): string | null {
 	return null;
 }
 
-const MIME_TYPES: Record<string, string> = {
-	".html": "text/html; charset=utf-8",
-	".js": "application/javascript; charset=utf-8",
-	".css": "text/css; charset=utf-8",
-	".json": "application/json; charset=utf-8",
-	".svg": "image/svg+xml",
-	".png": "image/png",
-	".webp": "image/webp",
-	".woff": "font/woff",
-	".woff2": "font/woff2",
-};
-
 export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; reason?: string }> {
 	const workingDir = cwd ?? process.cwd();
 
-	const server = http.createServer((req, res) => {
-		const parsedUrl = new URL(req.url ?? "/", "http://127.0.0.1");
-		let cleanPath = parsedUrl.pathname.replace(/^\//, "");
-		if (!cleanPath || cleanPath === "index.html") {
-			cleanPath = "index.html";
-		}
+	try {
+		const { port } = await createAuroraHttpServer(workingDir);
+		const appUrl = `http://127.0.0.1:${port}/?mode=app#app`;
+		const browserBin = findDesktopWindowExecutable();
 
-		let assetContent = AURORA_WEB_ASSETS[cleanPath];
-		if (!assetContent) {
-			// Roteador SPA: fallback para index.html
-			cleanPath = "index.html";
-			assetContent = AURORA_WEB_ASSETS["index.html"];
-		}
-
-		if (!assetContent) {
-			res.writeHead(404);
-			res.end("Not Found");
-			return;
-		}
-
-		const ext = path.extname(cleanPath);
-		const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
-
-		res.writeHead(200, {
-			"Content-Type": contentType,
-			"Cache-Control": "no-cache",
-		});
-
-		if (assetContent.startsWith("base64:")) {
-			const buffer = Buffer.from(assetContent.slice(7), "base64");
-			res.end(buffer);
-		} else {
-			res.end(assetContent);
-		}
-	});
-
-	const { port } = await new Promise<{ port: number }>((resolve, reject) => {
-		server.listen(0, "127.0.0.1", () => {
-			const addr = server.address();
-			if (addr && typeof addr === "object") {
-				resolve({ port: addr.port });
+		if (!browserBin) {
+			logger.info(`Abrindo interface gráfica Aurora AI em ${appUrl}`);
+			if (process.platform === "win32") {
+				Bun.spawn(["cmd", "/c", "start", appUrl], { detached: true }).unref();
+			} else if (process.platform === "darwin") {
+				Bun.spawn(["open", appUrl], { detached: true }).unref();
 			} else {
-				reject(new Error("Failed to get port from server"));
+				Bun.spawn(["xdg-open", appUrl], { detached: true }).unref();
 			}
-		});
-	});
-
-	// Força abertura direta no modo aplicação na interface Aurora (/app)
-	const appUrl = `http://127.0.0.1:${port}/?mode=app#app`;
-	const browserBin = findDesktopWindowExecutable();
-
-	if (!browserBin) {
-		logger.info(`Abrindo interface gráfica Aurora AI em ${appUrl}`);
-		if (process.platform === "win32") {
-			Bun.spawn(["cmd", "/c", "start", appUrl], { detached: true }).unref();
-		} else if (process.platform === "darwin") {
-			Bun.spawn(["open", appUrl], { detached: true }).unref();
-		} else {
-			Bun.spawn(["xdg-open", appUrl], { detached: true }).unref();
+			return { ok: true };
 		}
+
+		const child = Bun.spawn([
+			browserBin,
+			`--app=${appUrl}`,
+			"--window-size=1280,820",
+			"--window-position=60,60",
+			"--disable-default-apps",
+			"--no-first-run",
+		], {
+			cwd: workingDir,
+			stdin: "ignore",
+			stdout: "ignore",
+			stderr: "ignore",
+			detached: true,
+		});
+
+		child.unref();
 		return { ok: true };
+	} catch (err) {
+		const msg = err instanceof Error ? err.message : String(err);
+		logger.error("Falha ao iniciar servidor ou janela Aurora AI", { error: msg });
+		return { ok: false, reason: msg };
 	}
-
-	const child = Bun.spawn([
-		browserBin,
-		`--app=${appUrl}`,
-		"--window-size=1280,820",
-		"--window-position=60,60",
-		"--disable-default-apps",
-		"--no-first-run",
-	], {
-		cwd: workingDir,
-		stdin: "ignore",
-		stdout: "ignore",
-		stderr: "ignore",
-		detached: true,
-	});
-
-	child.unref();
-	return { ok: true };
 }
 
 if (import.meta.main) {
