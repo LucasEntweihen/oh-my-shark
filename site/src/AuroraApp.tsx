@@ -27,7 +27,7 @@ const INITIAL_FOLDERS: WorkspaceFolder[] = [
 const INITIAL_SESSIONS: ChatSession[] = [
   {
     id: "sess-1",
-    title: "Sessão Ativa OMSK",
+    title: "Sessão Ativa CosmoSky",
     updatedAt: "Agora",
     modelId: "",
     thinkingLevelId: "high",
@@ -43,7 +43,6 @@ export function AuroraApp() {
   const [activeSessionId, setActiveSessionId] = useState<string>("sess-1");
   const [messagesMap, setMessagesMap] = useState<Record<string, Message[]>>({ "sess-1": [] });
 
-  // Modelos e Providers REAIS do OMSK
   const [models, setModels] = useState<OmskModel[]>([]);
   const [providers, setProviders] = useState<string[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<string>("all");

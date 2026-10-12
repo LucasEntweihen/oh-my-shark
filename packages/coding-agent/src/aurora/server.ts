@@ -1,40 +1,22 @@
 import * as http from "node:http";
 import * as path from "node:path";
-import {
-	createAgentSession,
-	discoverAuthStorage,
-	type CreateAgentSessionResult,
-} from "../sdk";
+import { discoverAuthStorage } from "../session/auth-broker-config";
 import { ModelRegistry } from "../config/model-registry";
 import { Settings } from "../config/settings";
+import { streamSimple, type Context, type Message as PiMessage, type Effort } from "@oh-my-pi/pi-ai";
 import { getAgentDir, getProjectDir } from "@oh-my-pi/pi-utils";
-import type { AgentSessionEvent } from "../session/agent-session-events";
-import type { ConfiguredThinkingLevel } from "../thinking";
 import { AURORA_WEB_ASSETS } from "./bundle.generated";
 
-let globalSessionResult: CreateAgentSessionResult | undefined;
 let globalModelRegistry: ModelRegistry | undefined;
 let globalSettings: Settings | undefined;
 
-async function ensureBackendSession(cwd: string = getProjectDir()) {
-	if (globalSessionResult && !globalSessionResult.session.isDisposed) {
-		return globalSessionResult;
-	}
-
+async function getRegistry(cwd: string = getProjectDir()): Promise<ModelRegistry> {
+	if (globalModelRegistry) return globalModelRegistry;
 	const agentDir = getAgentDir();
 	const authStorage = await discoverAuthStorage(agentDir);
 	globalSettings = await Settings.init({ cwd });
 	globalModelRegistry = new ModelRegistry(authStorage, undefined, { settings: globalSettings });
-	await globalModelRegistry.refresh("online-if-uncached");
-
-	globalSessionResult = await createAgentSession({
-		cwd,
-		agentDir,
-		authStorage,
-		modelRegistry: globalModelRegistry,
-	});
-
-	return globalSessionResult;
+	return globalModelRegistry;
 }
 
 function getMimeType(filePath: string): string {
@@ -53,8 +35,12 @@ function getMimeType(filePath: string): string {
 	}
 }
 
+// Armazena abort controllers ativos por sessão/id
+const activeStreams = new Map<string, AbortController>();
+
 export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
-	await ensureBackendSession(cwd);
+	// Carrega modelo e registry de forma não bloqueante
+	const registryPromise = getRegistry(cwd);
 
 	const server = http.createServer(async (req, res) => {
 		res.setHeader("Access-Control-Allow-Origin", "*");
@@ -73,10 +59,8 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 		// 1. API: Obter modelos e providers REAIS configurados
 		if (pathname === "/api/models" && req.method === "GET") {
 			try {
-				if (!globalModelRegistry) {
-					await ensureBackendSession(cwd);
-				}
-				const available = globalModelRegistry!.getAvailable();
+				const registry = await registryPromise;
+				const available = registry.getAvailable();
 				const providers = Array.from(new Set(available.map(m => m.provider))).sort();
 
 				const modelsJson = available.map(m => ({
@@ -91,18 +75,20 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 					input: m.input,
 				}));
 
+				const defaultModel = available[0] ?? null;
+
 				res.writeHead(200, { "Content-Type": "application/json" });
 				res.end(JSON.stringify({
 					ok: true,
 					providers,
 					models: modelsJson,
-					currentModel: globalSessionResult?.session.model ? {
-						provider: globalSessionResult.session.model.provider,
-						id: globalSessionResult.session.model.id,
-						selector: `${globalSessionResult.session.model.provider}/${globalSessionResult.session.model.id}`,
-						name: globalSessionResult.session.model.name,
+					currentModel: defaultModel ? {
+						provider: defaultModel.provider,
+						id: defaultModel.id,
+						selector: `${defaultModel.provider}/${defaultModel.id}`,
+						name: defaultModel.name,
 					} : null,
-					currentThinkingLevel: globalSessionResult?.session.configuredThinkingLevel(),
+					currentThinkingLevel: "high",
 				}));
 			} catch (err) {
 				res.writeHead(500, { "Content-Type": "application/json" });
@@ -111,7 +97,7 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
-		// 2. API: Configurar / chave de API para novo Provider
+		// 2. API: Configurar nova chave de API para Provider
 		if (pathname === "/api/providers/configure" && req.method === "POST") {
 			let body = "";
 			req.on("data", chunk => { body += chunk; });
@@ -127,10 +113,11 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 					const agentDir = getAgentDir();
 					const authStorage = await discoverAuthStorage(agentDir);
 					await authStorage.set(data.provider, { type: "api_key", key: data.apiKey });
-					await globalModelRegistry?.refresh("online");
+					const registry = await registryPromise;
+					await registry.refresh("online");
 
 					res.writeHead(200, { "Content-Type": "application/json" });
-					res.end(JSON.stringify({ ok: true, message: `Provider ${data.provider} configurado com sucesso.` }));
+					res.end(JSON.stringify({ ok: true, message: `Provedor ${data.provider} configurado com sucesso.` }));
 				} catch (err) {
 					res.writeHead(500, { "Content-Type": "application/json" });
 					res.end(JSON.stringify({ ok: false, error: String(err) }));
@@ -139,131 +126,49 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
-		// 3. API: Trocar Modelo Ativo ou Nível de Raciocínio
-		if (pathname === "/api/models/select" && req.method === "POST") {
-			let body = "";
-			req.on("data", chunk => { body += chunk; });
-			req.on("end", async () => {
-				try {
-					const data = JSON.parse(body) as { provider: string; id: string; thinkingLevel?: string };
-					const session = globalSessionResult?.session;
-					if (!session || !globalModelRegistry) {
-						res.writeHead(500, { "Content-Type": "application/json" });
-						res.end(JSON.stringify({ ok: false, error: "Session or registry not initialized" }));
-						return;
-					}
-
-					const target = globalModelRegistry.getAvailable().find(
-						m => m.provider.toLowerCase() === data.provider.toLowerCase() && m.id === data.id
-					);
-
-					if (!target) {
-						res.writeHead(404, { "Content-Type": "application/json" });
-						res.end(JSON.stringify({ ok: false, error: `Modelo ${data.provider}/${data.id} não encontrado entre os disponíveis` }));
-						return;
-					}
-
-					await session.setModel(target);
-					if (data.thinkingLevel !== undefined) {
-						session.setThinkingLevel(data.thinkingLevel as ConfiguredThinkingLevel);
-					}
-
-					res.writeHead(200, { "Content-Type": "application/json" });
-					res.end(JSON.stringify({
-						ok: true,
-						selected: `${target.provider}/${target.id}`,
-						thinkingLevel: session.configuredThinkingLevel(),
-					}));
-				} catch (err) {
-					res.writeHead(500, { "Content-Type": "application/json" });
-					res.end(JSON.stringify({ ok: false, error: String(err) }));
-				}
-			});
-			return;
-		}
-
-		// 4. API: Obter estado das sessões
-		if (pathname === "/api/sessions" && req.method === "GET") {
-			try {
-				const session = globalSessionResult?.session;
-				const currentSessionId = session?.sessionManager.getSessionId() ?? "default";
-				const entries = session?.sessionManager.getEntries() ?? [];
-				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({
-					ok: true,
-					currentSessionId,
-					entriesCount: entries.length,
-				}));
-			} catch (err) {
-				res.writeHead(500, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ ok: false, error: String(err) }));
-			}
-			return;
-		}
-
-		// 5. API: Nova Sessão
-		if (pathname === "/api/sessions/new" && req.method === "POST") {
-			try {
-				await globalSessionResult?.session.newSession();
-				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({
-					ok: true,
-					sessionId: globalSessionResult?.session.sessionManager.getSessionId(),
-				}));
-			} catch (err) {
-				res.writeHead(500, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ ok: false, error: String(err) }));
-			}
-			return;
-		}
-
-		// 6. API: Interromper Resposta (Abort)
+		// 3. API: Interromper Resposta (Abort)
 		if (pathname === "/api/chat/abort" && req.method === "POST") {
-			try {
-				await globalSessionResult?.session.abort();
-				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ ok: true }));
-			} catch (err) {
-				res.writeHead(500, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ ok: false, error: String(err) }));
+			for (const controller of activeStreams.values()) {
+				controller.abort();
 			}
+			activeStreams.clear();
+			res.writeHead(200, { "Content-Type": "application/json" });
+			res.end(JSON.stringify({ ok: true }));
 			return;
 		}
 
-		// 7. API: Envio de Mensagem com Server-Sent Events (SSE Real Streaming)
+		// 4. API: Streaming Real de Mensagens via streamSimple do motor OMSK
 		if (pathname === "/api/chat/stream" && req.method === "POST") {
 			let body = "";
 			req.on("data", chunk => { body += chunk; });
 			req.on("end", async () => {
+				const streamId = crypto.randomUUID();
+				const abortController = new AbortController();
+				activeStreams.set(streamId, abortController);
+
 				try {
 					const data = JSON.parse(body) as {
 						text: string;
 						systemPrompt?: string;
 						model?: { provider: string; id: string };
 						thinkingLevel?: string;
+						history?: Array<{ sender: "user" | "assistant"; content: string }>;
 					};
 
-					const session = globalSessionResult?.session;
-					if (!session) {
-						res.writeHead(500, { "Content-Type": "application/json" });
-						res.end(JSON.stringify({ ok: false, error: "Session not active" }));
+					const registry = await registryPromise;
+					const available = registry.getAvailable();
+					const targetModel = (data.model
+						? available.find(m => m.provider.toLowerCase() === data.model!.provider.toLowerCase() && m.id === data.model!.id)
+						: undefined) ?? available[0];
+
+					if (!targetModel) {
+						res.writeHead(404, { "Content-Type": "application/json" });
+						res.end(JSON.stringify({ ok: false, error: "Nenhum modelo disponível encontrado." }));
 						return;
 					}
 
-					// Atualiza modelo ou thinking level se fornecido
-					if (data.model && globalModelRegistry) {
-						const match = globalModelRegistry.getAvailable().find(
-							m => m.provider.toLowerCase() === data.model!.provider.toLowerCase() && m.id === data.model!.id
-						);
-						if (match) {
-							await session.setModel(match);
-						}
-					}
-					if (data.thinkingLevel) {
-						session.setThinkingLevel(data.thinkingLevel as ConfiguredThinkingLevel);
-					}
+					const apiKey = await registry.getApiKey(targetModel);
 
-					// Inicia resposta SSE
 					res.writeHead(200, {
 						"Content-Type": "text/event-stream; charset=utf-8",
 						"Cache-Control": "no-cache",
@@ -274,34 +179,52 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 						res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
 					};
 
-					// Inscreve no stream de eventos reais do OMSK
-					const unsubscribe = session.subscribe((ev: AgentSessionEvent) => {
-						if (ev.type === "message_update") {
-							const asstEvent = "assistantMessageEvent" in ev ? (ev.assistantMessageEvent as { type?: string; delta?: string }) : undefined;
-							if (!asstEvent) return;
-
-							if (asstEvent.type === "thinking_delta" && asstEvent.delta) {
-								sendSse("thinking_delta", { delta: asstEvent.delta });
-							} else if (asstEvent.type === "text_delta" && asstEvent.delta) {
-								sendSse("text_delta", { delta: asstEvent.delta });
-							}
-						} else if (ev.type === "tool_execution_start") {
-							sendSse("tool_start", { toolName: ev.toolName, toolCallId: ev.toolCallId, args: ev.args });
-						} else if (ev.type === "tool_execution_end") {
-							sendSse("tool_end", { toolCallId: ev.toolCallId, isError: ev.isError });
+					// Monta o contexto de mensagens da conversa
+					const messages: PiMessage[] = [];
+					if (data.history && data.history.length > 0) {
+						for (const h of data.history) {
+							messages.push({
+								role: h.sender === "user" ? "user" : "assistant",
+								content: h.content,
+							});
 						}
+					}
+					messages.push({ role: "user", content: data.text });
+
+					const context: Context = {
+						messages,
+					};
+
+					if (data.systemPrompt && data.systemPrompt.trim()) {
+						context.systemPrompt = data.systemPrompt.trim();
+					}
+
+					const stream = streamSimple(targetModel, context, {
+						apiKey,
+						signal: abortController.signal,
+						thinkingLevel: (data.thinkingLevel as Effort) || undefined,
 					});
 
 					try {
-						await session.prompt(data.text);
+						for await (const event of stream) {
+							if (abortController.signal.aborted) break;
+							if (event.type === "thinking_delta") {
+								sendSse("thinking_delta", { delta: event.delta });
+							} else if (event.type === "text_delta") {
+								sendSse("text_delta", { delta: event.delta });
+							}
+						}
 						sendSse("done", { ok: true });
-					} catch (promptErr) {
-						sendSse("error", { message: String(promptErr) });
+					} catch (streamErr) {
+						if (!abortController.signal.aborted) {
+							sendSse("error", { message: String(streamErr) });
+						}
 					} finally {
-						unsubscribe();
+						activeStreams.delete(streamId);
 						res.end();
 					}
 				} catch (err) {
+					activeStreams.delete(streamId);
 					res.writeHead(500, { "Content-Type": "application/json" });
 					res.end(JSON.stringify({ ok: false, error: String(err) }));
 				}
@@ -309,7 +232,7 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
-		// 8. Servir os assets estáticos da GUI (Vite / Aurora App)
+		// 5. Servir os assets estáticos da GUI (CosmoSky App)
 		let cleanPath = pathname.replace(/^\//, "");
 		if (!cleanPath || cleanPath === "index.html") {
 			cleanPath = "index.html";

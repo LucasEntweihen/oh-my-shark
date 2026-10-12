@@ -65,7 +65,7 @@ export function ChatSidebar({
           <div className="flex items-center gap-2.5">
             <AuroraCore size={24} />
             <span className="font-semibold text-sm tracking-tight text-[var(--texto-principal)]">
-              Aurora AI
+              CosmoSky
             </span>
           </div>
 

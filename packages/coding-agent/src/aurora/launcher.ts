@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Launcher oficial da interface Aurora AI com Backend Real OMSK integrado.
+ * Launcher oficial CosmoSky com abertura instantânea de janela nativa.
  */
 import * as os from "node:os";
 import * as fs from "node:fs";
@@ -18,8 +18,8 @@ function findDesktopWindowExecutable(): string | null {
 		const localAppData = process.env.LOCALAPPDATA ?? path.join(home, "AppData\\Local");
 
 		const candidates = [
-			path.join(programFiles, "Microsoft\\Edge\\Application\\msedge.exe"),
 			path.join(programFilesX86, "Microsoft\\Edge\\Application\\msedge.exe"),
+			path.join(programFiles, "Microsoft\\Edge\\Application\\msedge.exe"),
 			path.join(localAppData, "Microsoft\\Edge\\Application\\msedge.exe"),
 			path.join(programFiles, "Google\\Chrome\\Application\\chrome.exe"),
 			path.join(programFilesX86, "Google\\Chrome\\Application\\chrome.exe"),
@@ -72,7 +72,7 @@ export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; r
 		const browserBin = findDesktopWindowExecutable();
 
 		if (!browserBin) {
-			logger.info(`Abrindo interface gráfica Aurora AI em ${appUrl}`);
+			logger.info(`Abrindo interface CosmoSky em ${appUrl}`);
 			if (process.platform === "win32") {
 				Bun.spawn(["cmd", "/c", "start", appUrl], { detached: true }).unref();
 			} else if (process.platform === "darwin") {
@@ -86,7 +86,7 @@ export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; r
 		const child = Bun.spawn([
 			browserBin,
 			`--app=${appUrl}`,
-			"--window-size=1280,820",
+			"--window-size=1280,840",
 			"--window-position=60,60",
 			"--disable-default-apps",
 			"--no-first-run",
@@ -102,7 +102,7 @@ export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; r
 		return { ok: true };
 	} catch (err) {
 		const msg = err instanceof Error ? err.message : String(err);
-		logger.error("Falha ao iniciar servidor ou janela Aurora AI", { error: msg });
+		logger.error("Falha ao iniciar CosmoSky", { error: msg });
 		return { ok: false, reason: msg };
 	}
 }

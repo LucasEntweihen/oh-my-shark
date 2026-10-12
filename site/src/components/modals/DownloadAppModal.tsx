@@ -49,7 +49,7 @@ export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-base text-[var(--texto-principal)]">
-                    OhMyShark Desktop (Aurora AI)
+                    CosmoSky Desktop (.exe)
                   </h3>
                   <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-[var(--espectro-ciano)]/15 text-[var(--espectro-ciano)] border border-[var(--espectro-ciano)]/30">
                     {version} .exe

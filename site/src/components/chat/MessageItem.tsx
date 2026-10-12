@@ -91,7 +91,7 @@ export function MessageItem({ message, onRetry }: MessageItemProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs font-semibold text-[var(--texto-principal)]">
-            Aurora AI
+            CosmoSky
           </span>
           {message.modelName && (
             <span className="text-[10px] font-mono text-[var(--texto-terciario)] px-1.5 py-0.2 rounded bg-[var(--cor-campo)] border border-[var(--cor-borda)]">

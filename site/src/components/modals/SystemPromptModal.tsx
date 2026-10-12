@@ -159,7 +159,7 @@ export function SystemPromptModal({
                   type="button"
                   onClick={() =>
                     setCurrentGlobalPrompt(
-                      "Você é a Aurora AI, uma assistente de engenharia de software de altíssimo nível. Responda em português brasileiro com clareza cirúrgica, rigor técnico e elegância."
+                      "Você é o CosmoSky AI, um assistente de engenharia de software de altíssimo nível. Responda em português brasileiro com clareza cirúrgica, rigor técnico e elegância."
                     )
                   }
                   className="text-[10px] text-[var(--texto-terciario)] hover:text-[var(--espectro-ciano)] transition-colors flex items-center gap-1 cursor-pointer"

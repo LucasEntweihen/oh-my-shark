@@ -67,7 +67,7 @@ export function ChatHeader({
         <div className="hidden sm:flex items-center gap-2">
           <AuroraCore size={22} estado={isGenerating ? "processando" : "ocioso"} />
           <span className="font-semibold text-sm text-[var(--texto-principal)] tracking-tight">
-            Aurora
+            CosmoSky
           </span>
         </div>
 
