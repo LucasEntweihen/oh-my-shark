@@ -103,7 +103,7 @@ export function ChatHeader({
           type="button"
           onClick={onOpenDownloadModal}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[var(--espectro-ciano)]/20 to-[var(--espectro-azul)]/20 border border-[var(--espectro-ciano)]/40 hover:border-[var(--espectro-ciano)] text-[var(--texto-principal)] hover:text-[var(--espectro-ciano)] text-xs font-bold transition-all shadow-[0_0_12px_rgba(0,229,255,0.15)] cursor-pointer active:scale-95"
-          title="Baixar OhMyShark Desktop (.exe para Windows)"
+          title="Baixar CosmoSky Desktop (.exe para Windows)"
         >
           <Icon icon={Download} size="sm" className="text-[var(--espectro-ciano)]" />
           <span className="hidden sm:inline">Baixar App (.exe)</span>

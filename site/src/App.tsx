@@ -290,8 +290,8 @@ export default function App() {
 
             <nav className="site-nav" aria-label={t.navLabel}>
               <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.26/omsk-windows-x64.exe"
-                download="omsk-windows-x64.exe"
+                href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.26/CosmoSky-windows-x64.exe"
+                download="CosmoSky-windows-x64.exe"
                 style={{ color: "var(--accent-cyan)", fontWeight: 700 }}
               >
                 {t.heroDownloadExeCta}
@@ -426,8 +426,8 @@ export default function App() {
                   </span>
                   <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
                     <a
-                      href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.26/omsk-windows-x64.exe"
-                      download="omsk-windows-x64.exe"
+                      href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.26/CosmoSky-windows-x64.exe"
+                      download="CosmoSky-windows-x64.exe"
                       className="advanced-link"
                       style={{ fontWeight: 700 }}
                     >
@@ -443,8 +443,8 @@ export default function App() {
               <div className="hero-ctas">
                 <a
                   className="btn btn-primary btn-download-exe"
-                  href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.26/omsk-windows-x64.exe"
-                  download="omsk-windows-x64.exe"
+                  href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.26/CosmoSky-windows-x64.exe"
+                  download="CosmoSky-windows-x64.exe"
                 >
                   <DownloadIcon />
                   <span>{t.heroDownloadExeCta}</span>

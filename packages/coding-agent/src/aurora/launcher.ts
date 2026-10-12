@@ -108,5 +108,8 @@ export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; r
 }
 
 if (import.meta.main) {
-	await launchAuroraGuiApp();
+	launchAuroraGuiApp().catch(err => {
+		console.error("CosmoSky startup error:", err);
+		process.exit(1);
+	});
 }
