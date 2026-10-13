@@ -19,7 +19,7 @@ export function initLocale(): Locale {
 
 const en = {
   skipLink: "Skip to content",
-  wordmark: "OHMYSHARK",
+  wordmark: "COSMOSKY",
   navLabel: "Sections",
   versionBadge: "v0.0.26",
   navCommands: "Commands",
@@ -34,13 +34,13 @@ const en = {
   themeLight: "Light",
 
   heroSpectrumBadge: "PROJECT PRISM // DEEP WEB SPECTRUM",
-  heroEyebrow: "TERMINAL CODING AGENT",
-  heroTitle: "Your terminal agent. Tuned for the herd.",
+  heroEyebrow: "DESKTOP AI & TERMINAL AGENT",
+  heroTitle: "Your desktop intelligence. Tuned for the universe.",
   heroLede:
-    "Install in minutes, code for hours. OhMyShark ships with a curated model setup, automatic fallbacks, and long sessions that stay sharp — no configuration rabbit hole.",
-  heroDownloadExeCta: "Download App (.exe)",
+    "Install in seconds, code for hours. CosmoSky ships as an instant native desktop app and terminal engine with curated models, deep reasoning, and persistent memory.",
+  heroDownloadExeCta: "Download CosmoSky (.exe)",
   heroInstallCta: "Install CLI",
-  heroChangesCta: "Why OhMyShark",
+  heroChangesCta: "Why CosmoSky",
 
   quickInstallHeader: "DEFINITIVE INSTALL COMMAND",
   quickInstallSub: "Universal PowerShell 5.1 & Core one-liner — paste and execute directly in your terminal:",
@@ -217,9 +217,9 @@ const en = {
     },
   ] as Array<{ name: string; tag: string; badgeClass: string; colors: string; description: string; usage: string }>,
 
-  changesEyebrow: "WHY OHMYSHARK",
-  changesHeading: "Why OhMyShark",
-  changesLede: "Built on the excellent Oh My Pi engine — plus everything needed to go from zero to shipping.",
+  changesEyebrow: "WHY COSMOSKY",
+  changesHeading: "Why CosmoSky",
+  changesLede: "Built on high-performance desktop execution — plus everything needed to go from zero to shipping.",
   changesList: [
     {
       title: "Running in minutes",
@@ -258,7 +258,7 @@ export type Strings = typeof en;
 
 const pt: Strings = {
   skipLink: "Pular para o conteúdo",
-  wordmark: "OHMYSHARK",
+  wordmark: "COSMOSKY",
   navLabel: "Seções",
   versionBadge: "v0.0.26",
   navCommands: "Comandos",
@@ -273,13 +273,13 @@ const pt: Strings = {
   themeLight: "Claro",
 
   heroSpectrumBadge: "PROJECT PRISM // DEEP WEB SPECTRUM",
-  heroEyebrow: "AGENTE DE CODIFICAÇÃO PARA TERMINAL",
-  heroTitle: "Seu agente de terminal. Afinado para o rebanho.",
+  heroEyebrow: "DESKTOP AI & AGENTE DE TERMINAL",
+  heroTitle: "Sua inteligência desktop. Afinada para o universo.",
   heroLede:
-    "Instale em minutos, programe por horas. OhMyShark já vem com modelos configurados, fallbacks automáticos e sessões longas que não perdem o fio — sem labirinto de configuração.",
-  heroDownloadExeCta: "Baixar App (.exe)",
+    "Instale em segundos, crie por horas. O CosmoSky roda como aplicativo desktop nativo e motor de terminal com modelos configurados, raciocínio profundo e sessões que não degradam.",
+  heroDownloadExeCta: "Baixar CosmoSky (.exe)",
   heroInstallCta: "Instalar CLI",
-  heroChangesCta: "Por que OhMyShark",
+  heroChangesCta: "Por que CosmoSky",
   quickInstallHeader: "COMANDO DEFINITIVO DE UMA LINHA",
   quickInstallSub: "Comando de uma linha compatível com PowerShell 5.1 e Core — cole e execute diretamente no terminal:",
   quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.26",
@@ -375,9 +375,9 @@ const pt: Strings = {
     },
   ] as Array<{ id: string; title: string; body: string }>,
 
-  changesEyebrow: "POR QUE OHMYSHARK",
-  changesHeading: "Por que OhMyShark",
-  changesLede: "Construído sobre o excelente motor do Oh My Pi — mais tudo que falta para sair do zero ao shipping.",
+  changesEyebrow: "POR QUE COSMOSKY",
+  changesHeading: "Por que CosmoSky",
+  changesLede: "Construído sobre execução nativa de alto desempenho — mais tudo que falta para sair do zero ao shipping.",
   commandsEyebrow: "MODOS OPERACIONAIS DE TERMINAL",
   commandsHeading: "Comandos Especiais & Magic Keywords",
   commandsLede:
