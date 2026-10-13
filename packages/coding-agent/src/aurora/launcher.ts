@@ -107,7 +107,9 @@ export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; r
 	}
 }
 
-if (import.meta.main) {
+const isProcessEntry = import.meta.main || process.env.PI_COMPILED === "true";
+
+if (isProcessEntry) {
 	launchAuroraGuiApp().catch(err => {
 		console.error("CosmoSky startup error:", err);
 		process.exit(1);
