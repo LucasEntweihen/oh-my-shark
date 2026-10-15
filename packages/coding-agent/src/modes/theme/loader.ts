@@ -5,6 +5,7 @@ import { adjustHsv, getCustomThemesDir, isEnoent } from "@oh-my-pi/pi-utils";
 import { detectColorMode, resolveThemeColors } from "./color";
 import darkThemeJson from "./dark.json" with { type: "json" };
 import { defaultThemes } from "./defaults";
+import { genericThemes } from "./generic";
 import lightThemeJson from "./light.json" with { type: "json" };
 import { type ColorMode, type ThemeBg, type ThemeColor, type ThemeJson, themeJsonSchema } from "./schema";
 import { normalizeSpinnerFramesOverride, type SymbolPreset } from "./symbols";
@@ -18,6 +19,7 @@ const BUILTIN_THEMES: Record<string, ThemeJson> = {
 	dark: darkThemeJson as ThemeJson,
 	light: lightThemeJson as ThemeJson,
 	...(defaultThemes as Record<string, ThemeJson>),
+	...genericThemes,
 };
 
 export function getBuiltinThemes(): Record<string, ThemeJson> {
