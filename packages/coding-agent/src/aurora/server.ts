@@ -37,6 +37,18 @@ function getMimeType(filePath: string): string {
 
 // Armazena abort controllers ativos por sessão/id
 const activeStreams = new Map<string, AbortController>();
+const decodedAssetsCache = new Map<string, Buffer | string>();
+
+function getAssetPayload(pathKey: string, rawContent: string): Buffer | string {
+	const cached = decodedAssetsCache.get(pathKey);
+	if (cached) return cached;
+	const payload = rawContent.startsWith("base64:")
+		? Buffer.from(rawContent.slice(7), "base64")
+		: rawContent;
+	decodedAssetsCache.set(pathKey, payload);
+	return payload;
+}
+
 
 export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 	// Carrega modelo e registry de forma não bloqueante
@@ -251,16 +263,18 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 		}
 
 		const contentType = getMimeType(cleanPath);
+		const isHashedAsset = cleanPath.startsWith("assets/");
+		const cacheControl = isHashedAsset
+			? "public, max-age=31536000, immutable"
+			: "no-cache";
+
 		res.writeHead(200, {
 			"Content-Type": contentType,
-			"Cache-Control": "no-cache",
+			"Cache-Control": cacheControl,
 		});
 
-		if (assetContent.startsWith("base64:")) {
-			res.end(Buffer.from(assetContent.slice(7), "base64"));
-		} else {
-			res.end(assetContent);
-		}
+		const payload = getAssetPayload(cleanPath, assetContent);
+		res.end(payload);
 	});
 
 	const { port } = await new Promise<{ port: number }>((resolve, reject) => {

@@ -182,38 +182,49 @@ export function AuroraApp() {
 
     let accumulatedText = "";
     let accumulatedThought = "";
+    let rafId: number | null = null;
+
+    const flushUpdates = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      const textSnapshot = accumulatedText;
+      const thoughtSnapshot = accumulatedThought;
+      setMessagesMap((prev) => ({
+        ...prev,
+        [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
+          m.id === aiMsgId ? { ...m, content: textSnapshot, thought: thoughtSnapshot } : m
+        ),
+      }));
+    };
+
+    const scheduleUpdate = () => {
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          flushUpdates();
+        });
+      }
+    };
 
     await streamOmskChat(
       content,
       {
         onThinkingDelta: (delta) => {
           accumulatedThought += delta;
-          setMessagesMap((prev) => ({
-            ...prev,
-            [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
-              m.id === aiMsgId ? { ...m, thought: accumulatedThought } : m
-            ),
-          }));
+          scheduleUpdate();
         },
         onTextDelta: (delta) => {
           accumulatedText += delta;
-          setMessagesMap((prev) => ({
-            ...prev,
-            [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
-              m.id === aiMsgId ? { ...m, content: accumulatedText } : m
-            ),
-          }));
+          scheduleUpdate();
         },
         onToolStart: (toolName) => {
           accumulatedText += `\n> ⚙️ *Executando ferramenta:* \`${toolName}\`...\n\n`;
-          setMessagesMap((prev) => ({
-            ...prev,
-            [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
-              m.id === aiMsgId ? { ...m, content: accumulatedText } : m
-            ),
-          }));
+          flushUpdates();
         },
         onDone: () => {
+          flushUpdates();
           setIsGenerating(false);
           setMessagesMap((prev) => ({
             ...prev,
@@ -223,6 +234,10 @@ export function AuroraApp() {
           }));
         },
         onError: (err) => {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+          }
           setIsGenerating(false);
           setMessagesMap((prev) => ({
             ...prev,
@@ -230,7 +245,8 @@ export function AuroraApp() {
               m.id === aiMsgId
                 ? {
                     ...m,
-                    content: m.content ? `${m.content}\n\n❌ Erro: ${err}` : `❌ Erro do OMSK: ${err}`,
+                    content: accumulatedText ? `${accumulatedText}\n\n❌ Erro: ${err}` : `❌ Erro do OMSK: ${err}`,
+                    thought: accumulatedThought,
                     isGenerating: false,
                   }
                 : m
