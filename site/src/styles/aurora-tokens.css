@@ -68,6 +68,58 @@
   --movimento-suave: cubic-bezier(0.25, 0.1, 0.25, 1);
 
   --largura-conversa: 860px;
+
+  /* ========================================================================
+     ASTRAL CODEX — TOKENS OFICIAIS (DESIGN.md v3.0.0-orbital-unified)
+     ======================================================================== */
+  --chassis-surface-primary: #C8C4B8;
+  --chassis-surface-secondary: #B8B4A6;
+  --chassis-surface-recessed: #9E9A8C;
+  --chassis-bezel-inner-dark: #2B2D2F;
+  --chassis-bezel-shadow-deep: #141618;
+  --chassis-bevel-highlight: #ECEAE2;
+  --chassis-bevel-shadow: #7A7669;
+  --chassis-keycap-face: #D6D2C4;
+  --chassis-keycap-side: #8F8B7D;
+  --chassis-ink-stamp: #3A3832;
+  --chassis-expansion-joint: #4A473E;
+
+  --cosmos-void-black: #020307;
+  --cosmos-abismo: #05070E;
+  --cosmos-nebulosa: #0B0F1F;
+  --cosmos-orbital-navy: #071E42;
+  --cosmos-ionosphere-blue: #14468C;
+  --cosmos-starlight-cyan: #5CE1E6;
+  --cosmos-ciano-cherenkov: #00F0FF;
+  --cosmos-nebula-ice: #E6F4FA;
+  --cosmos-exoplanet-snow: #F2EFE9;
+  --cosmos-exoplanet-forest: #132916;
+  --cosmos-telemetry-gold: #968244;
+  --cosmos-telemetry-gold-bright: #D4B85E;
+  --cosmos-amber-supernova: #F59E0B;
+  --cosmos-anomaly-crimson: #9E1418;
+  --cosmos-anomaly-laser: #E62229;
+  --cosmos-vermelho-gigante: #EF4444;
+  --cosmos-beacon-emerald: #00A838;
+  --cosmos-verde-pulsar: #10B981;
+  --cosmos-violeta-quasar: #8B5CF6;
+  --cosmos-glass-horizon: rgba(18, 25, 48, 0.72);
+
+  --pioneer-panel-obsidian: #161816;
+  --pioneer-compass-green: #489638;
+  --pioneer-terra-continent: #4EA832;
+  --pioneer-terra-ocean: #2C568C;
+  --pioneer-parchment-light: #E4F0D0;
+  --pioneer-parchment-highlight: #F4F8EC;
+  --pioneer-parchment-border: #2B5B84;
+  --pioneer-selection-olive: #4E9A26;
+  --pioneer-text-parchment: #1A2118;
+
+  --shadow-chassis-outset: inset 2px 2px 0px #ECEAE2, inset -2px -2px 0px #7A7669, 0px 2px 4px rgba(0, 0, 0, 0.35);
+  --shadow-chassis-inset: inset 3px 3px 6px #141618, inset -2px -2px 0px #ECEAE2;
+  --shadow-keycap-resting: inset 1px 1px 0px #FFFFFF, inset -2px -2px 0px #8F8B7D, 2px 3px 0px #5A574E, 2px 4px 5px rgba(0,0,0,0.4);
+  --shadow-keycap-pressed: inset 2px 2px 3px #5A574E, 0px 0px 0px #5A574E;
+  --shadow-gold-frame: 0 0 0 1px #020307, 0 0 0 3px #968244, inset 0 0 0 1px #D4B85E;
 }
 
 /* Reset Base */
