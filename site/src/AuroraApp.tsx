@@ -19,6 +19,7 @@ import { FractalAndBiosphere } from "./components/astral/FractalAndBiosphere";
 import { ExoplanetCodebaseDome } from "./components/astral/ExoplanetCodebaseDome";
 import { OrbitalCompassAndPioneers } from "./components/astral/OrbitalCompassAndPioneers";
 import { PromptGrimoireBook } from "./components/astral/PromptGrimoireBook";
+import { MainCRTViewport } from "./components/astral/MainCRTViewport";
 import { mechanicalSynth } from "./audio/mechanicalSynth";
 import {
   fetchOmskModels,
@@ -378,59 +379,23 @@ export function AuroraApp() {
 
         {/* Deck Esquerdo: Monitor CRT Multimodo + Chassi Bege com 21 Teclas (55% de largura) */}
         <div className="w-[55%] flex flex-col border-r-2 border-[#968244] bg-[#05070E] p-2 space-y-2 overflow-hidden">
-          {/* Monitor CRT Multimodo com Moldura Bege Industrial */}
-          <div className="flex-1 flex flex-col bg-[#C8C4B8] border-2 border-[#ECEAE2] p-2 rounded-[6px] shadow-[inset_2px_2px_0px_#ECEAE2,inset_-2px_-2px_0px_#7A7669,0px_4px_8px_rgba(0,0,0,0.5)] overflow-hidden">
-            {/* Seletor de Modos do CRT no Topo */}
-            <div className="flex justify-between items-center mb-1 text-[10px] font-mono font-bold text-[#3A3832]">
-              <span className="flex items-center gap-1.5">
-                <span>ASTRA-IA</span>
-                <span className="text-[8px] bg-[#9E9A8C] text-[#ECEAE2] px-1 py-0.2 rounded">CRT-MULTIMODO</span>
-              </span>
-
-              <div className="flex space-x-1">
-                {[
-                  { id: 1 as const, label: "1. FRACTAL" },
-                  { id: 2 as const, label: "2. PLANETA" },
-                  { id: 3 as const, label: "3. BÚSSOLA" },
-                  { id: 4 as const, label: "4. GRIMÓRIO" },
-                ].map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => {
-                      setAstralMode(m.id);
-                      mechanicalSynth.playKeyClick();
-                    }}
-                    className={`px-1.5 py-0.5 rounded text-[8px] font-bold border transition-colors ${
-                      astralMode === m.id
-                        ? "bg-[#2B2D2F] text-[#00F0FF] border-[#00F0FF]"
-                        : "bg-[#D6D2C4] text-[#3A3832] border-[#7A7669] hover:bg-[#ECEAE2]"
-                    }`}
-                  >
-                    {m.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Área de Visualização do Tubo CRT */}
-            <div className="flex-1 bg-[#020307] border-2 border-[#2B2D2F] rounded-[4px] overflow-hidden relative shadow-[inset_0_0_16px_rgba(0,0,0,0.8)]">
-              {astralMode === 1 && <FractalAndBiosphere />}
-              {astralMode === 2 && <ExoplanetCodebaseDome />}
-              {astralMode === 3 && (
-                <OrbitalCompassAndPioneers
-                  tps={tps}
-                  onSpawnSubagent={(persona) => handleSendMessage(`/doomania persona ${persona}`, [])}
-                />
-              )}
-              {astralMode === 4 && (
-                <PromptGrimoireBook
-                  onAcceptMission={(p) => handleSendMessage(p, [])}
-                  onClose={() => setAstralMode(1)}
-                />
-              )}
-            </div>
-          </div>
+          {/* Monitor CRT Principal Multimodo com Moldura Bege Industrial */}
+          <MainCRTViewport activeMode={astralMode} onSelectMode={setAstralMode}>
+            {astralMode === 1 && <FractalAndBiosphere />}
+            {astralMode === 2 && <ExoplanetCodebaseDome />}
+            {astralMode === 3 && (
+              <OrbitalCompassAndPioneers
+                tps={tps}
+                onSpawnSubagent={(persona) => handleSendMessage(`/doomania persona ${persona}`, [])}
+              />
+            )}
+            {astralMode === 4 && (
+              <PromptGrimoireBook
+                onAcceptMission={(p) => handleSendMessage(p, [])}
+                onClose={() => setAstralMode(1)}
+              />
+            )}
+          </MainCRTViewport>
 
           {/* Base do Gabinete: Teclado Mecânico de 21 Macros e Sliders */}
           <SubroutineKeypad21
