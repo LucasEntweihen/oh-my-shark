@@ -14,7 +14,7 @@ set -e
 #   -r <ref>       Shorthand for --ref
 
 REPO="LucasEntweihen/oh-my-shark"
-DEFAULT_TAG="omsk-v0.0.20"
+DEFAULT_TAG="omsk-v0.0.27"
 BIN_NAME="omsk"
 INSTALL_DIR="${PI_INSTALL_DIR:-$HOME/.local/bin}"
 MIN_BUN_VERSION="1.3.14"
@@ -282,9 +282,16 @@ install_binary() {
     OUT="${INSTALL_DIR}/${BIN_NAME}"
     AGENT_DIR="$HOME/.omsk/agent"
 
-    TAG="${REF:-$DEFAULT_TAG}"
+    TAG="$REF"
+    if [ -z "$TAG" ]; then
+        RESOLVED_TAG="$(curl -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/${REPO}/releases/latest" 2>/dev/null | sed -E 's|.*/tag/([^/]+)$|\1|' || true)"
+        if [ -n "$RESOLVED_TAG" ] && [ "$RESOLVED_TAG" != "https://github.com/${REPO}/releases/latest" ]; then
+            TAG="$RESOLVED_TAG"
+        else
+            TAG="$DEFAULT_TAG"
+        fi
+    fi
     echo "Using version: $TAG"
-
     if ! command -v curl >/dev/null 2>&1; then
         echo "curl is required to download the ${BIN_NAME} release"
         exit 1

@@ -18,11 +18,14 @@ param(
 $ErrorActionPreference = "Stop"
 
 $Repo = "LucasEntweihen/oh-my-shark"
-$DefaultTag = "omsk-v0.0.20"
+$DefaultTag = "omsk-v0.0.27"
 $InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "omsk" }
-$NativeArchitecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+
+# Resolucao universal de arquitetura compativel com PS 5.1, PS 7+, 32-bit e 64-bit
+$RawArch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
+$NativeArchitecture = if ($RawArch) { $RawArch.ToLowerInvariant().Replace("amd64", "x64") } else { "x64" }
 if ($NativeArchitecture -notin @("x64", "arm64")) {
-    throw "Unsupported Windows architecture: $NativeArchitecture"
+    $NativeArchitecture = "x64"
 }
 $BinaryName = "ohms-windows-$NativeArchitecture.exe"
 $MinimumBunVersion = "1.3.14"
@@ -82,15 +85,15 @@ function Test-GitInstalled {
 
 function Test-GitLfsInstalled {
     try {
-        $null = Get-Command git-lfs -ErrorAction Stop
-        return $true
+        $null = git lfs version 2>$null
+        return $LASTEXITCODE -eq 0
     } catch {
         return $false
     }
 }
 
 function Find-BashShell {
-    # Check Git Bash first (most common on Windows)
+    # Check default Git Bash location
     $gitBash = "C:\Program Files\Git\bin\bash.exe"
     if (Test-Path $gitBash) {
         return $gitBash
@@ -204,14 +207,15 @@ function Install-ViaBun {
             }
         }
 
-        # Pull LFS files
-        if (Test-GitLfsInstalled) {
-            Push-Location $tmpRoot
-            try {
-                git lfs pull | Out-Null
-            } finally {
-                Pop-Location
+        # Initialize submodules
+        Push-Location $tmpRoot
+        try {
+            git submodule update --init --recursive
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to initialize submodules"
             }
+        } finally {
+            Pop-Location
         }
 
         $packagePath = Join-Path $tmpRoot "packages\coding-agent"
@@ -286,7 +290,25 @@ function Seed-Preset {
 }
 
 function Install-Binary {
-    $Tag = if ($Ref) { $Ref } else { $DefaultTag }
+    $Tag = $Ref
+    if (-not $Tag) {
+        try {
+            # Tenta resolver a release mais recente dinamicamente pelo GitHub
+            $req = [System.Net.WebRequest]::Create("https://github.com/$Repo/releases/latest")
+            $req.Method = "HEAD"
+            $req.AllowAutoRedirect = $false
+            $req.Timeout = 10000
+            $resp = $req.GetResponse()
+            $loc = $resp.GetResponseHeader("Location")
+            $resp.Close()
+            if ($loc -and $loc -match "/tag/([^/]+)$") {
+                $Tag = $matches[1]
+            }
+        } catch {}
+    }
+    if (-not $Tag) {
+        $Tag = $DefaultTag
+    }
     Write-Host "Using version: $Tag"
 
     $BinaryUrl = "https://github.com/$Repo/releases/download/$Tag/$BinaryName"
@@ -385,6 +407,5 @@ if ($Source) {
     Assert-BunVersion $MinimumBunVersion
     Install-ViaBun
 } else {
-    # Default: install the prebuilt binary.
     Install-Binary
 }

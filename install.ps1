@@ -18,11 +18,14 @@ param(
 $ErrorActionPreference = "Stop"
 
 $Repo = "LucasEntweihen/oh-my-shark"
-$DefaultTag = "omsk-v0.0.19"
+$DefaultTag = "omsk-v0.0.27"
 $InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "omsk" }
-$NativeArchitecture = $env:PROCESSOR_ARCHITECTURE.ToLowerInvariant().Replace("amd64", "x64")
+
+# Resolucao universal de arquitetura compativel com PS 5.1, PS 7+, 32-bit e 64-bit
+$RawArch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
+$NativeArchitecture = if ($RawArch) { $RawArch.ToLowerInvariant().Replace("amd64", "x64") } else { "x64" }
 if ($NativeArchitecture -notin @("x64", "arm64")) {
-    throw "Unsupported Windows architecture: $NativeArchitecture"
+    $NativeArchitecture = "x64"
 }
 $BinaryName = "ohms-windows-$NativeArchitecture.exe"
 $MinimumBunVersion = "1.3.14"
@@ -286,9 +289,26 @@ function Seed-Preset {
 }
 
 function Install-Binary {
-    $Tag = if ($Ref) { $Ref } else { $DefaultTag }
+    $Tag = $Ref
+    if (-not $Tag) {
+        try {
+            # Tenta resolver a release mais recente dinamicamente pelo GitHub
+            $req = [System.Net.WebRequest]::Create("https://github.com/$Repo/releases/latest")
+            $req.Method = "HEAD"
+            $req.AllowAutoRedirect = $false
+            $req.Timeout = 10000
+            $resp = $req.GetResponse()
+            $loc = $resp.GetResponseHeader("Location")
+            $resp.Close()
+            if ($loc -and $loc -match "/tag/([^/]+)$") {
+                $Tag = $matches[1]
+            }
+        } catch {}
+    }
+    if (-not $Tag) {
+        $Tag = $DefaultTag
+    }
     Write-Host "Using version: $Tag"
-
     $BinaryUrl = "https://github.com/$Repo/releases/download/$Tag/$BinaryName"
     $SumsUrl = "https://github.com/$Repo/releases/download/$Tag/SHA256SUMS.txt"
     $AgentDir = Join-Path $env:USERPROFILE ".omsk\agent"

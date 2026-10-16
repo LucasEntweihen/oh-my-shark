@@ -146,12 +146,13 @@ async function buildBinary(target: BinaryTarget): Promise<void> {
 		return;
 	}
 
+	const isHostWin64 = target.platform === "win32" && target.arch === "x64" && process.platform === "win32" && process.arch === "x64";
 	await compileCodingAgent({
 		repoRoot,
 		entrypoint,
 		outfile: path.join(repoRoot, target.outfile),
 		transformersVersion,
-		target: target.target,
+		...(isHostWin64 ? { executablePath: process.execPath } : { target: target.target }),
 		minifyIdentifiers: true,
 		skipBuiltinCodesign: shouldAdhocSignDarwinBinary(target),
 	});
