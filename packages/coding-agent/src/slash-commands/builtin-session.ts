@@ -655,7 +655,7 @@ export const BUILTIN_SESSION_SLASH_COMMANDS: ReadonlyArray<SlashCommandSpec> = [
 	{
 		name: "aurora",
 		aliases: ["gui", "app", "desktop"],
-		icon: "window",
+		icon: "computer",
 		description: "Launch the Aurora AI Reactive Desktop Window GUI",
 		acpDescription: "Launch the Aurora AI Reactive Desktop Window GUI",
 		allowArgs: false,

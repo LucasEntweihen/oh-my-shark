@@ -107,7 +107,7 @@ export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; r
 	}
 }
 
-const isProcessEntry = import.meta.main || process.env.PI_COMPILED === "true";
+const isProcessEntry = import.meta.main || process.env.COSMOSKY_APP === "true";
 
 if (isProcessEntry) {
 	launchAuroraGuiApp().catch(err => {
