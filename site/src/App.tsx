@@ -286,22 +286,47 @@ export default function App() {
             <div className="wrap hero-grid">
               {/* Coluna Esquerda: Proposta de Valor e Seletor CLI */}
               <div className="hero-content">
-                <div className="hero-eyebrow-badge">
-                  <span className="status-dot cyan" />
-                  <span>{t.heroBadge}</span>
-                </div>
-
-                <h1 className="hero-title">
-                  {t.heroTitlePre} <span className="hero-title-gradient">{t.heroTitleGradient}</span>
-                </h1>
-
-                <p className="hero-lede">{t.heroLede}</p>
-
-                {/* Caixa de Instalação Imediata */}
+                {/* 1. COMANDO DE DOWNLOAD E INSTALAÇÃO NO TOPO (PRIMEIRA VISÃO) */}
                 <div className="hero-install-box">
-                  <span className="hero-install-label">{t.heroInstallHeader}</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="hero-install-label">{t.heroInstallHeader}</span>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      <button
+                        type="button"
+                        style={{
+                          background: os === "win" ? "rgba(0, 229, 255, 0.2)" : "transparent",
+                          border: "1px solid " + (os === "win" ? "var(--shark-cyan)" : "rgba(255,255,255,0.1)"),
+                          color: os === "win" ? "var(--shark-cyan)" : "var(--text-muted)",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          fontSize: "0.7rem",
+                          fontFamily: "var(--font-mono)",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => setOs("win")}
+                      >
+                        Windows
+                      </button>
+                      <button
+                        type="button"
+                        style={{
+                          background: os === "mac" ? "rgba(0, 229, 255, 0.2)" : "transparent",
+                          border: "1px solid " + (os === "mac" ? "var(--shark-cyan)" : "rgba(255,255,255,0.1)"),
+                          color: os === "mac" ? "var(--shark-cyan)" : "var(--text-muted)",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          fontSize: "0.7rem",
+                          fontFamily: "var(--font-mono)",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => setOs("mac")}
+                      >
+                        macOS / Linux
+                      </button>
+                    </div>
+                  </div>
                   <div className="install-cmd-row">
-                    <span style={{ color: "var(--shark-cyan)", fontFamily: "var(--font-mono)" }}>
+                    <span style={{ color: "var(--shark-cyan)", fontFamily: "var(--font-mono)", fontWeight: 700 }}>
                       {os === "win" ? "PS >" : "$"}
                     </span>
                     <code className="install-cmd-code">{heroCommand}</code>
@@ -315,6 +340,17 @@ export default function App() {
                     </button>
                   </div>
                 </div>
+
+                <div className="hero-eyebrow-badge">
+                  <span className="status-dot cyan" />
+                  <span>{t.heroBadge}</span>
+                </div>
+
+                <h1 className="hero-title">
+                  {t.heroTitlePre} <span className="hero-title-gradient">{t.heroTitleGradient}</span>
+                </h1>
+
+                <p className="hero-lede">{t.heroLede}</p>
 
                 {/* CTAs Primário e Secundário */}
                 <div className="hero-cta-group">
@@ -381,32 +417,32 @@ export default function App() {
 
                 <div className="tui-viewport">
                   {tuiTab === "live" && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      <span style={{ color: "var(--shark-cyan)" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontFamily: "var(--font-mono)" }}>
+                      <span className="tui-line-item" style={{ color: "var(--shark-cyan)" }}>
                         [OMSK::KERNEL] Initializing sub-millisecond harness...
                       </span>
-                      <span style={{ color: "var(--text-muted)" }}>
+                      <span className="tui-line-item" style={{ color: "var(--text-muted)" }}>
                         Reading ~/.omsk/tarefas.json [OK] • FileReadCache mounted
                       </span>
-                      <span style={{ color: "#ffffff" }}>
+                      <span className="tui-line-item" style={{ color: "#ffffff", fontWeight: 700, marginBlock: "0.25rem" }}>
                         ❯ omsk task "Implement WebAuthn credentials verification"
                       </span>
-                      <span style={{ color: "var(--shark-emerald)" }}>
-                        ✔ DAG resolved: 4 tasks ordered via Kahn algorithm (zero cycles detected)
+                      <span className="tui-line-item" style={{ color: "var(--shark-emerald)" }}>
+                        ✔ DAG resolved: 4 tasks ordered via Kahn algorithm (zero cycles)
                       </span>
-                      <span style={{ color: "var(--text-muted)" }}>
+                      <span className="tui-line-item" style={{ color: "var(--text-muted)", paddingLeft: "0.75rem" }}>
                         ├─ [task-1] scaffold-auth-schema.ts [DONE]
                       </span>
-                      <span style={{ color: "var(--text-muted)" }}>
+                      <span className="tui-line-item" style={{ color: "var(--text-muted)", paddingLeft: "0.75rem" }}>
                         ├─ [task-2] generate-challenge-token.ts [DONE]
                       </span>
-                      <span style={{ color: "var(--shark-cyan)" }}>
+                      <span className="tui-line-item" style={{ color: "var(--shark-cyan)", paddingLeft: "0.75rem", fontWeight: 600 }}>
                         ├─ [task-3] verify-webauthn-signature.ts [IN_PROGRESS]
                       </span>
-                      <span style={{ color: "var(--text-faint)" }}>
+                      <span className="tui-line-item" style={{ color: "var(--text-faint)", paddingLeft: "0.75rem" }}>
                         └─ [task-4] integration-suite.test.ts [PENDING: requires task-3]
                       </span>
-                      <span style={{ color: "var(--shark-amber)" }}>
+                      <span className="tui-line-item" style={{ color: "var(--shark-amber)", marginTop: "0.35rem" }}>
                         [EVIDENCE LOGGED] 16 unit tests verified • SHA-256: e82f...
                       </span>
                     </div>
