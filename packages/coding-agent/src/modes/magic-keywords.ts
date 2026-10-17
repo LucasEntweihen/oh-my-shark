@@ -1,3 +1,4 @@
+import { highlightLearnerProj } from "./learner-proj";
 import { containsAgentSandbox, highlightAgentSandbox } from "./agent-sandbox";
 import { containsDeepseaneuron, highlightDeepseaneuron } from "./deepseaneuron";
 import { containsDoomania, highlightDoomania } from "./doomania";
@@ -27,35 +28,16 @@ import { containsXlr8, highlightXlr8 } from "./xlr8";
  * to keep the static gradient.
  */
 export function highlightMagicKeywords(text: string, resetTo?: string, phase?: number): string {
-	return highlightXlr8(
-		highlightFastthinkworkerz(
-			highlightAgentSandbox(
-				highlightDeepseaneuron(
-					highlightDoomania(
-						highlightPromaxthink(
-							highlightWorkflow(
-								highlightOrchestrate(highlightUltrathink(text, resetTo, phase), resetTo, phase),
-								resetTo,
-								phase,
-							),
-							resetTo,
-							phase,
-						),
-						resetTo,
-						phase,
-					),
-					resetTo,
-					phase,
-				),
-				resetTo,
-				phase,
-			),
-			resetTo,
-			phase,
-		),
-		resetTo,
-		phase,
-	);
+	const step1 = highlightUltrathink(text, resetTo, phase);
+	const step2 = highlightOrchestrate(step1, resetTo, phase);
+	const step3 = highlightWorkflow(step2, resetTo, phase);
+	const step4 = highlightPromaxthink(step3, resetTo, phase);
+	const step5 = highlightDoomania(step4, resetTo, phase);
+	const step6 = highlightDeepseaneuron(step5, resetTo, phase);
+	const step7 = highlightAgentSandbox(step6, resetTo, phase);
+	const step8 = highlightFastthinkworkerz(step7, resetTo, phase);
+	const step9 = highlightXlr8(step8, resetTo, phase);
+	return highlightLearnerProj(step9, resetTo, phase);
 }
 
 /**
