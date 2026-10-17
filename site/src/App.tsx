@@ -200,6 +200,8 @@ export default function App() {
   const [feature, setFeature] = useState(0);
   const [noticeId, setNoticeId] = useState<string | null>(null);
   const [noticeOk, setNoticeOk] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"all" | "guide" | "docs" | "architecture" | "commands" | "install">("all");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const t: Strings = dict[locale];
@@ -279,14 +281,102 @@ export default function App() {
           </div>
         </div>
 
+
+      {/* SIDEBAR BACKDROP */}
+      <div
+        className={sidebarOpen ? "sidebar-backdrop is-open" : "sidebar-backdrop"}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* SIDEBAR DRAWER (DOCUMENTAÇÃO & NAVEGAÇÃO INTERATIVA) */}
+      <aside className={sidebarOpen ? "sidebar-drawer is-open" : "sidebar-drawer"} aria-label={t.sidebarDocTitle}>
+        <div className="sidebar-header">
+          <div className="sidebar-title-group">
+            <span className="sidebar-title">{t.sidebarDocTitle}</span>
+            <span className="sidebar-subtitle">{t.sidebarDocSubtitle}</span>
+          </div>
+          <button
+            type="button"
+            className="btn-sidebar-close"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Fechar Menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        <nav className="sidebar-nav-list">
+          <button
+            type="button"
+            className={activeTab === "all" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
+            onClick={() => { setActiveTab("all"); setSidebarOpen(false); }}
+          >
+            <span className="sidebar-icon">✦</span>
+            <span>{t.tabOverview}</span>
+          </button>
+          <button
+            type="button"
+            className={activeTab === "guide" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
+            onClick={() => { setActiveTab("guide"); setSidebarOpen(false); }}
+          >
+            <span className="sidebar-icon">📖</span>
+            <span>{t.tabGuide}</span>
+          </button>
+          <button
+            type="button"
+            className={activeTab === "docs" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
+            onClick={() => { setActiveTab("docs"); setSidebarOpen(false); }}
+          >
+            <span className="sidebar-icon">⚡</span>
+            <span>{t.tabDocs}</span>
+          </button>
+          <button
+            type="button"
+            className={activeTab === "architecture" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
+            onClick={() => { setActiveTab("architecture"); setSidebarOpen(false); }}
+          >
+            <span className="sidebar-icon">🏛</span>
+            <span>{t.tabArchitecture}</span>
+          </button>
+          <button
+            type="button"
+            className={activeTab === "commands" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
+            onClick={() => { setActiveTab("commands"); setSidebarOpen(false); }}
+          >
+            <span className="sidebar-icon">⌨</span>
+            <span>{t.tabCommands}</span>
+          </button>
+          <button
+            type="button"
+            className={activeTab === "install" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
+            onClick={() => { setActiveTab("install"); setSidebarOpen(false); }}
+          >
+            <span className="sidebar-icon">📦</span>
+            <span>{t.tabInstall}</span>
+          </button>
+        </nav>
+      </aside>
+
         {/* Site Header */}
         <header className="site-header">
           <div className="wrap header-inner">
-            <a className="brand" href="#top" aria-label={t.wordmark}>
-              <SharkMark />
-              <span className="wordmark">{t.wordmark}</span>
-              <span className="version-badge">{t.versionBadge}</span>
-            </a>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <button
+                type="button"
+                className="btn-sidebar-toggle"
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Abrir Menu de Navegação e Documentação"
+              >
+                <span>☰</span>
+                <span>Docs</span>
+              </button>
+              <a className="brand" href="#top" aria-label={t.wordmark}>
+                <SharkMark />
+                <span className="wordmark">{t.wordmark}</span>
+                <span className="version-badge">{t.versionBadge}</span>
+              </a>
+            </div>
 
             <nav className="site-nav" aria-label={t.navLabel}>
               <a
@@ -348,7 +438,71 @@ export default function App() {
 
         <main id="main">
           <div className="wrap" id="top">
+            {/* INTERACTIVE NAVIGATION TABS BAR */}
+            <div className="view-tabs-bar glass-card" role="tablist" aria-label="Abas da Home e Documentação">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "all"}
+                className={activeTab === "all" ? "view-tab-btn is-active" : "view-tab-btn"}
+                onClick={() => setActiveTab("all")}
+              >
+                <span>✦</span>
+                <span>{t.tabOverview}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "guide"}
+                className={activeTab === "guide" ? "view-tab-btn is-active" : "view-tab-btn"}
+                onClick={() => setActiveTab("guide")}
+              >
+                <span>📖</span>
+                <span>{t.tabGuide}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "docs"}
+                className={activeTab === "docs" ? "view-tab-btn is-active" : "view-tab-btn"}
+                onClick={() => setActiveTab("docs")}
+              >
+                <span>⚡</span>
+                <span>{t.tabDocs}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "architecture"}
+                className={activeTab === "architecture" ? "view-tab-btn is-active" : "view-tab-btn"}
+                onClick={() => setActiveTab("architecture")}
+              >
+                <span>🏛</span>
+                <span>{t.tabArchitecture}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "commands"}
+                className={activeTab === "commands" ? "view-tab-btn is-active" : "view-tab-btn"}
+                onClick={() => setActiveTab("commands")}
+              >
+                <span>⌨</span>
+                <span>{t.tabCommands}</span>
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "install"}
+                className={activeTab === "install" ? "view-tab-btn is-active" : "view-tab-btn"}
+                onClick={() => setActiveTab("install")}
+              >
+                <span>📦</span>
+                <span>{t.tabInstall}</span>
+              </button>
+            </div>
             {/* HERO SECTION */}
+            {(activeTab === "all") && (
             <section className="hero" aria-labelledby="hero-title">
               <div className="hero-prism-badge">
                 <span className="badge-glow-dot" />
@@ -459,10 +613,12 @@ export default function App() {
                 </a>
               </div>
             </section>
+            )}
 
             {/* ----------------------------------------------------------------- */}
             {/* FULL INSTALL SECTION                                              */}
             {/* ----------------------------------------------------------------- */}
+            {(activeTab === "all" || activeTab === "install") && (
             <section className="install" id="install" aria-labelledby="install-title">
               <h2 id="install-title">{t.installHeading}</h2>
               <p className="section-lede">{t.installLede}</p>
@@ -560,6 +716,7 @@ export default function App() {
                 </div>
               </div>
             </section>
+            )}
 
             {/* MODEL PROVIDERS */}
             <section className="providers" aria-labelledby="providers-eyebrow">
@@ -586,6 +743,7 @@ export default function App() {
             </section>
 
             {/* FEATURES */}
+            {(activeTab === "all") && (
             <section className="features" id="features" aria-labelledby="features-title">
               <p className="eyebrow">{t.featuresEyebrow}</p>
               <h2 id="features-title">{t.featuresHeading}</h2>
@@ -623,7 +781,9 @@ export default function App() {
                 </div>
               </div>
             </section>
+            )}
             {/* 10-STEP ONBOARDING GUIDE SECTION */}
+            {(activeTab === "all" || activeTab === "guide") && (
             <section className="guide-section" id="guide" aria-labelledby="guide-title">
               <p className="eyebrow">{t.guideEyebrow}</p>
               <h2 id="guide-title">{t.guideHeading}</h2>
@@ -655,8 +815,10 @@ export default function App() {
                 })}
               </div>
             </section>
+            )}
 
             {/* TECHNICAL ARCHITECTURE SECTION */}
+            {(activeTab === "all" || activeTab === "architecture") && (
             <section className="architecture-section" id="architecture" aria-labelledby="architecture-title">
               <p className="eyebrow">{t.architectureEyebrow}</p>
               <h2 id="architecture-title">{t.architectureHeading}</h2>
@@ -672,8 +834,33 @@ export default function App() {
                 ))}
               </div>
             </section>
+            )}
+
+            {/* INTERACTIVE DOCUMENTATION & API VIEW */}
+            {(activeTab === "all" || activeTab === "docs") && (
+              <section className="docs-section" id="docs" aria-labelledby="docs-title">
+                <p className="eyebrow">{t.docsEyebrow}</p>
+                <h2 id="docs-title">{t.docsHeading}</h2>
+                <p className="section-lede">{t.docsLede}</p>
+
+                {t.docsCategories.map((category) => (
+                  <div key={category.id} className="docs-category">
+                    <h3 className="docs-category-title">{category.name}</h3>
+                    <div className="docs-grid">
+                      {category.items.map((item) => (
+                        <div key={item.name} className="docs-card glass-card">
+                          <code className="docs-card-name">{item.name}</code>
+                          <p className="docs-card-desc">{item.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </section>
+            )}
 
             {/* SPECIAL COMMANDS & MODES SECTION */}
+            {(activeTab === "all" || activeTab === "commands") && (
             <section className="commands-section" id="commands" aria-labelledby="commands-title">
               <p className="eyebrow">{t.commandsEyebrow}</p>
               <h2 id="commands-title">{t.commandsHeading}</h2>
@@ -699,6 +886,7 @@ export default function App() {
                 ))}
               </div>
             </section>
+            )}
 
             {/* WHY OHMYSHARK */}
             <section className="changes" id="changes" aria-labelledby="changes-title">

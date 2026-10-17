@@ -226,6 +226,52 @@ const en = {
     },
   ] as Array<{ name: string; tag: string; badgeClass: string; colors: string; description: string; usage: string }>,
 
+  tabOverview: "Overview",
+  tabGuide: "10-Step Guide",
+  tabDocs: "Documentation & API",
+  tabArchitecture: "Architecture",
+  tabCommands: "Commands & Modes",
+  tabInstall: "Installation",
+  sidebarDocTitle: "Navigation & Docs",
+  sidebarDocSubtitle: "Oh My Shark Engine v0.0.29",
+  docsEyebrow: "HARNESS DOCUMENTATION & SPECS",
+  docsHeading: "Interactive Engine Documentation",
+  docsLede: "Explore tools, operational protocols, CLI switches, and autonomous execution mechanics in detail.",
+  docsCategories: [
+    {
+      id: "tools",
+      name: "Core Native Tools",
+      items: [
+        { name: "read", desc: "Read files, SQLite databases, archives (.zip/.tar), git branches, and URLs with automatic readers." },
+        { name: "write", desc: "Atomic file creation and overwriting with integrity checks and safety guards." },
+        { name: "edit", desc: "Hashline surgical patches using 4-hex tags, preventing race conditions and stale overwrites." },
+        { name: "bash", desc: "Persistent shell execution for fact computation, binary execution, and pipelines." },
+        { name: "grep & glob", desc: "High-performance PCRE2 / Rust-regex file searches and glob matching without shell overhead." },
+        { name: "lsp", desc: "Symbol-aware language server intelligence: diagnostics, definitions, references, and renames." },
+        { name: "ask", desc: "Structured interactive user prompts with multi-choice, recommendations, and custom input." }
+      ]
+    },
+    {
+      id: "tasks",
+      name: "Task Plan Engine (DAG)",
+      items: [
+        { name: "Topological Kahn Sorting", desc: "Tasks are organized by prerequisite graph, guaranteeing valid execution order." },
+        { name: "Cycle Detection", desc: "DFS-based cycle detection identifies circular dependencies and reports actionable paths." },
+        { name: "Option A (Full Execution)", desc: "Autonomous top-to-bottom execution with step-by-step verified completion." },
+        { name: "Option B (Selective Subset)", desc: "Computes transitive dependency closures and resolves missing prerequisites." },
+        { name: "Option C (Graceful Skip)", desc: "Allows plan rejection or reformulation without truncating session history." }
+      ]
+    },
+    {
+      id: "optimization",
+      name: "Resource & Token Optimizations",
+      items: [
+        { name: "FileReadCache", desc: "LRU file cache tracking mtime and size, avoiding redundant disk I/O and buffer allocations." },
+        { name: "ToolResultCompactor", desc: "Semantically elides historic tool outputs, saving up to 70% context window tokens." },
+        { name: "Native Prompt Caching", desc: "Injects provider-aware caching headers for Anthropic Claude, OpenAI, and Gemini." }
+      ]
+    }
+  ],
   navGuide: "Guide",
   navArchitecture: "Architecture",
   guideEyebrow: "GETTING STARTED GUIDE",
@@ -476,6 +522,52 @@ const pt: Strings = {
     },
   ] as Array<{ id: string; title: string; body: string }>,
 
+  tabOverview: "Visão Geral",
+  tabGuide: "Guia em 10 Passos",
+  tabDocs: "Documentação & API",
+  tabArchitecture: "Arquitetura",
+  tabCommands: "Comandos & Modos",
+  tabInstall: "Instalação",
+  sidebarDocTitle: "Navegação & Docs",
+  sidebarDocSubtitle: "Oh My Shark Engine v0.0.29",
+  docsEyebrow: "DOCUMENTAÇÃO DO HARNESS & ESPECIFICAÇÕES",
+  docsHeading: "Documentação Interativa do Motor",
+  docsLede: "Explore em detalhes ferramentas nativas, protocolos de execução, opções do CLI e mecânicas autônomas.",
+  docsCategories: [
+    {
+      id: "tools",
+      name: "Ferramentas Nativas Principais",
+      items: [
+        { name: "read", desc: "Leitura cirúrgica de arquivos, bancos SQLite, arquivos compactados (.zip/.tar), branches git e URLs." },
+        { name: "write", desc: "Criação e sobrescrita atômica de arquivos com validação de integridade e proteções." },
+        { name: "edit", desc: "Patches cirúrgicos hashline ancorados por hashes hexadecimais, prevenindo condições de corrida." },
+        { name: "bash", desc: "Shell persistente de alta velocidade para binários, comandos rápidos e testes." },
+        { name: "grep & glob", desc: "Busca ultrarrápida com regex PCRE2/Rust e glob de diretórios sem overhead de shell." },
+        { name: "lsp", desc: "Inteligência semântica de servidor de linguagem: diagnósticos, definições, referências e renomeações." },
+        { name: "ask", desc: "Perguntas interativas estruturadas com múltiplas escolhas, recomendações e campo personalizado." }
+      ]
+    },
+    {
+      id: "tasks",
+      name: "Task Plan Engine (DAG)",
+      items: [
+        { name: "Ordenação Topológica de Kahn", desc: "Tarefas organizadas em grafo acíclico, garantindo ordem de execução sem falhas." },
+        { name: "Detecção de Ciclos", desc: "Algoritmo DFS detecta e diagnostica dependências circulares com precisão." },
+        { name: "Opção A (Execução Completa)", desc: "Execução autônoma de ponta a ponta com verificação contínua de evidências." },
+        { name: "Opção B (Seleção Seletiva)", desc: "Calcula o fechamento transitivo de dependências e resolve pré-requisitos faltantes." },
+        { name: "Opção C (Ignorar com Graça)", desc: "Permite rejeitar ou reformular o plano sem perder o histórico da conversa." }
+      ]
+    },
+    {
+      id: "optimization",
+      name: "Otimizações de Recursos & Tokens",
+      items: [
+        { name: "FileReadCache", desc: "Cache LRU em memória por mtime e tamanho, eliminando I/O redundante de disco." },
+        { name: "ToolResultCompactor", desc: "Compactação semântica de saídas antigas de ferramentas, economizando até 70% de tokens." },
+        { name: "Prompt Caching Nativo", desc: "Aproveitamento de cache de prompt para Anthropic Claude, OpenAI e Gemini." }
+      ]
+    }
+  ],
   navGuide: "Guia",
   navArchitecture: "Arquitetura",
   guideEyebrow: "GUIA PASSO A PASSO",

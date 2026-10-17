@@ -182,12 +182,51 @@ body {
   border-radius: var(--glass-card-radius);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(40px) saturate(150%) brightness(0.88);
-  -webkit-backdrop-filter: blur(40px) saturate(150%) brightness(0.88);
+  backdrop-filter: blur(48px) saturate(180%) brightness(0.95);
+  -webkit-backdrop-filter: blur(48px) saturate(180%) brightness(0.95);
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.25s ease;
   overflow: hidden;
+}
+
+/* Reflexo especular superior de vidro real */
+.glass-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.45) 30%,
+    rgba(0, 229, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.45) 70%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Brilho radial de refração na base */
+.glass-card::after {
+  content: "";
+  position: absolute;
+  bottom: -60px;
+  right: -60px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(
+    circle,
+    rgba(0, 229, 255, 0.12) 0%,
+    rgba(0, 85, 255, 0.05) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+  filter: blur(20px);
 }
 
 .glass-card:hover {
@@ -273,7 +312,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(3, 3, 5, 0.75);
+  background: rgba(6, 11, 25, 0.65);
   backdrop-filter: blur(32px) saturate(160%);
   -webkit-backdrop-filter: blur(32px) saturate(160%);
   border-bottom: 1px solid var(--glass-border);
@@ -1799,4 +1838,279 @@ h2 {
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0;
+}
+
+/* -------------------------------------------------------------------------- */
+/* MODERN 200% ENHANCED NAVIGATION & SIDEBAR DRAWER SYSTEM                   */
+/* -------------------------------------------------------------------------- */
+
+.site-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Sidebar Drawer Toggle Button */
+.btn-sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  color: var(--accent-cyan);
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-sidebar-toggle:hover {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: rgba(0, 229, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+/* Sidebar Drawer */
+.sidebar-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 320px;
+  background: rgba(6, 11, 25, 0.88);
+  backdrop-filter: blur(48px) saturate(180%);
+  -webkit-backdrop-filter: blur(48px) saturate(180%);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-drawer.is-open {
+  transform: translateX(0);
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar-header {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sidebar-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--glow-primary);
+}
+
+.sidebar-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+}
+
+.btn-sidebar-close {
+  background: transparent;
+  border: none;
+  color: var(--text-faint);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.btn-sidebar-close:hover {
+  color: #ffffff;
+}
+
+.sidebar-nav-list {
+  padding: 1.25rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.sidebar-nav-item:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.sidebar-nav-item.is-active {
+  color: var(--accent-cyan);
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.35);
+  font-weight: 700;
+}
+
+.sidebar-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Secondary Sticky Navigation Bar for Views/Tabs */
+.view-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  margin-bottom: 2rem;
+  border-radius: 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.view-tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.view-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.view-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.view-tab-btn.is-active {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25), rgba(0, 85, 255, 0.35));
+  border-color: rgba(0, 229, 255, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 229, 255, 0.25);
+  font-weight: 700;
+}
+
+/* Documentation Interactive Section */
+.docs-section {
+  margin-top: 1.5rem;
+}
+
+.docs-category {
+  margin-bottom: 2.5rem;
+}
+
+.docs-category-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--glow-primary);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.docs-category-title::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: var(--accent-cyan);
+  border-radius: 2px;
+}
+
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.docs-card {
+  padding: 1.35rem;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+}
+
+.docs-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(0, 229, 255, 0.45);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+.docs-card-name {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.docs-card-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.55;
 }
