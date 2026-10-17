@@ -46,7 +46,8 @@ const COMMAND_SUGGESTIONS: CommandSuggestion[] = [
   { name: "@security-sentinel", type: "agent", desc: "Auditor cético para encontrar brechas, injeções e vulnerabilidades" },
   { name: "@shark-lead", type: "agent", desc: "Coordenador estratégico para arquitetura e divisão de tarefas" },
   { name: "@theological-scholar", type: "agent", desc: "Pesquisador lexicográfico de grego, hebraico e Strong" },
-  { name: "promaxthink", type: "skill", desc: "Raciocínio adversarial com passe de auto-verificação profundo" },
+  { name: "/learner-proj", type: "command", desc: "Varredura holística e aprendizado profundo de todo o projeto" },
+  { name: "promaxthink", type: "skill", desc: "Hiper-raciocínio 5x mais complexo com decomposição axiomática e auto-verificação adversarial" },
   { name: "ultrathink", type: "skill", desc: "Libera o nível máximo disponível de pensamento do modelo" },
   { name: "deepseaneuron", type: "skill", desc: "Compressão e racionalização semântica extrema de tokens" },
 ];

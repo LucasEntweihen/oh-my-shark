@@ -19,6 +19,7 @@ import { handleTodoAcp } from "./helpers/todo";
 import { buildUsageReportText } from "./helpers/usage-report";
 import type { SlashCommandRuntime, SlashCommandSpec } from "./types";
 import { launchTaskManagerGui } from "../taskmanager/launcher";
+import learnerProjPrompt from "../prompts/system/learner-proj-prompt.md" with { type: "text" };
 
 async function handleUsageResetCommand(
 	arg: string,
@@ -649,6 +650,25 @@ export const BUILTIN_SESSION_SLASH_COMMANDS: ReadonlyArray<SlashCommandSpec> = [
 			} else {
 				runtime.ctx.showStatus(`Failed to launch Task Manager GUI: ${result.reason}`);
 			}
+		},
+	},
+	{
+		name: "learner-proj",
+		aliases: ["learn-proj", "proj-learner", "learnerproj"],
+		icon: "compass",
+		description: "Scan and deeply learn the entire project architecture, mechanics, code, and ideas",
+		acpDescription: "Scan and deeply learn the entire project architecture, mechanics, code, and ideas",
+		allowArgs: true,
+		handle: async (command, _runtime) => {
+			const extra = command.args?.trim();
+			const promptText = extra ? `${learnerProjPrompt.trim()}\n\nInstruções ou foco adicional do usuário:\n${extra}` : learnerProjPrompt.trim();
+			return { prompt: promptText };
+		},
+		handleTui: async (command, runtime) => {
+			runtime.ctx.editor.setText("");
+			const extra = command.args?.trim();
+			const promptText = extra ? `${learnerProjPrompt.trim()}\n\nInstruções ou foco adicional do usuário:\n${extra}` : learnerProjPrompt.trim();
+			return { prompt: promptText };
 		},
 	},
 ];

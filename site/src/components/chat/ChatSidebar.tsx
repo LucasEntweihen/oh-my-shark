@@ -166,7 +166,7 @@ export function ChatSidebar({
                 <span>App Desktop (.exe)</span>
               </div>
               <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--espectro-ciano)]/20 text-[var(--espectro-ciano)]">
-                v0.0.27
+                v0.0.28
               </span>
             </button>
           )}

@@ -21,7 +21,7 @@ const en = {
   skipLink: "Skip to content",
   wordmark: "COSMOSKY",
   navLabel: "Sections",
-  versionBadge: "v0.0.27",
+  versionBadge: "v0.0.28",
   navCommands: "Commands",
   navFeatures: "Features",
   navPreset: "Preset",
@@ -44,7 +44,7 @@ const en = {
 
   quickInstallHeader: "DEFINITIVE INSTALL COMMAND",
   quickInstallSub: "Universal PowerShell 5.1 & Core one-liner — paste and execute directly in your terminal:",
-  quickInstallBadge: "LATEST: omsk-v0.0.27",
+  quickInstallBadge: "LATEST: omsk-v0.0.28",
   quickInstallMeta: "Zero configuration • SHA-256 verified • Isolated in ~/.ohms",
   osMacos: "macOS / Linux",
   osWindows: "Windows (PowerShell)",
@@ -145,12 +145,21 @@ const en = {
   specialCommandsList: [
     {
       name: "promaxthink",
-      tag: "Adversarial Reasoning",
+      tag: "Hyper-Reasoning & Adversarial Depth (5x)",
       badgeClass: "badge-red",
-      colors: "Rose → Red gradient",
+      colors: "Rose → Crimson gradient",
       description:
-        "Requests maximum reasoning effort and enforces an adversarial self-verification pass before answers are presented.",
-      usage: "promaxthink verify the security invariants of this patch",
+        "Radical evolution of ultrathink operating at 5x cognitive complexity. Executes multi-tier first-principles decomposition, adversarial falsification, and uncompromising depth.",
+      usage: "promaxthink architect the distributed consensus engine and break all edge cases",
+    },
+    {
+      name: "/learner-proj",
+      tag: "Holistic Project Intelligence",
+      badgeClass: "badge-cyan",
+      colors: "Cyan → Sapphire gradient",
+      description:
+        "Performs an exhaustive holistic codebase scan across 13 foundational pillars (architecture, mechanics, file structure, dependencies, logic) to internalize the entire system.",
+      usage: "/learner-proj examine full repository architecture and dependencies",
     },
     {
       name: "ultrathink",
@@ -247,7 +256,7 @@ const en = {
 
   footerTagline: "made by LucasEntweihen",
   footerLicenses: "Third-party notices",
-  footerRelease: "Release omsk-v0.0.27",
+  footerRelease: "Release omsk-v0.0.28",
   socialX: "X",
   socialGithub: "GitHub",
   socialLinkedin: "LinkedIn",
@@ -260,7 +269,7 @@ const pt: Strings = {
   skipLink: "Pular para o conteúdo",
   wordmark: "COSMOSKY",
   navLabel: "Seções",
-  versionBadge: "v0.0.27",
+  versionBadge: "v0.0.28",
   navCommands: "Comandos",
   navFeatures: "Recursos",
   navPreset: "Configuração",
@@ -282,7 +291,7 @@ const pt: Strings = {
   heroChangesCta: "Por que CosmoSky",
   quickInstallHeader: "COMANDO DEFINITIVO DE UMA LINHA",
   quickInstallSub: "Comando de uma linha compatível com PowerShell 5.1 e Core — cole e execute diretamente no terminal:",
-  quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.27",
+  quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.28",
   quickInstallMeta: "Zero configuração • Validação SHA-256 • Isolado em ~/.ohms",
   osMacos: "macOS / Linux",
   osWindows: "Windows (PowerShell)",
@@ -388,12 +397,21 @@ const pt: Strings = {
   specialCommandsList: [
     {
       name: "promaxthink",
-      tag: "Raciocínio Adversarial",
+      tag: "Hiper-Raciocínio & Profundidade Adversarial (5x)",
       badgeClass: "badge-red",
-      colors: "Gradiente Rosa → Vermelho",
+      colors: "Gradiente Rosa → Carmesim",
       description:
-        "Exige nível máximo de pensamento e executa uma verificação adversarial rigorosa antes de apresentar a resposta.",
-      usage: "promaxthink valide os invariantes de segurança deste patch",
+        "Evolução radical do ultrathink operando com 5x mais complexidade cognitiva, decomposição por primeiros princípios, autofalsificação adversarial e rigor intelectual absoluto.",
+      usage: "promaxthink arquitete o motor de consenso distribuído e quebre todos os edge cases",
+    },
+    {
+      name: "/learner-proj",
+      tag: "Inteligência Holística de Projeto",
+      badgeClass: "badge-cyan",
+      colors: "Gradiente Ciano → Safira",
+      description:
+        "Varredura exaustiva e aprendizado holístico em 13 pilares (arquitetura, mecânicas, estrutura de arquivos, dependências, lógica) para internalização profunda do sistema.",
+      usage: "/learner-proj examine a arquitetura completa e dependências do repositório",
     },
     {
       name: "ultrathink",
@@ -486,7 +504,7 @@ const pt: Strings = {
 
   footerTagline: "made by LucasEntweihen",
   footerLicenses: "Avisos de terceiros",
-  footerRelease: "Release omsk-v0.0.27",
+  footerRelease: "Release omsk-v0.0.28",
   socialX: "X",
   socialGithub: "GitHub",
   socialLinkedin: "LinkedIn",

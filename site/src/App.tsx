@@ -12,17 +12,17 @@ type Method = "quick" | "verified";
 const COMMANDS: Record<OS, Record<Method, string[]>> = {
   win: {
     quick: [
-      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.27/install.ps1 | iex",
+      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/install.ps1 | iex",
     ],
     verified: [
-      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.27/install.ps1 -OutFile install.ps1",
+      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/install.ps1 -OutFile install.ps1",
       "powershell -ExecutionPolicy Bypass -File .\\install.ps1",
     ],
   },
   mac: {
-    quick: ["curl -fsSL https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.27/install.sh | sh"],
+    quick: ["curl -fsSL https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/install.sh | sh"],
     verified: [
-      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.27/install.sh",
+      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/install.sh",
       "sh install.sh",
     ],
   },
@@ -290,7 +290,7 @@ export default function App() {
 
             <nav className="site-nav" aria-label={t.navLabel}>
               <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.27/CosmoSky-windows-x64.exe"
+                href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/CosmoSky-windows-x64.exe"
                 download="CosmoSky-windows-x64.exe"
                 style={{ color: "var(--accent-cyan)", fontWeight: 700 }}
               >
@@ -426,7 +426,7 @@ export default function App() {
                   </span>
                   <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
                     <a
-                      href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.27/CosmoSky-windows-x64.exe"
+                      href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/CosmoSky-windows-x64.exe"
                       download="CosmoSky-windows-x64.exe"
                       className="advanced-link"
                       style={{ fontWeight: 700 }}
@@ -443,7 +443,7 @@ export default function App() {
               <div className="hero-ctas">
                 <a
                   className="btn btn-primary btn-download-exe"
-                  href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.27/CosmoSky-windows-x64.exe"
+                  href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/CosmoSky-windows-x64.exe"
                   download="CosmoSky-windows-x64.exe"
                 >
                   <DownloadIcon />
@@ -473,7 +473,7 @@ export default function App() {
                     <span className="dot green" />
                   </div>
                   <span className="terminal-title">ohms // terminal bootstrap</span>
-                  <span className="terminal-spec">v0.0.27</span>
+                  <span className="terminal-spec">v0.0.28</span>
                 </div>
 
                 <div className="terminal-body">
@@ -711,7 +711,7 @@ export default function App() {
               </a>
               <span className="dot-sep" aria-hidden="true">•</span>
               <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.27"
+                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.28"
                 target="_blank"
                 rel="noopener noreferrer"
               >
