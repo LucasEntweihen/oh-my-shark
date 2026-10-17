@@ -258,61 +258,155 @@ export interface VerifiedBinaryDownloadOptions {
  */
 export async function downloadVerifiedBinary(options: VerifiedBinaryDownloadOptions): Promise<void> {
 	const fetchImpl = options.fetchImpl ?? fetch;
-	await unlinkIfExists(options.targetPath);
+	const maxRetries = 6;
+	const partPath = `${options.targetPath}.part`;
 
-	let response: Response;
-	try {
-		response = await fetchImpl(options.url, {
-			redirect: "follow",
-			signal: withTimeoutSignal(BINARY_DOWNLOAD_TIMEOUT_MS),
-		});
-	} catch (err) {
-		if (isTimeoutError(err)) {
-			throw new Error("Timed out downloading release binary after 15 minutes", { cause: err });
+	let lastError: unknown;
+
+	for (let attempt = 1; attempt <= maxRetries; attempt++) {
+		try {
+			let currentBytes = 0;
+			try {
+				if (fs.existsSync(partPath)) {
+					currentBytes = fs.statSync(partPath).size;
+				}
+			} catch {
+				currentBytes = 0;
+			}
+
+			if (currentBytes >= options.expectedSize) {
+				await unlinkIfExists(partPath);
+				currentBytes = 0;
+			}
+
+			const headers: Record<string, string> = {};
+			if (currentBytes > 0) {
+				headers.Range = `bytes=${currentBytes}-`;
+			}
+
+			const response = await fetchImpl(options.url, {
+				headers,
+				redirect: "follow",
+				signal: withTimeoutSignal(BINARY_DOWNLOAD_TIMEOUT_MS),
+			});
+
+			if (!response.ok || !response.body) {
+				if (response.status === 416) {
+					await unlinkIfExists(partPath);
+					continue;
+				}
+				throw new Error(`Download failed: HTTP ${response.status} ${response.statusText}`);
+			}
+
+			const isPartial = response.status === 206;
+			if (!isPartial && currentBytes > 0) {
+				await unlinkIfExists(partPath);
+				currentBytes = 0;
+			}
+
+			const writeStream = fs.createWriteStream(partPath, {
+				flags: isPartial ? "a" : "w",
+				mode: 0o600,
+			});
+
+			const reader = response.body.getReader();
+			try {
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
+					if (value) {
+						currentBytes += value.byteLength;
+						if (currentBytes > options.expectedSize) {
+							throw new Error(
+								`Downloaded binary size mismatch: expected ${options.expectedSize} bytes, received at least ${currentBytes}`,
+							);
+						}
+						if (!writeStream.write(value)) {
+							await new Promise(resolve => writeStream.once("drain", resolve));
+						}
+					}
+				}
+			} finally {
+				writeStream.end();
+				await new Promise(resolve => writeStream.once("finish", resolve));
+			}
+
+			if (currentBytes === options.expectedSize) {
+				break;
+			}
+
+			throw new Error(`Incomplete download: received ${currentBytes} of ${options.expectedSize} bytes`);
+		} catch (err) {
+			lastError = err;
+			if (isTimeoutError(err)) {
+				throw new Error("Timed out downloading release binary after 15 minutes", { cause: err });
+			}
+			if (isUnsupportedProxyError(err)) {
+				throw new Error(unsupportedProxyMessage(), { cause: err });
+			}
+
+			if (attempt < maxRetries) {
+				const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+				console.log(chalk.dim(`Network interrupted, resuming download (attempt ${attempt + 1}/${maxRetries} in ${(delayMs / 1000).toFixed(1)}s)…`));
+				await new Promise(resolve => setTimeout(resolve, delayMs));
+			}
 		}
-		if (isUnsupportedProxyError(err)) throw new Error(unsupportedProxyMessage(), { cause: err });
-		throw err;
 	}
-	if (!response.ok || !response.body) {
-		throw new Error(`Download failed: ${response.statusText}`);
+
+	let finalSize = 0;
+	try {
+		if (fs.existsSync(partPath)) {
+			finalSize = fs.statSync(partPath).size;
+		}
+	} catch {}
+
+	if (finalSize !== options.expectedSize) {
+		const curlBinary = $which("curl");
+		if (curlBinary) {
+			try {
+				console.log(chalk.dim("Resuming download via native curl fallback…"));
+				const proc = Bun.spawnSync([
+					curlBinary,
+					"-fL",
+					"-C",
+					"-",
+					"--retry",
+					"5",
+					"--retry-delay",
+					"2",
+					"-o",
+					partPath,
+					options.url,
+				]);
+				if (proc.exitCode === 0 && fs.existsSync(partPath)) {
+					finalSize = fs.statSync(partPath).size;
+				}
+			} catch {
+				// curl fallback failed, propagate lastError
+			}
+		}
+	}
+
+	if (finalSize !== options.expectedSize) {
+		await unlinkIfExists(partPath);
+		throw lastError ?? new Error(`Downloaded binary size mismatch: expected ${options.expectedSize} bytes, received ${finalSize}`);
 	}
 
 	const hash = createHash("sha256");
-	let size = 0;
-	const verifier = new Transform({
-		transform(chunk, _encoding, callback) {
-			size += chunk.byteLength;
-			if (size > options.expectedSize) {
-				callback(
-					new Error(
-						`Downloaded binary size mismatch: expected ${options.expectedSize} bytes, received at least ${size}`,
-					),
-				);
-				return;
-			}
-			hash.update(chunk);
-			callback(null, chunk);
-		},
-	});
-
-	try {
-		await pipeline(response.body, verifier, fs.createWriteStream(options.targetPath, { mode: 0o600 }));
-		const digest = `sha256:${hash.digest("hex")}`;
-		if (size !== options.expectedSize) {
-			throw new Error(`Downloaded binary size mismatch: expected ${options.expectedSize} bytes, received ${size}`);
-		}
-		if (digest !== options.expectedDigest) {
-			throw new Error(`Downloaded binary digest mismatch: expected ${options.expectedDigest}, received ${digest}`);
-		}
-		await fs.promises.chmod(options.targetPath, 0o755);
-	} catch (err) {
-		await unlinkIfExists(options.targetPath);
-		if (isTimeoutError(err)) {
-			throw new Error("Timed out downloading release binary after 15 minutes", { cause: err });
-		}
-		if (isUnsupportedProxyError(err)) throw new Error(unsupportedProxyMessage(), { cause: err });
-		throw err;
+	const fileStream = fs.createReadStream(partPath);
+	for await (const chunk of fileStream) {
+		hash.update(chunk);
 	}
+	const digest = `sha256:${hash.digest("hex")}`;
+
+	if (digest !== options.expectedDigest) {
+		await unlinkIfExists(partPath);
+		throw new Error(`Downloaded binary digest mismatch: expected ${options.expectedDigest}, received ${digest}`);
+	}
+
+	await unlinkIfExists(options.targetPath);
+	await fs.promises.rename(partPath, options.targetPath);
+	await fs.promises.chmod(options.targetPath, 0o755);
 }
 
 /** Result from running the installed binary and parsing its reported version. */
@@ -430,7 +524,7 @@ export async function getLatestRelease(
 
 	let response: Response;
 	try {
-		response = await fetchImpl(`${GITHUB_API}/repos/${REPO}/releases`, {
+		response = await fetchImpl(`${GITHUB_API}/repos/${REPO}/releases/latest`, {
 			headers,
 			signal: withTimeoutSignal(timeoutMs),
 		});
@@ -444,6 +538,27 @@ export async function getLatestRelease(
 		throw err;
 	}
 	if (response.status === 403 || response.status === 429) {
+		// Rate limit fallback: resolve latest release tag via GitHub web redirect (rate-limit immune)
+		try {
+			const webResponse = await fetchImpl(`https://github.com/${REPO}/releases/latest`, {
+				method: "HEAD",
+				redirect: "manual",
+				signal: withTimeoutSignal(timeoutMs),
+			});
+			const location = webResponse.headers.get("location");
+			if (location) {
+				const tagMatch = location.match(/\/releases\/tag\/([^/?#]+)/);
+				if (tagMatch && tagMatch[1]) {
+					const tag = decodeURIComponent(tagMatch[1]);
+					const version = parseProductTag(tag);
+					if (version) {
+						return { tag, version, dist: "binary" };
+					}
+				}
+			}
+		} catch {
+			// web redirect fallback failed
+		}
 		throw new Error(
 			"GitHub API rate limit exceeded while fetching release metadata; retry later or set GITHUB_TOKEN or GH_TOKEN",
 		);
@@ -452,27 +567,7 @@ export async function getLatestRelease(
 		throw new Error(`Failed to fetch release info for ${REPO}: ${response.statusText}`);
 	}
 
-	const dataList: unknown = await response.json();
-	if (!Array.isArray(dataList)) {
-		throw new Error(`Malformed GitHub release response for ${REPO}: expected an array`);
-	}
-
-	const candidates = dataList
-		.filter((r: unknown) => isRecord(r) && r.draft !== true && r.prerelease !== true && parseProductTag(r.tag_name))
-		.map((r: unknown) => {
-			const rec = r as Record<string, unknown>;
-			const tag = String(rec.tag_name);
-			const ver = parseProductTag(tag)!;
-			return { record: rec, tag, version: ver };
-		});
-
-	candidates.sort((a, b) => compareVersions(b.version, a.version));
-
-	const best = candidates[0];
-	if (!best) {
-		throw new Error(`No stable ${TAG_PREFIX}<semver> release found in recent releases for ${REPO}`);
-	}
-	const data = best.record;
+	const data = (await response.json()) as Record<string, unknown>;
 	const version = parseProductTag(data.tag_name);
 	if (!version) {
 		throw new Error(`GitHub release with ${data.tag_name} is not an ${TAG_PREFIX}<semver> release`);
