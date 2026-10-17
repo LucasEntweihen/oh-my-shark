@@ -14,7 +14,7 @@ const defaultNativeDir = path.join(import.meta.dir, "../native");
  * container header or timestamp, so identical addon bytes always embed
  * identically and consecutive binaries differ only where the addon did.
  */
-export const EMBEDDED_ADDON_ZSTD_LEVEL = 19;
+export const EMBEDDED_ADDON_ZSTD_LEVEL = Number(Bun.env.EMBEDDED_ADDON_ZSTD_LEVEL ?? "19");
 
 /** Platform/architecture pair whose addons a standalone binary embeds. */
 export interface NativeEmbedTarget {

@@ -83,20 +83,23 @@ export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; r
 			return { ok: true };
 		}
 
-		const child = Bun.spawn([
-			browserBin,
-			`--app=${appUrl}`,
-			"--window-size=1280,840",
-			"--window-position=60,60",
-			"--disable-default-apps",
-			"--no-first-run",
-		], {
-			cwd: workingDir,
-			stdin: "ignore",
-			stdout: "ignore",
-			stderr: "ignore",
-			detached: true,
-		});
+		const child = Bun.spawn(
+			[
+				browserBin,
+				`--app=${appUrl}`,
+				"--window-size=1280,840",
+				"--window-position=60,60",
+				"--disable-default-apps",
+				"--no-first-run",
+			],
+			{
+				cwd: workingDir,
+				stdin: "ignore",
+				stdout: "ignore",
+				stderr: "ignore",
+				detached: true,
+			},
+		);
 
 		child.unref();
 		return { ok: true };
@@ -105,13 +108,4 @@ export async function launchAuroraGuiApp(cwd?: string): Promise<{ ok: boolean; r
 		logger.error("Falha ao iniciar CosmoSky", { error: msg });
 		return { ok: false, reason: msg };
 	}
-}
-
-const isProcessEntry = import.meta.main || process.env.COSMOSKY_APP === "true";
-
-if (isProcessEntry) {
-	launchAuroraGuiApp().catch(err => {
-		console.error("CosmoSky startup error:", err);
-		process.exit(1);
-	});
 }
