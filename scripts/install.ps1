@@ -18,7 +18,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $Repo = "LucasEntweihen/oh-my-shark"
-$DefaultTag = "omsk-v0.0.28"
+$DefaultTag = "omsk-v0.0.29"
 $InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "omsk" }
 
 # Resolucao universal de arquitetura compativel com PS 5.1, PS 7+, 32-bit e 64-bit

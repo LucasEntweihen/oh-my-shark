@@ -12,17 +12,17 @@ type Method = "quick" | "verified";
 const COMMANDS: Record<OS, Record<Method, string[]>> = {
   win: {
     quick: [
-      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/install.ps1 | iex",
+      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/install.ps1 | iex",
     ],
     verified: [
-      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/install.ps1 -OutFile install.ps1",
+      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/install.ps1 -OutFile install.ps1",
       "powershell -ExecutionPolicy Bypass -File .\\install.ps1",
     ],
   },
   mac: {
-    quick: ["curl -fsSL https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/install.sh | sh"],
+    quick: ["curl -fsSL https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/install.sh | sh"],
     verified: [
-      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/install.sh",
+      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/install.sh",
       "sh install.sh",
     ],
   },
@@ -290,13 +290,15 @@ export default function App() {
 
             <nav className="site-nav" aria-label={t.navLabel}>
               <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/CosmoSky-windows-x64.exe"
+                href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/CosmoSky-windows-x64.exe"
                 download="CosmoSky-windows-x64.exe"
                 style={{ color: "var(--accent-cyan)", fontWeight: 700 }}
               >
                 {t.heroDownloadExeCta}
               </a>
               <a href="#quick-install">{t.heroInstallCta}</a>
+              <a href="#guide">{t.navGuide}</a>
+              <a href="#architecture">{t.navArchitecture}</a>
               <a href="#commands">{t.navCommands}</a>
               <a href="#features">{t.navFeatures}</a>
               <a href="#install">{t.navPreset}</a>
@@ -426,7 +428,7 @@ export default function App() {
                   </span>
                   <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
                     <a
-                      href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/CosmoSky-windows-x64.exe"
+                      href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/CosmoSky-windows-x64.exe"
                       download="CosmoSky-windows-x64.exe"
                       className="advanced-link"
                       style={{ fontWeight: 700 }}
@@ -443,7 +445,7 @@ export default function App() {
               <div className="hero-ctas">
                 <a
                   className="btn btn-primary btn-download-exe"
-                  href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.28/CosmoSky-windows-x64.exe"
+                  href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/CosmoSky-windows-x64.exe"
                   download="CosmoSky-windows-x64.exe"
                 >
                   <DownloadIcon />
@@ -473,7 +475,7 @@ export default function App() {
                     <span className="dot green" />
                   </div>
                   <span className="terminal-title">ohms // terminal bootstrap</span>
-                  <span className="terminal-spec">v0.0.28</span>
+                  <span className="terminal-spec">v0.0.29</span>
                 </div>
 
                 <div className="terminal-body">
@@ -621,6 +623,56 @@ export default function App() {
                 </div>
               </div>
             </section>
+            {/* 10-STEP ONBOARDING GUIDE SECTION */}
+            <section className="guide-section" id="guide" aria-labelledby="guide-title">
+              <p className="eyebrow">{t.guideEyebrow}</p>
+              <h2 id="guide-title">{t.guideHeading}</h2>
+              <p className="section-lede">{t.guideLede}</p>
+
+              <div className="guide-grid">
+                {t.guideSteps.map((step) => {
+                  const isCopied = noticeId === `guide-${step.step}`;
+                  return (
+                    <div key={step.step} className="guide-card glass-card">
+                      <div className="guide-header">
+                        <span className="guide-step-num">{step.step}</span>
+                        <h3 className="guide-title">{step.title}</h3>
+                      </div>
+                      <p className="guide-desc">{step.desc}</p>
+                      <div className="guide-code-box">
+                        <code>{step.code}</code>
+                        <button
+                          type="button"
+                          className={isCopied ? "btn-cmd-copy copied" : "btn-cmd-copy"}
+                          onClick={() => copy(`guide-${step.step}`, step.code)}
+                          aria-label={`${t.copyLabel}: ${step.code}`}
+                        >
+                          {isCopied ? <CheckIcon /> : <CopyIcon />}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* TECHNICAL ARCHITECTURE SECTION */}
+            <section className="architecture-section" id="architecture" aria-labelledby="architecture-title">
+              <p className="eyebrow">{t.architectureEyebrow}</p>
+              <h2 id="architecture-title">{t.architectureHeading}</h2>
+              <p className="section-lede">{t.architectureLede}</p>
+
+              <div className="architecture-grid">
+                {t.architecturePillars.map((pillar) => (
+                  <div key={pillar.id} className="pillar-card glass-card">
+                    <span className="pillar-badge">PILLAR // {pillar.id}</span>
+                    <h3 className="pillar-title">{pillar.title}</h3>
+                    <p className="pillar-body">{pillar.body}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {/* SPECIAL COMMANDS & MODES SECTION */}
             <section className="commands-section" id="commands" aria-labelledby="commands-title">
               <p className="eyebrow">{t.commandsEyebrow}</p>
@@ -711,7 +763,7 @@ export default function App() {
               </a>
               <span className="dot-sep" aria-hidden="true">•</span>
               <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.28"
+                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.29"
                 target="_blank"
                 rel="noopener noreferrer"
               >

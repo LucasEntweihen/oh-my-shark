@@ -27,6 +27,24 @@ export interface TodoItem {
 	status: TodoStatus;
 	/** When `status === "blocked"`, an optional note on what the task is waiting for. */
 	blocker?: string;
+	/** Stable unique identifier (e.g. "task-1", "core-auth") */
+	id?: string;
+	/** Task priority */
+	priority?: "low" | "normal" | "high" | "critical";
+	/** Task dependencies (IDs or content of prerequisite tasks) */
+	dependencies?: string[];
+	/** Files or components involved */
+	files?: string[];
+	/** Measurable objective or acceptance criteria */
+	objective?: string;
+	/** Concrete evidence of completion */
+	evidence?: string[];
+	/** Produced results or deliverables */
+	results?: string[];
+	/** Execution attempts count */
+	attempts?: number;
+	/** Last error message if failed */
+	lastError?: string;
 }
 
 export interface TodoPhase {
@@ -85,6 +103,10 @@ const todoSchema = type({
 	// an op that ignores it (e.g. `view`) must not be a hard schema rejection.
 	"items?": type("string").describe("task content").array().describe("tasks for single-phase init or append"),
 	"reason?": type("string").describe("blocker note (block op)"),
+	"dependencies?": type("string").array().describe("prerequisite task IDs or contents"),
+	"evidence?": type("string").array().describe("concrete evidence strings verifying completion (done op)"),
+	"id?": type("string").describe("stable task identifier"),
+	"priority?": type("string").describe("task priority level"),
 }).describe("apply a single todo operation");
 
 type TodoParams = TodoSchema;
@@ -98,7 +120,7 @@ type TodoOpEntryValue = TodoParams;
 
 function findTaskByContent(phases: TodoPhase[], content: string): { task: TodoItem; phase: TodoPhase } | undefined {
 	for (const phase of phases) {
-		const task = phase.tasks.find(t => t.content === content);
+		const task = phase.tasks.find(t => t.content === content || (t.id !== undefined && t.id === content));
 		if (task) return { task, phase };
 	}
 	return undefined;
@@ -109,9 +131,31 @@ function findPhaseByName(phases: TodoPhase[], name: string): TodoPhase | undefin
 }
 
 function cloneTask(task: TodoItem): TodoItem {
-	return task.blocker !== undefined
-		? { content: task.content, status: task.status, blocker: task.blocker }
-		: { content: task.content, status: task.status };
+	return {
+		content: task.content,
+		status: task.status,
+		blocker: task.blocker,
+		id: task.id,
+		priority: task.priority,
+		dependencies: task.dependencies ? [...task.dependencies] : undefined,
+		files: task.files ? [...task.files] : undefined,
+		objective: task.objective,
+		evidence: task.evidence ? [...task.evidence] : undefined,
+		results: task.results ? [...task.results] : undefined,
+		attempts: task.attempts,
+		lastError: task.lastError,
+	};
+}
+
+export function areDependenciesMet(task: TodoItem, allTasks: readonly TodoItem[]): boolean {
+	if (!task.dependencies || task.dependencies.length === 0) return true;
+	for (const dep of task.dependencies) {
+		const prerequisite = allTasks.find(t => t.id === dep || t.content === dep);
+		if (!prerequisite || prerequisite.status !== "completed") {
+			return false;
+		}
+	}
+	return true;
 }
 
 function clonePhases(phases: TodoPhase[]): TodoPhase[] {
@@ -156,20 +200,25 @@ function normalizeInProgressTask(phases: TodoPhase[]): void {
 
 	if (inProgressTasks.length > 0) return;
 
-	const firstPendingTask = orderedTasks.find(task => task.status === "pending");
-	if (firstPendingTask) firstPendingTask.status = "in_progress";
+	// Auto-promover a primeira tarefa pendente cujas dependencias estejam 100% resolvidas
+	const firstEligiblePending = orderedTasks.find(
+		task => task.status === "pending" && areDependenciesMet(task, orderedTasks),
+	);
+	if (firstEligiblePending) firstEligiblePending.status = "in_progress";
 }
 
 /** Return the active todo task, preferring an in-progress item over the first pending item. */
 export function nextActionableTask(phases: readonly TodoPhase[]): TodoItem | undefined {
-	let firstPending: TodoItem | undefined;
-	for (const phase of phases) {
-		for (const task of phase.tasks) {
-			if (task.status === "in_progress") return task;
-			if (!firstPending && task.status === "pending") firstPending = task;
+	const orderedTasks = phases.flatMap(phase => phase.tasks);
+	for (const task of orderedTasks) {
+		if (task.status === "in_progress") return task;
+	}
+	for (const task of orderedTasks) {
+		if (task.status === "pending" && areDependenciesMet(task, orderedTasks)) {
+			return task;
 		}
 	}
-	return firstPending;
+	return undefined;
 }
 
 export const USER_TODO_EDIT_CUSTOM_TYPE = "user_todo_edit";
@@ -422,9 +471,16 @@ function initPhases(entry: TodoOpEntryValue, errors: string[]): TodoPhase[] {
 			seenTasks.add(content);
 		}
 	}
+	let taskIndex = 1;
 	return list.map(listEntry => ({
 		name: listEntry.phase,
-		tasks: listEntry.items.map<TodoItem>(content => ({ content, status: "pending" })),
+		tasks: listEntry.items.map<TodoItem>(content => ({
+			content,
+			status: "pending",
+			id: `task-${taskIndex++}`,
+			dependencies: entry.dependencies ? [...entry.dependencies] : undefined,
+			priority: (entry.priority as any) ?? "normal",
+		})),
 	}));
 }
 
@@ -489,6 +545,15 @@ function applyEntry(phases: TodoPhase[], entry: TodoOpEntryValue, errors: string
 		case "start": {
 			const hit = resolveTaskOrError(phases, entry.task, errors);
 			if (!hit) return phases;
+			const allTasks = phases.flatMap(p => p.tasks);
+			if (!areDependenciesMet(hit.task, allTasks)) {
+				const unresolved = (hit.task.dependencies || []).filter(dep => {
+					const prereq = allTasks.find(t => t.id === dep || t.content === dep);
+					return !prereq || prereq.status !== "completed";
+				});
+				errors.push(`Cannot start task "${hit.task.content}": dependencies [${unresolved.join(", ")}] not completed`);
+				return phases;
+			}
 			for (const phase of phases) {
 				for (const candidate of phase.tasks) {
 					if (candidate.status === "in_progress" && candidate !== hit.task) {
@@ -502,6 +567,9 @@ function applyEntry(phases: TodoPhase[], entry: TodoOpEntryValue, errors: string
 		case "done": {
 			for (const task of getTaskTargets(phases, entry, errors)) {
 				task.status = "completed";
+				if (entry.evidence && Array.isArray(entry.evidence)) {
+					task.evidence = [...(task.evidence || []), ...entry.evidence];
+				}
 			}
 			return phases;
 		}
