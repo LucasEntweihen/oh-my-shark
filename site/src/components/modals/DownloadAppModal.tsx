@@ -13,11 +13,11 @@ interface DownloadAppModalProps {
  */
 export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
   const [copied, setCopied] = useState(false);
-  const version = "v0.0.26";
-  const releaseTag = "omsk-v0.0.26";
+  const version = "v0.0.27";
+  const releaseTag = "omsk-v0.0.27";
   const exeFileName = "CosmoSky-windows-x64.exe";
   const exeDownloadUrl = `https://github.com/LucasEntweihen/oh-my-shark/releases/download/${releaseTag}/${exeFileName}`;
-  const quickInstallCommand = `$s = (irm https://raw.githubusercontent.com/LucasEntweihen/oh-my-shark/main/scripts/install.ps1); & ([scriptblock]::Create($s))`;
+  const quickInstallCommand = `irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.27/install.ps1 | iex`;
 
   if (!isOpen) return null;
 
