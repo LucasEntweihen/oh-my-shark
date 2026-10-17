@@ -27,51 +27,33 @@ const COMMANDS: Record<OS, Record<Method, string[]>> = {
     ],
   },
 };
+
 const SOCIALS = [
-  { icon: siGithub, key: "socialGithub", href: "https://github.com/LucasEntweihen" },
-  { icon: siLinkedin, key: "socialLinkedin", href: "https://www.linkedin.com/in/lucas-guerriero-286665364/?isSelfProfile=true" },
+  { icon: siGithub, name: "GitHub", href: "https://github.com/LucasEntweihen/oh-my-shark" },
+  { icon: siLinkedin, name: "LinkedIn", href: "https://www.linkedin.com/in/lucas-guerriero-286665364/" },
 ] as const;
 
-function fallbackCopy(text: string): boolean {
-  try {
-    const area = document.createElement("textarea");
-    area.value = text;
-    area.setAttribute("readonly", "");
-    area.className = "copy-fallback";
-    document.body.appendChild(area);
-    area.select();
-    const ok = document.execCommand("copy");
-    document.body.removeChild(area);
-    return ok;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Shark Fin Signature: precision aerodynamic shark silhouette mark
- */
-function SharkMark() {
+function SharkIcon() {
   return (
-    <svg className="shark-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <svg className="shark-icon-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <path
         d="M5 26C8 18 13 8 26 5C23 15 17 22 7 27L5 26Z"
-        fill="url(#shark-grad)"
-        stroke="rgba(0, 229, 255, 0.8)"
+        fill="url(#shark-cyan-grad)"
+        stroke="rgba(0, 229, 255, 0.9)"
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
       <path
         d="M12 24C16 18 19 13 25 10"
-        stroke="rgba(255, 255, 255, 0.6)"
+        stroke="rgba(255, 255, 255, 0.75)"
         strokeWidth="1"
         strokeLinecap="round"
       />
       <defs>
-        <linearGradient id="shark-grad" x1="5" y1="5" x2="26" y2="26" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#00E5FF" stopOpacity="0.8" />
-          <stop offset="0.5" stopColor="#0055FF" stopOpacity="0.5" />
-          <stop offset="1" stopColor="#4A00E0" stopOpacity="0.2" />
+        <linearGradient id="shark-cyan-grad" x1="5" y1="5" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#00E5FF" stopOpacity="0.9" />
+          <stop offset="0.5" stopColor="#0055FF" stopOpacity="0.6" />
+          <stop offset="1" stopColor="#1E3A8A" stopOpacity="0.3" />
         </linearGradient>
       </defs>
     </svg>
@@ -80,7 +62,7 @@ function SharkMark() {
 
 function CopyIcon() {
   return (
-    <svg className="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
     </svg>
@@ -89,104 +71,8 @@ function CopyIcon() {
 
 function CheckIcon() {
   return (
-    <svg className="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function TerminalIcon() {
-  return (
-    <svg className="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <polyline points="4 17 10 11 4 5" />
-      <line x1="12" y1="19" x2="20" y2="19" />
-    </svg>
-  );
-}
-function DownloadIcon() {
-  return (
-    <svg className="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  );
-}
-
-
-function BrandIcon({ path }: { path: string }) {
-  return (
-    <svg className="brand-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d={path} fill="currentColor" />
-    </svg>
-  );
-}
-
-/**
- * Midground Z-10 Spectrum Layer
- * Exact implementation of Section 10 of DESIGN.md:
- * - Film-grain fractal noise filter
- * - Continuous 8-color spectrum beam (#4A00E0 -> #FF0033)
- * - Dispersion sliced polygons
- * - Radial bloom illumination
- */
-function SpectrumLayer() {
-  return (
-    <svg
-      className="prism-spectrum-bg"
-      viewBox="0 0 1920 1080"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-    >
-      <defs>
-        <filter id="film-grain" x="0" y="0" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch" />
-          <feColorMatrix type="matrix" values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 0.12 0" />
-          <feComposite operator="in" in2="SourceGraphic" result="monoNoise" />
-          <feBlend mode="screen" in="monoNoise" in2="SourceGraphic" />
-        </filter>
-
-        <linearGradient id="spectrum-beam" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#4A00E0" stopOpacity="0" />
-          <stop offset="10%" stopColor="#3B11A4" stopOpacity="0.7" />
-          <stop offset="25%" stopColor="#0055FF" stopOpacity="0.8" />
-          <stop offset="40%" stopColor="#00E5FF" stopOpacity="0.85" />
-          <stop offset="55%" stopColor="#00FF66" stopOpacity="0.9" />
-          <stop offset="70%" stopColor="#FFEA00" stopOpacity="0.85" />
-          <stop offset="85%" stopColor="#FF6600" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#FF0033" stopOpacity="0.75" />
-        </linearGradient>
-
-        <radialGradient id="light-bloom" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.35" />
-          <stop offset="50%" stopColor="#00E5FF" stopOpacity="0.15" />
-          <stop offset="100%" stopColor="#030305" stopOpacity="0" />
-        </radialGradient>
-
-        <linearGradient id="glass-border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
-          <stop offset="50%" stopColor="#00E5FF" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#4A00E0" stopOpacity="0.1" />
-        </linearGradient>
-      </defs>
-
-      <g filter="url(#film-grain)">
-        {/* Main expanded diagonal spectrum ray */}
-        <polygon points="120,1080 650,1080 1920,420 1920,0" fill="url(#spectrum-beam)" style={{ mixBlendMode: "screen" }} />
-
-        {/* Spectral slice dispersion bands */}
-        <polygon points="50,1080 140,1080 1920,120 1920,-40" fill="#4A00E0" opacity="0.45" />
-        <polygon points="140,1080 240,1080 1920,220 1920,120" fill="#0055FF" opacity="0.55" />
-        <polygon points="240,1080 340,1080 1920,320 1920,220" fill="#00E5FF" opacity="0.65" />
-        <polygon points="340,1080 440,1080 1920,420 1920,320" fill="#00FF66" opacity="0.75" />
-        <polygon points="440,1080 540,1080 1920,520 1920,420" fill="#FFEA00" opacity="0.7" />
-        <polygon points="540,1080 640,1080 1920,620 1920,520" fill="#FF6600" opacity="0.6" />
-        <polygon points="640,1080 720,1080 1920,720 1920,620" fill="#FF0033" opacity="0.55" />
-
-        {/* Central refractive bloom */}
-        <circle cx="1020" cy="500" r="480" fill="url(#light-bloom)" style={{ mixBlendMode: "screen" }} />
-      </g>
     </svg>
   );
 }
@@ -194,25 +80,20 @@ function SpectrumLayer() {
 export default function App() {
   const [locale, setLocale] = useState<Locale>(initLocale);
   const [theme, setTheme] = useState<Theme>(initTheme);
-  const [heroOs, setHeroOs] = useState<OS>("win");
   const [os, setOs] = useState<OS>("win");
-  const [method, setMethod] = useState<Method>("quick");
-  const [feature, setFeature] = useState(0);
+  const [method] = useState<Method>("quick");
+  const [tuiTab, setTuiTab] = useState<"live" | "task" | "compress" | "roster">("live");
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [paletteQuery, setPaletteQuery] = useState("");
   const [noticeId, setNoticeId] = useState<string | null>(null);
-  const [noticeOk, setNoticeOk] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"all" | "guide" | "docs" | "architecture" | "commands" | "install">("all");
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const t: Strings = dict[locale];
-  const activeFeature = t.featuresList[Math.min(feature, t.featuresList.length - 1)];
 
   useEffect(() => {
     try {
       localStorage.setItem(LOCALE_KEY, locale);
-    } catch {
-      /* ignore */
-    }
+    } catch {}
   }, [locale]);
 
   useEffect(() => {
@@ -225,208 +106,171 @@ export default function App() {
     return startTopo(canvas);
   }, []);
 
-  const copy = (id: string, text: string) => {
-    const ok =
-      typeof navigator !== "undefined" && navigator.clipboard
-        ? navigator.clipboard
-            .writeText(text)
-            .then(() => true)
-            .catch(() => fallbackCopy(text))
-        : Promise.resolve(fallbackCopy(text));
+  // Keyboard shortcut listener (/ or Cmd+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName))) {
+        e.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      }
+      if (e.key === "Escape") {
+        setPaletteOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
-    void ok.then((success) => {
+  const copy = (id: string, text: string) => {
+    navigator.clipboard?.writeText(text).then(() => {
       setNoticeId(id);
-      setNoticeOk(success);
-      window.setTimeout(() => {
-        setNoticeId((cur) => (cur === id ? null : cur));
-      }, 2500);
+      setTimeout(() => setNoticeId(null), 2500);
+    }).catch(() => {
+      setNoticeId("fail");
+      setTimeout(() => setNoticeId(null), 2500);
     });
   };
 
-  const heroCommand = COMMANDS[heroOs].quick[0];
-  const steps = COMMANDS[os][method];
-  const noticeText = noticeOk ? t.copiedMessage : t.copyFailedMessage;
+  const heroCommand = COMMANDS[os].quick[0];
+
+  const paletteItems = [
+    { name: "Quickstart Installation", section: "#install", tag: "CLI / Powershell" },
+    { name: "Task Plan Engine & DAG", section: "#pillars", tag: "Architecture" },
+    { name: "3-Way Plan Authorization", section: "#pillars", tag: "User Control" },
+    { name: "Semantic Compression & FileReadCache", section: "#compression", tag: "Optimization" },
+    { name: "Autonomous Slash Commands", section: "#commands", tag: "Protocols" },
+    { name: "10-Step Practical Onboarding Guide", section: "#guide", tag: "Documentation" },
+    { name: "Download Windows Desktop Engine (.exe)", section: "https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/CosmoSky-windows-x64.exe", tag: "Download" },
+    { name: "GitHub Source Code Repository", section: "https://github.com/LucasEntweihen/oh-my-shark", tag: "GitHub" },
+  ];
+
+  const filteredPalette = paletteItems.filter((i) =>
+    i.name.toLowerCase().includes(paletteQuery.toLowerCase()) ||
+    i.tag.toLowerCase().includes(paletteQuery.toLowerCase())
+  );
 
   return (
     <>
-      <div className="sr-only" aria-live="polite" aria-atomic="true">
-        {noticeId ? noticeText : ""}
-      </div>
-      <a className="skip-link" href="#main">
-        {t.skipLink}
-      </a>
-
-      {/* Layer Z-0: Deep Web 3D Topographic Mesh */}
+      <a className="skip-link" href="#main">{t.skipLink}</a>
       <canvas ref={canvasRef} className="topo-canvas" aria-hidden="true" />
+      <div className="dot-matrix-overlay" aria-hidden="true" />
 
-      {/* Layer Z-10: 8-Band Optical Spectrum Beam */}
-      <SpectrumLayer />
+      {/* COMMAND PALETTE MODAL (Cmd+K / /) */}
+      {paletteOpen && (
+        <div className="palette-modal-backdrop" onClick={() => setPaletteOpen(false)}>
+          <div className="palette-box" onClick={(e) => e.stopPropagation()}>
+            <div className="palette-input-row">
+              <span style={{ color: "var(--shark-cyan)", fontFamily: "var(--font-mono)" }}>❯</span>
+              <input
+                type="text"
+                className="palette-search-input"
+                placeholder={t.palettePlaceholder}
+                value={paletteQuery}
+                onChange={(e) => setPaletteQuery(e.target.value)}
+                autoFocus
+              />
+              <span className="kbd-chip">{t.paletteEscHint}</span>
+            </div>
+            <ul className="palette-list">
+              {filteredPalette.map((item, idx) => (
+                <li
+                  key={idx}
+                  className="palette-item"
+                  onClick={() => {
+                    setPaletteOpen(false);
+                    if (item.section.startsWith("http")) {
+                      window.open(item.section, "_blank");
+                    } else {
+                      window.location.hash = item.section;
+                    }
+                  }}
+                >
+                  <span className="palette-item-name">{item.name}</span>
+                  <span className="palette-item-badge">{item.tag}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
-      <div className="page">
-        {/* Optical Telemetry Status Strip */}
+      <div className="page-container">
+        {/* VIEW 01: TELEMETRY STRIP */}
         <div className="telemetry-strip" aria-hidden="true">
           <div className="wrap telemetry-inner">
-            <span className="telemetry-node">
-              <span className="pulse-dot green" />
-              {t.telemetryGrid}
-            </span>
-            <span className="telemetry-node">
-              <span className="pulse-dot cyan" />
-              {t.telemetrySpectrum}
-            </span>
-            <span className="telemetry-node anomaly">
-              <span className="pulse-dot red" />
+            <span className="telemetry-item">
+              <span className="status-dot green" />
               {t.telemetryStatus}
             </span>
+            <span className="telemetry-item">{t.telemetryEngine}</span>
+            <span className="telemetry-item">{t.telemetryTokenSavings}</span>
+            <span className="telemetry-item">{t.telemetryLatency}</span>
+            <span className="telemetry-item">
+              <span className="status-dot cyan" />
+              {t.telemetryVersion}
+            </span>
           </div>
         </div>
 
-
-      {/* SIDEBAR BACKDROP */}
-      <div
-        className={sidebarOpen ? "sidebar-backdrop is-open" : "sidebar-backdrop"}
-        onClick={() => setSidebarOpen(false)}
-        aria-hidden="true"
-      />
-
-      {/* SIDEBAR DRAWER (DOCUMENTAÇÃO & NAVEGAÇÃO INTERATIVA) */}
-      <aside className={sidebarOpen ? "sidebar-drawer is-open" : "sidebar-drawer"} aria-label={t.sidebarDocTitle}>
-        <div className="sidebar-header">
-          <div className="sidebar-title-group">
-            <span className="sidebar-title">{t.sidebarDocTitle}</span>
-            <span className="sidebar-subtitle">{t.sidebarDocSubtitle}</span>
-          </div>
-          <button
-            type="button"
-            className="btn-sidebar-close"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Fechar Menu"
-          >
-            ✕
-          </button>
-        </div>
-
-        <nav className="sidebar-nav-list">
-          <button
-            type="button"
-            className={activeTab === "all" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
-            onClick={() => { setActiveTab("all"); setSidebarOpen(false); }}
-          >
-            <span className="sidebar-icon">✦</span>
-            <span>{t.tabOverview}</span>
-          </button>
-          <button
-            type="button"
-            className={activeTab === "guide" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
-            onClick={() => { setActiveTab("guide"); setSidebarOpen(false); }}
-          >
-            <span className="sidebar-icon">📖</span>
-            <span>{t.tabGuide}</span>
-          </button>
-          <button
-            type="button"
-            className={activeTab === "docs" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
-            onClick={() => { setActiveTab("docs"); setSidebarOpen(false); }}
-          >
-            <span className="sidebar-icon">⚡</span>
-            <span>{t.tabDocs}</span>
-          </button>
-          <button
-            type="button"
-            className={activeTab === "architecture" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
-            onClick={() => { setActiveTab("architecture"); setSidebarOpen(false); }}
-          >
-            <span className="sidebar-icon">🏛</span>
-            <span>{t.tabArchitecture}</span>
-          </button>
-          <button
-            type="button"
-            className={activeTab === "commands" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
-            onClick={() => { setActiveTab("commands"); setSidebarOpen(false); }}
-          >
-            <span className="sidebar-icon">⌨</span>
-            <span>{t.tabCommands}</span>
-          </button>
-          <button
-            type="button"
-            className={activeTab === "install" ? "sidebar-nav-item is-active" : "sidebar-nav-item"}
-            onClick={() => { setActiveTab("install"); setSidebarOpen(false); }}
-          >
-            <span className="sidebar-icon">📦</span>
-            <span>{t.tabInstall}</span>
-          </button>
-        </nav>
-      </aside>
-
-        {/* Site Header */}
+        {/* VIEW 01: GLOBAL TACTICAL HEADER */}
         <header className="site-header">
           <div className="wrap header-inner">
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <button
-                type="button"
-                className="btn-sidebar-toggle"
-                onClick={() => setSidebarOpen(true)}
-                aria-label="Abrir Menu de Navegação e Documentação"
-              >
-                <span>☰</span>
-                <span>Docs</span>
-              </button>
-              <a className="brand" href="#top" aria-label={t.wordmark}>
-                <SharkMark />
-                <span className="wordmark">{t.wordmark}</span>
-                <span className="version-badge">{t.versionBadge}</span>
-              </a>
-            </div>
+            <a className="brand-group" href="#top">
+              <SharkIcon />
+              <span className="brand-text">{t.wordmark}</span>
+              <span className="brand-badge">{t.versionBadge}</span>
+            </a>
 
-            <nav className="site-nav" aria-label={t.navLabel}>
-              <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/CosmoSky-windows-x64.exe"
-                download="CosmoSky-windows-x64.exe"
-                style={{ color: "var(--accent-cyan)", fontWeight: 700 }}
-              >
-                {t.heroDownloadExeCta}
-              </a>
-              <a href="#quick-install">{t.heroInstallCta}</a>
-              <a href="#guide">{t.navGuide}</a>
-              <a href="#architecture">{t.navArchitecture}</a>
-              <a href="#commands">{t.navCommands}</a>
-              <a href="#features">{t.navFeatures}</a>
-              <a href="#install">{t.navPreset}</a>
-              <a href="#lineage">{t.navLineage}</a>
-              <a href={t.githubHref} target="_blank" rel="noopener noreferrer">
+            <nav className="site-nav" aria-label="Main Navigation">
+              <a className="nav-link" href="#pillars">{t.navBento}</a>
+              <a className="nav-link" href="#compression">{t.navCompression}</a>
+              <a className="nav-link" href="#commands">{t.navCommands}</a>
+              <a className="nav-link" href="#guide">{t.navDocs}</a>
+              <a className="nav-link" href="#install">{t.navInstall}</a>
+              <a className="nav-link" href={t.githubHref} target="_blank" rel="noopener noreferrer">
                 {t.navGithub}
               </a>
             </nav>
 
-            <div className="header-controls">
-              <div className="locale-control" role="group" aria-label={t.localeToggleLabel}>
+            <div className="header-actions">
+              <button
+                type="button"
+                className="palette-trigger-btn"
+                onClick={() => setPaletteOpen(true)}
+                title={t.commandPaletteHint}
+              >
+                <span>Command</span>
+                <span className="kbd-chip">Cmd+K</span>
+              </button>
+
+              <div className="control-btn-group" role="group" aria-label={t.localeToggleLabel}>
                 <button
                   type="button"
-                  aria-pressed={locale === "pt"}
+                  className={locale === "pt" ? "control-btn active" : "control-btn"}
                   onClick={() => setLocale("pt")}
                 >
                   PT
                 </button>
                 <button
                   type="button"
-                  aria-pressed={locale === "en"}
+                  className={locale === "en" ? "control-btn active" : "control-btn"}
                   onClick={() => setLocale("en")}
                 >
                   EN
                 </button>
               </div>
 
-              <div className="theme-control" role="group" aria-label={t.themeToggleLabel}>
+              <div className="control-btn-group" role="group" aria-label={t.themeToggleLabel}>
                 <button
                   type="button"
-                  aria-pressed={theme === "dark"}
+                  className={theme === "dark" ? "control-btn active" : "control-btn"}
                   onClick={() => setTheme("dark")}
                 >
                   {t.themeDark}
                 </button>
                 <button
                   type="button"
-                  aria-pressed={theme === "light"}
+                  className={theme === "light" ? "control-btn active" : "control-btn"}
                   onClick={() => setTheme("light")}
                 >
                   {t.themeLight}
@@ -437,526 +281,462 @@ export default function App() {
         </header>
 
         <main id="main">
-          <div className="wrap" id="top">
-            {/* INTERACTIVE NAVIGATION TABS BAR */}
-            <div className="view-tabs-bar glass-card" role="tablist" aria-label="Abas da Home e Documentação">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "all"}
-                className={activeTab === "all" ? "view-tab-btn is-active" : "view-tab-btn"}
-                onClick={() => setActiveTab("all")}
-              >
-                <span>✦</span>
-                <span>{t.tabOverview}</span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "guide"}
-                className={activeTab === "guide" ? "view-tab-btn is-active" : "view-tab-btn"}
-                onClick={() => setActiveTab("guide")}
-              >
-                <span>📖</span>
-                <span>{t.tabGuide}</span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "docs"}
-                className={activeTab === "docs" ? "view-tab-btn is-active" : "view-tab-btn"}
-                onClick={() => setActiveTab("docs")}
-              >
-                <span>⚡</span>
-                <span>{t.tabDocs}</span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "architecture"}
-                className={activeTab === "architecture" ? "view-tab-btn is-active" : "view-tab-btn"}
-                onClick={() => setActiveTab("architecture")}
-              >
-                <span>🏛</span>
-                <span>{t.tabArchitecture}</span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "commands"}
-                className={activeTab === "commands" ? "view-tab-btn is-active" : "view-tab-btn"}
-                onClick={() => setActiveTab("commands")}
-              >
-                <span>⌨</span>
-                <span>{t.tabCommands}</span>
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === "install"}
-                className={activeTab === "install" ? "view-tab-btn is-active" : "view-tab-btn"}
-                onClick={() => setActiveTab("install")}
-              >
-                <span>📦</span>
-                <span>{t.tabInstall}</span>
-              </button>
-            </div>
-            {/* HERO SECTION */}
-            {(activeTab === "all") && (
-            <section className="hero" aria-labelledby="hero-title">
-              <div className="hero-prism-badge">
-                <span className="badge-glow-dot" />
-                <span>{t.heroSpectrumBadge}</span>
-              </div>
+          {/* VIEW 02: HERO SECTION (ABOVE THE FOLD — PHI 1.618 SPLIT) */}
+          <section className="hero-section" id="top">
+            <div className="wrap hero-grid">
+              {/* Coluna Esquerda: Proposta de Valor e Seletor CLI */}
+              <div className="hero-content">
+                <div className="hero-eyebrow-badge">
+                  <span className="status-dot cyan" />
+                  <span>{t.heroBadge}</span>
+                </div>
 
-              <p className="eyebrow">
-                <SharkMark />
-                {t.heroEyebrow}
-              </p>
+                <h1 className="hero-title">
+                  {t.heroTitlePre} <span className="hero-title-gradient">{t.heroTitleGradient}</span>
+                </h1>
 
-              <h1 id="hero-title">{t.heroTitle}</h1>
-              <p className="lede">{t.heroLede}</p>
+                <p className="hero-lede">{t.heroLede}</p>
 
-              {/* ----------------------------------------------------------------- */}
-              {/* DEFINITIVE INSTALL COMMAND HERO CARD                              */}
-              {/* ----------------------------------------------------------------- */}
-              <div className="hero-install-card glass-card" id="quick-install">
-                <div className="card-ambient-light" aria-hidden="true" />
-                <div className="hero-card-header">
-                  <div className="hero-card-title-group">
-                    <TerminalIcon />
-                    <span className="hero-card-title">{t.quickInstallHeader}</span>
-                    <span className="live-pill">{t.quickInstallBadge}</span>
-                  </div>
-                  <div className="hero-os-tabs" role="tablist">
+                {/* Caixa de Instalação Imediata */}
+                <div className="hero-install-box">
+                  <span className="hero-install-label">{t.heroInstallHeader}</span>
+                  <div className="install-cmd-row">
+                    <span style={{ color: "var(--shark-cyan)", fontFamily: "var(--font-mono)" }}>
+                      {os === "win" ? "PS >" : "$"}
+                    </span>
+                    <code className="install-cmd-code">{heroCommand}</code>
                     <button
                       type="button"
-                      role="tab"
-                      aria-selected={heroOs === "win"}
-                      onClick={() => setHeroOs("win")}
-                      className={heroOs === "win" ? "os-tab is-active" : "os-tab"}
+                      className="btn-copy-action"
+                      onClick={() => copy("hero", heroCommand)}
                     >
-                      Windows (PowerShell)
-                    </button>
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={heroOs === "mac"}
-                      onClick={() => setHeroOs("mac")}
-                      className={heroOs === "mac" ? "os-tab is-active" : "os-tab"}
-                    >
-                      macOS / Linux
+                      {noticeId === "hero" ? <CheckIcon /> : <CopyIcon />}
+                      <span>{noticeId === "hero" ? t.heroCopied : t.heroCopyLabel}</span>
                     </button>
                   </div>
                 </div>
 
-                <p className="hero-card-sub">{t.quickInstallSub}</p>
+                {/* CTAs Primário e Secundário */}
+                <div className="hero-cta-group">
+                  <a
+                    className="btn-primary"
+                    href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/CosmoSky-windows-x64.exe"
+                    download="CosmoSky-windows-x64.exe"
+                  >
+                    <span>⬇</span>
+                    <span>{t.heroDownloadExe}</span>
+                  </a>
+                  <a className="btn-ghost" href="#pillars">
+                    <span>{t.heroInspectLive}</span>
+                    <span>→</span>
+                  </a>
+                  <a className="btn-ghost" href="#guide">
+                    <span>{t.heroDocsCta}</span>
+                  </a>
+                </div>
+              </div>
 
-                <div className="hero-cmd-display">
-                  <span className="cmd-prompt">{heroOs === "win" ? "PS >" : "$"}</span>
-                  <code className="cmd-code">{heroCommand}</code>
+              {/* Coluna Direita: Emulador TUI Interativo em Tempo Real */}
+              <div className="tui-window">
+                <div className="tui-titlebar">
+                  <div className="tui-dots">
+                    <span className="tui-dot red" />
+                    <span className="tui-dot yellow" />
+                    <span className="tui-dot green" />
+                  </div>
+                  <span className="tui-title-text">{t.tuiTitle}</span>
+                  <span className="brand-badge">SHARK KERNEL</span>
+                </div>
+
+                <div className="tui-tabs-bar">
                   <button
                     type="button"
-                    className={noticeId === `hero-${heroOs}` ? "btn-hero-copy copied" : "btn-hero-copy"}
-                    onClick={() => copy(`hero-${heroOs}`, heroCommand)}
-                    aria-label={`${t.copyLabel}: ${heroCommand}`}
+                    className={tuiTab === "live" ? "tui-tab active" : "tui-tab"}
+                    onClick={() => setTuiTab("live")}
                   >
-                    {noticeId === `hero-${heroOs}` ? (
-                      <>
-                        <CheckIcon />
-                        <span>{t.copiedMessage}</span>
-                      </>
-                    ) : (
-                      <>
-                        <CopyIcon />
-                        <span>{t.copyLabel}</span>
-                      </>
-                    )}
+                    {t.tabTuiLive}
+                  </button>
+                  <button
+                    type="button"
+                    className={tuiTab === "task" ? "tui-tab active" : "tui-tab"}
+                    onClick={() => setTuiTab("task")}
+                  >
+                    {t.tabTuiTask}
+                  </button>
+                  <button
+                    type="button"
+                    className={tuiTab === "compress" ? "tui-tab active" : "tui-tab"}
+                    onClick={() => setTuiTab("compress")}
+                  >
+                    {t.tabTuiCompress}
+                  </button>
+                  <button
+                    type="button"
+                    className={tuiTab === "roster" ? "tui-tab active" : "tui-tab"}
+                    onClick={() => setTuiTab("roster")}
+                  >
+                    {t.tabTuiRoster}
                   </button>
                 </div>
 
-                <div className="hero-card-footer">
-                  <span className="meta-badge">
-                    <span className="status-indicator" />
-                    {t.quickInstallMeta}
-                  </span>
-                  <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
-                    <a
-                      href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/CosmoSky-windows-x64.exe"
-                      download="CosmoSky-windows-x64.exe"
-                      className="advanced-link"
-                      style={{ fontWeight: 700 }}
-                    >
-                      ⬇ {t.heroDownloadExeCta}
-                    </a>
-                    <a href="#install" className="advanced-link">
-                      {t.methodVerified} →
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="hero-ctas">
-                <a
-                  className="btn btn-primary btn-download-exe"
-                  href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/CosmoSky-windows-x64.exe"
-                  download="CosmoSky-windows-x64.exe"
-                >
-                  <DownloadIcon />
-                  <span>{t.heroDownloadExeCta}</span>
-                </a>
-                <a className="btn btn-ghost" href="#install">
-                  {t.heroInstallCta}
-                </a>
-                <a className="btn btn-ghost" href="#changes">
-                  {t.heroChangesCta}
-                </a>
-              </div>
-            </section>
-            )}
-
-            {/* ----------------------------------------------------------------- */}
-            {/* FULL INSTALL SECTION                                              */}
-            {/* ----------------------------------------------------------------- */}
-            {(activeTab === "all" || activeTab === "install") && (
-            <section className="install" id="install" aria-labelledby="install-title">
-              <h2 id="install-title">{t.installHeading}</h2>
-              <p className="section-lede">{t.installLede}</p>
-
-              <div className="terminal glass-card">
-                <div className="terminal-bar" aria-hidden="true">
-                  <div className="terminal-dots">
-                    <span className="dot red" />
-                    <span className="dot yellow" />
-                    <span className="dot green" />
-                  </div>
-                  <span className="terminal-title">ohms // terminal bootstrap</span>
-                  <span className="terminal-spec">v0.0.29</span>
-                </div>
-
-                <div className="terminal-body">
-                  <div className="tabs" role="tablist" aria-label={t.osTabLabel}>
-                    {(["win", "mac"] as const).map((key) => (
-                      <button
-                        key={key}
-                        type="button"
-                        role="tab"
-                        aria-selected={os === key}
-                        onClick={() => setOs(key)}
-                        className={os === key ? "tab is-active" : "tab"}
-                      >
-                        {key === "win" ? t.osWindows : t.osMacos}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="methods" role="group" aria-label={t.methodLabel}>
-                    {(["quick", "verified"] as const).map((key) => (
-                      <button
-                        key={key}
-                        type="button"
-                        aria-pressed={method === key}
-                        onClick={() => setMethod(key)}
-                        className={method === key ? "method is-active" : "method"}
-                      >
-                        {key === "quick" ? t.methodQuick : t.methodVerified}
-                      </button>
-                    ))}
-                  </div>
-
-                  <p className="method-note">
-                    {method === "verified" ? t.verifiedNote : t.quickNote}
-                  </p>
-
-                  <div aria-label={t.commandRegionLabel} className="cmd-container">
-                    {steps.map((cmd, i) => {
-                      const id = `${os}-${method}-${i}`;
-                      const isCopied = noticeId === id;
-                      return (
-                        <div key={id} className="cmd-block">
-                          {steps.length > 1 && (
-                            <div className="cmd-step" aria-hidden="true">
-                              {t.stepLabel} {i + 1}
-                            </div>
-                          )}
-                          <div className="cmd-row">
-                            <span className="prompt-indicator" aria-hidden="true">
-                              {os === "win" ? "PS >" : "$"}
-                            </span>
-                            <pre className="cmd">
-                              <code>{cmd}</code>
-                            </pre>
-                            <div className="cmd-actions">
-                              <button
-                                type="button"
-                                className={isCopied ? "btn-copy is-copied" : "btn-copy"}
-                                onClick={() => copy(id, cmd)}
-                                aria-label={`${t.copyLabel} ${t.stepLabel.toLowerCase()} ${i + 1}`}
-                              >
-                                {isCopied ? (
-                                  <>
-                                    <CheckIcon />
-                                    <span className="btn-copy-text">{t.copiedMessage}</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <CopyIcon />
-                                    <span className="btn-copy-text">{t.copyLabel}</span>
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <p className="preset-note">{t.presetNote}</p>
-                </div>
-              </div>
-            </section>
-            )}
-
-            {/* MODEL PROVIDERS */}
-            <section className="providers" aria-labelledby="providers-eyebrow">
-              <p className="eyebrow" id="providers-eyebrow">
-                {t.providersEyebrow}
-              </p>
-              <div className="providers-grid">
-                <ul className="provider-list">
-                  <li className="glass-card provider-card">
-                    <span className="provider-name">{t.providerOpenCodeGo}</span>
-                    <span className="provider-tag">Primary</span>
-                  </li>
-                  <li className="glass-card provider-card">
-                    <span className="provider-name">{t.providerOpenAiCodex}</span>
-                    <span className="provider-tag">Fast</span>
-                  </li>
-                  <li className="glass-card provider-card">
-                    <span className="provider-name">{t.providerCommandCode}</span>
-                    <span className="provider-tag">Catalog</span>
-                  </li>
-                </ul>
-              </div>
-              <p className="providers-note">{t.providersNote}</p>
-            </section>
-
-            {/* FEATURES */}
-            {(activeTab === "all") && (
-            <section className="features" id="features" aria-labelledby="features-title">
-              <p className="eyebrow">{t.featuresEyebrow}</p>
-              <h2 id="features-title">{t.featuresHeading}</h2>
-              <p className="section-lede">{t.featuresLede}</p>
-
-              <div className="features-grid">
-                <div className="rail" role="tablist" aria-label={t.featuresHeading}>
-                  {t.featuresList.map((f, i) => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      role="tab"
-                      id={`feature-tab-${f.id}`}
-                      aria-controls={`feature-panel-${f.id}`}
-                      aria-selected={feature === i}
-                      onClick={() => setFeature(i)}
-                      className={feature === i ? "rail-item is-selected" : "rail-item"}
-                    >
-                      <span className="rail-index">0{i + 1}</span>
-                      <span className="rail-title">{f.title}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div
-                  className="feature-detail glass-card"
-                  role="tabpanel"
-                  id={`feature-panel-${activeFeature.id}`}
-                  aria-labelledby={`feature-tab-${activeFeature.id}`}
-                >
-                  <div className="feature-prism-glow" aria-hidden="true" />
-                  <span className="feature-kicker">FEATURE SPECTRUM // 0{feature + 1}</span>
-                  <h3>{activeFeature.title}</h3>
-                  <p>{activeFeature.body}</p>
-                </div>
-              </div>
-            </section>
-            )}
-            {/* 10-STEP ONBOARDING GUIDE SECTION */}
-            {(activeTab === "all" || activeTab === "guide") && (
-            <section className="guide-section" id="guide" aria-labelledby="guide-title">
-              <p className="eyebrow">{t.guideEyebrow}</p>
-              <h2 id="guide-title">{t.guideHeading}</h2>
-              <p className="section-lede">{t.guideLede}</p>
-
-              <div className="guide-grid">
-                {t.guideSteps.map((step) => {
-                  const isCopied = noticeId === `guide-${step.step}`;
-                  return (
-                    <div key={step.step} className="guide-card glass-card">
-                      <div className="guide-header">
-                        <span className="guide-step-num">{step.step}</span>
-                        <h3 className="guide-title">{step.title}</h3>
-                      </div>
-                      <p className="guide-desc">{step.desc}</p>
-                      <div className="guide-code-box">
-                        <code>{step.code}</code>
-                        <button
-                          type="button"
-                          className={isCopied ? "btn-cmd-copy copied" : "btn-cmd-copy"}
-                          onClick={() => copy(`guide-${step.step}`, step.code)}
-                          aria-label={`${t.copyLabel}: ${step.code}`}
-                        >
-                          {isCopied ? <CheckIcon /> : <CopyIcon />}
-                        </button>
-                      </div>
+                <div className="tui-viewport">
+                  {tuiTab === "live" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <span style={{ color: "var(--shark-cyan)" }}>
+                        [OMSK::KERNEL] Initializing sub-millisecond harness...
+                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        Reading ~/.omsk/tarefas.json [OK] • FileReadCache mounted
+                      </span>
+                      <span style={{ color: "#ffffff" }}>
+                        ❯ omsk task "Implement WebAuthn credentials verification"
+                      </span>
+                      <span style={{ color: "var(--shark-emerald)" }}>
+                        ✔ DAG resolved: 4 tasks ordered via Kahn algorithm (zero cycles detected)
+                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        ├─ [task-1] scaffold-auth-schema.ts [DONE]
+                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        ├─ [task-2] generate-challenge-token.ts [DONE]
+                      </span>
+                      <span style={{ color: "var(--shark-cyan)" }}>
+                        ├─ [task-3] verify-webauthn-signature.ts [IN_PROGRESS]
+                      </span>
+                      <span style={{ color: "var(--text-faint)" }}>
+                        └─ [task-4] integration-suite.test.ts [PENDING: requires task-3]
+                      </span>
+                      <span style={{ color: "var(--shark-amber)" }}>
+                        [EVIDENCE LOGGED] 16 unit tests verified • SHA-256: e82f...
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            </section>
-            )}
+                  )}
 
-            {/* TECHNICAL ARCHITECTURE SECTION */}
-            {(activeTab === "all" || activeTab === "architecture") && (
-            <section className="architecture-section" id="architecture" aria-labelledby="architecture-title">
-              <p className="eyebrow">{t.architectureEyebrow}</p>
-              <h2 id="architecture-title">{t.architectureHeading}</h2>
-              <p className="section-lede">{t.architectureLede}</p>
-
-              <div className="architecture-grid">
-                {t.architecturePillars.map((pillar) => (
-                  <div key={pillar.id} className="pillar-card glass-card">
-                    <span className="pillar-badge">PILLAR // {pillar.id}</span>
-                    <h3 className="pillar-title">{pillar.title}</h3>
-                    <p className="pillar-body">{pillar.body}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-            )}
-
-            {/* INTERACTIVE DOCUMENTATION & API VIEW */}
-            {(activeTab === "all" || activeTab === "docs") && (
-              <section className="docs-section" id="docs" aria-labelledby="docs-title">
-                <p className="eyebrow">{t.docsEyebrow}</p>
-                <h2 id="docs-title">{t.docsHeading}</h2>
-                <p className="section-lede">{t.docsLede}</p>
-
-                {t.docsCategories.map((category) => (
-                  <div key={category.id} className="docs-category">
-                    <h3 className="docs-category-title">{category.name}</h3>
-                    <div className="docs-grid">
-                      {category.items.map((item) => (
-                        <div key={item.name} className="docs-card glass-card">
-                          <code className="docs-card-name">{item.name}</code>
-                          <p className="docs-card-desc">{item.desc}</p>
-                        </div>
-                      ))}
+                  {tuiTab === "task" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <span style={{ color: "var(--shark-cyan)" }}>
+                        === OH MY SHARK TASK PLAN ENGINE (DAG) ===
+                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        State: Directed Acyclic Graph • Topological In-Degree Resolution
+                      </span>
+                      <span style={{ color: "var(--shark-emerald)" }}>
+                        [Option A] Execute Full Topological Sequence (Autonomous)
+                      </span>
+                      <span style={{ color: "var(--shark-cyan)" }}>
+                        [Option B] Selective Tasks with Auto-Dependency Inclusion
+                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        [Option C] Graceful Skip without Context Loss
+                      </span>
+                      <span style={{ color: "#ffffff", marginTop: "0.5rem" }}>
+                        Active Plan: local://webauthn-migration-plan.md
+                      </span>
                     </div>
-                  </div>
-                ))}
-              </section>
-            )}
+                  )}
 
-            {/* SPECIAL COMMANDS & MODES SECTION */}
-            {(activeTab === "all" || activeTab === "commands") && (
-            <section className="commands-section" id="commands" aria-labelledby="commands-title">
-              <p className="eyebrow">{t.commandsEyebrow}</p>
-              <h2 id="commands-title">{t.commandsHeading}</h2>
+                  {tuiTab === "compress" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <span style={{ color: "var(--shark-cyan)" }}>
+                        === SEMANTIC COMPRESSION (DEEPSEANEURON) ===
+                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        Raw Tokens Ingested: 14,850 tokens
+                      </span>
+                      <span style={{ color: "var(--shark-emerald)" }}>
+                        Compacted Semantic Output: 4,620 tokens (-68.9% reduction)
+                      </span>
+                      <span style={{ color: "var(--text-muted)" }}>
+                        FileReadCache: 28 disk reads avoided • 1.4 MB memory saved
+                      </span>
+                      <span style={{ color: "var(--shark-purple)" }}>
+                        [ACTIVE METRICS] TTFT accelerated from 142ms to 14ms
+                      </span>
+                    </div>
+                  )}
+
+                  {tuiTab === "roster" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <span style={{ color: "var(--shark-cyan)" }}>
+                        === SPECIALIST AGENT ROSTER ===
+                      </span>
+                      <span style={{ color: "#ffffff" }}>
+                        🦈 @shark-lead — Master Strategy & Delegation Orchestrator
+                      </span>
+                      <span style={{ color: "var(--shark-emerald)" }}>
+                        ⚙️ @code-architect — Zero-Overhead Bun/TypeScript Engineer
+                      </span>
+                      <span style={{ color: "var(--shark-crimson)" }}>
+                        🛡️ @security-sentinel — Vulnerability & Vector Auditor
+                      </span>
+                      <span style={{ color: "var(--shark-amber)" }}>
+                        📜 @theological-scholar — Lexicographical & Semantic Rigor
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* VIEW 03: 6 PILLARS BENTO GRID */}
+          <section id="pillars">
+            <div className="wrap">
+              <span className="section-eyebrow">{t.pillarsEyebrow}</span>
+              <h2 className="section-title">{t.pillarsHeading}</h2>
+              <p className="section-lede">{t.pillarsLede}</p>
+
+              <div className="bento-grid">
+                {/* Pillar 1: Large Span 8 */}
+                <div className="glass-panel bento-card col-span-8">
+                  <span className="bento-tag">{t.pillar1Tag}</span>
+                  <h3 className="bento-title">{t.pillar1Title}</h3>
+                  <p className="bento-body">{t.pillar1Body}</p>
+                </div>
+
+                {/* Pillar 2: Span 4 */}
+                <div className="glass-panel bento-card col-span-4">
+                  <span className="bento-tag amber">{t.pillar2Tag}</span>
+                  <h3 className="bento-title">{t.pillar2Title}</h3>
+                  <p className="bento-body">{t.pillar2Body}</p>
+                </div>
+
+                {/* Pillar 3: Span 4 */}
+                <div className="glass-panel bento-card col-span-4">
+                  <span className="bento-tag purple">{t.pillar3Tag}</span>
+                  <h3 className="bento-title">{t.pillar3Title}</h3>
+                  <p className="bento-body">{t.pillar3Body}</p>
+                </div>
+
+                {/* Pillar 4: Span 4 */}
+                <div className="glass-panel bento-card col-span-4">
+                  <span className="bento-tag">{t.pillar4Tag}</span>
+                  <h3 className="bento-title">{t.pillar4Title}</h3>
+                  <p className="bento-body">{t.pillar4Body}</p>
+                </div>
+
+                {/* Pillar 5: Span 4 */}
+                <div className="glass-panel bento-card col-span-4">
+                  <span className="bento-tag">{t.pillar5Tag}</span>
+                  <h3 className="bento-title">{t.pillar5Title}</h3>
+                  <p className="bento-body">{t.pillar5Body}</p>
+                </div>
+
+                {/* Pillar 6: Large Span 12 */}
+                <div className="glass-panel bento-card col-span-12">
+                  <span className="bento-tag purple">{t.pillar6Tag}</span>
+                  <h3 className="bento-title">{t.pillar6Title}</h3>
+                  <p className="bento-body">{t.pillar6Body}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* VIEW 04: DEEP DIVE SEMANTIC COMPRESSION (SPLIT-PANE VIEWER) */}
+          <section id="compression">
+            <div className="wrap">
+              <span className="section-eyebrow">{t.compressEyebrow}</span>
+              <h2 className="section-title">{t.compressHeading}</h2>
+              <p className="section-lede">{t.compressLede}</p>
+
+              <div className="split-pane-box">
+                {/* Lado Esquerdo: Before */}
+                <div className="glass-panel pane-side before">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="pane-badge red">{t.compressBeforeTitle}</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{t.compressBeforeStats}</span>
+                  </div>
+                  <pre className="pane-code-box">
+                    <code>{`// Inflated repetitive context & unchecked tool reads
+[DEBUG] Reading 4,200 lines from server.log (redundant)
+[TRACE] AST traversal re-emitting 84 identical symbols
+[ERROR] Uncached file reads triggering 42 disk accesses
+... 12,000 repetitive token lines elided ...
+[STATUS] Context Window Pressure: 94.2%`}</code>
+                  </pre>
+                </div>
+
+                {/* Centro: Savings Badge */}
+                <div className="split-arrow">
+                  <span className="savings-pill">{t.compressReductionBadge}</span>
+                  <span style={{ color: "var(--shark-cyan)", fontSize: "1.5rem" }}>➔</span>
+                </div>
+
+                {/* Lado Direito: After */}
+                <div className="glass-panel pane-side after">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="pane-badge cyan">{t.compressAfterTitle}</span>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{t.compressAfterStats}</span>
+                  </div>
+                  <pre className="pane-code-box">
+                    <code>{`// Oh My Shark Dense Semantic Representation
+[OMSK::CACHE] FileReadCache: 0 disk reads • Hash hit: mtime:ok
+[OMSK::COMPACT] ToolResultCompactor: 42 lines summarized -> artifact://74
+[OMSK::DAG] Kahn topological validation: 4 tasks ready
+[OMSK::EVIDENCE] 100% verified test coverage
+[STATUS] Context Window Pressure: 24.1%`}</code>
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* VIEW 05: AUTONOMOUS SLASH COMMANDS PIPELINE */}
+          <section id="commands">
+            <div className="wrap">
+              <span className="section-eyebrow">{t.commandsEyebrow}</span>
+              <h2 className="section-title">{t.commandsHeading}</h2>
               <p className="section-lede">{t.commandsLede}</p>
 
-              <div className="commands-grid">
-                {t.specialCommandsList.map((cmd) => (
-                  <div key={cmd.name} className="command-card glass-card">
-                    <div className="command-header">
-                      <code className="command-name">{cmd.name}</code>
-                      <span className={`command-badge ${cmd.badgeClass}`}>{cmd.tag}</span>
+              <div className="commands-pipeline-grid">
+                <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdPromaxthinkName}</code>
+                  <span className="cmd-badge">{t.cmdPromaxthinkBadge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdPromaxthinkDesc}</p>
+                </div>
+
+                <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdXlr8Name}</code>
+                  <span className="cmd-badge">{t.cmdXlr8Badge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdXlr8Desc}</p>
+                </div>
+
+                <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdLearnerName}</code>
+                  <span className="cmd-badge">{t.cmdLearnerBadge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdLearnerDesc}</p>
+                </div>
+
+                <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdDoomaniaName}</code>
+                  <span className="cmd-badge">{t.cmdDoomaniaBadge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdDoomaniaDesc}</p>
+                </div>
+
+                <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdTaskManagerName}</code>
+                  <span className="cmd-badge">{t.cmdTaskManagerBadge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdTaskManagerDesc}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* VIEW 06: 10-STEP ONBOARDING GUIDE */}
+          <section id="guide">
+            <div className="wrap">
+              <span className="section-eyebrow">{t.guideEyebrow}</span>
+              <h2 className="section-title">{t.guideHeading}</h2>
+              <p className="section-lede">{t.guideLede}</p>
+
+              <div className="guide-stepper-grid">
+                {[
+                  { step: "01", title: "Setup & Binaries", desc: "Download standalone native binaries or bootstrap via PowerShell/Bash.", cmd: "irm .../install.ps1 | iex" },
+                  { step: "02", title: "API Keys & BYOK", desc: "Configure Anthropic Claude, OpenAI, Gemini or local Ollama models.", cmd: "export GEMINI_API_KEY=\"...\"" },
+                  { step: "03", title: "Model & Reasoning Roles", desc: "Configure smol, default, or slow tiers with promaxthink or fastthink.", cmd: "promaxthink design the engine" },
+                  { step: "04", title: "Launch ohms Session", desc: "Start the terminal harness in any repository root safely in ~/.ohms.", cmd: "ohms" },
+                  { step: "05", title: "State Objective", desc: "Define task goals and explicit observable acceptance criteria.", cmd: "Migrate auth to WebAuthn" },
+                  { step: "06", title: "Interactive ask Prompts", desc: "Answer structured questions when architectural choices arise.", cmd: "ask: [Option 1] [Option 2]" },
+                  { step: "07", title: "Authorize Plan (A/B/C)", desc: "Choose Option A (All), Option B (Subset), or Option C (Skip).", cmd: "[Option A: Execute All]" },
+                  { step: "08", title: "Track via Kanban HUD", desc: "Monitor live DAG execution, retries, and blockers in real time.", cmd: "/taskmanager" },
+                  { step: "09", title: "Inspect Evidences", desc: "Validate diffs, test outputs, and SHA-256 artifacts before settlement.", cmd: "npm test -- --coverage" },
+                  { step: "10", title: "Resume Anytime", desc: "Interrupt safely. Tasks and conversational context restore instantly.", cmd: "ohms --continue" },
+                ].map((s) => (
+                  <div key={s.step} className="glass-panel step-card">
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                        <span className="step-number">{s.step}</span>
+                        <span style={{ fontSize: "0.75rem", fontFamily: "var(--font-mono)", color: "var(--text-muted)" }}>STAGE</span>
+                      </div>
+                      <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.5rem" }}>{s.title}</h3>
+                      <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>{s.desc}</p>
                     </div>
-                    <div className="command-palette-info">
-                      <span className="palette-dot" />
-                      <span className="palette-label">{cmd.colors}</span>
-                    </div>
-                    <p className="command-desc">{cmd.description}</p>
-                    <div className="command-example">
-                      <span className="example-prompt">Ex:</span>
-                      <code>{cmd.usage}</code>
+                    <div className="install-cmd-row" style={{ padding: "0.4rem 0.65rem" }}>
+                      <code style={{ fontSize: "0.75rem" }}>{s.cmd}</code>
+                      <button type="button" className="btn-copy-action" onClick={() => copy(s.step, s.cmd)}>
+                        {noticeId === s.step ? <CheckIcon /> : <CopyIcon />}
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
-            </section>
-            )}
+            </div>
+          </section>
 
-            {/* WHY OHMYSHARK */}
-            <section className="changes" id="changes" aria-labelledby="changes-title">
-              <p className="eyebrow">{t.changesEyebrow}</p>
-              <h2 id="changes-title">{t.changesHeading}</h2>
-              <p className="section-lede">{t.changesLede}</p>
+          {/* VIEW 07: INSTALLATION & TERMINAL CTA */}
+          <section id="install">
+            <div className="wrap">
+              <span className="section-eyebrow">{t.installEyebrow}</span>
+              <h2 className="section-title">{t.installHeading}</h2>
+              <p className="section-lede">{t.installLede}</p>
 
-              <div className="delta-grid">
-                {t.changesList.map((item, idx) => (
-                  <div key={idx} className="delta glass-card">
-                    <span className="delta-index">PRISM-DELTA // 0{idx + 1}</span>
-                    <h3>{item.title}</h3>
-                    <p>{item.body}</p>
-                  </div>
-                ))}
+              <div className="glass-panel terminal-install-panel">
+                <div className="os-toggle-tabs">
+                  <button
+                    type="button"
+                    className={os === "win" ? "os-tab active" : "os-tab"}
+                    onClick={() => setOs("win")}
+                  >
+                    {t.tabWindows}
+                  </button>
+                  <button
+                    type="button"
+                    className={os === "mac" ? "os-tab active" : "os-tab"}
+                    onClick={() => setOs("mac")}
+                  >
+                    {t.tabMacLinux}
+                  </button>
+                </div>
+
+                <div className="install-cmd-row" style={{ padding: "1rem" }}>
+                  <span style={{ color: "var(--shark-cyan)", fontFamily: "var(--font-mono)" }}>
+                    {os === "win" ? "PS >" : "$"}
+                  </span>
+                  <code className="install-cmd-code" style={{ fontSize: "0.95rem" }}>
+                    {COMMANDS[os][method][0]}
+                  </code>
+                  <button
+                    type="button"
+                    className="btn-copy-action"
+                    onClick={() => copy("install-final", COMMANDS[os][method][0])}
+                  >
+                    {noticeId === "install-final" ? <CheckIcon /> : <CopyIcon />}
+                    <span>{noticeId === "install-final" ? t.heroCopied : t.heroCopyLabel}</span>
+                  </button>
+                </div>
               </div>
-            </section>
-
-            {/* LINEAGE */}
-            <section className="lineage" id="lineage" aria-labelledby="lineage-title">
-              <p className="eyebrow">{t.lineageEyebrow}</p>
-              <h2 id="lineage-title">{t.lineageHeading}</h2>
-              <div className="lineage-box glass-card">
-                <p className="lineage-chain">{t.lineageChain}</p>
-                <p className="lineage-meta">
-                  <span>{t.lineageLicense}</span> • <span>{t.lineageDisclaimer}</span>
-                </p>
-              </div>
-            </section>
-          </div>
+            </div>
+          </section>
         </main>
 
         {/* SITE FOOTER */}
         <footer className="site-footer">
           <div className="wrap footer-inner">
-            <div className="footer-brand">
-              <div className="brand">
-                <SharkMark />
-                <span className="wordmark">{t.wordmark}</span>
+            <div className="footer-top">
+              <div className="brand-group">
+                <SharkIcon />
+                <span className="brand-text">{t.wordmark}</span>
+                <span className="brand-badge">{t.versionBadge}</span>
               </div>
-              <p className="footer-tagline">{t.footerTagline}</p>
+
+              <div style={{ display: "flex", gap: "1.5rem" }}>
+                {SOCIALS.map((s) => (
+                  <a
+                    key={s.name}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nav-link"
+                  >
+                    {s.name}
+                  </a>
+                ))}
+              </div>
             </div>
 
-            <div className="socials" aria-label={t.socialLabel}>
-              {SOCIALS.map((s) => (
-                <a
-                  key={s.key}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t[s.key]}
-                  className="social-btn glass-card"
-                >
-                  <BrandIcon path={s.icon.path} />
-                </a>
-              ))}
-            </div>
-
-            <div className="footer-meta">
-              <a href="/NOTICES.txt" target="_blank" rel="noopener noreferrer">
-                {t.footerLicenses}
-              </a>
-              <span className="dot-sep" aria-hidden="true">•</span>
-              <a
-                href="https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.0.29"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {t.footerRelease}
-              </a>
+            <div className="footer-bottom">
+              <span>{t.footerLicense} • {t.footerProvenance}</span>
+              <span>Made with predatory precision by LucasEntweihen</span>
             </div>
           </div>
         </footer>

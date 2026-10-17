@@ -7,7 +7,7 @@ export function initLocale(): Locale {
     const stored = localStorage.getItem(LOCALE_KEY);
     if (stored === "pt" || stored === "en") return stored;
   } catch {
-    /* storage unavailable: fall through to browser preference */
+    /* storage unavailable */
   }
   const langs: readonly string[] =
     typeof navigator !== "undefined" && navigator.languages?.length
@@ -19,772 +19,278 @@ export function initLocale(): Locale {
 
 const en = {
   skipLink: "Skip to content",
-  wordmark: "COSMOSKY",
-  navLabel: "Sections",
-  versionBadge: "v0.0.29",
-  navCommands: "Commands",
+  wordmark: "OH MY SHARK",
+  editionTag: "v0.0.29 // QUANTUM HARNESS",
+  versionBadge: "omsk-v0.0.29",
   navFeatures: "Features",
-  navPreset: "Preset",
-  navLineage: "Lineage",
+  navBento: "Architecture",
+  navCompression: "Compression",
+  navCommands: "Pipelines",
+  navInstall: "Quickstart",
+  navDocs: "Documentation",
   navGithub: "GitHub",
   githubHref: "https://github.com/LucasEntweihen/oh-my-shark",
   localeToggleLabel: "Language",
   themeToggleLabel: "Color theme",
   themeDark: "Dark",
   themeLight: "Light",
+  commandPaletteHint: "Press / or Cmd+K for Tactical Command Palette",
 
-  heroSpectrumBadge: "PROJECT PRISM // DEEP WEB SPECTRUM",
-  heroEyebrow: "DESKTOP AI & TERMINAL AGENT",
-  heroTitle: "Your desktop intelligence. Tuned for the universe.",
+  // Telemetry Bar
+  telemetryStatus: "SYSTEM: OPTIMAL",
+  telemetryEngine: "ENGINE: BUN NATIVE + RUST/NODE ADDONS",
+  telemetryTokenSavings: "COMPRESSION: -68.4% TOKENS SAVED",
+  telemetryLatency: "TTFT: 14ms",
+  telemetryVersion: "BUILD: v0.0.29 PASS",
+
+  // Hero Section
+  heroBadge: "OHMYSHARK // PREDATORY VELOCITY CODING HARNESS",
+  heroTitlePre: "Autonomous engineering at the",
+  heroTitleGradient: "speed of pure thought.",
   heroLede:
-    "Install in seconds, code for hours. CosmoSky ships as an instant native desktop app and terminal engine with curated models, deep reasoning, and persistent memory.",
-  heroDownloadExeCta: "Download CosmoSky (.exe)",
-  heroInstallCta: "Install CLI",
-  heroChangesCta: "Why CosmoSky",
+    "The sub-millisecond AI agent harness built on Bun, Rust and directed acyclic task graphs. Features semantic compression, 3-way user plan authorization, live Kanban HUD, and zero-overhead execution.",
+  heroInstallHeader: "QUICKSTART TERMINAL BOOTSTRAP",
+  heroCopyLabel: "Copy",
+  heroCopied: "Copied to clipboard [0.4ms]",
+  heroCopyFailed: "Copy failed — please select manually",
+  heroDownloadExe: "Download Desktop Engine (.exe)",
+  heroInspectLive: "Explore Architecture",
+  heroDocsCta: "Open Interactive Guide",
 
-  quickInstallHeader: "DEFINITIVE INSTALL COMMAND",
-  quickInstallSub: "Universal PowerShell 5.1 & Core one-liner — paste and execute directly in your terminal:",
-  quickInstallBadge: "LATEST: omsk-v0.0.29",
-  quickInstallMeta: "Zero configuration • SHA-256 verified • Isolated in ~/.ohms",
-  osMacos: "macOS / Linux",
-  osWindows: "Windows (PowerShell)",
-  osTabLabel: "Operating system",
-  methodVerified: "Verified (Attestation)",
-  methodQuick: "Standard (Robust)",
-  methodLabel: "Install method",
-  verifiedNote: "Zero-trust default. Requires an authenticated GitHub CLI (gh auth login). Verifies the installer attestation against the build provenance before running it.",
-  quickNote:
-    "Robust disk-write bootstrap. Bypasses in-memory execution constraints (AMSI) and local policies by securely downloading the installer to disk before executing.",
-  installHeading: "Install",
-  installLede:
-    "Pick your platform below. Verified is the safe default; Quick trades verification for speed. Either way you are running in minutes — and your existing config is never touched.",
-  presetNote:
-    "Ships with a curated starting setup: model roles, fallbacks, long-session compaction. Your keys, your choices — nothing phones home.",
-  copyLabel: "Copy",
-  copiedMessage: "Copied to clipboard",
-  copyFailedMessage: "Copy failed — select the text manually",
-  commandRegionLabel: "Install commands",
-  stepLabel: "Step",
+  // TUI Simulator Tabs
+  tuiTitle: "ohms-tui — 128x48 [LIVE KERNEL]",
+  tabTuiLive: "Live Terminal TUI",
+  tabTuiTask: "DAG Task Plan Engine",
+  tabTuiCompress: "Semantic Compression",
+  tabTuiRoster: "Specialist Roster",
 
-  telemetryHeader: "OPTICAL REFRACTION TELEMETRY",
-  telemetryGrid: "GRID: 3D WIREFRAME MESH (Z-0)",
-  telemetrySpectrum: "DISPERSION: 8-BAND CONTINUOUS SPECTRUM (Z-10)",
-  telemetryStatus: "ANOMALOUS DATA NODES: 7500+ TB DETECTED",
+  // Section 03 - 6 Pillars Bento Grid
+  pillarsEyebrow: "CORE ARCHITECTURE",
+  pillarsHeading: "The 6 Structural Pillars of Oh My Shark",
+  pillarsLede: "Engineered from first principles for zero needless allocations, deterministic builds, and deep cognitive density.",
+  
+  pillar1Title: "Task Plan Engine & Topological DAG",
+  pillar1Tag: "KAHN ALGORITHM",
+  pillar1Body: "Autonomous task sequencing via directed acyclic graphs. Detects circular dependencies with DFS recursion, enforces prerequisite completion, and tracks real verification evidence.",
 
-  providersEyebrow: "MODEL PROVIDERS",
-  providersNote:
-    "Works with the providers you already pay for. Bring your own keys.",
-  providerOpenCodeGo: "OpenCode Go",
-  providerOpenAiCodex: "OpenAI Codex",
-  providerCommandCode: "CommandCode",
+  pillar2Title: "3-Way User Plan Authorization",
+  pillar2Tag: "SOVEREIGN CONTROL",
+  pillar2Body: "Developers stay in command: Option A executes the full topological sequence, Option B resolves transitive closures for subsets, and Option C preserves conversational context without loss.",
 
-  featuresEyebrow: "CHANNELS",
-  featuresHeading: "Features",
-  featuresLede:
-    "Everything you need to ship from the terminal.",
-  featureDetailLabel: "Feature detail",
-  featuresList: [
-    {
-      id: "shark",
-      title: "Own identity",
-      body: "A shark mark, a clean terminal aesthetic, and a config that lives in its own ~/.ohms — your setup never fights another tool's.",
-    },
-    {
-      id: "preset",
-      title: "Ready-to-run models",
-      body: "Roles, fallbacks, and thinking levels arrive preconfigured. Bring your own API keys — nothing secret ever ships in the box.",
-    },
-    {
-      id: "commandcode",
-      title: "More models on demand",
-      body: "A 47-model CommandCode catalog is one env var away. Nothing uses it until you say so.",
-    },
-    {
-      id: "snapcompact",
-      title: "Long sessions stay sharp",
-      body: "Compaction keeps big sessions coherent instead of degrading. SnapCompact first, graceful fallbacks after.",
-    },
-    {
-      id: "taskmanager",
-      title: "Native Dark Task Manager",
-      body: "High-contrast dark Kanban dashboard and GUI for tracking background processes, local tasks, and execution progress in real time via /taskmanager.",
-    },
-    {
-      id: "lsp",
-      title: "Understands your code",
-      body: "Language-server aware edits, diagnostics, and navigation — the environment sees what your IDE sees.",
-    },
-    {
-      id: "debugger",
-      title: "Debug without leaving",
-      body: "Inspect real program state mid-session instead of sprinkling print statements.",
-    },
-    {
-      id: "xlr8",
-      title: "Hyperspeed /xlr8 acceleration",
-      body: "Instant latency reduction and simplified execution pipelines via /xlr8 and fastthinkworkerz modes for top-speed turnaround.",
-    },
-    {
-      id: "deepseaneuron",
-      title: "deepseaneuron token density",
-      body: "Deep semantic token compression preserving critical conversational context and system state across long multi-hour runs.",
-    },
-    {
-      id: "upstream",
-      title: "Maintained, not frozen",
-      body: "Daily upstream syncs land as reviewed PRs, so you get fixes without surprises.",
-    },
-  ] as Array<{ id: string; title: string; body: string }>,
-  commandsEyebrow: "TERMINAL OPERATIONAL MODES",
-  commandsHeading: "Special Magic Keywords & Commands",
-  commandsLede:
-    "Trigger advanced reasoning models, radical delivery acceleration, interactive task tracking, and cognitive stream optimization directly in your prompt buffer.",
-  powershellFixHeading: "Universal PowerShell Compatibility",
-  powershellFixNote:
-    "Resolves native architecture via environment variables for zero-error installation on Windows PowerShell 5.1 and PowerShell Core.",
-  specialCommandsList: [
-    {
-      name: "promaxthink",
-      tag: "Hyper-Reasoning & Adversarial Depth (5x)",
-      badgeClass: "badge-red",
-      colors: "Rose → Crimson gradient",
-      description:
-        "Radical evolution of ultrathink operating at 5x cognitive complexity. Executes multi-tier first-principles decomposition, adversarial falsification, and uncompromising depth.",
-      usage: "promaxthink architect the distributed consensus engine and break all edge cases",
-    },
-    {
-      name: "/learner-proj",
-      tag: "Holistic Project Intelligence",
-      badgeClass: "badge-cyan",
-      colors: "Cyan → Sapphire gradient",
-      description:
-        "Performs an exhaustive holistic codebase scan across 13 foundational pillars (architecture, mechanics, file structure, dependencies, logic) to internalize the entire system.",
-      usage: "/learner-proj examine full repository architecture and dependencies",
-    },
-    {
-      name: "ultrathink",
-      tag: "Deep Reasoning",
-      badgeClass: "badge-rainbow",
-      colors: "Full-Spectrum Rainbow",
-      description:
-        "Unlocks maximum available thinking and reasoning depth supported by the active model.",
-      usage: "ultrathink design a high-throughput event streaming engine",
-    },
-    {
-      name: "workflowz",
-      tag: "Persistent Kernel Workflows",
-      badgeClass: "badge-blue",
-      colors: "Blue → Cyan gradient",
-      description:
-        "Activates long-running multi-step persistent eval kernel workflows and workpool execution.",
-      usage: "workflowz orchestrate test migrations across modules",
-    },
-    {
-      name: "/taskmanager",
-      tag: "Task Intelligence HUD",
-      badgeClass: "badge-purple",
-      colors: "Purple → Indigo gradient",
-      description:
-        "Opens the standalone dark Kanban board with live WebSocket synchronization and process tracking.",
-      usage: "/taskmanager",
-    },
-    {
-      name: "deepseaneuron",
-      tag: "Token Rationalization",
-      badgeClass: "badge-cyan",
-      colors: "Cyan → Deep Blue gradient",
-      description:
-        "Dynamically rationalizes token consumption and maximizes informational signal density without sacrificing depth.",
-      usage: "deepseaneuron implement the AST parser optimizations",
-    },
-    {
-      name: "fastthinkworkerz",
-      tag: "Radical Velocity",
-      badgeClass: "badge-yellow",
-      colors: "Yellow → Gold → White gradient",
-      description:
-        "Aggressively minimizes thinking depth and cuts latency to deliver responses at top speed.",
-      usage: "fastthinkworkerz fix the typo and rebuild immediately",
-    },
-    {
-      name: "/doomania",
-      tag: "Tri-Agent Deliberation Panel",
-      badgeClass: "badge-green",
-      colors: "Lime → Emerald Green gradient",
-      description:
-        "Convenes a three-perspective deliberation committee (critique, permissive, creative) before executing under maximum rigor.",
-      usage: "/doomania migrate our auth layer to WebAuthn",
-    },
-    {
-      name: "/xlr8",
-      tag: "Hyperspeed & Mid-Flight Acceleration",
-      badgeClass: "badge-teal",
-      colors: "Gray → Blue → Green → White gradient",
-      description:
-        "Accelerates reasoning flow, simplifies code, injects instant mid-flight acceleration on active turns, and triggers direct basic execution.",
-      usage: "/xlr8 --basic generate the simplest minimal script",
-    },
-  ] as Array<{ name: string; tag: string; badgeClass: string; colors: string; description: string; usage: string }>,
+  pillar3Title: "Deep Semantic Token Compression",
+  pillar3Tag: "DEEPSEANEURON",
+  pillar3Body: "Reduces context pressure by up to 70%. FileReadCache prevents redundant disk reads via mtime hashing; ToolResultCompactor elides oversized historic outputs safely.",
 
-  tabOverview: "Overview",
-  tabGuide: "10-Step Guide",
-  tabDocs: "Documentation & API",
-  tabArchitecture: "Architecture",
-  tabCommands: "Commands & Modes",
-  tabInstall: "Installation",
-  sidebarDocTitle: "Navigation & Docs",
-  sidebarDocSubtitle: "Oh My Shark Engine v0.0.29",
-  docsEyebrow: "HARNESS DOCUMENTATION & SPECS",
-  docsHeading: "Interactive Engine Documentation",
-  docsLede: "Explore tools, operational protocols, CLI switches, and autonomous execution mechanics in detail.",
-  docsCategories: [
-    {
-      id: "tools",
-      name: "Core Native Tools",
-      items: [
-        { name: "read", desc: "Read files, SQLite databases, archives (.zip/.tar), git branches, and URLs with automatic readers." },
-        { name: "write", desc: "Atomic file creation and overwriting with integrity checks and safety guards." },
-        { name: "edit", desc: "Hashline surgical patches using 4-hex tags, preventing race conditions and stale overwrites." },
-        { name: "bash", desc: "Persistent shell execution for fact computation, binary execution, and pipelines." },
-        { name: "grep & glob", desc: "High-performance PCRE2 / Rust-regex file searches and glob matching without shell overhead." },
-        { name: "lsp", desc: "Symbol-aware language server intelligence: diagnostics, definitions, references, and renames." },
-        { name: "ask", desc: "Structured interactive user prompts with multi-choice, recommendations, and custom input." }
-      ]
-    },
-    {
-      id: "tasks",
-      name: "Task Plan Engine (DAG)",
-      items: [
-        { name: "Topological Kahn Sorting", desc: "Tasks are organized by prerequisite graph, guaranteeing valid execution order." },
-        { name: "Cycle Detection", desc: "DFS-based cycle detection identifies circular dependencies and reports actionable paths." },
-        { name: "Option A (Full Execution)", desc: "Autonomous top-to-bottom execution with step-by-step verified completion." },
-        { name: "Option B (Selective Subset)", desc: "Computes transitive dependency closures and resolves missing prerequisites." },
-        { name: "Option C (Graceful Skip)", desc: "Allows plan rejection or reformulation without truncating session history." }
-      ]
-    },
-    {
-      id: "optimization",
-      name: "Resource & Token Optimizations",
-      items: [
-        { name: "FileReadCache", desc: "LRU file cache tracking mtime and size, avoiding redundant disk I/O and buffer allocations." },
-        { name: "ToolResultCompactor", desc: "Semantically elides historic tool outputs, saving up to 70% context window tokens." },
-        { name: "Native Prompt Caching", desc: "Injects provider-aware caching headers for Anthropic Claude, OpenAI, and Gemini." }
-      ]
-    }
-  ],
-  navGuide: "Guide",
-  navArchitecture: "Architecture",
-  guideEyebrow: "GETTING STARTED GUIDE",
-  guideHeading: "Master Oh My Shark in 10 Steps",
-  guideLede: "From zero configuration to resilient autonomous execution — everything you need to ship with confidence.",
-  guideSteps: [
-    {
-      step: "01",
-      title: "Environment Setup & Installation",
-      desc: "Install the ohms CLI natively or download the CosmoSky standalone desktop engine. Zero dependencies required.",
-      code: "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/install.ps1 | iex"
-    },
-    {
-      step: "02",
-      title: "Connect Providers & Keys",
-      desc: "Bring your own keys for Anthropic Claude, OpenAI, Google Gemini, OpenCode Go, or local models via Ollama.",
-      code: "export GEMINI_API_KEY=\"your-key\" # or ANTHROPIC_API_KEY"
-    },
-    {
-      step: "03",
-      title: "Select Model & Reasoning Depth",
-      desc: "Assign roles across smol, default, or slow tiers. Trigger promaxthink for 5x deep reasoning or fastthinkworkerz for raw speed.",
-      code: "promaxthink architect the distributed sync engine"
-    },
-    {
-      step: "04",
-      title: "Start an Interactive Session",
-      desc: "Launch the terminal harness in any repository root. Sessions remain strictly isolated and isolated in ~/.ohms.",
-      code: "ohms"
-    },
-    {
-      step: "05",
-      title: "Formulate Your Task Request",
-      desc: "State your objective with acceptance criteria. The harness analyzes the codebase before touching any files.",
-      code: "Refactor auth middleware to WebAuthn with passing tests"
-    },
-    {
-      step: "06",
-      title: "Interactive Questions & Clarifications",
-      desc: "When architectural choices exist, the agent presents structured questions with recommended options and custom input.",
-      code: "ask: [Option 1: JWT Session] [Option 2: Bearer Tokens]"
-    },
-    {
-      step: "07",
-      title: "Review & Authorize Plan (A / B / C)",
-      desc: "Inspect the generated plan. Choose Option A (Execute All), Option B (Selective Tasks with dependency resolution), or Option C (Reject Plan).",
-      code: "[Option A: Execute All] [Option B: Select] [Option C: Reject]"
-    },
-    {
-      step: "08",
-      title: "Track Execution via DAG & Kanban HUD",
-      desc: "Tasks execute in topological dependency order. Monitor live progress, attempts, and blockers via /taskmanager.",
-      code: "/taskmanager"
-    },
-    {
-      step: "09",
-      title: "Inspect Verifiable Results & Evidences",
-      desc: "Every completed task records verifiable evidence: test results, file diffs, and artifact hashes before settlement.",
-      code: "npm test -- --coverage"
-    },
-    {
-      step: "10",
-      title: "Seamless Session Resumption",
-      desc: "Interrupt anytime with confidence. State, tasks, and context restore instantly without degrading token coherence.",
-      code: "ohms --continue"
-    }
-  ],
-  architectureEyebrow: "ENGINEERING ARCHITECTURE",
-  architectureHeading: "Four Pillars of the Harness",
-  architectureLede: "Engineered under high-performance TypeScript principles for zero overhead, strict typing, and deep cognitive density.",
-  architecturePillars: [
-    {
-      id: "dag",
-      title: "Task Plan Engine & Directed Acyclic Graph (DAG)",
-      body: "Models tasks with stable IDs, priorities, prerequisite dependencies, and verification criteria. Kahn topological ordering and cycle detection prevent execution deadlock."
-    },
-    {
-      id: "control",
-      title: "3-Way User Plan Authorization",
-      body: "User stays in absolute control: Option A executes the full topological sequence, Option B resolves dependency closures for partial subsets, and Option C preserves conversational continuity without deleting history."
-    },
-    {
-      id: "optimizer",
-      title: "Context & Token Optimization (FileReadCache)",
-      body: "FileReadCache eliminates redundant disk reads via mtime/size hashing. ToolResultCompactor elides oversized historic outputs, saving up to 70% tokens on long runs."
-    },
-    {
-      id: "roster",
-      title: "Specialized Multi-Agent Roster",
-      body: "Shark Lead orchestrates strategy, Code Architect enforces Bun-native zero-overhead TypeScript, Security Sentinel audits attack surfaces, and Scholar preserves semantic rigor."
-    }
-  ],
-  changesEyebrow: "WHY COSMOSKY",
-  changesHeading: "Why CosmoSky",
-  changesLede: "Built on high-performance desktop execution — plus everything needed to go from zero to shipping.",
-  changesList: [
-    {
-      title: "Running in minutes",
-      body: "One command installs the ohms CLI on Windows or macOS. Verified binaries, checksums checked before anything touches your system.",
-    },
-    {
-      title: "Setup that survives reinstalls",
-      body: "Your models and preferences live in plain YAML under ~/.ohms — and reinstalls never overwrite them.",
-    },
-    {
-      title: "Install you can trust",
-      body: "Every release asset carries build-provenance attestations you can verify yourself before running anything.",
-    },
-    {
-      title: "Kept current",
-      body: "Upstream improvements arrive as reviewable PRs. Conflicts become issues, never silent breakage.",
-    },
-  ] as Array<{ title: string; body: string }>,
+  pillar4Title: "Predatory Execution Speed",
+  pillar4Tag: "/xlr8 & FASTTHINK",
+  pillar4Body: "Hyperspeed turnaround pipelines via /xlr8 and fastthinkworkerz. Minimizes speculation, strips boilerplate, and triggers direct basic execution.",
 
-  lineageEyebrow: "LINEAGE",
-  lineageHeading: "Built on open source",
-  lineageChain: "Pi by Mario Zechner → Oh My Pi by Can Bölük / Stencil Labs → OhMyShark by LucasEntweihen",
-  lineageLicense: "Released under the MIT license.",
-  lineageDisclaimer: "Independent public fork; not affiliated with Stencil Labs.",
+  pillar5Title: "Specialized Multi-Agent Roster",
+  pillar5Tag: "COORDINATED SWARM",
+  pillar5Body: "Shark Lead orquestrates, Code Architect enforces Bun-native TypeScript, Security Sentinel audits attack surfaces, and Scholar maintains semantic rigor.",
 
-  footerTagline: "made by LucasEntweihen",
-  footerLicenses: "Third-party notices",
-  footerRelease: "Release omsk-v0.0.29",
-  socialX: "X",
-  socialGithub: "GitHub",
-  socialLinkedin: "LinkedIn",
-  socialLabel: "Social links",
+  pillar6Title: "Native Dark TaskManager HUD",
+  pillar6Tag: "/taskmanager",
+  pillar6Body: "Standalone high-contrast dark Kanban board with live process tracking, opacity control, and local JSON persistence in ~/.omsk/tarefas.json.",
+
+  // Section 04 - Split-Pane Semantic Compression Viewer
+  compressEyebrow: "TOKEN OPTIMIZATION",
+  compressHeading: "Semantic Compression & FileReadCache",
+  compressLede: "Compare uncompressed raw tool outputs with Oh My Shark's dense semantic representations.",
+  compressBeforeTitle: "Raw Bloated System & Tool Output",
+  compressBeforeStats: "Tokens: 14,850 • Redundancy: High • Disk Reads: 42x",
+  compressAfterTitle: "Oh My Shark Compacted Context",
+  compressAfterStats: "Tokens: 4,620 • Savings: -68.9% • Cache Hit: 100%",
+  compressReductionBadge: "-68.9% TOKEN REDUCTION",
+
+  // Section 05 - Autonomous Workflow Commands Pipeline
+  commandsEyebrow: "OPERATIONAL PROTOCOLS",
+  commandsHeading: "Autonomous Slash Commands Pipeline",
+  commandsLede: "Trigger specialized cognitive stream modes and workflow automation directly in your terminal prompt.",
+  
+  cmdPromaxthinkName: "promaxthink",
+  cmdPromaxthinkBadge: "5x Cognitive Depth",
+  cmdPromaxthinkDesc: "Multi-tier first-principles decomposition, adversarial falsification, and uncompromising architectural depth.",
+
+  cmdXlr8Name: "/xlr8",
+  cmdXlr8Badge: "Hyperspeed Acceleration",
+  cmdXlr8Desc: "Accelerates reasoning flow, simplifies code aggressively, and supports autonomous single-agent basic mode.",
+
+  cmdLearnerName: "/learner-proj",
+  cmdLearnerBadge: "Holistic Scan (Cyan→Sapphire)",
+  cmdLearnerDesc: "Performs an exhaustive 13-pillar scan across architecture, mechanics, dependencies, and code patterns.",
+
+  cmdDoomaniaName: "/doomania",
+  cmdDoomaniaBadge: "Tri-Agent Deliberation",
+  cmdDoomaniaDesc: "Convenes critique, permissive, and creative perspectives to review critical changes under maximum rigor.",
+
+  cmdTaskManagerName: "/taskmanager",
+  cmdTaskManagerBadge: "Kanban HUD GUI",
+  cmdTaskManagerDesc: "Launches the native dark desktop board or web app with real-time process monitoring.",
+
+  // Section 06 - 10-Step Interactive Onboarding Guide
+  guideEyebrow: "PRACTICAL GUIDE",
+  guideHeading: "Complete Developer Onboarding in 10 Steps",
+  guideLede: "A clear didactic path from initial setup to multi-hour autonomous task execution.",
+
+  // Section 07 - Installation & Terminal CTA
+  installEyebrow: "DEPLOYMENT",
+  installHeading: "Install Oh My Shark in Seconds",
+  installLede: "Native standalone binaries for Windows, Linux, and macOS. Zero npm dependencies, zero configuration required.",
+  
+  tabWindows: "Windows (PowerShell)",
+  tabMacLinux: "macOS / Linux (Shell)",
+  tabVerify: "Verified Install",
+  tabQuick: "Standard One-Liner",
+
+  footerSitemap: "Site Map & Architecture",
+  footerLicense: "Released under MIT License",
+  footerProvenance: "Release omsk-v0.0.29 • SHA-256 Verified",
+  footerSocialLabel: "Community and links",
+
+  // Command Palette
+  paletteTitle: "Tactical Command Palette",
+  palettePlaceholder: "Type a command or jump to section (e.g., 'guide', 'install', 'dag')...",
+  paletteEscHint: "Press ESC to close",
 };
 
 export type Strings = typeof en;
 
 const pt: Strings = {
   skipLink: "Pular para o conteúdo",
-  wordmark: "COSMOSKY",
-  navLabel: "Seções",
-  versionBadge: "v0.0.29",
-  navCommands: "Comandos",
+  wordmark: "OH MY SHARK",
+  editionTag: "v0.0.29 // MOTOR QUÂNTICO",
+  versionBadge: "omsk-v0.0.29",
   navFeatures: "Recursos",
-  navPreset: "Configuração",
-  navLineage: "Origem",
+  navBento: "Arquitetura",
+  navCompression: "Compressão",
+  navCommands: "Pipelines",
+  navInstall: "Instalação",
+  navDocs: "Documentação",
   navGithub: "GitHub",
   githubHref: "https://github.com/LucasEntweihen/oh-my-shark",
   localeToggleLabel: "Idioma",
   themeToggleLabel: "Tema de cor",
   themeDark: "Escuro",
   themeLight: "Claro",
+  commandPaletteHint: "Pressione / ou Cmd+K para abrir a Command Palette",
 
-  heroSpectrumBadge: "PROJECT PRISM // DEEP WEB SPECTRUM",
-  heroEyebrow: "DESKTOP AI & AGENTE DE TERMINAL",
-  heroTitle: "Sua inteligência desktop. Afinada para o universo.",
+  // Telemetry Bar
+  telemetryStatus: "STATUS: OPERACIONAL ÓTIMO",
+  telemetryEngine: "MOTOR: BUN NATIVO + ADDONS RUST/NODE",
+  telemetryTokenSavings: "COMPRESSÃO: -68.4% TOKENS POUPADOS",
+  telemetryLatency: "TTFT: 14ms",
+  telemetryVersion: "BUILD: v0.0.29 APROVADO",
+
+  // Hero Section
+  heroBadge: "OHMYSHARK // HARNESS DE CODIFICAÇÃO COM VELOCIDADE PREDATÓRIA",
+  heroTitlePre: "Engenharia autônoma na",
+  heroTitleGradient: "velocidade do puro pensamento.",
   heroLede:
-    "Instale em segundos, crie por horas. O CosmoSky roda como aplicativo desktop nativo e motor de terminal com modelos configurados, raciocínio profundo e sessões que não degradam.",
-  heroDownloadExeCta: "Baixar CosmoSky (.exe)",
-  heroInstallCta: "Instalar CLI",
-  heroChangesCta: "Por que CosmoSky",
-  quickInstallHeader: "COMANDO DEFINITIVO DE UMA LINHA",
-  quickInstallSub: "Comando de uma linha compatível com PowerShell 5.1 e Core — cole e execute diretamente no terminal:",
-  quickInstallBadge: "VERSÃO ATUAL: omsk-v0.0.29",
-  quickInstallMeta: "Zero configuração • Validação SHA-256 • Isolado em ~/.ohms",
-  osMacos: "macOS / Linux",
-  osWindows: "Windows (PowerShell)",
-  osTabLabel: "Sistema operacional",
-  methodVerified: "Verificado (Attestation)",
-  methodQuick: "Padrão (Robusto)",
-  methodLabel: "Método de instalação",
-  verifiedNote:
-    "Padrão zero-trust. Exige GitHub CLI autenticado (gh auth login). Verifica a attestation de proveniência do instalador antes de executá-lo.",
-  quickNote:
-    "Garantido contra bloqueios de memória (AMSI). Baixa o instalador para o disco e executa com bypass de política, garantindo a instalação em ambientes restritos.",
-  installHeading: "Instalação",
-  installLede:
-    "Escolha sua plataforma abaixo. Verificado é o padrão seguro; Rápido troca verificação por velocidade. De qualquer forma, em minutos você está rodando — e sua config existente nunca é tocada.",
-  presetNote:
-    "Acompanha uma configuração inicial curada: model roles, fallbacks, compactação para sessões longas. Suas chaves, suas escolhas — nada liga para casa.",
-  copyLabel: "Copiar",
-  copiedMessage: "Copiado para a área de transferência",
-  copyFailedMessage: "Falha ao copiar — selecione o texto manualmente",
-  commandRegionLabel: "Comandos de instalação",
-  stepLabel: "Passo",
+    "O harness de desenvolvimento sub-milissegundo construído sobre Bun, Rust e grafos acíclicos dirigidos. Traz compressão semântica profunda, autorização de plano em 3 vias, HUD Kanban em tempo real e zero overhead.",
+  heroInstallHeader: "COMANDO UNIVERSAL DE INSTALAÇÃO",
+  heroCopyLabel: "Copiar",
+  heroCopied: "Copiado para a área de transferência [0.4ms]",
+  heroCopyFailed: "Falha ao copiar — por favor selecione manualmente",
+  heroDownloadExe: "Baixar Executável Desktop (.exe)",
+  heroInspectLive: "Explorar Arquitetura",
+  heroDocsCta: "Abrir Guia Interativo",
 
-  telemetryHeader: "TELEMETRIA DE REFRAÇÃO ÓTICA",
-  telemetryGrid: "MALHA: TOPOGRAFIA 3D WIREFRAME (Z-0)",
-  telemetrySpectrum: "DISPERSÃO: ESPECTRO CONTÍNUO DE 8 BANDAS (Z-10)",
-  telemetryStatus: "NÓS ANÔMALOS: 7500+ TB DETECTADOS",
+  // TUI Simulator Tabs
+  tuiTitle: "ohms-tui — 128x48 [KERNEL ATIVO]",
+  tabTuiLive: "Terminal TUI em Tempo Real",
+  tabTuiTask: "Motor DAG de Tarefas",
+  tabTuiCompress: "Compressão Semântica",
+  tabTuiRoster: "Equipe de Especialistas",
 
-  providersEyebrow: "PROVEDORES DE MODELO",
-  providersNote:
-    "Funciona com os provedores que você já paga. Traga suas próprias chaves.",
-  providerOpenCodeGo: "OpenCode Go",
-  providerOpenAiCodex: "OpenAI Codex",
-  providerCommandCode: "CommandCode",
+  // Section 03 - 6 Pillars Bento Grid
+  pillarsEyebrow: "ARQUITETURA CENTRAL",
+  pillarsHeading: "Os 6 Pilares Estruturais do Oh My Shark",
+  pillarsLede: "Projetado a partir de primeiros princípios para zero alocações inúteis, builds determinísticos e densidade cognitiva máxima.",
 
-  featuresEyebrow: "CANAIS",
-  featuresHeading: "Recursos",
-  featuresLede:
-    "Tudo que você precisa para entregar código pelo terminal.",
-  featureDetailLabel: "Detalhe do recurso",
-  featuresList: [
-    {
-      id: "shark",
-      title: "Identidade própria",
-      body: "Marca do tubarão, estética limpa de terminal e config isolada em ~/.ohms — sua configuração nunca briga com outra ferramenta.",
-    },
-    {
-      id: "preset",
-      title: "Modelos prontos para rodar",
-      body: "Roles, fallbacks e níveis de raciocínio já vêm configurados. Traga suas próprias chaves de API — nenhum segredo viaja na caixa.",
-    },
-    {
-      id: "commandcode",
-      title: "Mais modelos sob demanda",
-      body: "Um catálogo CommandCode de 47 modelos a uma variável de ambiente de distância. Nada usa sem você mandar.",
-    },
-    {
-      id: "snapcompact",
-      title: "Sessões longas afiadas",
-      body: "A compactação mantém sessões grandes coerentes em vez de degradar. SnapCompact primeiro, fallbacks graciosos depois.",
-    },
-    {
-      id: "taskmanager",
-      title: "Gerenciador de Tarefas Dark",
-      body: "Interface Kanban gráfica de alto contraste para tarefas e processos locais com sincronização em tempo real via comando /taskmanager.",
-    },
-    {
-      id: "lsp",
-      title: "Entende seu código",
-      body: "Edição, diagnósticos e navegação com language server — o ambiente vê o que sua IDE vê.",
-    },
-    {
-      id: "debugger",
-      title: "Depure sem sair",
-      body: "Inspecione o estado real do programa no meio da sessão em vez de espalhar prints.",
-    },
-    {
-      id: "xlr8",
-      title: "Aceleração /xlr8 e fastthinkworkerz",
-      body: "Redução extrema de latência com pipelines simplificados e entrega em velocidade máxima para ciclos rápidos.",
-    },
-    {
-      id: "deepseaneuron",
-      title: "Otimização de tokens deepseaneuron",
-      body: "Compressão semântica profunda de tokens que preserva o contexto crítico de sessões longas sem sobrecarregar a memória.",
-    },
-    {
-      id: "upstream",
-      title: "Mantido, não congelado",
-      body: "Syncs diários do upstream viram PRs revisados — você recebe correções sem surpresas.",
-    },
-  ] as Array<{ id: string; title: string; body: string }>,
+  pillar1Title: "Task Plan Engine & DAG Topológico",
+  pillar1Tag: "ALGORITMO DE KAHN",
+  pillar1Body: "Sequenciamento autônomo de tarefas via grafos acíclicos dirigidos. Detecta dependências circulares com recursão DFS, exige conclusão de pré-requisitos e coleta evidências reais de verificação.",
 
-  tabOverview: "Visão Geral",
-  tabGuide: "Guia em 10 Passos",
-  tabDocs: "Documentação & API",
-  tabArchitecture: "Arquitetura",
-  tabCommands: "Comandos & Modos",
-  tabInstall: "Instalação",
-  sidebarDocTitle: "Navegação & Docs",
-  sidebarDocSubtitle: "Oh My Shark Engine v0.0.29",
-  docsEyebrow: "DOCUMENTAÇÃO DO HARNESS & ESPECIFICAÇÕES",
-  docsHeading: "Documentação Interativa do Motor",
-  docsLede: "Explore em detalhes ferramentas nativas, protocolos de execução, opções do CLI e mecânicas autônomas.",
-  docsCategories: [
-    {
-      id: "tools",
-      name: "Ferramentas Nativas Principais",
-      items: [
-        { name: "read", desc: "Leitura cirúrgica de arquivos, bancos SQLite, arquivos compactados (.zip/.tar), branches git e URLs." },
-        { name: "write", desc: "Criação e sobrescrita atômica de arquivos com validação de integridade e proteções." },
-        { name: "edit", desc: "Patches cirúrgicos hashline ancorados por hashes hexadecimais, prevenindo condições de corrida." },
-        { name: "bash", desc: "Shell persistente de alta velocidade para binários, comandos rápidos e testes." },
-        { name: "grep & glob", desc: "Busca ultrarrápida com regex PCRE2/Rust e glob de diretórios sem overhead de shell." },
-        { name: "lsp", desc: "Inteligência semântica de servidor de linguagem: diagnósticos, definições, referências e renomeações." },
-        { name: "ask", desc: "Perguntas interativas estruturadas com múltiplas escolhas, recomendações e campo personalizado." }
-      ]
-    },
-    {
-      id: "tasks",
-      name: "Task Plan Engine (DAG)",
-      items: [
-        { name: "Ordenação Topológica de Kahn", desc: "Tarefas organizadas em grafo acíclico, garantindo ordem de execução sem falhas." },
-        { name: "Detecção de Ciclos", desc: "Algoritmo DFS detecta e diagnostica dependências circulares com precisão." },
-        { name: "Opção A (Execução Completa)", desc: "Execução autônoma de ponta a ponta com verificação contínua de evidências." },
-        { name: "Opção B (Seleção Seletiva)", desc: "Calcula o fechamento transitivo de dependências e resolve pré-requisitos faltantes." },
-        { name: "Opção C (Ignorar com Graça)", desc: "Permite rejeitar ou reformular o plano sem perder o histórico da conversa." }
-      ]
-    },
-    {
-      id: "optimization",
-      name: "Otimizações de Recursos & Tokens",
-      items: [
-        { name: "FileReadCache", desc: "Cache LRU em memória por mtime e tamanho, eliminando I/O redundante de disco." },
-        { name: "ToolResultCompactor", desc: "Compactação semântica de saídas antigas de ferramentas, economizando até 70% de tokens." },
-        { name: "Prompt Caching Nativo", desc: "Aproveitamento de cache de prompt para Anthropic Claude, OpenAI e Gemini." }
-      ]
-    }
-  ],
-  navGuide: "Guia",
-  navArchitecture: "Arquitetura",
-  guideEyebrow: "GUIA PASSO A PASSO",
-  guideHeading: "Domine o Oh My Shark em 10 Passos",
-  guideLede: "Do setup inicial sem configuração à execução autônoma resiliente — tudo o que você precisa para produzir com segurança.",
-  guideSteps: [
-    {
-      step: "01",
-      title: "Configuração do Ambiente & Instalação",
-      desc: "Instale o CLI ohms nativamente ou baixe o executável desktop CosmoSky. Zero dependências externas necessárias.",
-      code: "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.29/install.ps1 | iex"
-    },
-    {
-      step: "02",
-      title: "Conectar Providers & Chaves de API",
-      desc: "Traga suas próprias chaves para Anthropic Claude, OpenAI, Google Gemini, OpenCode Go ou modelos locais via Ollama.",
-      code: "export GEMINI_API_KEY=\"sua-chave\" # ou ANTHROPIC_API_KEY"
-    },
-    {
-      step: "03",
-      title: "Escolher Modelo & Nível de Raciocínio",
-      desc: "Defina papéis entre smol, default e slow. Ative promaxthink para raciocínio 5x profundo ou fastthinkworkerz para máxima velocidade.",
-      code: "promaxthink projete o motor de sincronizacao distribuida"
-    },
-    {
-      step: "04",
-      title: "Iniciar uma Sessão Interativa",
-      desc: "Abra o harness no diretório do seu repositório. As sessões ficam estritamente isoladas em ~/.ohms.",
-      code: "ohms"
-    },
-    {
-      step: "05",
-      title: "Formular sua Solicitação",
-      desc: "Apresente o objetivo com critérios de aceitação. O harness analisa a base de código antes de alterar qualquer arquivo.",
-      code: "Refatorar middleware de autenticacao para WebAuthn com testes passando"
-    },
-    {
-      step: "06",
-      title: "Perguntas Interativas & Esclarecimentos",
-      desc: "Havendo opções arquiteturais, o agente apresenta perguntas estruturadas com recomendações fundamentadas e resposta personalizada.",
-      code: "ask: [Opção 1: Sessão JWT] [Opção 2: Tokens Bearer]"
-    },
-    {
-      step: "07",
-      title: "Revisar & Autorizar o Plano (A / B / C)",
-      desc: "Inspecione o plano gerado. Escolha Opção A (Executar Todas), Opção B (Selecionar com resolução de dependências) ou Opção C (Ignorar Plano).",
-      code: "[Opção A: Executar Todas] [Opção B: Selecionar] [Opção C: Ignorar]"
-    },
-    {
-      step: "08",
-      title: "Acompanhar Execução via DAG & Kanban HUD",
-      desc: "Tarefas rodam na ordem topológica de dependência. Acompanhe progresso em tempo real, tentativas e bloqueios via /taskmanager.",
-      code: "/taskmanager"
-    },
-    {
-      step: "09",
-      title: "Inspecionar Resultados & Evidências",
-      desc: "Cada tarefa concluída registra evidências verificáveis: testes executados, diffs e artefatos antes da finalização.",
-      code: "npm test -- --coverage"
-    },
-    {
-      step: "10",
-      title: "Retomada Fluida de Sessões",
-      desc: "Interrompa quando quiser com tranquilidade. O estado, as tarefas e o contexto são restaurados instantaneamente sem degradação.",
-      code: "ohms --continue"
-    }
-  ],
-  architectureEyebrow: "ARQUITETURA DE ENGENHARIA",
-  architectureHeading: "Quatro Pilares do Harness",
-  architectureLede: "Construído sobre princípios TypeScript de alta performance para zero overhead, tipagem estrita e alta densidade cognitiva.",
-  architecturePillars: [
-    {
-      id: "dag",
-      title: "Task Plan Engine & Grafo Acíclico (DAG)",
-      body: "Modela tarefas com IDs estáveis, prioridades, dependências pré-requisito e critérios de verificação. Ordenação topológica de Kahn e detecção de ciclos evitam deadlocks."
-    },
-    {
-      id: "control",
-      title: "Autorização de Plano em 3 Vias pelo Usuário",
-      body: "O usuário permanece no controle absoluto: Opção A executa toda a sequência topológica, Opção B resolve dependências para subconjuntos parciais e Opção C preserva o histórico sem descartar nada."
-    },
-    {
-      id: "optimizer",
-      title: "Otimização de Contexto e Tokens (FileReadCache)",
-      body: "FileReadCache elimina leituras redundantes de disco por hash mtime/tamanho. ToolResultCompactor resume saídas históricas gigantescas, poupando até 70% de tokens em sessões longas."
-    },
-    {
-      id: "roster",
-      title: "Roster de Agentes Especializados",
-      body: "Shark Lead orquestra estratégia, Code Architect aplica TypeScript nativo Bun com zero overhead, Security Sentinel audita vetores de ataque e Scholar mantém rigor semântico."
-    }
-  ],
-  changesEyebrow: "POR QUE COSMOSKY",
-  changesHeading: "Por que CosmoSky",
-  changesLede: "Construído sobre execução nativa de alto desempenho — mais tudo que falta para sair do zero ao shipping.",
-  commandsEyebrow: "MODOS OPERACIONAIS DE TERMINAL",
-  commandsHeading: "Comandos Especiais & Magic Keywords",
-  commandsLede:
-    "Ative modelos avançados de raciocínio, aceleração máxima de entrega, acompanhamento visual de tarefas e otimização cognitiva direto no seu prompt.",
-  powershellFixHeading: "Compatibilidade Universal PowerShell 5.1 & Core",
-  powershellFixNote:
-    "O instalador oficial resolve a arquitetura nativa diretamente via variáveis de ambiente, garantindo instalação sem erros em qualquer versão do Windows PowerShell.",
-  specialCommandsList: [
-    {
-      name: "promaxthink",
-      tag: "Hiper-Raciocínio & Profundidade Adversarial (5x)",
-      badgeClass: "badge-red",
-      colors: "Gradiente Rosa → Carmesim",
-      description:
-        "Evolução radical do ultrathink operando com 5x mais complexidade cognitiva, decomposição por primeiros princípios, autofalsificação adversarial e rigor intelectual absoluto.",
-      usage: "promaxthink arquitete o motor de consenso distribuído e quebre todos os edge cases",
-    },
-    {
-      name: "/learner-proj",
-      tag: "Inteligência Holística de Projeto",
-      badgeClass: "badge-cyan",
-      colors: "Gradiente Ciano → Safira",
-      description:
-        "Varredura exaustiva e aprendizado holístico em 13 pilares (arquitetura, mecânicas, estrutura de arquivos, dependências, lógica) para internalização profunda do sistema.",
-      usage: "/learner-proj examine a arquitetura completa e dependências do repositório",
-    },
-    {
-      name: "ultrathink",
-      tag: "Raciocínio Profundo",
-      badgeClass: "badge-rainbow",
-      colors: "Arco-íris Espectral",
-      description:
-        "Libera o nível máximo de raciocínio e reflexão suportado pelo modelo em uso.",
-      usage: "ultrathink arquitete um motor de streaming de eventos de alta vazão",
-    },
-    {
-      name: "workflowz",
-      tag: "Workflows em Kernel Persistente",
-      badgeClass: "badge-blue",
-      colors: "Gradiente Azul → Ciano",
-      description:
-        "Ativa pipelines de execução contínua com kernel interativo persistente e workpools paralelos.",
-      usage: "workflowz migre a suíte de testes entre os módulos",
-    },
-    {
-      name: "/taskmanager",
-      tag: "Painel Kanban de Tarefas",
-      badgeClass: "badge-purple",
-      colors: "Gradiente Roxo → Índigo",
-      description:
-        "Abre o painel gráfico Kanban dark moderno com sincronização em tempo real e monitor de processos.",
-      usage: "/taskmanager",
-    },
-    {
-      name: "deepseaneuron",
-      tag: "Racionalização de Tokens",
-      badgeClass: "badge-cyan",
-      colors: "Gradiente Ciano → Azul Profundo",
-      description:
-        "Racionaliza o consumo de tokens e maximiza a densidade informacional sem perder profundidade.",
-      usage: "deepseaneuron implemente as otimizações do parser de AST",
-    },
-    {
-      name: "fastthinkworkerz",
-      tag: "Velocidade Radical",
-      badgeClass: "badge-yellow",
-      colors: "Gradiente Amarelo → Dourado → Branco",
-      description:
-        "Acelera a entrega ao máximo, reduzindo o nível de pensamento e a latência para respostas instantâneas.",
-      usage: "fastthinkworkerz corrija o erro de digitação e recompile imediatamente",
-    },
-    {
-      name: "/doomania",
-      tag: "Painel de Deliberação Tri-Agente",
-      badgeClass: "badge-green",
-      colors: "Gradiente Verde Esmeralda",
-      description:
-        "Convoca um comitê de deliberação com 3 perspectivas complementares (crítico, permissivo e criativo) antes da execução definitiva.",
-      usage: "/doomania migre nossa camada de autenticação para WebAuthn",
-    },
-    {
-      name: "/xlr8",
-      tag: "Aceleração Hipersônica & In-Flight",
-      badgeClass: "badge-teal",
-      colors: "Gradiente Cinza → Azul → Verde → Branco",
-      description:
-        "Acelera a linha de raciocínio, simplifica código, injeta aceleração instantânea em mensagens ativas e permite execução direta ultrarrápida.",
-      usage: "/xlr8 --basic gere o script mais simples e direto possível",
-    },
-  ] as Array<{ name: string; tag: string; badgeClass: string; colors: string; description: string; usage: string }>,
-  changesList: [
-    {
-      title: "Rodando em minutos",
-      body: "Um comando instala o CLI ohms no Windows ou macOS. Binários verificados, checksums conferidos antes de tocar no seu sistema.",
-    },
-    {
-      title: "Configuração que sobrevive a reinstalações",
-      body: "Seus modelos e preferências vivem em YAML puro sob ~/.ohms — e reinstalações nunca sobrescrevem.",
-    },
-    {
-      title: "Instalação em que dá para confiar",
-      body: "Cada asset de release traz attestations de proveniência que você mesmo pode verificar antes de executar.",
-    },
-    {
-      title: "Sempre atualizado",
-      body: "Melhorias do upstream chegam como PRs revisáveis. Conflitos viram issues, nunca quebra silenciosa.",
-    },
-  ] as Array<{ title: string; body: string }>,
+  pillar2Title: "Autorização de Plano em 3 Vias",
+  pillar2Tag: "CONTROLE SOBERANO",
+  pillar2Body: "O desenvolvedor permanece no comando: Opção A executa toda a sequência topológica, Opção B resolve dependências para subconjuntos parciais e Opção C preserva o histórico sem perda de dados.",
 
-  lineageEyebrow: "ORIGEM",
-  lineageHeading: "Feito sobre código aberto",
-  lineageChain: "Pi por Mario Zechner → Oh My Pi por Can Bölük / Stencil Labs → OhMyShark por LucasEntweihen",
-  lineageLicense: "Publicado sob a licença MIT.",
-  lineageDisclaimer: "Fork público independente; sem afiliação com a Stencil Labs.",
+  pillar3Title: "Compressão Semântica de Tokens",
+  pillar3Tag: "DEEPSEANEURON",
+  pillar3Body: "Reduz a pressão da janela de contexto em até 70%. FileReadCache elimina leituras redundantes de disco por hash mtime; ToolResultCompactor resume saídas massivas com segurança.",
 
-  footerTagline: "made by LucasEntweihen",
-  footerLicenses: "Avisos de terceiros",
-  footerRelease: "Release omsk-v0.0.29",
-  socialX: "X",
-  socialGithub: "GitHub",
-  socialLinkedin: "LinkedIn",
-  socialLabel: "Redes sociais",
+  pillar4Title: "Velocidade de Execução Predatória",
+  pillar4Tag: "/xlr8 & FASTTHINK",
+  pillar4Body: "Pipelines de resposta ultrarrápida via /xlr8 e fastthinkworkerz. Minimiza especulações, descarta código supérfluo e aciona execução direta em modo básico.",
+
+  pillar5Title: "Roster de Agentes Especialistas",
+  pillar5Tag: "SWARM COORDENADO",
+  pillar5Body: "Shark Lead orquestra a estratégia, Code Architect aplica TypeScript nativo Bun com zero overhead, Security Sentinel audita superfícies e Scholar mantém rigor semântico.",
+
+  pillar6Title: "HUD Kanban Dark Nativo",
+  pillar6Tag: "/taskmanager",
+  pillar6Body: "Quadro Kanban escuro de alto contraste com acompanhamento de processos em tempo real, controle de opacidade e persistência JSON local em ~/.omsk/tarefas.json.",
+
+  // Section 04 - Split-Pane Semantic Compression Viewer
+  compressEyebrow: "OTIMIZAÇÃO DE TOKENS",
+  compressHeading: "Compressão Semântica & FileReadCache",
+  compressLede: "Compare saídas brutas desnecessariamente infladas com as representações semânticas densas do Oh My Shark.",
+  compressBeforeTitle: "Saída Bruta Inflada (Tools & Prompts)",
+  compressBeforeStats: "Tokens: 14.850 • Redundância: Alta • Leituras de Disco: 42x",
+  compressAfterTitle: "Contexto Compactado Oh My Shark",
+  compressAfterStats: "Tokens: 4.620 • Economia: -68.9% • Cache Hit: 100%",
+  compressReductionBadge: "-68.9% REDUÇÃO DE TOKENS",
+
+  // Section 05 - Autonomous Workflow Commands Pipeline
+  commandsEyebrow: "PROTOCOLOS OPERACIONAIS",
+  commandsHeading: "Pipeline de Comandos Autônomos",
+  commandsLede: "Ative fluxos de raciocínio especializado e automações de engenharia diretamente no buffer do seu terminal.",
+
+  cmdPromaxthinkName: "promaxthink",
+  cmdPromaxthinkBadge: "5x Profundidade Cognitiva",
+  cmdPromaxthinkDesc: "Decomposição rigorosa por primeiros princípios, falsificação adversarial e profundidade arquitetural implacável.",
+
+  cmdXlr8Name: "/xlr8",
+  cmdXlr8Badge: "Aceleração Hipersônica",
+  cmdXlr8Desc: "Acelera a linha de raciocínio, simplifica código e suporta modo básico desconectado com velocidade direta.",
+
+  cmdLearnerName: "/learner-proj",
+  cmdLearnerBadge: "Mapeamento Holístico (Ciano→Safira)",
+  cmdLearnerDesc: "Executa uma varredura profunda em 13 pilares sobre arquitetura, mecânicas, dependências e padrões de código.",
+
+  cmdDoomaniaName: "/doomania",
+  cmdDoomaniaBadge: "Painel Tri-Agente",
+  cmdDoomaniaDesc: "Convoca visões crítica, permissiva e criativa para deliberar sobre alterações de alto impacto antes da execução.",
+
+  cmdTaskManagerName: "/taskmanager",
+  cmdTaskManagerBadge: "HUD Kanban GUI",
+  cmdTaskManagerDesc: "Abre o quadro nativo de desktop ou aplicação web com acompanhamento de processos em tempo real.",
+
+  // Section 06 - 10-Step Interactive Onboarding Guide
+  guideEyebrow: "GUIA PRÁTICO",
+  guideHeading: "Guia Completo de Desenvolvimento em 10 Passos",
+  guideLede: "Um percurso didático claro da instalação inicial à execução de tarefas autônomas de múltiplas horas.",
+
+  // Section 07 - Installation & Terminal CTA
+  installEyebrow: "IMPLANTAÇÃO",
+  installHeading: "Instale o Oh My Shark em Segundos",
+  installLede: "Binários nativos standalone para Windows, Linux e macOS. Zero dependências de npm, zero configuração necessária.",
+
+  tabWindows: "Windows (PowerShell)",
+  tabMacLinux: "macOS / Linux (Shell)",
+  tabVerify: "Instalação Verificada",
+  tabQuick: "Comando Rápido Único",
+
+  footerSitemap: "Mapa do Sítio & Arquitetura",
+  footerLicense: "Publicado sob Licença MIT",
+  footerProvenance: "Release omsk-v0.0.29 • Verificação SHA-256",
+  footerSocialLabel: "Comunidade e links",
+
+  // Command Palette
+  paletteTitle: "Paleta Tática de Comandos",
+  palettePlaceholder: "Digite um comando ou pule para uma seção (ex: 'guia', 'instalar', 'dag')...",
+  paletteEscHint: "Pressione ESC para fechar",
 };
 
 export const dict: Record<Locale, Strings> = { en, pt };
