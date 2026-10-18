@@ -6,11 +6,13 @@ import { containsFastthinkworkerz, highlightFastthinkworkerz } from "./fastthink
 import { containsOrchestrate, highlightOrchestrate } from "./orchestrate";
 import { containsPromaxthink, highlightPromaxthink } from "./promaxthink";
 import { containsUltrathink, highlightUltrathink } from "./ultrathink";
+import { containsVibecoding, highlightVibecoding } from "./vibecoding";
 import { containsWorkflow, highlightWorkflow } from "./workflow";
 import { containsXlr8, highlightXlr8 } from "./xlr8";
+
 /**
  * Gradient-highlight every magic keyword ("ultrathink", "orchestrate",
- * "workflowz", "promaxthink") that appears as standalone prose, skipping any
+ * "workflowz", "promaxthink", "vibecoding") that appears as standalone prose, skipping any
  * occurrence inside a code block, inline code span, or XML/HTML section. Each
  * highlighter paints its own keyword with its own gradient, so chaining is
  * order-independent — the earlier passes only inject zero-width SGR escapes
@@ -37,7 +39,8 @@ export function highlightMagicKeywords(text: string, resetTo?: string, phase?: n
 	const step7 = highlightAgentSandbox(step6, resetTo, phase);
 	const step8 = highlightFastthinkworkerz(step7, resetTo, phase);
 	const step9 = highlightXlr8(step8, resetTo, phase);
-	return highlightLearnerProj(step9, resetTo, phase);
+	const step10 = highlightLearnerProj(step9, resetTo, phase);
+	return highlightVibecoding(step10, resetTo, phase);
 }
 
 /**
@@ -56,7 +59,9 @@ export function hasMagicKeyword(text: string): boolean {
 		!text.includes("deepseaneuron") &&
 		!text.includes("fastthinkworkerz") &&
 		!text.includes("xlr8") &&
-		!text.includes("agent-sandbox")
+		!text.includes("agent-sandbox") &&
+		!text.includes("vibe") &&
+		!text.includes("vibecoding")
 	) {
 		return false;
 	}
@@ -69,6 +74,7 @@ export function hasMagicKeyword(text: string): boolean {
 		containsDeepseaneuron(text) ||
 		containsAgentSandbox(text) ||
 		containsFastthinkworkerz(text) ||
-		containsXlr8(text)
+		containsXlr8(text) ||
+		containsVibecoding(text)
 	);
 }

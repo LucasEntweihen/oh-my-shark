@@ -15,6 +15,7 @@ import { BUILTIN_LIFECYCLE_SLASH_COMMANDS } from "./builtin-lifecycle";
 import { BUILTIN_MARKETPLACE_SLASH_COMMANDS, reloadTuiPluginState } from "./builtin-marketplace";
 import { BUILTIN_MODE_SLASH_COMMANDS } from "./builtin-modes";
 import { BUILTIN_SESSION_SLASH_COMMANDS } from "./builtin-session";
+import { BUILTIN_VIBE_SLASH_COMMANDS } from "./builtin-vibe";
 import { parseSlashCommand } from "./helpers/parse";
 import type {
 	BuiltinSlashCommand,
@@ -45,6 +46,7 @@ const BUILTIN_SLASH_COMMAND_REGISTRY: ReadonlyArray<SlashCommandSpec> = [
 	...BUILTIN_LIFECYCLE_SLASH_COMMANDS,
 	...BUILTIN_MARKETPLACE_SLASH_COMMANDS,
 	...BUILTIN_CONTROL_SLASH_COMMANDS,
+	...BUILTIN_VIBE_SLASH_COMMANDS,
 ];
 
 const BUILTIN_SLASH_COMMAND_LOOKUP = new Map<string, SlashCommandSpec>();
@@ -145,12 +147,6 @@ export async function executeBuiltinSlashCommand(
 		return true;
 	}
 	if (command.handle) {
-		// No TUI-specific override → adapt the ACP/text-mode `handle` to the
-		// TUI by routing `runtime.output` through `ctx.showStatus`, clearing
-		// the editor after the call, and reusing the active session's plugin
-		// reload pipeline. Spec authors get a single body usable from either
-		// dispatcher without forcing every TUI test to construct the full
-		// `SlashCommandRuntime` shape.
 		const ctx = runtime.ctx;
 		const adapted: SlashCommandRuntime = {
 			session: ctx.session,
