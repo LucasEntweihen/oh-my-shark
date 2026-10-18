@@ -424,26 +424,26 @@ export default function App() {
                       <span className="tui-line-item" style={{ color: "var(--text-muted)" }}>
                         Reading ~/.omsk/tarefas.json [OK] • FileReadCache mounted
                       </span>
-                      <span className="tui-line-item" style={{ color: "#ffffff", fontWeight: 700, marginBlock: "0.25rem" }}>
-                        ❯ omsk task "Implement WebAuthn credentials verification"
+                      <span className="tui-line-item" style={{ color: "#ffffff", fontWeight: 700, marginBlock: "0.2rem" }}>
+                        ❯ omsk task "WebAuthn credentials"
                       </span>
                       <span className="tui-line-item" style={{ color: "var(--shark-emerald)" }}>
-                        ✔ DAG resolved: 4 tasks ordered via Kahn algorithm (zero cycles)
+                        ✔ DAG: 4 tasks ordered via Kahn (zero cycles)
                       </span>
-                      <span className="tui-line-item" style={{ color: "var(--text-muted)", paddingLeft: "0.75rem" }}>
-                        ├─ [task-1] scaffold-auth-schema.ts [DONE]
+                      <span className="tui-line-item" style={{ color: "var(--text-muted)", paddingLeft: "0.5rem" }}>
+                        ├─ [t1] auth-schema.ts [DONE]
                       </span>
-                      <span className="tui-line-item" style={{ color: "var(--text-muted)", paddingLeft: "0.75rem" }}>
-                        ├─ [task-2] generate-challenge-token.ts [DONE]
+                      <span className="tui-line-item" style={{ color: "var(--text-muted)", paddingLeft: "0.5rem" }}>
+                        ├─ [t2] challenge-token.ts [DONE]
                       </span>
-                      <span className="tui-line-item" style={{ color: "var(--shark-cyan)", paddingLeft: "0.75rem", fontWeight: 600 }}>
-                        ├─ [task-3] verify-webauthn-signature.ts [IN_PROGRESS]
+                      <span className="tui-line-item" style={{ color: "var(--shark-cyan)", paddingLeft: "0.5rem", fontWeight: 600 }}>
+                        ├─ [t3] verify-signature.ts [IN_PROGRESS]
                       </span>
-                      <span className="tui-line-item" style={{ color: "var(--text-faint)", paddingLeft: "0.75rem" }}>
-                        └─ [task-4] integration-suite.test.ts [PENDING: requires task-3]
+                      <span className="tui-line-item" style={{ color: "var(--text-faint)", paddingLeft: "0.5rem" }}>
+                        └─ [t4] integration.test.ts [PENDING]
                       </span>
-                      <span className="tui-line-item" style={{ color: "var(--shark-amber)", marginTop: "0.35rem" }}>
-                        [EVIDENCE LOGGED] 16 unit tests verified • SHA-256: e82f...
+                      <span className="tui-line-item" style={{ color: "var(--shark-amber)", marginTop: "0.25rem" }}>
+                        [EVIDENCE] 16 tests verified • SHA-256: e82f...
                       </span>
                     </div>
                   )}
@@ -632,9 +632,27 @@ export default function App() {
                 </div>
 
                 <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdUltrathinkName}</code>
+                  <span className="cmd-badge">{t.cmdUltrathinkBadge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdUltrathinkDesc}</p>
+                </div>
+
+                <div className="glass-panel cmd-card">
                   <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdXlr8Name}</code>
                   <span className="cmd-badge">{t.cmdXlr8Badge}</span>
                   <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdXlr8Desc}</p>
+                </div>
+
+                <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdFastthinkName}</code>
+                  <span className="cmd-badge">{t.cmdFastthinkBadge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdFastthinkDesc}</p>
+                </div>
+
+                <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdDeepseaName}</code>
+                  <span className="cmd-badge">{t.cmdDeepseaBadge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdDeepseaDesc}</p>
                 </div>
 
                 <div className="glass-panel cmd-card">
@@ -653,6 +671,18 @@ export default function App() {
                   <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdTaskManagerName}</code>
                   <span className="cmd-badge">{t.cmdTaskManagerBadge}</span>
                   <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdTaskManagerDesc}</p>
+                </div>
+
+                <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdWorkflowName}</code>
+                  <span className="cmd-badge">{t.cmdWorkflowBadge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdWorkflowDesc}</p>
+                </div>
+
+                <div className="glass-panel cmd-card">
+                  <code style={{ color: "var(--shark-cyan)", fontWeight: 700 }}>{t.cmdSandboxName}</code>
+                  <span className="cmd-badge">{t.cmdSandboxBadge}</span>
+                  <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>{t.cmdSandboxDesc}</p>
                 </div>
               </div>
             </div>

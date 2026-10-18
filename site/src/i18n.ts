@@ -127,6 +127,25 @@ const en = {
   cmdTaskManagerName: "/taskmanager",
   cmdTaskManagerBadge: "Kanban HUD GUI",
   cmdTaskManagerDesc: "Launches the native dark desktop board or web app with real-time process monitoring.",
+  cmdUltrathinkName: "ultrathink",
+  cmdUltrathinkBadge: "Full-Spectrum Rainbow",
+  cmdUltrathinkDesc: "Unlocks maximum available thinking and reasoning depth supported by the active model.",
+
+  cmdFastthinkName: "fastthinkworkerz",
+  cmdFastthinkBadge: "Radical Velocity (Gold/White)",
+  cmdFastthinkDesc: "Aggressively minimizes thinking depth and cuts latency to deliver responses at top speed.",
+
+  cmdDeepseaName: "deepseaneuron",
+  cmdDeepseaBadge: "Token Compression (Blue)",
+  cmdDeepseaDesc: "Dynamically rationalizes token consumption and maximizes semantic density without losing depth.",
+
+  cmdWorkflowName: "workflowz",
+  cmdWorkflowBadge: "Persistent Workflows (Amber)",
+  cmdWorkflowDesc: "Activates long-running multi-step persistent eval kernel workflows and subagent workpool execution.",
+
+  cmdSandboxName: "/agent-sandbox",
+  cmdSandboxBadge: "Cosmic 5-Color Gradient",
+  cmdSandboxDesc: "Dedicated testing and execution sandbox for creating, validating, and benchmarking custom agents.",
 
   // Section 06 - 10-Step Interactive Onboarding Guide
   guideEyebrow: "PRACTICAL GUIDE",
@@ -266,6 +285,25 @@ const pt: Strings = {
   cmdTaskManagerName: "/taskmanager",
   cmdTaskManagerBadge: "HUD Kanban GUI",
   cmdTaskManagerDesc: "Abre o quadro nativo de desktop ou aplicação web com acompanhamento de processos em tempo real.",
+  cmdUltrathinkName: "ultrathink",
+  cmdUltrathinkBadge: "Arco-Íris Full-Spectrum",
+  cmdUltrathinkDesc: "Desbloqueia o nível máximo de raciocínio profundo suportado pelo modelo ativo.",
+
+  cmdFastthinkName: "fastthinkworkerz",
+  cmdFastthinkBadge: "Velocidade Radical (Ouro/Branco)",
+  cmdFastthinkDesc: "Minimiza drasticamente o tempo de reflexão e reduz latência para entrega ultraveloz.",
+
+  cmdDeepseaName: "deepseaneuron",
+  cmdDeepseaBadge: "Compressão de Tokens (Azul)",
+  cmdDeepseaDesc: "Racionaliza o consumo de tokens e maximiza densidade semântica sem sacrificar profundidade.",
+
+  cmdWorkflowName: "workflowz",
+  cmdWorkflowBadge: "Workflows Persistentes (Âmbar)",
+  cmdWorkflowDesc: "Aciona workflows de kernel persistente em múltiplos passos e pools de execução de subagentes.",
+
+  cmdSandboxName: "/agent-sandbox",
+  cmdSandboxBadge: "Gradiente Cósmico 5 Cores",
+  cmdSandboxDesc: "Sandbox isolada para criar, testar, calibrar e avaliar agentes customizados do ecossistema.",
 
   // Section 06 - 10-Step Interactive Onboarding Guide
   guideEyebrow: "GUIA PRÁTICO",
