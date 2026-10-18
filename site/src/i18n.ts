@@ -143,9 +143,9 @@ const en = {
   cmdWorkflowBadge: "Persistent Workflows (Amber)",
   cmdWorkflowDesc: "Activates long-running multi-step persistent eval kernel workflows and subagent workpool execution.",
 
-  cmdSandboxName: "/agent-sandbox",
-  cmdSandboxBadge: "Cosmic 5-Color Gradient",
-  cmdSandboxDesc: "Dedicated testing and execution sandbox for creating, validating, and benchmarking custom agents.",
+  cmdSandboxName: "/vibecoding",
+  cmdSandboxBadge: "Vibe Coding Toolkit (Amber → Violet)",
+  cmdSandboxDesc: "Wave dispatching, quality gates, canonical documentation, prompts and tool catalog.",
 
   // Section 06 - 10-Step Interactive Onboarding Guide
   guideEyebrow: "PRACTICAL GUIDE",
@@ -301,9 +301,9 @@ const pt: Strings = {
   cmdWorkflowBadge: "Workflows Persistentes (Âmbar)",
   cmdWorkflowDesc: "Aciona workflows de kernel persistente em múltiplos passos e pools de execução de subagentes.",
 
-  cmdSandboxName: "/agent-sandbox",
-  cmdSandboxBadge: "Gradiente Cósmico 5 Cores",
-  cmdSandboxDesc: "Sandbox isolada para criar, testar, calibrar e avaliar agentes customizados do ecossistema.",
+  cmdSandboxName: "/vibecoding",
+  cmdSandboxBadge: "Vibe Coding Toolkit (Âmbar → Violeta)",
+  cmdSandboxDesc: "Despacho em ondas paralelas, quality gates, manifesto canônico, prompts e catálogo de ferramentas.",
 
   // Section 06 - 10-Step Interactive Onboarding Guide
   guideEyebrow: "GUIA PRÁTICO",

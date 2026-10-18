@@ -9,7 +9,6 @@ import { HeaderBar } from "./components/shell/HeaderBar";
 import { SharkViewer } from "./components/shark/SharkViewer";
 import { Toasts } from "./components/shell/Toasts";
 import { Transcript } from "./components/transcript/Transcript";
-import { BibleStrongAvatarView } from "./components/avatar/BibleStrongAvatarView";
 import { BibleStrongDictionaryView } from "./components/bible/BibleStrongDictionaryView";
 import { GuestClient } from "./lib/client";
 import { useGuestSnapshot } from "./lib/use-guest";
@@ -279,16 +278,7 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 						</div>
 
 						<div style={{ flex: 1, overflow: "hidden" }}>
-							{avatarViewMode === "bible-avatar" ? (
-								<BibleStrongAvatarView
-									lastMessage={lastText}
-									ttsEnabled={ttsEnabled}
-									statusPhase={snap.phase}
-									agencyMode={agencyMode}
-								/>
-							) : (
-								<SharkViewer lastMessage={lastText} ttsEnabled={ttsEnabled} />
-							)}
+							<SharkViewer lastMessage={lastText} ttsEnabled={ttsEnabled} />
 						</div>
 					</div>
 				)}

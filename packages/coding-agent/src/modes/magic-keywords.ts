@@ -1,5 +1,4 @@
 import { highlightLearnerProj } from "./learner-proj";
-import { containsAgentSandbox, highlightAgentSandbox } from "./agent-sandbox";
 import { containsDeepseaneuron, highlightDeepseaneuron } from "./deepseaneuron";
 import { containsDoomania, highlightDoomania } from "./doomania";
 import { containsFastthinkworkerz, highlightFastthinkworkerz } from "./fastthinkworkerz";
@@ -36,11 +35,10 @@ export function highlightMagicKeywords(text: string, resetTo?: string, phase?: n
 	const step4 = highlightPromaxthink(step3, resetTo, phase);
 	const step5 = highlightDoomania(step4, resetTo, phase);
 	const step6 = highlightDeepseaneuron(step5, resetTo, phase);
-	const step7 = highlightAgentSandbox(step6, resetTo, phase);
-	const step8 = highlightFastthinkworkerz(step7, resetTo, phase);
-	const step9 = highlightXlr8(step8, resetTo, phase);
-	const step10 = highlightLearnerProj(step9, resetTo, phase);
-	return highlightVibecoding(step10, resetTo, phase);
+	const step7 = highlightFastthinkworkerz(step6, resetTo, phase);
+	const step8 = highlightXlr8(step7, resetTo, phase);
+	const step9 = highlightLearnerProj(step8, resetTo, phase);
+	return highlightVibecoding(step9, resetTo, phase);
 }
 
 /**
@@ -59,7 +57,6 @@ export function hasMagicKeyword(text: string): boolean {
 		!text.includes("deepseaneuron") &&
 		!text.includes("fastthinkworkerz") &&
 		!text.includes("xlr8") &&
-		!text.includes("agent-sandbox") &&
 		!text.includes("vibe") &&
 		!text.includes("vibecoding")
 	) {
@@ -72,7 +69,6 @@ export function hasMagicKeyword(text: string): boolean {
 		containsPromaxthink(text) ||
 		containsDoomania(text) ||
 		containsDeepseaneuron(text) ||
-		containsAgentSandbox(text) ||
 		containsFastthinkworkerz(text) ||
 		containsXlr8(text) ||
 		containsVibecoding(text)

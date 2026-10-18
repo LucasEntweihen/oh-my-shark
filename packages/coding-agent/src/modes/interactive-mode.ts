@@ -5723,9 +5723,6 @@ export class InteractiveMode implements InteractiveModeContext {
 		void this.#selectorController.showAgentsDashboard();
 	}
 
-	showAgentSelector(options?: { activeAgentId?: string }): void {
-		this.#selectorController.showAgentSelector(options);
-	}
 	showGitUi(revision?: string): void {
 		void this.#selectorController.showGitTui(revision);
 	}
