@@ -7,24 +7,103 @@
  * PATH-resolved `ohms` launcher in place. There are no npm, Homebrew, or Mise
  * channels and no upstream fallback.
  */
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { $env, $which, APP_NAME, compareVersions, isEnoent, PRODUCT_VERSION } from "@oh-my-pi/pi-utils";
+import { $env } from "@oh-my-pi/pi-utils/env";
+import { APP_NAME, PRODUCT_VERSION } from "@oh-my-pi/pi-utils/dirs";
+import { isEnoent } from "@oh-my-pi/pi-utils/fs-error";
+import { compareVersions } from "@oh-my-pi/pi-utils/version";
+import { $which } from "@oh-my-pi/pi-utils/which";
 import chalk from "@oh-my-pi/pi-utils/chalk";
-import { withFileLock } from "@oh-my-pi/pi-utils/file-lock";
-import { $ } from "bun";
-import { settings } from "../config/settings";
-import { theme } from "../modes/theme/theme";
 import {
 	isTimeoutError,
 	isUnsupportedProxyError,
 	unsupportedProxyMessage,
 	withTimeoutSignal,
 } from "../utils/fetch-timeout";
+import { $ } from "bun";
 
+const UPDATE_LOCK_RETRIES = 1_200;
+const UPDATE_LOCK_DELAY_MS = 100;
+const INCOMPLETE_LOCK_STALE_MS = 5_000;
+
+function updateLockOwnerIsAlive(pid: number): boolean {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch (error) {
+		return (error as NodeJS.ErrnoException).code !== "ESRCH";
+	}
+}
+
+async function removeStaleUpdateLock(lockPath: string): Promise<void> {
+	try {
+		const [contents, stats] = await Promise.all([fs.promises.readFile(lockPath, "utf8"), fs.promises.stat(lockPath)]);
+		let owner: { pid?: unknown } = {};
+		try {
+			owner = JSON.parse(contents) as { pid?: unknown };
+		} catch {
+			if (Date.now() - stats.mtimeMs < INCOMPLETE_LOCK_STALE_MS) return;
+		}
+
+		if (typeof owner.pid === "number" && owner.pid > 0 && updateLockOwnerIsAlive(owner.pid)) return;
+		if (contents !== (await fs.promises.readFile(lockPath, "utf8"))) return;
+		await fs.promises.unlink(lockPath).catch(() => {});
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+	}
+}
+
+async function releaseUpdateFileLock(lockPath: string, token: string): Promise<void> {
+	try {
+		const owner = JSON.parse(await fs.promises.readFile(lockPath, "utf8")) as { token?: unknown };
+		if (owner.token === token) await fs.promises.unlink(lockPath);
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+	}
+}
+
+/** @internal Atomic cross-process lock used by binary and shim replacement. */
+export async function withUpdateFileLock<T>(
+	filePath: string,
+	fn: () => Promise<T>,
+	onContention?: () => void,
+): Promise<T> {
+	const lockPath = `${filePath}.update-lock`;
+	const token = randomUUID();
+	const deadline = Date.now() + UPDATE_LOCK_RETRIES * UPDATE_LOCK_DELAY_MS;
+	while (Date.now() < deadline) {
+		let handle: fs.promises.FileHandle;
+		try {
+			handle = await fs.promises.open(lockPath, "wx");
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+			await removeStaleUpdateLock(lockPath);
+			onContention?.();
+			await Bun.sleep(UPDATE_LOCK_DELAY_MS);
+			continue;
+		}
+
+		try {
+			await handle.writeFile(JSON.stringify({ pid: process.pid, token }), "utf8");
+			await handle.close();
+		} catch (error) {
+			await handle.close().catch(() => {});
+			await releaseUpdateFileLock(lockPath, token);
+			throw error;
+		}
+
+		try {
+			return await fn();
+		} finally {
+			await releaseUpdateFileLock(lockPath, token);
+		}
+	}
+	throw new Error(`Timed out acquiring update lock for ${filePath}`);
+}
 const REPO = "LucasEntweihen/oh-my-shark";
 /** Release tag prefix: OhMyShark publishes `ohms-v<semver>` tags. */
 const TAG_PREFIX = "ohms-v";
@@ -696,8 +775,7 @@ async function verifyInstalledVersion(expectedVersion: string): Promise<Installe
 }
 
 function printVerifiedVersion(expectedVersion: string): void {
-	const icon = theme?.status?.success ?? "✔";
-	console.log(chalk.green(`\n${icon} Updated to ${expectedVersion}`));
+	console.log(chalk.green(`\n✔ Updated to ${expectedVersion}`));
 }
 
 function formatVerificationFailure(result: InstalledVersionVerification, expectedVersion: string): string {
@@ -883,7 +961,7 @@ export async function updateViaBinaryAt(
 	// overlapping `omp update` runs never replace the same binary concurrently
 	// or reclaim each other's live backup/temp files. The download above writes
 	// to a unique temp path and is safe to overlap; only the swap is shared.
-	await withFileLock(targetPath, async () => {
+	await withUpdateFileLock(targetPath, async () => {
 		console.log(chalk.dim("Installing update..."));
 		await replaceBinaryForUpdate({
 			targetPath,
@@ -967,7 +1045,7 @@ export async function updateViaShimTakeover(
 	// Serialize the launcher swap and artifact sweep so two overlapping updates
 	// never retire the same shims or reclaim a live run's backup before its
 	// verification can roll it back.
-	await withFileLock(exePath, async () => {
+	await withUpdateFileLock(exePath, async () => {
 		console.log(chalk.dim(`Installing ${APP_NAME}.exe beside the script launcher...`));
 		await fs.promises.rename(tempPath, exePath);
 		// Retire the shims so PATH resolution lands on the new exe. Renamed, not
@@ -1052,23 +1130,6 @@ function installerHint(): string {
 		: "curl -fsSL https://ohmyshark.vercel.app/install | sh -s -- --binary";
 }
 
-/** Persisted channel, or undefined when settings are unavailable (SDK/test embedding without `Settings.init()`). */
-function readPersistedChannel(): UpdateChannel | undefined {
-	try {
-		return settings.get("update.channel");
-	} catch {
-		return undefined;
-	}
-}
-
-/** Persist an explicit channel switch; tolerated as a no-op when settings are unavailable. */
-function persistChannel(channel: UpdateChannel): void {
-	try {
-		settings.set("update.channel", channel);
-	} catch {
-		// Outside a CLI host the explicit flag still applied for this run.
-	}
-}
 
 /**
  * Run the update command.
@@ -1084,8 +1145,7 @@ export async function runUpdateCommand(opts: {
 	channel?: UpdateChannel;
 }): Promise<void> {
 	console.log(chalk.dim(`Current version: ${PRODUCT_VERSION}`));
-	const persistedChannel = readPersistedChannel() ?? "stable";
-	const channel = opts.channel ?? persistedChannel;
+	const channel = opts.channel ?? "stable";
 	if (channel === "canary") {
 		console.error(chalk.red(`No canary channel exists for ${APP_NAME}; stable is the only update channel.`));
 		console.log(chalk.dim(`Run \`${APP_NAME} update --stable\` to switch back to stable.`));
@@ -1104,8 +1164,7 @@ export async function runUpdateCommand(opts: {
 	const comparison = compareVersions(release.version, PRODUCT_VERSION);
 
 	if (comparison <= 0 && !opts.force) {
-		const icon = theme?.status?.success ?? "✔";
-		console.log(chalk.green(`${icon} Already up to date`));
+		console.log(chalk.green("✔ Already up to date"));
 		return;
 	}
 
@@ -1135,7 +1194,6 @@ export async function runUpdateCommand(opts: {
 		} else {
 			await updateViaBinaryAt(target.path, release.version, { expectedTag: release.tag });
 		}
-		if (opts.channel) persistChannel(channel);
 	} catch (err) {
 		console.error(chalk.red(`Update failed: ${err}`));
 		process.exit(1);

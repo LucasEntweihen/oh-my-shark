@@ -4,10 +4,7 @@
 
 import { Command, Flags } from "@oh-my-pi/pi-utils/cli";
 import { updateHelp as commandHelp } from "../cli/command-help";
-import * as pluginCli from "../cli/plugin-cli";
-import * as updateCli from "../cli/update-cli";
 import { CliUsageError } from "../cli/usage-error";
-import { initTheme } from "../modes/theme/theme";
 
 export default class Update extends Command {
 	static description = commandHelp.description;
@@ -28,12 +25,16 @@ export default class Update extends Command {
 
 	async run(): Promise<void> {
 		const { flags } = await this.parse(Update);
-		await initTheme();
+		// The ordinary updater must remain separate from the native-backed plugin/theme graph:
+		// a missing pi_natives addon must not prevent the user from replacing the binary.
+		// Load plugin management only for the explicit --plugins branch.
 		if (flags.canary && flags.stable) throw new CliUsageError("--canary and --stable are mutually exclusive");
 		if (flags.plugins) {
-			await pluginCli.runPluginCommand({ action: "upgrade", args: [], flags: {} });
+			const { runPluginCommand } = await import("../cli/plugin-cli");
+			await runPluginCommand({ action: "upgrade", args: [], flags: {} });
 		} else {
-			await updateCli.runUpdateCommand({
+			const { runUpdateCommand } = await import("../cli/update-cli");
+			await runUpdateCommand({
 				force: flags.force,
 				check: flags.check,
 				channel: flags.canary ? "canary" : flags.stable ? "stable" : undefined,
