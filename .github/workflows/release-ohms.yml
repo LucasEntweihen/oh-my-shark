@@ -1,8 +1,9 @@
 name: OhMyShark Release
 
-# OhMyShark binary release. Published assets:
-#   ohms-darwin-x64, ohms-darwin-arm64, ohms-linux-x64, ohms-linux-arm64,
-#   ohms-windows-x64.exe, ohms-windows-arm64.exe, install.sh, install.ps1,
+# OhMyShark binary release. Published assets include both current `ohms-*` names
+# and legacy `omsk-*` aliases so installations from 0.0.18 can self-update:
+#   ohms-/omsk-darwin-x64, ...-arm64, linux-x64, linux-arm64,
+#   ohms-/omsk-windows-x64.exe, ...-arm64.exe, install.sh, install.ps1,
 #   ohmyshark.config.yml, ohmyshark.models.yml, SHA256SUMS.txt, LICENSE,
 #   THIRD-PARTY-NOTICES.txt.
 #
@@ -163,19 +164,28 @@ jobs:
           set -euo pipefail
           mkdir -p staging/out
           mv staging/binaries/ohms-* staging/out/
+          # Keep legacy OMSK asset names: the updater shipped in 0.0.18 looks
+          # specifically for omsk-windows-x64.exe (and equivalent per platform).
+          for binary in staging/out/ohms-*; do
+            legacy="${binary/ohms-/omsk-}"
+            cp "$binary" "$legacy"
+          done
           cp scripts/install.sh scripts/install.ps1 staging/out/
           cp packaging/ohmyshark.config.yml packaging/ohmyshark.models.yml staging/out/
           cp LICENSE THIRD-PARTY-NOTICES.txt staging/out/
           ls -la staging/out
           # Guard: all six binaries must be present.
-          for a in ohms-darwin-x64 ohms-darwin-arm64 ohms-linux-x64 ohms-linux-arm64 ohms-windows-x64.exe ohms-windows-arm64.exe; do
-            test -f "staging/out/$a" || { echo "missing asset $a" >&2; exit 1; }
+          # Guard both current and legacy names before checksumming/publishing.
+          for prefix in ohms omsk; do
+            for target in darwin-x64 darwin-arm64 linux-x64 linux-arm64 windows-x64.exe windows-arm64.exe; do
+              test -f "staging/out/$prefix-$target" || { echo "missing asset $prefix-$target" >&2; exit 1; }
+            done
           done
       - name: Generate SHA256SUMS
         run: |
           set -euo pipefail
           cd staging/out
-          sha256sum ohms-* install.sh install.ps1 ohmyshark.config.yml ohmyshark.models.yml LICENSE THIRD-PARTY-NOTICES.txt > SHA256SUMS.txt
+          sha256sum ohms-* omsk-* install.sh install.ps1 ohmyshark.config.yml ohmyshark.models.yml LICENSE THIRD-PARTY-NOTICES.txt > SHA256SUMS.txt
           cat SHA256SUMS.txt
       - name: Create GitHub Release
         env:
