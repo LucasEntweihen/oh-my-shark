@@ -12,17 +12,17 @@ type Method = "quick" | "verified";
 const COMMANDS: Record<OS, Record<Method, string[]>> = {
   win: {
     quick: [
-      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.30/install.ps1 | iex",
+      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.31/install.ps1 | iex",
     ],
     verified: [
-      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.30/install.ps1 -OutFile install.ps1",
+      "irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.31/install.ps1 -OutFile install.ps1",
       "powershell -ExecutionPolicy Bypass -File .\\install.ps1",
     ],
   },
   mac: {
-    quick: ["curl -fsSL https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.30/install.sh | sh"],
+    quick: ["curl -fsSL https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.31/install.sh | sh"],
     verified: [
-      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.30/install.sh",
+      "curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.31/install.sh",
       "sh install.sh",
     ],
   },
@@ -140,7 +140,7 @@ export default function App() {
     { name: "Semantic Compression & FileReadCache", section: "#compression", tag: "Optimization" },
     { name: "Autonomous Slash Commands", section: "#commands", tag: "Protocols" },
     { name: "10-Step Practical Onboarding Guide", section: "#guide", tag: "Documentation" },
-    { name: "Download Windows Desktop Engine (.exe)", section: "https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.30/CosmoSky-windows-x64.exe", tag: "Download" },
+    { name: "Download Windows Desktop Engine (.exe)", section: "https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.31/CosmoSky-windows-x64.exe", tag: "Download" },
     { name: "GitHub Source Code Repository", section: "https://github.com/LucasEntweihen/oh-my-shark", tag: "GitHub" },
   ];
 
@@ -356,7 +356,7 @@ export default function App() {
                 <div className="hero-cta-group">
                   <a
                     className="btn-primary"
-                    href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.30/CosmoSky-windows-x64.exe"
+                    href="https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.31/CosmoSky-windows-x64.exe"
                     download="CosmoSky-windows-x64.exe"
                   >
                     <span>⬇</span>
