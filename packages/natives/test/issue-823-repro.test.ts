@@ -32,7 +32,7 @@ import * as path from "node:path";
 import {
 	detectCompiledBinary,
 	type EmbeddedAddonFile,
-	extractEmbeddedAddonArchive,
+	extractEmbeddedAddons,
 	getAddonFilenames,
 	resolveLoaderCandidates,
 } from "../native/loader-state.js";
@@ -197,10 +197,9 @@ describe("issue 823: standalone-binary native loader path resolution", () => {
 		);
 	});
 
-	it("extracts all bundled native variants from one gzip archive and skips current files", async () => {
-		const testDir = await fs.mkdtemp(path.join(os.tmpdir(), "natives-embedded-archive-"));
+	it("extracts embedded native variants from zstd files, rejects unsafe names, and skips current files", async () => {
+		const testDir = await fs.mkdtemp(path.join(os.tmpdir(), "natives-embedded-addons-"));
 		try {
-			const archivePath = path.join(testDir, "embedded-addons.linux-x64.tar.gz");
 			const targetDir = path.join(testDir, "cache");
 			await fs.mkdir(targetDir);
 
@@ -208,28 +207,27 @@ describe("issue 823: standalone-binary native loader path resolution", () => {
 			const baseline = Buffer.from("baseline native addon");
 			const modernFilename = "pi_natives.linux-x64-modern.node";
 			const baselineFilename = "pi_natives.linux-x64-baseline.node";
-			await Bun.write(
-				archivePath,
-				await new Bun.Archive(
-					{
-						[modernFilename]: modern,
-						[baselineFilename]: baseline,
-					},
-					{ compress: "gzip", level: 9 },
-				).bytes(),
-			);
+			const files: EmbeddedAddonFile[] = [];
+			for (const [variant, filename, content] of [
+				["modern", modernFilename, modern],
+				["baseline", baselineFilename, baseline],
+			] as const) {
+				const zstdPath = path.join(testDir, `${filename}.zst`);
+				await Bun.write(zstdPath, Bun.zstdCompressSync(content));
+				files.push({ variant, filename, size: content.length, zstdPath });
+			}
 
-			const files: EmbeddedAddonFile[] = [
-				{ variant: "modern", filename: modernFilename, size: modern.length },
-				{ variant: "baseline", filename: baselineFilename, size: baseline.length },
-			];
-
-			const written = extractEmbeddedAddonArchive({ archivePath, files, targetDir });
+			const written = extractEmbeddedAddons({ files, targetDir });
 			expect(written.map(filePath => path.basename(filePath)).sort()).toEqual([baselineFilename, modernFilename]);
 			expect(await fs.readFile(path.join(targetDir, modernFilename), "utf8")).toBe("modern native addon");
 			expect(await fs.readFile(path.join(targetDir, baselineFilename), "utf8")).toBe("baseline native addon");
+			expect(extractEmbeddedAddons({ files, targetDir })).toEqual([]);
 
-			expect(extractEmbeddedAddonArchive({ archivePath, files, targetDir })).toEqual([]);
+			const unsafeFile = { ...files[0]!, filename: "../escape.node" };
+			expect(() => extractEmbeddedAddons({ files: [unsafeFile], targetDir })).toThrow(
+				"Unsafe embedded addon filename",
+			);
+			expect(await fs.stat(path.join(testDir, "escape.node")).catch(() => null)).toBeNull();
 		} finally {
 			await fs.rm(testDir, { recursive: true, force: true });
 		}

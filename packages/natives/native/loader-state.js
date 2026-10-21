@@ -1,4 +1,3 @@
-import * as childProcess from "node:child_process";
 import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as os from "node:os";
@@ -68,7 +67,7 @@ function getNativesDir() {
 	if (xdgDataHome && fs.existsSync(path.join(xdgDataHome, "omp"))) {
 		return path.join(xdgDataHome, "omp", "natives");
 	}
-	return path.join(os.homedir(), ".ohms", "natives");
+	return path.join(os.homedir(), ".omp", "natives");
 }
 
 function resolveLeafPackageDir(platformTag) {
@@ -859,86 +858,9 @@ export function initLoaderContext(overrides = {}) {
 }
 
 
-function patchNodeVersionStamp(filePath, targetVersion) {
-	try {
-		const buf = fs.readFileSync(filePath);
-		const magic = Buffer.from("PI_NATIVES_VERSION_STAMP:", "utf8");
-		let idx = buf.indexOf(magic);
-		let patched = false;
-		while (idx !== -1) {
-			const slotStart = idx + magic.length;
-			const slotSize = 64 - magic.length;
-			const newVersionBuf = Buffer.alloc(slotSize, 0);
-			Buffer.from(targetVersion, "utf8").copy(newVersionBuf);
-			newVersionBuf.copy(buf, slotStart);
-			patched = true;
-			idx = buf.indexOf(magic, idx + magic.length);
-		}
-		if (patched) {
-			fs.writeFileSync(filePath, buf);
-		}
-	} catch {}
-}
-
-function reconcileOrDownloadAddons(ctx) {
-	try {
-		prepareNativeVersionDir(ctx.versionedDir);
-		
-		for (const filename of ctx.addonFilenames) {
-			const targetPath = path.join(ctx.versionedDir, filename);
-			if (fs.existsSync(targetPath)) {
-				patchNodeVersionStamp(targetPath, ctx.packageVersion);
-				continue;
-			}
-			
-			let sourceNode = null;
-			try {
-				const entries = fs.readdirSync(ctx.nativesDir, { withFileTypes: true });
-				for (const entry of entries) {
-					if (entry.isDirectory() && entry.name !== path.basename(ctx.versionedDir)) {
-						const otherVerDir = path.join(ctx.nativesDir, entry.name);
-						const potentialNode = path.join(otherVerDir, filename);
-						if (fs.existsSync(potentialNode)) {
-							sourceNode = potentialNode;
-							break;
-						}
-						const files = fs.readdirSync(otherVerDir).filter(f => f.endsWith(".node"));
-						if (files.length > 0) {
-							sourceNode = path.join(otherVerDir, files[0]);
-							break;
-						}
-					}
-				}
-			} catch {}
-
-			if (sourceNode && fs.existsSync(sourceNode)) {
-				try {
-					fs.copyFileSync(sourceNode, targetPath);
-					patchNodeVersionStamp(targetPath, ctx.packageVersion);
-					continue;
-				} catch {}
-			}
-
-			const repos = ["can1357/oh-my-pi", "LucasEntweihen/oh-my-shark"];
-			for (const repo of repos) {
-				const url = `https://github.com/${repo}/releases/latest/download/${filename}`;
-				try {
-					const res = childProcess.spawnSync("curl", ["-fsSL", url, "-o", targetPath], { timeout: 15000 });
-					if (res.status === 0 && fs.existsSync(targetPath) && fs.statSync(targetPath).size > 1024) {
-						patchNodeVersionStamp(targetPath, ctx.packageVersion);
-						break;
-					}
-				} catch {}
-			}
-		}
-	} catch {}
-}
-
-
 export function loadNative() {
 	startupMarker("native:loadNative:start");
 	const ctx = initLoaderContext();
-	reconcileOrDownloadAddons(ctx);
 	const require_ = createRequire(import.meta.url);
 
 	const errors = [];

@@ -1,8 +1,10 @@
 // Deep import: the pi-utils barrel loads the host native addon, which is
 // absent on cross-compiling release runners.
+import * as path from "node:path";
 import { USER_AGENT } from "@oh-my-pi/pi-utils/dirs";
 import { buildDocsIndexPayload } from "./generate-docs-index";
 import { createLegacyPiVirtualModulePlugin } from "./legacy-pi-virtual-module";
+import { embeddedAddonFiles, type NativeEmbedTarget } from "../../natives/scripts/embed-native";
 
 /** Native runtime dependencies always resolved from the on-demand install instead of embedded into compiled binaries. */
 export const COMPILED_EXTERNAL_DEPENDENCIES: readonly string[] = Object.freeze(["fastembed", "onnxruntime-node"]);
@@ -17,6 +19,8 @@ export interface CodingAgentCompileOptions {
 	readonly outfile: string;
 	/** Concrete Transformers.js version baked into the tiny-model worker. */
 	readonly transformersVersion: string;
+	/** Target-specific native addons to embed; null keeps non-release builds unchanged. */
+	readonly native?: NativeEmbedTarget | null;
 	/** Optional cross-compilation runtime target. */
 	readonly target?: Bun.Build.CompileTarget;
 	/** Optional unmodified Bun executable used as the standalone runtime template. */
@@ -40,6 +44,11 @@ export async function compileCodingAgent(options: CodingAgentCompileOptions): Pr
 	}
 	try {
 		const output = await Bun.build({
+			alias: {
+				"@oh-my-pi/pi-natives": path.join(options.repoRoot, "packages", "natives", "native", "index.js"),
+				"@oh-my-pi/pi-natives/vcs": path.join(options.repoRoot, "packages", "natives", "native", "vcs.js"),
+			},
+			files: options.native ? await embeddedAddonFiles(options.native) : {},
 			entrypoints: [options.entrypoint],
 			root: options.repoRoot,
 			external: [...COMPILED_EXTERNAL_DEPENDENCIES],
