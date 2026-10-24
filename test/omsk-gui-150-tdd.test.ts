@@ -166,7 +166,7 @@ describe("OMSK GUI — Rigorous TDD Suite (150 Granular Test Assertions)", () =>
     it("5.1 Valida botão heroDownloadGui na interface da Home Page (site/src/App.tsx)", () => {
       const code = fs.readFileSync(siteAppTsx, "utf-8");
       expect(code).toContain("heroDownloadGui");
-      expect(code).toContain("OMSK-GUI-Windows-x64.zip");
+      expect(code).toContain("OMSK-GUI.exe");
     });
 
     it("5.2 Valida suporte bilíngue para o botão de download no i18n", () => {

@@ -356,8 +356,8 @@ export default function App() {
                 <div className="hero-cta-group">
                   <a
                     className="btn-primary"
-                    href="https://github.com/LucasEntweihen/OMSK-gui/releases/download/v1.1.0/OMSK-GUI-Windows-x64.zip"
-                    download="OMSK-GUI-Windows-x64.zip"
+                    href="https://github.com/LucasEntweihen/OMSK-gui/releases/download/v1.1.0/OMSK-GUI.exe"
+                    download="OMSK-GUI.exe"
                     style={{ background: "linear-gradient(135deg, #00E5FF, #2678FF)", color: "#020A16", fontWeight: 700 }}
                   >
                     <span>⚡</span>
