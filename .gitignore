@@ -99,3 +99,15 @@ packages/coding-agent/bench/boot-baseline.json
 .vercel
 
 .bun-cache/
+
+# OMSK GUI packaged binaries
+apps/omsk-gui/*.exe
+apps/omsk-gui/*.dll
+apps/omsk-gui/*.pak
+apps/omsk-gui/*.dat
+apps/omsk-gui/*.bin
+apps/omsk-gui/locales/
+apps/omsk-gui/resources/
+*.zip
+*.zip.sha256
+*.lnk
