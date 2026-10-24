@@ -528,7 +528,7 @@ export function AuroraApp() {
         existingProviders={providers}
       />
 
-      {/* Modal de Download da Aplicação Desktop (.EXE) */}
+      {/* Modal de Download do CLI Windows (.EXE) */}
       <DownloadAppModal
         isOpen={isDownloadModalOpen}
         onClose={() => setIsDownloadModalOpen(false)}

@@ -31,6 +31,7 @@ const files = collectFiles(siteDistDir, siteDistDir);
 const outputPath = path.join(repoRoot, "packages", "coding-agent", "src", "aurora", "bundle.generated.ts");
 
 const generatedContent = `/** Auto-generated bundle of Aurora AI Web Assets */
+/* oxlint-disable no-template-curly-in-string -- bundled JavaScript assets are string data */
 export const AURORA_WEB_ASSETS: Record<string, string> = ${JSON.stringify(files, null, "\t")};
 `;
 

@@ -102,6 +102,23 @@ describe("retry fallback selector resolution", () => {
 		});
 		expect(findRetryFallbackCandidates(context, "slow", "google/gemini-2.5-flash")).toEqual([]);
 	});
+	it("keeps the configured primary when the active model is outside a role chain", () => {
+		const context = createContext({ task: ["openai/gpt-4o-mini"] }, { task: "google/gemini-2.5-flash" });
+		expect(findRetryFallbackCandidates(context, "task", "openrouter/google/gemini-2.5-flash")).toEqual([
+			{
+				raw: "google/gemini-2.5-flash",
+				provider: "google",
+				id: "gemini-2.5-flash",
+				thinkingLevel: undefined,
+			},
+			{
+				raw: "openai/gpt-4o-mini",
+				provider: "openai",
+				id: "gpt-4o-mini",
+				thinkingLevel: undefined,
+			},
+		]);
+	});
 
 	it("expands wildcard candidates from the current selector", () => {
 		const selector = "openrouter/google/gemini-2.5-flash";

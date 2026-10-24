@@ -8,16 +8,15 @@ interface DownloadAppModalProps {
 }
 
 /**
- * Modal e Central de Download da Aplicação Desktop Executável (.exe)
- * Permite ao usuário baixar o aplicativo diretamente pelo navegador no Vercel/Web.
+ * OhMyShark CLI download modal for the real Windows x64 release asset.
  */
 export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
   const [copied, setCopied] = useState(false);
-  const version = "v0.0.32";
-  const releaseTag = "omsk-v0.0.32";
-  const exeFileName = "CosmoSky-windows-x64.exe";
-  const exeDownloadUrl = `https://github.com/LucasEntweihen/oh-my-shark/releases/download/${releaseTag}/${exeFileName}`;
-  const quickInstallCommand = `irm https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.32/install.ps1 | iex`;
+  const version = "v0.0.33";
+  const exeFileName = "omsk-windows-x64.exe";
+  const exeDownloadUrl = `https://github.com/LucasEntweihen/oh-my-shark/releases/latest/download/${exeFileName}`;
+  const checksumsUrl = "https://github.com/LucasEntweihen/oh-my-shark/releases/latest/download/SHA256SUMS.txt";
+  const quickInstallCommand = `irm https://github.com/LucasEntweihen/oh-my-shark/releases/latest/download/install.ps1 | iex`;
 
   if (!isOpen) return null;
 
@@ -49,14 +48,14 @@ export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-base text-[var(--texto-principal)]">
-                    CosmoSky Desktop (.exe)
+                    OhMyShark CLI (.exe)
                   </h3>
                   <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-[var(--espectro-ciano)]/15 text-[var(--espectro-ciano)] border border-[var(--espectro-ciano)]/30">
                     {version} .exe
                   </span>
                 </div>
                 <p className="text-xs text-[var(--texto-terciario)] mt-0.5">
-                  Executável nativo completo com todas as funções e tecnologia do terminal
+                  Executável de terminal para Windows x64, publicado com checksums e atestação de build.
                 </p>
               </div>
             </div>
@@ -85,7 +84,7 @@ export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
                 </div>
                 <div className="text-left">
                   <span className="text-[10px] font-mono uppercase tracking-wider block opacity-75">
-                    Download Imediato para Windows
+                    Download direto para Windows x64
                   </span>
                   <span className="text-sm font-extrabold block">
                     Baixar {exeFileName}
@@ -93,39 +92,30 @@ export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
                 </div>
               </div>
               <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-black/10">
-                Executável Autônomo
+                CLI Windows x64
               </span>
             </a>
 
             <div className="flex items-center justify-between px-1 text-[11px] text-[var(--texto-terciario)] font-mono">
-              <span>Binário compilado SHA-256 verificado</span>
+              <span>Confira o SHA-256 antes de executar o binário.</span>
               <a
-                href={`https://github.com/LucasEntweihen/oh-my-shark/releases/tag/${releaseTag}`}
+                href={checksumsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[var(--espectro-ciano)] hover:underline flex items-center gap-1"
               >
-                Release oficial no GitHub <Icon icon={ExternalLink} size="sm" />
+                SHA256SUMS.txt <Icon icon={ExternalLink} size="sm" />
               </a>
             </div>
           </div>
 
-          {/* Destaque das Capacidades da Janela Nativa */}
           <div className="p-3.5 rounded-2xl border border-[var(--cor-borda)] bg-[var(--cor-superficie)]/50 space-y-2">
             <span className="text-xs font-semibold text-[var(--texto-secundario)] block">
-              Recursos integrados no executável desktop:
+              Download CLI oficial de OhMyShark para Windows x64.
             </span>
-            <ul className="text-xs text-[var(--texto-terciario)] space-y-1.5 list-disc list-inside">
-              <li>
-                <span className="text-[var(--texto-principal)] font-medium">Exata mesma interface gráfica</span>: chats múltiplos, visualizador de pensamento, seletores gráficos de raciocínio.
-              </li>
-              <li>
-                <span className="text-[var(--texto-principal)] font-medium">Motor nativo omsk</span>: integração completa com os comandos de terminal, slash commands (<code className="font-mono text-[10px]">/taskmanager</code>, <code className="font-mono text-[10px]">/xlr8</code>, etc.) e ferramentas do sistema.
-              </li>
-              <li>
-                <span className="text-[var(--texto-principal)] font-medium">Pastas locais sem fricção</span>: acesso direto aos seus projetos do computador em <code className="font-mono text-[10px]">~/.omsk</code>.
-              </li>
-            </ul>
+            <p className="text-xs text-[var(--texto-terciario)]">
+              A release também publica o instalador PowerShell e as variantes macOS e Linux.
+            </p>
           </div>
 
           {/* Opção de Instalação Automática via Terminal (One-Liner) */}

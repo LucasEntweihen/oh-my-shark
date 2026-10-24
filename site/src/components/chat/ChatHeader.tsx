@@ -28,7 +28,7 @@ interface ChatHeaderProps {
  * Barra Superior / Header do Chat (DESIGN.md Sec 5.4)
  * - Identidade visual Aurora
  * - Seletor gráfico de modelos reais do OMSK com provedores
- * - Botão de Download do App Desktop (.exe)
+ * - Botão para download do CLI Windows oficial
  * - Acesso direto às configurações de Prompt de Sistema e Pastas Locais
  */
 export function ChatHeader({
@@ -96,17 +96,17 @@ export function ChatHeader({
         />
       </div>
 
-      {/* Lado Direito: Download App .exe, Pastas Locais e Prompt de Sistema */}
+      {/* Ação do CLI Windows, diretórios locais e prompt de sistema */}
       <div className="flex items-center gap-2">
-        {/* Botão de Destaque para Download do App .EXE */}
+        {/* Download do executável CLI publicado */}
         <button
           type="button"
           onClick={onOpenDownloadModal}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[var(--espectro-ciano)]/20 to-[var(--espectro-azul)]/20 border border-[var(--espectro-ciano)]/40 hover:border-[var(--espectro-ciano)] text-[var(--texto-principal)] hover:text-[var(--espectro-ciano)] text-xs font-bold transition-all shadow-[0_0_12px_rgba(0,229,255,0.15)] cursor-pointer active:scale-95"
-          title="Baixar CosmoSky Desktop (.exe para Windows)"
+          title="Baixar OhMyShark CLI (.exe para Windows x64)"
         >
           <Icon icon={Download} size="sm" className="text-[var(--espectro-ciano)]" />
-          <span className="hidden sm:inline">Baixar App (.exe)</span>
+          <span className="hidden sm:inline">Baixar CLI</span>
           <span className="sm:hidden font-mono">.exe</span>
         </button>
 

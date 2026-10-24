@@ -436,5 +436,6 @@ export function readToolSupersedeKey(toolName: string, args: Record<string, unkn
 	if (typeof path !== "string" || path.length === 0) return undefined;
 	if (path.includes("://")) return undefined;
 	const { path: base, sel } = splitReadSelector(path);
-	return sel === undefined ? base : `${base}\u0000${sel}`;
+	const canonicalBase = base.replaceAll("\\", "/").replace(/^(?:\.\/)+/, "");
+	return sel === undefined ? canonicalBase : `${canonicalBase}\u0000${sel}`;
 }

@@ -492,5 +492,7 @@ export function findRetryFallbackCandidates(
 		const candidatesAfter = chain.slice(baseIndex + 1);
 		return options?.wrapAround ? [...candidatesAfter, ...chain.slice(0, baseIndex)] : candidatesAfter;
 	}
-	return chain.slice(1);
+	// When the active model is not part of a role's configured chain, its
+	// primary is still the first eligible fallback candidate.
+	return chain;
 }

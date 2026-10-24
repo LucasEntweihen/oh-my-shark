@@ -163,10 +163,10 @@ export function ChatSidebar({
             >
               <div className="flex items-center gap-2">
                 <Icon icon={Download} size="sm" />
-                <span>App Desktop (.exe)</span>
+                <span>App CLI Windows (.exe)</span>
               </div>
               <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--espectro-ciano)]/20 text-[var(--espectro-ciano)]">
-                v0.0.32
+                v0.0.33
               </span>
             </button>
           )}

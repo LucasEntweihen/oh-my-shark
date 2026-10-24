@@ -2,19 +2,19 @@
 set -e
 
 # OhMyShark Coding Agent Installer
-# Usage: curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/ohms-v0.0.3/install.sh
-#        (verify first with: gh attestation verify install.sh --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/ohms-v0.0.3 --deny-self-hosted-runners)
+# Usage: curl -fSLO https://github.com/LucasEntweihen/oh-my-shark/releases/download/omsk-v0.0.33/install.sh
+#        (verify first with: gh attestation verify install.sh --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.33 --deny-self-hosted-runners)
 #        then: sh install.sh
 #        or quick: curl -fsSL https://ohmyshark.vercel.app/install | sh
 #
 # Options:
 #   --source       Install via bun (installs bun if needed)
 #   --binary       Install prebuilt binary (default)
-#   --ref <ref>    Install specific release tag (default: ohms-v0.0.3)
+#   --ref <ref>    Install specific release tag (default: omsk-v0.0.33)
 #   -r <ref>       Shorthand for --ref
 
 REPO="LucasEntweihen/oh-my-shark"
-DEFAULT_TAG="omsk-v0.0.32"
+DEFAULT_TAG="omsk-v0.0.33"
 BIN_NAME="omsk"
 INSTALL_DIR="${PI_INSTALL_DIR:-$HOME/.local/bin}"
 MIN_BUN_VERSION="1.3.14"

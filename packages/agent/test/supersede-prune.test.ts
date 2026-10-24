@@ -113,6 +113,11 @@ describe("readToolSupersedeKey", () => {
 		expect(readToolSupersedeKey("read", { path: 42 })).toBeUndefined();
 		expect(readToolSupersedeKey("read", {})).toBeUndefined();
 	});
+	test("canonicalizes equivalent relative paths across Windows and POSIX spellings", () => {
+		expect(readToolSupersedeKey("read", { path: "./src/foo.ts" })).toBe("src/foo.ts");
+		expect(readToolSupersedeKey("read", { path: "src\\foo.ts" })).toBe("src/foo.ts");
+		expect(readToolSupersedeKey("read", { path: ".\\src\\foo.ts:10-20" })).toBe("src/foo.ts\u000010-20");
+	});
 
 	test("URL/internal schemes are exempt", () => {
 		expect(readToolSupersedeKey("read", { path: "skill://react" })).toBeUndefined();
@@ -150,6 +155,17 @@ describe("pruneSupersededToolResults — tail case", () => {
 		// Latest read untouched.
 		expect(resultText(result2)).toBe(FILE_CONTENT);
 		expect(resultMessage(result2).prunedAt).toBeUndefined();
+	});
+	test("prunes a read when the newer read uses an equivalent path spelling", () => {
+		const [call1, result1] = readPair("./src/foo.ts", FILE_CONTENT, T0);
+		const [call2, result2] = readPair("src\\foo.ts", FILE_CONTENT, T0 + 1_000);
+		const entries: SessionEntry[] = [call1, result1, call2, result2];
+
+		const result = pruneSupersededToolResults(entries, tokenizer, cfg({ now: T0 + 1_000 }));
+
+		expect(result.prunedCount).toBe(1);
+		expect(resultText(result1)).toBe(SUPERSEDED_NOTICE);
+		expect(resultText(result2)).toBe(FILE_CONTENT);
 	});
 
 	test("(b) NOT pruned when suffix exceeds limit and no idle gap", () => {

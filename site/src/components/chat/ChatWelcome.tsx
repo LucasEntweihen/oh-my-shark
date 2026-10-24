@@ -40,7 +40,7 @@ const STARTER_SUGGESTIONS = [
  * Tela Inicial de Boas-Vindas sem mensagens (DESIGN.md Sec 5.2)
  * - Núcleo Aurora em tamanho moderado com halo de luz controlado
  * - Título curto e direto: "O que vamos explorar hoje?"
- * - Banner de Download Desktop em destaque
+ * - Link de download do CLI oficial em destaque
  * - Sugestões de início práticas, limpas e clicáveis
  */
 export function ChatWelcome({

@@ -42,8 +42,8 @@ describe("Vibe Toolkit: File Size Checker (350-line gate)", () => {
 	it("identifies files exceeding the line limit", () => {
 		const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibe-filesize-test-"));
 		try {
-			fs.writeFileSync(path.join(tempDir, "small.ts"), new Array(100).fill("const x = 1;").join("\n"));
-			fs.writeFileSync(path.join(tempDir, "large.ts"), new Array(400).fill("const y = 2;").join("\n"));
+			fs.writeFileSync(path.join(tempDir, "small.ts"), Array.from({ length: 100 }, () => "const x = 1;").join("\n"));
+			fs.writeFileSync(path.join(tempDir, "large.ts"), Array.from({ length: 400 }, () => "const y = 2;").join("\n"));
 
 			const result = checkFileSizes(tempDir, { maxLines: 350 });
 			expect(result.pass).toBe(false);
@@ -60,8 +60,14 @@ describe("Vibe Toolkit: File Size Checker (350-line gate)", () => {
 	it("passes when all files are under the line limit", () => {
 		const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vibe-filesize-pass-"));
 		try {
-			fs.writeFileSync(path.join(tempDir, "file1.ts"), new Array(50).fill("console.log('hi');").join("\n"));
-			fs.writeFileSync(path.join(tempDir, "file2.ts"), new Array(350).fill("console.log('bye');").join("\n"));
+			fs.writeFileSync(
+				path.join(tempDir, "file1.ts"),
+				Array.from({ length: 50 }, () => "console.log('hi');").join("\n"),
+			);
+			fs.writeFileSync(
+				path.join(tempDir, "file2.ts"),
+				Array.from({ length: 350 }, () => "console.log('bye');").join("\n"),
+			);
 
 			const result = checkFileSizes(tempDir, { maxLines: 350 });
 			expect(result.pass).toBe(true);

@@ -20,10 +20,10 @@ name: OhMyShark Release
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing ohms-v* tag to build and publish"
+        description: "Existing omsk-v* or ohms-v* tag to build and publish"
         required: true
         type: string
-        default: "ohms-v0.0.3"
+        default: "omsk-v0.0.33"
 
 permissions:
   contents: read
@@ -181,6 +181,10 @@ jobs:
               test -f "staging/out/$prefix-$target" || { echo "missing asset $prefix-$target" >&2; exit 1; }
             done
           done
+          # Reject empty placeholders, including binaries and bundled runtime/config data.
+          for asset in staging/out/*; do
+            test -s "$asset" || { echo "empty release asset: $asset" >&2; exit 1; }
+          done
       - name: Generate SHA256SUMS
         run: |
           set -euo pipefail
@@ -196,16 +200,16 @@ jobs:
           set -euo pipefail
           NOTES="$(mktemp)"
           cat > "$NOTES" <<EOF
-          OhMyShark v${VERSION} — first binary release.
+          OhMyShark v${VERSION} — standalone CLI release.
 
-          - Base: [can1357/oh-my-pi@v18.1.8](https://github.com/can1357/oh-my-pi) (MIT).
-          - OhMyShark delta: \`ohms\` CLI, isolated \`.ohms\` config dir, blue shark TUI identity,
-            LucasEntweihen's portable model preset + CommandCode catalog (opt-in via \`COMMANDCODE_API_KEY\`),
-            SnapCompact-first compaction, and automated upstream sync by reviewable PR.
-          - Binaries: macOS (Intel + Apple Silicon) ad-hoc signed, **not notarized**;
-            Windows x64/arm64 **unsigned** (no Authenticode). Gatekeeper/SmartScreen
-            will warn — verify \`SHA256SUMS.txt\` and the attestations below.
-          - No npm / Homebrew / Mise channels for OhMyShark in this release.
+          - Six binaries built for Linux x64/arm64, macOS x64/arm64, and Windows x64/arm64.
+          - Each binary passes its target runner's \`--version\` and \`--smoke-test\` checks.
+          - Current \`ohms-*\` assets and backward-compatible \`omsk-*\` aliases are published.
+          - Includes the PowerShell/POSIX installers, OhMyShark config and model presets,
+            license notices, \`SHA256SUMS.txt\`, and build-provenance attestations.
+          - This workflow publishes standalone CLI binaries, not a desktop GUI application.
+          - macOS binaries are ad-hoc signed, not notarized; Windows binaries are unsigned.
+            Verify the checksum file and attestation before running downloaded files.
           - Install: see README or https://ohmyshark.vercel.app
 
           Source: https://github.com/LucasEntweihen/oh-my-shark/tree/${TAG}

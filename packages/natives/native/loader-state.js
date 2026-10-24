@@ -4,7 +4,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import packageJson from "../package.json" with { type: "json" };
 import { embeddedAddon } from "./embedded-addon.js";
-import { bindingsHaveReleaseIdentity, bindingsReleaseVersion, containsVersionStamp } from "./version-sentinel.js";
+import { bindingsHaveReleaseIdentity, bindingsReleaseVersion, containsVersionStamp, containsLegacyVersionSentinel } from "./version-sentinel.js";
 
 /**
  * Native addon loader for `@oh-my-pi/pi-natives`.
@@ -64,8 +64,15 @@ function getNativesDir() {
 		if (path.isAbsolute(dir)) return path.normalize(dir);
 	}
 	const xdgDataHome = process.env.XDG_DATA_HOME;
-	if (xdgDataHome && fs.existsSync(path.join(xdgDataHome, "omp"))) {
-		return path.join(xdgDataHome, "omp", "natives");
+	if (xdgDataHome) {
+		for (const name of ["omsk", "ohms", "omp"]) {
+			const candidate = path.join(xdgDataHome, name, "natives");
+			if (fs.existsSync(candidate)) return candidate;
+		}
+	}
+	for (const name of [".omsk", ".ohms", ".omp"]) {
+		const candidate = path.join(os.homedir(), name, "natives");
+		if (fs.existsSync(candidate)) return candidate;
 	}
 	return path.join(os.homedir(), ".omp", "natives");
 }
@@ -174,8 +181,11 @@ export function resolveLoaderCandidates({
 		path.join(execDir, filename),
 	]);
 	const leafCandidates = leafPackageDir ? addonFilenames.map(filename => path.join(leafPackageDir, filename)) : [];
+	const versionTag = path.basename(versionedDir);
+	const fallbackRoots = [".omsk", ".ohms", ".omp"].map(r => path.join(os.homedir(), r, "natives", versionTag));
 	const compiledCandidates = addonFilenames.flatMap(filename => [
 		path.join(versionedDir, filename),
+		...fallbackRoots.map(root => path.join(root, filename)),
 		path.join(userDataDir, filename),
 	]);
 	const stagedCandidates = stageFromNodeModules ? addonFilenames.map(filename => path.join(versionedDir, filename)) : [];
@@ -498,6 +508,7 @@ export function extractEmbeddedAddons({ files, targetDir }) {
 	return writtenPaths;
 }
 
+
 function maybeExtractEmbeddedAddon(ctx, errors, file = selectEmbeddedAddonFile(ctx.selectedVariant)) {
 	if (!ctx.isCompiledBinary || !embeddedAddon) return null;
 	if (embeddedAddon.platformTag !== ctx.platformTag || embeddedAddon.version !== ctx.packageVersion) return null;
@@ -617,7 +628,8 @@ export function validateLoadedBindings(ctx, bindings, candidate) {
 	// simply reload stale disk.
 	let diskHasExpectedStamp = false;
 	try {
-		diskHasExpectedStamp = containsVersionStamp(fs.readFileSync(candidate), ctx.packageVersion);
+		const bytes = fs.readFileSync(candidate);
+		diskHasExpectedStamp = containsVersionStamp(bytes, ctx.packageVersion) || containsLegacyVersionSentinel(bytes, ctx.packageVersion);
 	} catch {
 		// The successful require above normally guarantees readability. If the
 		// file disappears concurrently, retain the safe reinstall diagnosis.
@@ -755,7 +767,7 @@ function buildHelpMessage(ctx) {
 		const expectedPaths = ctx.addonFilenames.map(filename => `  ${path.join(ctx.versionedDir, filename)}`).join("\n");
 		const downloadHints = ctx.addonFilenames
 			.map(filename => {
-				const downloadUrl = `https://github.com/can1357/oh-my-pi/releases/latest/download/${filename}`;
+				const downloadUrl = `https://github.com/LucasEntweihen/oh-my-shark/releases/latest/download/${filename}`;
 				const targetPath = path.join(ctx.versionedDir, filename);
 				return `  curl -fsSL "${downloadUrl}" -o "${targetPath}"`;
 			})

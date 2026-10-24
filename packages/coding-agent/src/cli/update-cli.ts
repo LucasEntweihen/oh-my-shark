@@ -10,8 +10,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { Transform } from "node:stream";
-import { pipeline } from "node:stream/promises";
 import { $env } from "@oh-my-pi/pi-utils/env";
 import { APP_NAME, PRODUCT_VERSION } from "@oh-my-pi/pi-utils/dirs";
 import { isEnoent } from "@oh-my-pi/pi-utils/fs-error";
@@ -223,7 +221,11 @@ async function getReleaseBinaryAsset(
 	allowPrerelease = false,
 	expectedTag?: string,
 ): Promise<ReleaseBinaryAsset> {
-	let tag = expectedTag ?? (expectedVersion.startsWith("omsk-v") || expectedVersion.startsWith("ohms-v") ? expectedVersion : `${TAG_PREFIX}${expectedVersion}`);
+	let tag =
+		expectedTag ??
+		(expectedVersion.startsWith("omsk-v") || expectedVersion.startsWith("ohms-v")
+			? expectedVersion
+			: `${TAG_PREFIX}${expectedVersion}`);
 	const resolvedToken = resolveGitHubToken(githubToken);
 	const headers: Record<string, string> = {
 		Accept: "application/vnd.github+json",
@@ -305,10 +307,13 @@ async function getReleaseBinaryAsset(
 	if (response.status === 404 && !expectedTag && tag.startsWith("ohms-v")) {
 		const fallbackTag = `omsk-v${expectedVersion}`;
 		try {
-			const fallbackResponse = await fetchImpl(`${GITHUB_API}/repos/${REPO}/releases/tags/${encodeURIComponent(fallbackTag)}`, {
-				headers,
-				signal: withTimeoutSignal(RELEASE_METADATA_TIMEOUT_MS),
-			});
+			const fallbackResponse = await fetchImpl(
+				`${GITHUB_API}/repos/${REPO}/releases/tags/${encodeURIComponent(fallbackTag)}`,
+				{
+					headers,
+					signal: withTimeoutSignal(RELEASE_METADATA_TIMEOUT_MS),
+				},
+			);
 			if (fallbackResponse.ok) {
 				tag = fallbackTag;
 				response = fallbackResponse;
@@ -426,7 +431,11 @@ export async function downloadVerifiedBinary(options: VerifiedBinaryDownloadOpti
 
 			if (attempt < maxRetries) {
 				const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
-				console.log(chalk.dim(`Network interrupted, resuming download (attempt ${attempt + 1}/${maxRetries} in ${(delayMs / 1000).toFixed(1)}s)…`));
+				console.log(
+					chalk.dim(
+						`Network interrupted, resuming download (attempt ${attempt + 1}/${maxRetries} in ${(delayMs / 1000).toFixed(1)}s)…`,
+					),
+				);
 				await new Promise(resolve => setTimeout(resolve, delayMs));
 			}
 		}
@@ -468,7 +477,10 @@ export async function downloadVerifiedBinary(options: VerifiedBinaryDownloadOpti
 
 	if (finalSize !== options.expectedSize) {
 		await unlinkIfExists(partPath);
-		throw lastError ?? new Error(`Downloaded binary size mismatch: expected ${options.expectedSize} bytes, received ${finalSize}`);
+		throw (
+			lastError ??
+			new Error(`Downloaded binary size mismatch: expected ${options.expectedSize} bytes, received ${finalSize}`)
+		);
 	}
 
 	const hash = createHash("sha256");
@@ -652,9 +664,10 @@ export async function getLatestRelease(
 		throw new Error(`GitHub release with ${data.tag_name} is not an ${TAG_PREFIX}<semver> release`);
 	}
 	return {
-		tag: typeof data.tag_name === "string" && (data.tag_name.startsWith("omsk-v") || data.tag_name.startsWith("ohms-v"))
-			? data.tag_name
-			: `${TAG_PREFIX}${version}`,
+		tag:
+			typeof data.tag_name === "string" && (data.tag_name.startsWith("omsk-v") || data.tag_name.startsWith("ohms-v"))
+				? data.tag_name
+				: `${TAG_PREFIX}${version}`,
 		version,
 		dist: "binary",
 	};
@@ -1129,7 +1142,6 @@ function installerHint(): string {
 		? "& ([scriptblock]::Create((irm https://ohmyshark.vercel.app/install.ps1))) -Binary"
 		: "curl -fsSL https://ohmyshark.vercel.app/install | sh -s -- --binary";
 }
-
 
 /**
  * Run the update command.

@@ -1,13 +1,13 @@
 # OhMyShark Coding Agent Installer for Windows
-# Verify first: gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/ohms-v0.0.3 --deny-self-hosted-runners
+# Verify first: gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.33 --deny-self-hosted-runners
 # Then run: & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw)))
 # Or quick: irm https://ohmyshark.vercel.app/install.ps1 | iex
 #
 # Or with options:
 #   & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw))) -Binary
 #   & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw))) -Source
-#   & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw))) -Source -Ref ohms-v0.0.3
-#   & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw))) -Binary -Ref ohms-v0.0.3
+#   & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw))) -Source -Ref omsk-v0.0.33
+#   & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw))) -Binary -Ref omsk-v0.0.33
 
 param(
     [switch]$Source,
@@ -18,7 +18,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $Repo = "LucasEntweihen/oh-my-shark"
-$DefaultTag = "omsk-v0.0.32"
+$DefaultTag = "omsk-v0.0.33"
 $InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "omsk" }
 
 # Resolucao universal de arquitetura compativel com PS 5.1, PS 7+, 32-bit e 64-bit

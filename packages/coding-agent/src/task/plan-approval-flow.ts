@@ -68,7 +68,8 @@ export class PlanApprovalFlow {
 				},
 				{
 					label: "Opção B: Selecionar tarefas específicas",
-					description: "Escolha um subconjunto de tarefas. O sistema validará dependências e avisará se pré-requisitos forem necessários.",
+					description:
+						"Escolha um subconjunto de tarefas. O sistema validará dependências e avisará se pré-requisitos forem necessários.",
 				},
 				{
 					label: "Opção C: Ignorar o plano",
@@ -123,7 +124,7 @@ export class PlanApprovalFlow {
 		const selectiveResult = this.#engine.planSelectiveExecution(selectedTaskIds);
 		const autoInclude = options?.autoIncludeDependencies ?? true;
 
-		let finalTaskIds = [...selectedTaskIds];
+		const finalTaskIds = [...selectedTaskIds];
 		const autoIncluded: string[] = [];
 
 		if (autoInclude && !selectiveResult.isSelfContained) {
@@ -216,7 +217,10 @@ export class PlanApprovalFlow {
 				const depMatch = taskTitle.match(depPattern);
 				const dependencies: string[] = [];
 				if (depMatch && depMatch[1]) {
-					const depNames = depMatch[1].split(/[,;]/).map(d => d.trim()).filter(Boolean);
+					const depNames = depMatch[1]
+						.split(/[,;]/)
+						.map(d => d.trim())
+						.filter(Boolean);
 					dependencies.push(...depNames);
 					taskTitle = taskTitle.replace(depPattern, "").trim();
 				}
