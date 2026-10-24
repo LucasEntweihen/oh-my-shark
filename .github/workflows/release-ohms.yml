@@ -23,7 +23,7 @@ name: OhMyShark Release
         description: "Existing omsk-v* or ohms-v* tag to build and publish"
         required: true
         type: string
-        default: "omsk-v0.0.33"
+        default: "omsk-v0.0.34"
 
 permissions:
   contents: read

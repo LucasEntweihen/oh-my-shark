@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+
+- Added `openai/gpt-6-luna`, `openai/gpt-6-sol`, `openai-codex/gpt-6-luna`, and `openai-codex/gpt-6-sol` catalog models with accurate pricing, reasoning effort support, and 1.05M/272K context window configurations.
+- Updated `CODEX_CLIENT_VERSION` to `0.159.0` to unblock OpenAI Codex discovery for GPT-6 models.
 
 ## [18.1.8] - 2026-09-03
 

@@ -20,8 +20,8 @@ export function initLocale(): Locale {
 const en = {
   skipLink: "Skip to content",
   wordmark: "OH MY SHARK",
-  editionTag: "v0.0.33 // QUANTUM HARNESS",
-  versionBadge: "omsk-v0.0.33",
+  editionTag: "v0.0.34 // QUANTUM HARNESS",
+  versionBadge: "omsk-v0.0.34",
   navFeatures: "Features",
   navBento: "Architecture",
   navCompression: "Compression",
@@ -41,7 +41,7 @@ const en = {
   telemetryEngine: "ENGINE: BUN NATIVE + RUST/NODE ADDONS",
   telemetryTokenSavings: "COMPRESSION: -68.4% TOKENS SAVED",
   telemetryLatency: "TTFT: 14ms",
-  telemetryVersion: "BUILD: v0.0.33 PASS",
+  telemetryVersion: "BUILD: v0.0.34 PASS",
 
   // Hero Section
   heroBadge: "OHMYSHARK // PREDATORY VELOCITY CODING HARNESS",
@@ -164,7 +164,7 @@ const en = {
 
   footerSitemap: "Site Map & Architecture",
   footerLicense: "Released under MIT License",
-  footerProvenance: "Release omsk-v0.0.33 • SHA-256 verified",
+  footerProvenance: "Release omsk-v0.0.34 • SHA-256 verified",
   footerSocialLabel: "Community and links",
 
   // Command Palette
@@ -178,8 +178,8 @@ export type Strings = typeof en;
 const pt: Strings = {
   skipLink: "Pular para o conteúdo",
   wordmark: "OH MY SHARK",
-  editionTag: "v0.0.33 // MOTOR QUÂNTICO",
-  versionBadge: "omsk-v0.0.33",
+  editionTag: "v0.0.34 // MOTOR QUÂNTICO",
+  versionBadge: "omsk-v0.0.34",
   navFeatures: "Recursos",
   navBento: "Arquitetura",
   navCompression: "Compressão",
@@ -199,7 +199,7 @@ const pt: Strings = {
   telemetryEngine: "MOTOR: BUN NATIVO + ADDONS RUST/NODE",
   telemetryTokenSavings: "COMPRESSÃO: -68.4% TOKENS POUPADOS",
   telemetryLatency: "TTFT: 14ms",
-  telemetryVersion: "BUILD: v0.0.33 APROVADO",
+  telemetryVersion: "BUILD: v0.0.34 APROVADO",
 
   // Hero Section
   heroBadge: "OHMYSHARK // HARNESS DE CODIFICAÇÃO COM VELOCIDADE PREDATÓRIA",
@@ -322,7 +322,7 @@ const pt: Strings = {
 
   footerSitemap: "Mapa do Sítio & Arquitetura",
   footerLicense: "Publicado sob Licença MIT",
-  footerProvenance: "Release omsk-v0.0.33 • Verificação SHA-256",
+  footerProvenance: "Release omsk-v0.0.34 • Verificação SHA-256",
   footerSocialLabel: "Comunidade e links",
 
   // Command Palette
