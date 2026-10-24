@@ -54,6 +54,7 @@ const en = {
   heroCopied: "Copied to clipboard [0.4ms]",
   heroCopyFailed: "Copy failed — please select manually",
   heroDownloadExe: "Download Windows CLI (.exe)",
+  heroDownloadGui: "Download OMSK GUI (App Desktop .exe)",
   heroInspectLive: "Explore Architecture",
   heroDocsCta: "Open Interactive Guide",
 
@@ -212,6 +213,7 @@ const pt: Strings = {
   heroCopied: "Copiado para a área de transferência [0.4ms]",
   heroCopyFailed: "Falha ao copiar — por favor selecione manualmente",
   heroDownloadExe: "Baixar CLI Windows (.exe)",
+  heroDownloadGui: "Baixar OMSK GUI (App Desktop .exe)",
   heroInspectLive: "Explorar Arquitetura",
   heroDocsCta: "Abrir Guia Interativo",
 
