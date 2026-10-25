@@ -6,6 +6,8 @@ import * as os from "node:os";
 import type { Context, Effort, Message } from "@oh-my-pi/pi-ai";
 import { streamSimple } from "@oh-my-pi/pi-ai";
 import { getOAuthProviders } from "@oh-my-pi/pi-ai/oauth";
+import { authPolicyFor } from "@oh-my-pi/pi-catalog/compat/auth";
+import { spawn } from "node:child_process";
 import { getAgentDir, getProjectDir } from "@oh-my-pi/pi-utils";
 import { ModelRegistry } from "../config/model-registry";
 import { Settings } from "../config/settings";
@@ -111,7 +113,7 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 		// ====================================================================
 		if (pathname === "/api/models" && req.method === "GET") {
 			try {
-				const registry = await registryPromise;
+				await registryPromise;
 				const available = registry.getAvailable();
 				const authedProviders = registry.authStorage.list();
 
@@ -196,20 +198,24 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 		// ====================================================================
 		if (pathname === "/api/providers" && req.method === "GET") {
 			try {
-				const registry = await registryPromise;
+				const _registry = await registryPromise;
 				const authedList = registry.authStorage.list();
 				const oauthProviders = getOAuthProviders();
 				const availableModels = registry.getAvailable();
 
 				const providersData = oauthProviders.map(p => {
+					const policy = authPolicyFor(p.id);
+					const loginKind = policy?.login?.kind || (p.storeCredentialsAs ? "api-key" : "api-key");
+					const isOAuth = loginKind === "oauth-code" || loginKind === "device-code";
 					const isAuthed = authedList.includes(p.id) || registry.authStorage.has(p.id);
 					const modelsForProv = availableModels.filter(m => m.provider.toLowerCase() === p.id.toLowerCase());
 					return {
 						id: p.id,
 						name: p.name,
 						status: isAuthed ? ("connected" as const) : ("disconnected" as const),
-						isOAuth: true,
+						isOAuth,
 						available: p.available,
+						loginKind,
 						modelsCount: modelsForProv.length,
 						models: modelsForProv.map(m => ({ id: m.id, name: m.name })),
 					};
@@ -289,6 +295,83 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
+		
+		// ====================================================================
+		// 4b. API: Iniciar Login Web/OAuth Oficial do OMSK (/api/providers/oauth-login)
+		// ====================================================================
+		if (pathname === "/api/providers/oauth-login" && req.method === "POST") {
+			let body = "";
+			req.on("data", chunk => { body += chunk; });
+			req.on("end", async () => {
+				try {
+					const data = JSON.parse(body || "{}") as { provider: string };
+					if (!data.provider) {
+						res.writeHead(400, { "Content-Type": "application/json" });
+						res.end(JSON.stringify({ ok: false, error: "Missing provider" }));
+						return;
+					}
+
+					const agentDir = getAgentDir();
+					const authStorage = await discoverAuthStorage(agentDir);
+
+					let authUrlReceived = "";
+					let instructionsReceived = "";
+					const abortController = new AbortController();
+
+					// Dispara o fluxo nativo de login do OMSK
+					const loginPromise = authStorage.login(data.provider as any, {
+						signal: abortController.signal,
+						onAuth: (info) => {
+							authUrlReceived = info.url;
+							instructionsReceived = info.instructions || "";
+							// Abre no navegador padrão do sistema operacional
+							try {
+								const launchTarget = info.launchUrl || info.url;
+								if (process.platform === "win32") {
+									spawn("cmd.exe", ["/c", "start", "", launchTarget]);
+								} else if (process.platform === "darwin") {
+									spawn("open", [launchTarget]);
+								} else {
+									spawn("xdg-open", [launchTarget]);
+								}
+							} catch {}
+						},
+						onProgress: () => {},
+						onPrompt: async () => "",
+					});
+
+					// Aguarda até o callback gerar a URL de autorização ou timeout de 6s
+					const startTime = Date.now();
+					while (!authUrlReceived && Date.now() - startTime < 6000) {
+						await new Promise(r => setTimeout(r, 100));
+					}
+
+					// Desacopla para deixar a escuta loopback rodar em background até o usuário autorizar
+					loginPromise
+						.then(async () => {
+							const reg = await registryPromise;
+							await reg.refresh("online");
+						})
+						.catch(() => {});
+
+					res.writeHead(200, { "Content-Type": "application/json" });
+					res.end(JSON.stringify({
+						ok: true,
+						provider: data.provider,
+						authUrl: authUrlReceived,
+						instructions: instructionsReceived,
+						message: authUrlReceived
+							? "Navegador aberto para autenticação. Complete o login na página do provedor."
+							: "Aguardando autenticação web..."
+					}));
+				} catch (err) {
+					res.writeHead(500, { "Content-Type": "application/json" });
+					res.end(JSON.stringify({ ok: false, error: String(err) }));
+				}
+			});
+			return;
+		}
+
 		// ====================================================================
 		// 5. API: Desconectar Provedor (Logout)
 		// ====================================================================
@@ -309,7 +392,8 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 					const agentDir = getAgentDir();
 					const authStorage = await discoverAuthStorage(agentDir);
 					await authStorage.remove(data.provider);
-					const registry = await registryPromise;
+					const reg = await registryPromise;
+					await reg.refresh("online");
 
 					res.writeHead(200, { "Content-Type": "application/json" });
 					res.end(
