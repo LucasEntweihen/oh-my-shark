@@ -20,8 +20,25 @@ export interface OmskModelsResponse {
     selector: string;
     name: string;
   } | null;
-  currentThinkingLevel?: string;
+  currentThinkingLevel: string;
   error?: string;
+}
+
+export interface SystemStats {
+  heapUsed: number;
+  heapTotal: number;
+  rss: number;
+  uptime: number;
+  activeStreams: number;
+  modelsCount: number;
+  cwd: string;
+}
+
+export interface SlashCommandInfo {
+  name: string;
+  description: string;
+  icon?: string;
+  subcommands: Array<{ name: string; description: string; usage?: string }>;
 }
 
 const API_BASE = window.location.origin;
@@ -43,8 +60,35 @@ export async function fetchOmskModels(): Promise<OmskModelsResponse> {
       providers: [],
       models: [],
       currentModel: null,
+      currentThinkingLevel: "high",
       error: String(err),
     };
+  }
+}
+
+/**
+ * Busca estatísticas reais de telemetria do sistema OMSK
+ */
+export async function fetchSystemStats(): Promise<{ ok: boolean; stats?: SystemStats; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/system/stats`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return (await res.json()) as { ok: boolean; stats: SystemStats };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+}
+
+/**
+ * Busca catálogo completo de slash commands reais do OMSK
+ */
+export async function fetchAvailableCommands(): Promise<{ ok: boolean; commands: SlashCommandInfo[] }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/commands`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return (await res.json()) as { ok: boolean; commands: SlashCommandInfo[] };
+  } catch {
+    return { ok: false, commands: [] };
   }
 }
 
@@ -81,6 +125,22 @@ export async function selectOmskModel(provider: string, id: string, thinkingLeve
 }
 
 /**
+ * Responde ao protocolo interativo Ask User (escolha de plano A/B/C)
+ */
+export async function respondToAsk(selectedOption: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${API_BASE}/api/ask/respond`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ selectedOption }),
+    });
+    return (await res.json()) as { ok: boolean; error?: string };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+}
+
+/**
  * Inicia nova sessão real no SessionManager do OMSK
  */
 export async function createOmskSession(): Promise<{ ok: boolean; sessionId?: string; error?: string }> {
@@ -105,7 +165,10 @@ export interface StreamChatHandlers {
   onThinkingDelta?: (delta: string) => void;
   onTextDelta?: (delta: string) => void;
   onToolStart?: (toolName: string, args: unknown) => void;
+  onToolResult?: (toolName: string, output: string) => void;
   onToolEnd?: (toolCallId: string, isError: boolean) => void;
+  onSubagentSpawn?: (agent: { agentId: string; task: string; persona: string; beaconColor: string }) => void;
+  onAskUser?: (ask: { question: string; options: string[] }) => void;
   onDone?: () => void;
   onError?: (error: string) => void;
 }
@@ -120,6 +183,7 @@ export async function streamOmskChat(
     model?: { provider: string; id: string };
     thinkingLevel?: string;
     systemPrompt?: string;
+    history?: Array<{ sender: "user" | "assistant"; content: string }>;
   }
 ): Promise<void> {
   try {
@@ -131,6 +195,7 @@ export async function streamOmskChat(
         model: options?.model,
         thinkingLevel: options?.thinkingLevel,
         systemPrompt: options?.systemPrompt,
+        history: options?.history,
       }),
     });
 
@@ -179,8 +244,22 @@ export async function streamOmskChat(
               handlers.onTextDelta?.(parsed.delta);
             } else if (event === "tool_start") {
               handlers.onToolStart?.(String(parsed.toolName), parsed.args);
+            } else if (event === "tool_result") {
+              handlers.onToolResult?.(String(parsed.toolName), String(parsed.output));
             } else if (event === "tool_end") {
               handlers.onToolEnd?.(String(parsed.toolCallId), Boolean(parsed.isError));
+            } else if (event === "subagent_spawn") {
+              handlers.onSubagentSpawn?.({
+                agentId: String(parsed.agentId),
+                task: String(parsed.task),
+                persona: String(parsed.persona),
+                beaconColor: String(parsed.beaconColor),
+              });
+            } else if (event === "ask_user") {
+              handlers.onAskUser?.({
+                question: String(parsed.question),
+                options: Array.isArray(parsed.options) ? (parsed.options as string[]) : [],
+              });
             } else if (event === "done") {
               handlers.onDone?.();
             } else if (event === "error") {

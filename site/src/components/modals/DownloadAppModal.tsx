@@ -12,7 +12,7 @@ interface DownloadAppModalProps {
  */
 export function DownloadAppModal({ isOpen, onClose }: DownloadAppModalProps) {
   const [copied, setCopied] = useState(false);
-  const version = "v0.0.34";
+  const version = "v0.0.35";
   const exeFileName = "omsk-windows-x64.exe";
   const exeDownloadUrl = `https://github.com/LucasEntweihen/oh-my-shark/releases/latest/download/${exeFileName}`;
   const checksumsUrl = "https://github.com/LucasEntweihen/oh-my-shark/releases/latest/download/SHA256SUMS.txt";

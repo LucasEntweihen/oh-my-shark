@@ -110,4 +110,6 @@ apps/omsk-gui/locales/
 apps/omsk-gui/resources/
 *.zip
 *.zip.sha256
+*.exe
+*.exe.sha256
 *.lnk

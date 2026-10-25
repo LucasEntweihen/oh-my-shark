@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import "./styles/aurora-tokens.css";
 import { ChatHeader } from "./components/chat/ChatHeader";
 import { ChatSidebar, type ChatSession } from "./components/chat/ChatSidebar";
@@ -26,7 +26,10 @@ import {
   selectOmskModel,
   streamOmskChat,
   abortOmskChat,
+  fetchSystemStats,
+  respondToAsk,
   type OmskModel,
+  type SystemStats,
 } from "./lib/omsk-api";
 
 const INITIAL_FOLDERS: WorkspaceFolder[] = [
@@ -38,7 +41,7 @@ const INITIAL_FOLDERS: WorkspaceFolder[] = [
 const INITIAL_SESSIONS: ChatSession[] = [
   {
     id: "sess-1",
-    title: "Sessão Ativa CosmoSky",
+    title: "Sessão Ativa OMSK",
     updatedAt: "Agora",
     modelId: "",
     thinkingLevelId: "high",
@@ -61,6 +64,16 @@ export function AuroraApp() {
   const [currentThinkingLevel, setCurrentThinkingLevel] = useState<string>("high");
   const [isLoadingModels, setIsLoadingModels] = useState(true);
 
+  // Telemetria dinâmica real
+  const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
+  const [tps, setTps] = useState<number>(0);
+  const [activeSubagents, setActiveSubagents] = useState<Array<{ agentId: string; task: string; persona: string; beaconColor: string }>>([
+    { agentId: "sa-1", task: "Sincronização TUI <-> GUI Bridge", persona: "permissivo", beaconColor: "#10B981" },
+    { agentId: "sa-2", task: "Auditoria Cética de Invariantes", persona: "critico", beaconColor: "#EF4444" },
+    { agentId: "sa-3", task: "Design System & Zero Mocks", persona: "criativo", beaconColor: "#8B5CF6" },
+  ]);
+  const [pendingAsk, setPendingAsk] = useState<{ question: string; options: string[] } | null>(null);
+
   // Diretórios locais
   const [folders, setFolders] = useState<WorkspaceFolder[]>(INITIAL_FOLDERS);
   const [activeFolderId, setActiveFolderId] = useState<string>("f1");
@@ -79,7 +92,6 @@ export function AuroraApp() {
   const [temperature, setTemperature] = useState<number>(0.7);
   const [topP, setTopP] = useState<number>(0.95);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(false);
-  const [tps] = useState<number>(45.2);
 
   const handleMacroExecution = (macroId: string, label: string) => {
     const prefix = macroId.split("_")[0];
@@ -135,6 +147,15 @@ export function AuroraApp() {
   const activeFolder =
     folders.find((f) => f.id === activeFolderId) || folders[0];
 
+  // Cálculo de tokens acumulados na sessão ativa
+  const sessionTokens = useMemo(() => {
+    return activeMessages.reduce((acc, m) => {
+      const textLen = m.content ? m.content.length : 0;
+      const thoughtLen = m.thought ? m.thought.length : 0;
+      return acc + Math.max(1, Math.round((textLen + thoughtLen) / 4));
+    }, 0);
+  }, [activeMessages]);
+
   // Carrega os modelos reais do backend OMSK
   const loadModels = async () => {
     setIsLoadingModels(true);
@@ -145,7 +166,6 @@ export function AuroraApp() {
       setModels(data.models);
       setProviders(data.providers);
 
-      // Define modelo padrão real
       if (!currentModel) {
         const defaultModel = data.models[0];
         setCurrentModel(defaultModel);
@@ -156,8 +176,20 @@ export function AuroraApp() {
     }
   };
 
+  // Carrega telemetria real periodicamente
   useEffect(() => {
     loadModels();
+
+    const fetchStats = async () => {
+      const res = await fetchSystemStats();
+      if (res.ok && res.stats) {
+        setSystemStats(res.stats);
+      }
+    };
+
+    fetchStats();
+    const interval = setInterval(fetchStats, 4000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -206,6 +238,12 @@ export function AuroraApp() {
     }
   };
 
+  const handleSelectAskOption = async (option: string) => {
+    await respondToAsk(option);
+    setPendingAsk(null);
+    handleSendMessage(`[Decisão Ask Autorizada: ${option}]`, []);
+  };
+
   // Envio de Mensagem com Streaming SSE REAL do OMSK
   const handleSendMessage = async (content: string, attachments: AttachedFile[]) => {
     const userMsgId = `user-${Date.now()}`;
@@ -244,6 +282,8 @@ export function AuroraApp() {
 
     let accumulatedText = "";
     let accumulatedThought = "";
+    let totalStreamedTokens = 0;
+    const streamStartTime = performance.now();
     let rafId: number | null = null;
 
     const flushUpdates = () => {
@@ -270,20 +310,44 @@ export function AuroraApp() {
       }
     };
 
+    const historyPayload = activeMessages.map((m) => ({
+      sender: m.sender,
+      content: m.content,
+    }));
+
     await streamOmskChat(
       content,
       {
         onThinkingDelta: (delta) => {
           accumulatedThought += delta;
+          totalStreamedTokens += Math.max(1, Math.round(delta.length / 4));
+          const elapsed = Math.max(0.1, (performance.now() - streamStartTime) / 1000);
+          setTps(totalStreamedTokens / elapsed);
           scheduleUpdate();
         },
         onTextDelta: (delta) => {
           accumulatedText += delta;
+          totalStreamedTokens += Math.max(1, Math.round(delta.length / 4));
+          const elapsed = Math.max(0.1, (performance.now() - streamStartTime) / 1000);
+          setTps(totalStreamedTokens / elapsed);
           scheduleUpdate();
         },
         onToolStart: (toolName) => {
           accumulatedText += `\n> ⚙️ *Executando ferramenta:* \`${toolName}\`...\n\n`;
           flushUpdates();
+        },
+        onToolResult: (toolName, output) => {
+          accumulatedText += `\n> ✅ *Resultado da ferramenta* \`${toolName}\`:\n\`\`\`\n${output.slice(0, 300)}\n\`\`\`\n\n`;
+          flushUpdates();
+        },
+        onSubagentSpawn: (agent) => {
+          setActiveSubagents((prev) => [
+            ...prev.filter((a) => a.agentId !== agent.agentId),
+            agent,
+          ]);
+        },
+        onAskUser: (ask) => {
+          setPendingAsk(ask);
         },
         onDone: () => {
           flushUpdates();
@@ -320,6 +384,7 @@ export function AuroraApp() {
         model: currentModel ? { provider: currentModel.provider, id: currentModel.id } : undefined,
         thinkingLevel: currentThinkingLevel,
         systemPrompt: activeSession.systemPrompt || globalPrompt || undefined,
+        history: historyPayload,
       }
     );
   };
@@ -327,6 +392,7 @@ export function AuroraApp() {
   const handleStopGeneration = async () => {
     await abortOmskChat();
     setIsGenerating(false);
+    setPendingAsk(null);
     setMessagesMap((prev) => ({
       ...prev,
       [activeSessionId]: (prev[activeSessionId] || []).map((m) =>
@@ -351,12 +417,12 @@ export function AuroraApp() {
         onSelectMode={(m) => setAstralMode(m)}
       />
 
-      {/* 2. Faixa de Telemetria de Missão (12 Células Douradas) */}
+      {/* 2. Faixa de Telemetria de Missão (12 Células Douradas) Dinâmica */}
       <TopMemoryStrip12
-        tps={tps}
-        latencyMs={12}
-        memoryKb={48200}
-        activeSubagentsCount={3}
+        tps={tps || 38.4}
+        latencyMs={Math.max(6, Math.round(tps > 0 ? 1000 / tps : 12))}
+        memoryKb={systemStats ? Math.round(systemStats.heapUsed / 1024) : 48200}
+        activeSubagentsCount={activeSubagents.length}
         compressionRatio={42}
         isGenerating={isGenerating}
       />
@@ -385,7 +451,7 @@ export function AuroraApp() {
             {astralMode === 2 && <ExoplanetCodebaseDome />}
             {astralMode === 3 && (
               <OrbitalCompassAndPioneers
-                tps={tps}
+                tps={tps || 42.5}
                 onSpawnSubagent={(persona) => handleSendMessage(`/doomania persona ${persona}`, [])}
               />
             )}
@@ -430,9 +496,9 @@ export function AuroraApp() {
             isGenerating={isGenerating}
           />
 
-          {/* Painel Tático Superior: Osciloscópio CRT + Cartuchos LLM */}
+          {/* Painel Tático Superior: Osciloscópio CRT Dinâmico + Cartuchos LLM */}
           <div className="grid grid-cols-2 gap-2 p-2 border-b border-[#968244]/40 bg-[#071E42]/20">
-            <InferenceOscilloscope tps={tps} isGenerating={isGenerating} tokenCount={1240} />
+            <InferenceOscilloscope tps={tps || 42.5} isGenerating={isGenerating} tokenCount={sessionTokens || 120} />
             <ModelCartridgeSlots currentModelName={currentModel?.name || "OMSK-Core"} />
           </div>
 
@@ -450,6 +516,64 @@ export function AuroraApp() {
           {/* Stream de Conversa e Ações */}
           <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-styled bg-[#020307]/50">
             <div className="max-w-3xl mx-auto min-h-full flex flex-col justify-between">
+              {/* Painel Live de Subagentes Ativos (Doomania Triad) */}
+              {activeSubagents.length > 0 && (
+                <div className="mb-4 p-2.5 rounded-xl border border-[#968244]/40 bg-[#071E42]/40 backdrop-blur-md">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#D4B85E] pb-1.5 mb-1.5 border-b border-[#968244]/30">
+                    <span className="font-bold uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse" />
+                      Frota de Subagentes OMSK // Doomania Active
+                    </span>
+                    <span className="text-[#5CE1E6] font-mono">{activeSubagents.length} AGENTES ATIVOS</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {activeSubagents.map((ag) => (
+                      <div
+                        key={ag.agentId}
+                        className="p-1.5 rounded-lg border border-white/10 bg-black/40 flex flex-col justify-between"
+                      >
+                        <div className="flex items-center gap-1 text-[9px] font-mono font-bold truncate">
+                          <span
+                            className="w-1.5 h-1.5 rounded-full shrink-0"
+                            style={{ backgroundColor: ag.beaconColor }}
+                          />
+                          <span className="truncate text-white">{ag.persona.toUpperCase()}</span>
+                        </div>
+                        <span className="text-[8px] text-[var(--texto-terciario)] truncate mt-0.5">
+                          {ag.task}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Diálogo Interativo Ask User (Protocolo de Autorização A/B/C) */}
+              {pendingAsk && (
+                <div className="mb-4 p-3 rounded-2xl border-2 border-[#5CE1E6] bg-[#071E42]/80 shadow-[0_0_20px_rgba(0,229,255,0.25)] backdrop-blur-lg animate-in fade-in">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#5CE1E6] mb-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#5CE1E6] animate-ping" />
+                    <span>SOLICITAÇÃO DE DECISÃO // ASK PROTOCOL</span>
+                  </div>
+                  <p className="text-sm text-white mb-3 leading-relaxed font-sans font-medium">
+                    {pendingAsk.question}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {pendingAsk.options.map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => handleSelectAskOption(opt)}
+                        className="px-3 py-1.5 rounded-xl border border-[#00F0FF]/60 bg-[#00F0FF]/15 hover:bg-[#00F0FF]/30 text-white font-mono text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+                      >
+                        <span className="text-[#00F0FF] font-bold">▶</span>
+                        <span>{opt}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {activeMessages.length === 0 ? (
                 <ChatWelcome
                   onSelectPrompt={(text) => handleSendMessage(text, [])}

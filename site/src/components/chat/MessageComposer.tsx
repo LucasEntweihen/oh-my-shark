@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Icon } from "../ui/Icon";
+import { fetchAvailableCommands } from "../../lib/omsk-api";
 
 export interface AttachedFile {
   id: string;
@@ -38,28 +39,49 @@ interface MessageComposerProps {
   onOpenFolderManager: () => void;
 }
 
-const COMMAND_SUGGESTIONS: CommandSuggestion[] = [
+const INITIAL_COMMAND_SUGGESTIONS: CommandSuggestion[] = [
+  // Slash Commands Core
+  { name: "/doomania", type: "command", desc: "Painel de deliberação tripla (Crítico, Permissivo, Criativo) com alto rigor" },
+  { name: "/model", type: "command", desc: "Consulta ou chaveia o modelo de IA ativo para esta sessão" },
+  { name: "/thinking", type: "command", desc: "Ajusta o nível de raciocínio profundo (minimal, low, medium, high, max)" },
+  { name: "/clear", type: "command", desc: "Limpa o contexto da conversa na sessão mantendo as configurações" },
+  { name: "/compact", type: "command", desc: "Compacta manualmente o contexto da conversa com racionalização semântica" },
+  { name: "/tools", type: "command", desc: "Lista todas as ferramentas disponíveis no runtime do OMSK" },
   { name: "/taskmanager", type: "command", desc: "Abre o painel gráfico Kanban de tarefas em tempo real" },
-  { name: "/xlr8", type: "command", desc: "Aceleração instantânea e redução radical de latência" },
-  { name: "/doomania", type: "command", desc: "Painel de deliberação tri-perspectiva com avaliação crítica" },
-  { name: "@code-architect", type: "agent", desc: "Especialista em TypeScript estrito, Bun e engenharia de software" },
+  { name: "/learner-proj", type: "command", desc: "Varredura holística e aprendizado profundo de todo o projeto" },
+  { name: "/cleanup", type: "command", desc: "Varre e limpa arquivos temporários, logs órfãos e resíduos" },
+  { name: "/fix-issues", type: "command", desc: "Investiga e resolve pendências e alertas do repositório" },
+  { name: "/stats", type: "command", desc: "Exibe telemetria de heap, CPU e throughput em tempo real" },
+  { name: "/git", type: "command", desc: "Abre o status git, visualizador de diffs e commits" },
+  { name: "/session", type: "command", desc: "Exibe informações estruturais e estatísticas da sessão atual" },
+  { name: "/todo", type: "command", desc: "Gerencia a lista de tarefas e dependências da sessão" },
+  { name: "/usage", type: "command", desc: "Exibe consumo de tokens e limites de cota do provedor" },
+  { name: "/plan", type: "command", desc: "Alterna modo de planejamento autônomo antes da execução" },
+  { name: "/vibe", type: "command", desc: "Alterna modo vibecoding para prototipação e velocidade extrema" },
+  { name: "/goal", type: "command", desc: "Define um objetivo autônomo persistente para a sessão" },
+  { name: "/fast", type: "command", desc: "Ativa tier prioritário de baixa latência no provedor" },
+  { name: "/help", type: "command", desc: "Exibe a central de ajuda com todos os comandos disponíveis" },
+
+  // Agentes do Ecossistema OMSK
+  { name: "@code-architect", type: "agent", desc: "Especialista em TypeScript estrito, Bun, Rust e engenharia de software" },
   { name: "@security-sentinel", type: "agent", desc: "Auditor cético para encontrar brechas, injeções e vulnerabilidades" },
   { name: "@shark-lead", type: "agent", desc: "Coordenador estratégico para arquitetura e divisão de tarefas" },
-  { name: "@theological-scholar", type: "agent", desc: "Pesquisador lexicográfico de grego, hebraico e Strong" },
-  { name: "/learner-proj", type: "command", desc: "Varredura holística e aprendizado profundo de todo o projeto" },
-  { name: "promaxthink", type: "skill", desc: "Hiper-raciocínio 5x mais complexo com decomposição axiomática e auto-verificação adversarial" },
+  { name: "@theological-scholar", type: "agent", desc: "Pesquisador lexicográfico de grego, hebraico e números de Strong" },
+  { name: "@agent-muu9908f", type: "agent", desc: "Agente executor focado e de alta precisão técnica" },
+  { name: "@doomania-critico", type: "agent", desc: "Juiz cético com poder de veto para riscos e incorreções" },
+  { name: "@doomania-permissivo", type: "agent", desc: "Arquiteto pragmático do caminho mais enxuto e direto" },
+  { name: "@doomania-criativo", type: "agent", desc: "Especialista em inovações de alto valor e melhorias estruturais" },
+
+  // Skills & Contratos de Raciocínio
+  { name: "promaxthink", type: "skill", desc: "Hiper-raciocínio 5x mais complexo com auto-verificação adversarial" },
   { name: "ultrathink", type: "skill", desc: "Libera o nível máximo disponível de pensamento do modelo" },
   { name: "deepseaneuron", type: "skill", desc: "Compressão e racionalização semântica extrema de tokens" },
+  { name: "workflowz", type: "skill", desc: "Workpool determinístico multi-agente e barreiras assíncronas" },
+  { name: "orchestrate", type: "skill", desc: "Decomposição hierárquica e despacho concorrente de tarefas" },
 ];
 
 /**
  * Campo de Entrada & Compositor de Mensagem (DESIGN.md Sec 5.5 e 14.2)
- * Suporta:
- * - Perguntas normais
- * - Anexar imagens e arquivos (com preview gráfico)
- * - Referenciar pastas locais
- * - Autocomplete de comandos (/), agentes (@) e skills
- * - Morphing visual do botão Enviar / Parar (ICON_SYSTEM.md Sec 4.1)
  */
 export function MessageComposer({
   onSendMessage,
@@ -72,8 +94,31 @@ export function MessageComposer({
   const [attachments, setAttachments] = useState<AttachedFile[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filterQuery, setFilterQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<CommandSuggestion[]>(INITIAL_COMMAND_SUGGESTIONS);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Carrega comandos reais do backend do OMSK
+  useEffect(() => {
+    let mounted = true;
+    fetchAvailableCommands().then((res) => {
+      if (mounted && res.ok && res.commands.length > 0) {
+        const dynamicCmds: CommandSuggestion[] = res.commands.map((c) => ({
+          name: c.name,
+          type: "command",
+          desc: c.description,
+        }));
+        setSuggestions((prev) => {
+          const names = new Set(prev.map((s) => s.name));
+          const additions = dynamicCmds.filter((c) => !names.has(c.name));
+          return [...prev, ...additions];
+        });
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Auto-crescimento do textarea (máximo de 200px conforme DESIGN.md Sec 5.5)
   useEffect(() => {
@@ -159,7 +204,7 @@ export function MessageComposer({
     setAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
-  const filteredSuggestions = COMMAND_SUGGESTIONS.filter((s) =>
+  const filteredSuggestions = suggestions.filter((s) =>
     s.name.toLowerCase().includes(filterQuery)
   );
 
@@ -298,21 +343,14 @@ export function MessageComposer({
               type="button"
               onClick={handleSend}
               disabled={!isGenerating && !content.trim() && attachments.length === 0}
-              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer active:scale-95 ${
+              className={`p-2.5 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                 isGenerating
-                  ? "bg-[var(--cor-erro)] text-white shadow-[0_0_12px_rgba(251,113,133,0.4)]"
-                  : content.trim() || attachments.length > 0
-                  ? "bg-[var(--texto-principal)] text-[var(--cor-fundo)] hover:opacity-90 shadow-md"
-                  : "bg-[var(--cor-superficie-elevada)] text-[var(--texto-terciario)] cursor-not-allowed opacity-40"
+                  ? "bg-[var(--cor-erro)] text-white hover:opacity-90 shadow-lg shadow-red-500/20"
+                  : "bg-gradient-to-r from-[var(--espectro-ciano)] to-[var(--espectro-azul)] text-black hover:opacity-90 shadow-lg shadow-blue-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
               }`}
-              title={isGenerating ? "Parar resposta" : "Enviar mensagem"}
-              aria-label={isGenerating ? "Parar resposta" : "Enviar mensagem"}
+              title={isGenerating ? "Parar Geração (Esc)" : "Enviar Mensagem (Enter)"}
             >
-              <Icon
-                icon={isGenerating ? Square : ArrowUp}
-                size="md"
-                strokeWidth={2}
-              />
+              <Icon icon={isGenerating ? Square : ArrowUp} size="sm" />
             </button>
           </div>
         </div>
