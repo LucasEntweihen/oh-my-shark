@@ -1,12 +1,17 @@
 import * as http from "node:http";
 import * as path from "node:path";
 import * as crypto from "node:crypto";
+import * as fs from "node:fs";
+import * as os from "node:os";
 import type { Context, Effort, Message } from "@oh-my-pi/pi-ai";
 import { streamSimple } from "@oh-my-pi/pi-ai";
+import { getOAuthProviders } from "@oh-my-pi/pi-ai/oauth";
 import { getAgentDir, getProjectDir } from "@oh-my-pi/pi-utils";
 import { ModelRegistry } from "../config/model-registry";
 import { Settings } from "../config/settings";
 import { discoverAuthStorage } from "../session/auth-broker-config";
+import { createAgentSession } from "../sdk";
+import type { AgentSession } from "../session/agent-session";
 import { BUILTIN_SLASH_COMMAND_DEFS } from "../slash-commands/builtin-registry";
 import { AURORA_WEB_ASSETS } from "./bundle.generated";
 import type {
@@ -20,15 +25,28 @@ import { guiBridge } from "./gui-bridge";
 
 let globalModelRegistry: ModelRegistry | undefined;
 let globalSettings: Settings | undefined;
+let globalAgentSession: AgentSession | undefined;
 let activeSelectedModel: { provider: string; id: string; thinkingLevel?: string } | null = null;
+let currentWorkingDir: string = getProjectDir();
 
-async function getRegistry(cwd: string = getProjectDir()): Promise<ModelRegistry> {
+async function getRegistry(cwd: string = currentWorkingDir): Promise<ModelRegistry> {
 	if (globalModelRegistry) return globalModelRegistry;
 	const agentDir = getAgentDir();
 	const authStorage = await discoverAuthStorage(agentDir);
 	globalSettings = await Settings.init({ cwd });
 	globalModelRegistry = new ModelRegistry(authStorage, undefined, { settings: globalSettings });
 	return globalModelRegistry;
+}
+
+export async function getOrCreateAgentSession(cwd: string = currentWorkingDir): Promise<AgentSession> {
+	if (globalAgentSession) return globalAgentSession;
+	const agentDir = getAgentDir();
+	const sessionResult = await createAgentSession({
+		cwd,
+		agentDir,
+	});
+	globalAgentSession = sessionResult.session;
+	return globalAgentSession;
 }
 
 function getMimeType(filePath: string): string {
@@ -58,7 +76,7 @@ function getMimeType(filePath: string): string {
 	}
 }
 
-// Armazena abort controllers ativos por sessão/id
+// Armazena abort controllers ativos por streamId
 const activeStreams = new Map<string, AbortController>();
 const decodedAssetsCache = new Map<string, Buffer | string>();
 
@@ -71,12 +89,12 @@ function getAssetPayload(pathKey: string, rawContent: string): Buffer | string {
 }
 
 export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
-	// Carrega modelo e registry de forma não bloqueante
+	currentWorkingDir = cwd;
 	const registryPromise = getRegistry(cwd);
 
 	const server = http.createServer(async (req, res) => {
 		res.setHeader("Access-Control-Allow-Origin", "*");
-		res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+		res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 		res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
 		if (req.method === "OPTIONS") {
@@ -88,12 +106,14 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 		const parsedUrl = new URL(req.url ?? "/", "http://127.0.0.1");
 		const pathname = parsedUrl.pathname;
 
-		// 1. API: Obter modelos e providers REAIS configurados
+		// ====================================================================
+		// 1. API: Obter modelos e status real dos providers
+		// ====================================================================
 		if (pathname === "/api/models" && req.method === "GET") {
 			try {
 				const registry = await registryPromise;
 				const available = registry.getAvailable();
-				const providers = Array.from(new Set(available.map(m => m.provider))).sort();
+				const authedProviders = registry.authStorage.list();
 
 				const modelsJson = available.map(m => ({
 					provider: m.provider,
@@ -119,7 +139,8 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 				res.end(
 					JSON.stringify({
 						ok: true,
-						providers,
+						providers: Array.from(new Set(available.map(m => m.provider))).sort(),
+						authenticatedProviders: authedProviders,
 						models: modelsJson,
 						currentModel: defaultModel
 							? {
@@ -139,7 +160,9 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
+		// ====================================================================
 		// 2. API: Selecionar Modelo Ativo no Backend
+		// ====================================================================
 		if (pathname === "/api/models/select" && req.method === "POST") {
 			let body = "";
 			req.on("data", chunk => {
@@ -168,15 +191,145 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
-		// 3. API: Criar Nova Sessão no Backend
-		if (pathname === "/api/sessions/new" && req.method === "POST") {
-			const sessionId = `sess-${crypto.randomUUID()}`;
-			res.writeHead(200, { "Content-Type": "application/json" });
-			res.end(JSON.stringify({ ok: true, sessionId }));
+		// ====================================================================
+		// 3. API: Listagem completa e detalhada de Provedores e seus status REAIS
+		// ====================================================================
+		if (pathname === "/api/providers" && req.method === "GET") {
+			try {
+				const registry = await registryPromise;
+				const authedList = registry.authStorage.list();
+				const oauthProviders = getOAuthProviders();
+				const availableModels = registry.getAvailable();
+
+				const providersData = oauthProviders.map(p => {
+					const isAuthed = authedList.includes(p.id) || registry.authStorage.has(p.id);
+					const modelsForProv = availableModels.filter(m => m.provider.toLowerCase() === p.id.toLowerCase());
+					return {
+						id: p.id,
+						name: p.name,
+						status: isAuthed ? ("connected" as const) : ("disconnected" as const),
+						isOAuth: true,
+						available: p.available,
+						modelsCount: modelsForProv.length,
+						models: modelsForProv.map(m => ({ id: m.id, name: m.name })),
+					};
+				});
+
+				// Provedores adicionais configurados via API Key mas não-OAuth
+				for (const authedId of authedList) {
+					if (!providersData.some(p => p.id === authedId)) {
+						const modelsForProv = availableModels.filter(m => m.provider.toLowerCase() === authedId.toLowerCase());
+						providersData.push({
+							id: authedId,
+							name: authedId.toUpperCase(),
+							status: "connected",
+							isOAuth: false,
+							available: true,
+							modelsCount: modelsForProv.length,
+							models: modelsForProv.map(m => ({ id: m.id, name: m.name })),
+						});
+					}
+				}
+
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						ok: true,
+						providers: providersData,
+						authenticatedProviders: authedList,
+					}),
+				);
+			} catch (err) {
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ ok: false, error: String(err) }));
+			}
 			return;
 		}
 
-		// 4. API: Catálogo Completo de Slash Commands do OMSK
+		// ====================================================================
+		// 4. API: Configurar nova chave de API para Provider ou /login
+		// ====================================================================
+		if (
+			(pathname === "/api/providers/configure" || pathname === "/api/providers/login") &&
+			req.method === "POST"
+		) {
+			let body = "";
+			req.on("data", chunk => {
+				body += chunk;
+			});
+			req.on("end", async () => {
+				try {
+					const data = JSON.parse(body) as { provider: string; apiKey?: string; key?: string };
+					const key = data.apiKey || data.key;
+					if (!data.provider || !key || !key.trim()) {
+						res.writeHead(400, { "Content-Type": "application/json" });
+						res.end(JSON.stringify({ ok: false, error: "Missing provider or apiKey" }));
+						return;
+					}
+
+					const agentDir = getAgentDir();
+					const authStorage = await discoverAuthStorage(agentDir);
+					await authStorage.set(data.provider, { type: "api_key", key: key.trim() });
+					const registry = await registryPromise;
+					await registry.refresh("online");
+
+					res.writeHead(200, { "Content-Type": "application/json" });
+					res.end(
+						JSON.stringify({
+							ok: true,
+							provider: data.provider,
+							message: `Provedor ${data.provider} autenticado com sucesso no OMSK.`,
+						}),
+					);
+				} catch (err) {
+					res.writeHead(500, { "Content-Type": "application/json" });
+					res.end(JSON.stringify({ ok: false, error: String(err) }));
+				}
+			});
+			return;
+		}
+
+		// ====================================================================
+		// 5. API: Desconectar Provedor (Logout)
+		// ====================================================================
+		if (pathname === "/api/providers/logout" && req.method === "POST") {
+			let body = "";
+			req.on("data", chunk => {
+				body += chunk;
+			});
+			req.on("end", async () => {
+				try {
+					const data = JSON.parse(body) as { provider: string };
+					if (!data.provider) {
+						res.writeHead(400, { "Content-Type": "application/json" });
+						res.end(JSON.stringify({ ok: false, error: "Missing provider" }));
+						return;
+					}
+
+					const agentDir = getAgentDir();
+					const authStorage = await discoverAuthStorage(agentDir);
+					await authStorage.remove(data.provider);
+					const registry = await registryPromise;
+
+					res.writeHead(200, { "Content-Type": "application/json" });
+					res.end(
+						JSON.stringify({
+							ok: true,
+							provider: data.provider,
+							message: `Provedor ${data.provider} desconectado.`,
+						}),
+					);
+				} catch (err) {
+					res.writeHead(500, { "Content-Type": "application/json" });
+					res.end(JSON.stringify({ ok: false, error: String(err) }));
+				}
+			});
+			return;
+		}
+
+		// ====================================================================
+		// 6. API: Catálogo Completo de Slash Commands do OMSK
+		// ====================================================================
 		if (pathname === "/api/commands" && req.method === "GET") {
 			try {
 				const commands = BUILTIN_SLASH_COMMAND_DEFS.map(cmd => ({
@@ -190,6 +343,14 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 							usage: s.usage,
 						})) ?? [],
 				}));
+				if (!commands.some(c => c.name === "/doomania")) {
+					commands.unshift({
+						name: "/doomania",
+						description: "Painel de deliberação tripla (Crítico, Permissivo, Criativo) com contrato de alto rigor",
+						icon: "bolt",
+						subcommands: [],
+					});
+				}
 				res.writeHead(200, { "Content-Type": "application/json" });
 				res.end(JSON.stringify({ ok: true, commands }));
 			} catch (err) {
@@ -199,12 +360,46 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
-		// 5. API: Telemetria Dinâmica Real do Sistema
+		// ====================================================================
+		// 7. API: Catálogo Completo de Ferramentas Reais do Harness
+		// ====================================================================
+		if (pathname === "/api/tools" && req.method === "GET") {
+			try {
+				const toolsList = [
+					{ name: "read", description: "Leitura cirúrgica de arquivos e payloads [PATH#HASH]" },
+					{ name: "write", description: "Criação e escrita atômica com validação de hash" },
+					{ name: "edit", description: "Edição precisa ancorada por blocos hashline sem race conditions" },
+					{ name: "bash", description: "Execução controlada de processos no terminal nativo PTY" },
+					{ name: "grep", description: "Busca de expressões regulares em alta velocidade" },
+					{ name: "glob", description: "Varredura de árvore de arquivos respeitando .gitignore" },
+					{ name: "lsp", description: "Inteligência de linguagem (diagnostics, definition, rename)" },
+					{ name: "ast_edit", description: "Refatoração estrutural AST através de padrões sintáticos" },
+					{ name: "ask", description: "Protocolo interativo de autorização e escolha de planos" },
+					{ name: "task", description: "Orquestração concorrente de subagentes delegados" },
+					{ name: "todo", description: "Gerenciador DAG de fases, tarefas e pendências" },
+					{ name: "eval", description: "Kernel interativo TypeScript/Python com workpools" },
+					{ name: "learn", description: "Consolidação e aprendizado contínuo de memória" },
+					{ name: "manage_skill", description: "Gerenciamento de bibliotecas de habilidades" },
+				];
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ ok: true, tools: toolsList }));
+			} catch (err) {
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ ok: false, error: String(err) }));
+			}
+			return;
+		}
+
+		// ====================================================================
+		// 8. API: Telemetria Dinâmica Real do Sistema
+		// ====================================================================
 		if (pathname === "/api/system/stats" && req.method === "GET") {
 			try {
 				const registry = await registryPromise;
 				const available = registry.getAvailable();
 				const mem = process.memoryUsage();
+				const authedCount = registry.authStorage.list().length;
+
 				res.writeHead(200, { "Content-Type": "application/json" });
 				res.end(
 					JSON.stringify({
@@ -216,7 +411,10 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 							uptime: process.uptime(),
 							activeStreams: activeStreams.size,
 							modelsCount: available.length,
-							cwd,
+							authenticatedProvidersCount: authedCount,
+							cwd: currentWorkingDir,
+							platform: process.platform,
+							nodeVersion: process.version,
 						},
 					}),
 				);
@@ -227,7 +425,163 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
-		// 6. API: Responder ao Protocolo Interativo Ask User
+		// ====================================================================
+		// 9. API: Workspace & Navegação no Sistema de Arquivos Local (/api/fs/browse)
+		// ====================================================================
+		if (pathname === "/api/fs/browse" && req.method === "GET") {
+			try {
+				const reqDir = parsedUrl.searchParams.get("dir") || currentWorkingDir;
+				const resolvedPath = path.resolve(reqDir.replace(/^~/, os.homedir()));
+				const dirents = fs.readdirSync(resolvedPath, { withFileTypes: true });
+				const entries = dirents
+					.filter(d => !d.name.startsWith(".git") && d.name !== "node_modules")
+					.map(d => {
+						const fullPath = path.join(resolvedPath, d.name).replace(/\\/g, "/");
+						let size = 0;
+						try {
+							if (d.isFile()) size = fs.statSync(fullPath).size;
+						} catch {}
+						return {
+							name: d.name,
+							path: fullPath,
+							isDirectory: d.isDirectory(),
+							size,
+						};
+					})
+					.sort((a, b) => (a.isDirectory === b.isDirectory ? a.name.localeCompare(b.name) : a.isDirectory ? -1 : 1));
+
+				const parent = path.dirname(resolvedPath).replace(/\\/g, "/");
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						success: true,
+						ok: true,
+						currentDir: resolvedPath.replace(/\\/g, "/"),
+						parentDir: parent !== resolvedPath.replace(/\\/g, "/") ? parent : null,
+						homedir: os.homedir().replace(/\\/g, "/"),
+						entries,
+					}),
+				);
+			} catch (err: unknown) {
+				const message = err instanceof Error ? err.message : "Diretório inacessível";
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ success: false, ok: false, error: message }));
+			}
+			return;
+		}
+
+		// ====================================================================
+		// 9b. API: Árvore Recursiva de Arquivos do Workspace (/api/fs/tree)
+		// ====================================================================
+		if (pathname === "/api/fs/tree" && req.method === "GET") {
+			try {
+				const reqDir = parsedUrl.searchParams.get("dir") || currentWorkingDir;
+				const resolvedPath = path.resolve(reqDir.replace(/^~/, os.homedir()));
+
+				function scanDirRecursive(dir: string, depth = 0, maxDepth = 2): any[] {
+					if (depth > maxDepth) return [];
+					const items: any[] = [];
+					try {
+						const entries = fs.readdirSync(dir, { withFileTypes: true });
+						for (const e of entries) {
+							if (e.name.startsWith(".git") || e.name === "node_modules" || e.name === "dist") continue;
+							const full = path.join(dir, e.name).replace(/\\/g, "/");
+							if (e.isDirectory()) {
+								items.push({
+									id: `dir-${full}`,
+									name: e.name,
+									path: full,
+									type: "directory",
+									availability: "selected",
+									isExpanded: depth === 0,
+									children: scanDirRecursive(full, depth + 1, maxDepth),
+								});
+							} else {
+								let sizeStr = "";
+								try {
+									const s = fs.statSync(full).size;
+									sizeStr = `${(s / 1024).toFixed(1)} KB`;
+								} catch {}
+								items.push({
+									id: `file-${full}`,
+									name: e.name,
+									path: full,
+									type: "file",
+									availability: "available",
+									size: sizeStr,
+								});
+							}
+						}
+					} catch {}
+					return items;
+				}
+
+				const tree = scanDirRecursive(resolvedPath);
+				res.writeHead(200, { "Content-Type": "application/json" });
+				res.end(
+					JSON.stringify({
+						success: true,
+						ok: true,
+						rootPath: resolvedPath.replace(/\\/g, "/"),
+						tree,
+					}),
+				);
+			} catch (err: unknown) {
+				const message = err instanceof Error ? err.message : "Falha ao escanear árvore";
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ success: false, ok: false, error: message }));
+			}
+			return;
+		}
+
+		// ====================================================================
+		// 10. API: Selecionar e Alterar Diretório do Workspace Ativo (/api/fs/set-directory)
+		// ====================================================================
+		if (pathname === "/api/fs/set-directory" && req.method === "POST") {
+			let body = "";
+			req.on("data", chunk => {
+				body += chunk;
+			});
+			req.on("end", async () => {
+				try {
+					const data = JSON.parse(body) as { path: string };
+					if (!data.path) {
+						res.writeHead(400, { "Content-Type": "application/json" });
+						res.end(JSON.stringify({ ok: false, error: "Missing directory path" }));
+						return;
+					}
+					const targetDir = path.resolve(data.path.replace(/^~/, os.homedir()));
+					if (!fs.existsSync(targetDir) || !fs.statSync(targetDir).isDirectory()) {
+						res.writeHead(400, { "Content-Type": "application/json" });
+						res.end(JSON.stringify({ ok: false, error: "Diretório inexistente ou inválido" }));
+						return;
+					}
+
+					currentWorkingDir = targetDir;
+					// Reseta registry para re-indexar escopo do novo projeto
+					globalModelRegistry = undefined;
+					globalAgentSession = undefined;
+					await getRegistry(currentWorkingDir);
+
+					res.writeHead(200, { "Content-Type": "application/json" });
+					res.end(
+						JSON.stringify({
+							ok: true,
+							currentDir: currentWorkingDir.replace(/\\/g, "/"),
+							message: "Diretório de trabalho atualizado com sucesso.",
+						}),
+					);
+				} catch (err) {
+					res.writeHead(500, { "Content-Type": "application/json" });
+					res.end(JSON.stringify({ ok: false, error: String(err) }));
+				}
+			});
+			return;
+		}
+
+		// ====================================================================
+		// 11. API: Responder ao Protocolo Interativo Ask User
+		// ====================================================================
 		if (pathname === "/api/ask/respond" && req.method === "POST") {
 			let body = "";
 			req.on("data", chunk => {
@@ -249,49 +603,35 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
-		// 7. API: Configurar nova chave de API para Provider
-		if (pathname === "/api/providers/configure" && req.method === "POST") {
-			let body = "";
-			req.on("data", chunk => {
-				body += chunk;
-			});
-			req.on("end", async () => {
-				try {
-					const data = JSON.parse(body) as { provider: string; apiKey?: string };
-					if (!data.provider || !data.apiKey) {
-						res.writeHead(400, { "Content-Type": "application/json" });
-						res.end(JSON.stringify({ ok: false, error: "Missing provider or apiKey" }));
-						return;
-					}
-
-					const agentDir = getAgentDir();
-					const authStorage = await discoverAuthStorage(agentDir);
-					await authStorage.set(data.provider, { type: "api_key", key: data.apiKey });
-					const registry = await registryPromise;
-					await registry.refresh("online");
-
-					res.writeHead(200, { "Content-Type": "application/json" });
-					res.end(JSON.stringify({ ok: true, message: `Provedor ${data.provider} configurado com sucesso.` }));
-				} catch (err) {
-					res.writeHead(500, { "Content-Type": "application/json" });
-					res.end(JSON.stringify({ ok: false, error: String(err) }));
-				}
-			});
-			return;
-		}
-
-		// 8. API: Interromper Resposta (Abort)
+		// ====================================================================
+		// 12. API: Interromper Resposta (Abort)
+		// ====================================================================
 		if (pathname === "/api/chat/abort" && req.method === "POST") {
 			for (const controller of activeStreams.values()) {
 				controller.abort();
 			}
 			activeStreams.clear();
+			if (globalAgentSession) {
+				void globalAgentSession.abort();
+			}
 			res.writeHead(200, { "Content-Type": "application/json" });
 			res.end(JSON.stringify({ ok: true }));
 			return;
 		}
 
-		// 9. API: Streaming Real de Mensagens com Suporte Completo a Slash Commands e Bridge
+		// ====================================================================
+		// 13. API: Criar Nova Sessão no Backend
+		// ====================================================================
+		if (pathname === "/api/sessions/new" && req.method === "POST") {
+			const sessionId = `sess-${crypto.randomUUID()}`;
+			res.writeHead(200, { "Content-Type": "application/json" });
+			res.end(JSON.stringify({ ok: true, sessionId }));
+			return;
+		}
+
+		// ====================================================================
+		// 14. API: Streaming Real de Mensagens com Suporte Completo a Slash Commands e Bridge
+		// ====================================================================
 		if (pathname === "/api/chat/stream" && req.method === "POST") {
 			let body = "";
 			req.on("data", chunk => {
@@ -391,36 +731,16 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 							return;
 						}
 
-						if (cmdName === "clear") {
-							sendSse("text_delta", { delta: "🧹 *Transcript da conversa limpo com sucesso.*" });
-							sendSse("done", { ok: true });
-							cleanup();
-							res.end();
-							return;
-						}
-
-						if (cmdName === "taskmanager" || cmdName === "tasks") {
+						if (cmdName === "stats") {
+							const mem = process.memoryUsage();
 							sendSse("text_delta", {
 								delta:
-									`### 📋 Painel de Tarefas Kanban OMSK\n\n` +
-									`- **Fase Ativa:** Fase 2 — Transformação e Execução Zero-Mock\n` +
-									`- **Status Geral:** 100% Funcional, sem bloqueios\n` +
-									`- **DAG Execution:** Paralelização via workpool ativada\n`,
-							});
-							sendSse("done", { ok: true });
-							cleanup();
-							res.end();
-							return;
-						}
-
-						if (cmdName === "learner-proj") {
-							sendSse("text_delta", {
-								delta:
-									`### 🧠 Learner Proj: Mapeamento Arquitetural OMSK Concluído\n\n` +
-									`- **Core TUI & Bridge:** \`.omp/tools/tui.ts\` e \`gui-bridge.ts\` sincronizados 1:1.\n` +
-									`- **Catálogo de Modelos:** 85 comandos, provedores configurados e fallback dinâmico.\n` +
-									`- **Landing Page:** Download direto de \`OMSK-GUI.exe\` ativo sem intermediários .zip.\n` +
-									`- **Zero Mocks:** Toda a interface agora responde a streams e telemetria reais.\n`,
+									`### 📊 Telemetria do Sistema Oh My Shark:\n\n` +
+									`- **Heap Utilizado:** ${(mem.heapUsed / 1024 / 1024).toFixed(1)} MB / ${(mem.heapTotal / 1024 / 1024).toFixed(1)} MB\n` +
+									`- **RSS:** ${(mem.rss / 1024 / 1024).toFixed(1)} MB\n` +
+									`- **Uptime:** ${Math.floor(process.uptime())}s\n` +
+									`- **Sessões Ativas:** ${activeStreams.size}\n` +
+									`- **Diretório Ativo:** \`${currentWorkingDir}\`\n`,
 							});
 							sendSse("done", { ok: true });
 							cleanup();
@@ -477,7 +797,7 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 					if (!targetModel) {
 						sendSse("error", {
 							message:
-								"Nenhum modelo disponível configurado no OMSK. Configure um provedor em /api/providers/configure.",
+								"Nenhum modelo disponível configurado no OMSK. Configure um provedor em /api/providers/configure ou via /login.",
 						});
 						cleanup();
 						res.end();
@@ -503,8 +823,15 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 									api: targetModel.api,
 									provider: targetModel.provider,
 									model: targetModel.id,
-									usage: { promptTokens: 0, completionTokens: 0 },
-									stopReason: "end_turn",
+									usage: {
+										input: 0,
+										output: 0,
+										cacheRead: 0,
+										cacheWrite: 0,
+										totalTokens: 0,
+										cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+									},
+									stopReason: "stop",
 									timestamp: Date.now(),
 								});
 							}
@@ -560,7 +887,9 @@ export async function createAuroraHttpServer(cwd: string = getProjectDir()) {
 			return;
 		}
 
-		// 10. Servir os assets estáticos da GUI (CosmoSky App)
+		// ====================================================================
+		// 15. Servir os assets estáticos da GUI
+		// ====================================================================
 		let cleanPath = pathname.replace(/^\//, "");
 		if (!cleanPath || cleanPath === "index.html") {
 			cleanPath = "index.html";
