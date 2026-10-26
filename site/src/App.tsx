@@ -140,7 +140,7 @@ export default function App() {
     { name: "Semantic Compression & FileReadCache", section: "#compression", tag: "Optimization" },
     { name: "Autonomous Slash Commands", section: "#commands", tag: "Protocols" },
     { name: "10-Step Practical Onboarding Guide", section: "#guide", tag: "Documentation" },
-    { name: "Download OMSK GUI (Desktop .exe)", section: "https://github.com/LucasEntweihen/OMSK-gui/releases/download/v1.2.0/OMSK-GUI.exe", tag: "Download" },
+    { name: "Download OMSK GUI (Desktop .exe)", section: "https://github.com/LucasEntweihen/OMSK-gui/releases/download/v1.3.0/OMSK-GUI.exe", tag: "Download" },
     { name: "Download Windows CLI (.exe)", section: "https://github.com/LucasEntweihen/oh-my-shark/releases/latest/download/omsk-windows-x64.exe", tag: "Download" },
     { name: "GitHub Source Code Repository", section: "https://github.com/LucasEntweihen/oh-my-shark", tag: "GitHub" },
   ];
@@ -357,7 +357,7 @@ export default function App() {
                 <div className="hero-cta-group">
                   <a
                     className="btn-primary"
-                    href="https://github.com/LucasEntweihen/OMSK-gui/releases/download/v1.2.0/OMSK-GUI.exe"
+                    href="https://github.com/LucasEntweihen/OMSK-gui/releases/download/v1.3.0/OMSK-GUI.exe"
                     download="OMSK-GUI.exe"
                     style={{ background: "linear-gradient(135deg, #00E5FF, #2678FF)", color: "#020A16", fontWeight: 700 }}
                   >
@@ -784,7 +784,7 @@ export default function App() {
                 <div style={{ display: "flex", justifyContent: "center", gap: "12px", marginTop: "16px", flexWrap: "wrap" }}>
                   <a
                     className="btn-primary"
-                    href="https://github.com/LucasEntweihen/OMSK-gui/releases/download/v1.2.0/OMSK-GUI.exe"
+                    href="https://github.com/LucasEntweihen/OMSK-gui/releases/download/v1.3.0/OMSK-GUI.exe"
                     download="OMSK-GUI.exe"
                     style={{ background: "linear-gradient(135deg, #00E5FF, #2678FF)", color: "#020A16", fontWeight: 700 }}
                   >
