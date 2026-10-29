@@ -1,0 +1,8 @@
+ascii-sharks asset attribution
+
+Source: https://github.com/stackedlol/ascii-sharks
+License: MIT
+Copyright (c) 2026 drewdi
+
+The ASCII shark artwork used by the OhMyShark welcome and setup surfaces is
+reproduced from the project's README under the MIT License.
