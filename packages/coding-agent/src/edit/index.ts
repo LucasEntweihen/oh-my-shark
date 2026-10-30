@@ -74,6 +74,7 @@ import { getEditStore } from "./store";
 export * from "./renderer";
 export * from "./schemas";
 export * from "./store";
+export * from "./transactional-engine";
 export { DEFAULT_EDIT_MODE, type EditMode, normalizeEditMode } from "../utils/edit-mode";
 
 type TInput =

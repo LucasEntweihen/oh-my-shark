@@ -341,6 +341,11 @@ export class WelcomeComponent implements Component {
 		while (lspLines.length < WELCOME_LSP_SLOTS) lspLines.push("");
 
 		const panelLines = [
+			` ${theme.bold(theme.fg("accent", "Deep Sea Cockpit"))}`,
+			` ${theme.fg("success", "✔")} ${theme.fg("muted", "Transactional Engine & Checkpoints")}`,
+			` ${theme.fg("success", "✔")} ${theme.fg("muted", "Mente em Teia SQLite Knowledge")}`,
+			` ${theme.fg("success", "✔")} ${theme.fg("muted", "Deterministic Tool Router")}`,
+			separator,
 			` ${theme.bold(theme.fg("accent", "Tips"))}`,
 			` ${theme.fg("dim", "#")}${theme.fg("muted", " for prompt actions")}`,
 			` ${theme.fg("dim", "/")}${theme.fg("muted", " for commands")}`,

@@ -11,3 +11,5 @@ export * from "./tree-list";
 export * from "./types";
 export * from "./utils";
 export * from "./width-aware-text";
+
+export * from "./deep-sea-command";
