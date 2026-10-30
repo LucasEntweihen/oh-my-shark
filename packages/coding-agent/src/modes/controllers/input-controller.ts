@@ -710,7 +710,7 @@ export class InputController {
 
 	setupEditorSubmitHandler(): void {
 		this.ctx.editor.onSubmit = async (text: string) => {
-			this.ctx.composer.welcome?.pauseOcean();
+			this.ctx.composer.welcome?.stopIntro();
 			text = this.#compactDraftImages(text.trim());
 			const hasPendingImages = this.ctx.editor.pendingImages.length > 0;
 			if ((!isSettingsInitialized() || settings.get("emojiAutocomplete")) && text) text = expandEmoticons(text);

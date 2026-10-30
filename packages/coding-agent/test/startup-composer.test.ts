@@ -430,7 +430,7 @@ describe("Composer prepaint", () => {
 			.join("\n");
 		expect(output).toContain("Welcome back!");
 		expect(output).toContain("ohmyshark v0.0.3 · made by LucasEntweihen");
-		expect(output).toContain("⣶⣶⣶⣶");
+		expect(output).toContain("O h   M y   S h a r k");
 		expect(output).toContain("prior work");
 		expect(output).not.toContain("Starting OMP");
 		expect(output).toContain("╭");
