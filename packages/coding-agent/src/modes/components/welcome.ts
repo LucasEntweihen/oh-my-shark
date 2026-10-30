@@ -8,6 +8,7 @@ import {
 	wrapTextWithAnsi,
 } from "@oh-my-pi/pi-tui";
 import { DISPLAY_NAME, PRODUCT_BYLINE } from "@oh-my-pi/pi-utils";
+import { AsciiOceanComponent } from "./ascii-ocean";
 import { theme } from "../../modes/theme/theme";
 import tipsText from "./tips.txt" with { type: "text" };
 
@@ -153,6 +154,7 @@ export class WelcomeComponent implements Component {
 	// Bypassed while the intro animation runs (every frame differs).
 	#cachedWidth = -1;
 	#cachedLines: string[] | undefined;
+	readonly #ocean = new AsciiOceanComponent();
 
 	constructor(
 		private version: string,
@@ -185,6 +187,7 @@ export class WelcomeComponent implements Component {
 	 * subsequent calls reset and replay.
 	 */
 	playIntro(requestRender: () => void): void {
+		this.#ocean.start(requestRender);
 		this.#stopAnimation();
 		this.#requestRender = requestRender;
 		this.#animStart = performance.now();
@@ -222,7 +225,14 @@ export class WelcomeComponent implements Component {
 
 	/** Stop the intro immediately and settle on the resting frame. Safe when idle. */
 	stopIntro(): void {
+		this.#ocean.pause();
 		this.#stopAnimation();
+	}
+
+	/** Freeze the ocean permanently after the first user message. */
+	pauseOcean(): void {
+		this.#ocean.pause();
+		this.invalidate();
 	}
 
 	/** Update the version embedded in the welcome border title. */
@@ -276,8 +286,11 @@ export class WelcomeComponent implements Component {
 		const rightCol = showSideBySide ? innerWidth - leftCol - 1 : innerWidth;
 		const panelWidth = showSideBySide ? rightCol : innerWidth;
 		const logoColored = this.#currentLogoFrame();
+		const oceanLines = this.#ocean.render(innerWidth, Math.max(8, Math.min(22, 18)));
 
-		const brandLines = showLogo
+		const brandLines = oceanLines.length > 0
+			? ["", ...oceanLines.map(line => this.#centerText(line, innerWidth)), "", this.#centerText(theme.bold("What’s on your mind?"), innerWidth)]
+			: showLogo
 			? [
 					this.#centerText(theme.bold("Welcome back!"), leftCol),
 					...logoColored.map(line => this.#centerText(line, leftCol)),
