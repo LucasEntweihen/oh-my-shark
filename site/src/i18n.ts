@@ -54,7 +54,6 @@ const en = {
   heroCopied: "Copied to clipboard [0.4ms]",
   heroCopyFailed: "Copy failed — please select manually",
   heroDownloadExe: "Download Windows CLI (.exe)",
-  heroDownloadGui: "Download OMSK GUI (App Desktop .exe)",
   heroInspectLive: "Explore Architecture",
   heroDocsCta: "Open Interactive Guide",
 
@@ -125,9 +124,9 @@ const en = {
   cmdDoomaniaBadge: "Tri-Agent Deliberation",
   cmdDoomaniaDesc: "Convenes critique, permissive, and creative perspectives to review critical changes under maximum rigor.",
 
-  cmdTaskManagerName: "/taskmanager",
-  cmdTaskManagerBadge: "Kanban HUD GUI",
-  cmdTaskManagerDesc: "Launches the native dark desktop board or web app with real-time process monitoring.",
+  cmdTaskManagerName: "/cockpit",
+  cmdTaskManagerBadge: "Deep Sea Cockpit TUI",
+  cmdTaskManagerDesc: "Displays the Deep Sea Cockpit with reactive process and task monitoring directly in the terminal.",
   cmdUltrathinkName: "ultrathink",
   cmdUltrathinkBadge: "Full-Spectrum Rainbow",
   cmdUltrathinkDesc: "Unlocks maximum available thinking and reasoning depth supported by the active model.",
@@ -213,7 +212,6 @@ const pt: Strings = {
   heroCopied: "Copiado para a área de transferência [0.4ms]",
   heroCopyFailed: "Falha ao copiar — por favor selecione manualmente",
   heroDownloadExe: "Baixar CLI Windows (.exe)",
-  heroDownloadGui: "Baixar OMSK GUI (App Desktop .exe)",
   heroInspectLive: "Explorar Arquitetura",
   heroDocsCta: "Abrir Guia Interativo",
 
@@ -284,9 +282,9 @@ const pt: Strings = {
   cmdDoomaniaBadge: "Painel Tri-Agente",
   cmdDoomaniaDesc: "Convoca visões crítica, permissiva e criativa para deliberar sobre alterações de alto impacto antes da execução.",
 
-  cmdTaskManagerName: "/taskmanager",
-  cmdTaskManagerBadge: "HUD Kanban GUI",
-  cmdTaskManagerDesc: "Abre o quadro nativo de desktop ou aplicação web com acompanhamento de processos em tempo real.",
+  cmdTaskManagerName: "/cockpit",
+  cmdTaskManagerBadge: "Deep Sea Cockpit TUI",
+  cmdTaskManagerDesc: "Exibe o Deep Sea Cockpit com monitoramento reativo de processos e tarefas em tempo real no terminal.",
   cmdUltrathinkName: "ultrathink",
   cmdUltrathinkBadge: "Arco-Íris Full-Spectrum",
   cmdUltrathinkDesc: "Desbloqueia o nível máximo de raciocínio profundo suportado pelo modelo ativo.",

@@ -167,10 +167,7 @@
     "gen:bundle": "bun --cwd=packages/coding-agent run gen:bundle",
     "gen:native": "bun --cwd=packages/natives run gen:native",
     "gen:native:reset": "bun --cwd=packages/natives run gen:native:reset",
-    "check-spoofed-versions": "bun scripts/check-spoofed-versions.ts",
-    "gui:app": "powershell -Command \"Start-Process .\\\\apps\\\\omsk-gui\\\\\\\"OMSK GUI.exe\\\"\"",
-    "gui:build": "bun scripts/sync-gui.ts",
-    "gui:sync": "bun scripts/sync-gui.ts"
+    "check-spoofed-versions": "bun scripts/check-spoofed-versions.ts"
   },
   "dependencies": {
     "sherpa-onnx": "1.13.2",

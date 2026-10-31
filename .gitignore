@@ -48,6 +48,7 @@ packages/ai/test/.temp-images/
 # Project specific
 !.omp/
 .omp/plugins/
+.omsk/
 .pi_config/
 .opencode/
 .worktrees/
@@ -100,14 +101,7 @@ packages/coding-agent/bench/boot-baseline.json
 
 .bun-cache/
 
-# OMSK GUI packaged binaries
-apps/omsk-gui/*.exe
-apps/omsk-gui/*.dll
-apps/omsk-gui/*.pak
-apps/omsk-gui/*.dat
-apps/omsk-gui/*.bin
-apps/omsk-gui/locales/
-apps/omsk-gui/resources/
+apps/
 *.zip
 *.zip.sha256
 *.exe
