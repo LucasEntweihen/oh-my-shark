@@ -78,4 +78,125 @@ export function createService(): OrderService {
 		const semanticDecision = router.route("why was this architecture chosen for teia");
 		expect(semanticDecision.primaryTool).toBe("semantic_memory");
 	});
+
+	// --- 5+ NEW TDD SPECIFIC TESTS ---
+
+	it("TDD 1: should extract decorators and exported types in Level 1 Outline", async () => {
+		const filePath = path.join(tempDir, "decorated-component.ts");
+		const content = `
+import { Injectable } from "@angular/core";
+
+export type StatusTag = "active" | "inactive";
+
+@Injectable({
+  providedIn: "root"
+})
+export class PaymentProcessor {
+  public executePayment(amount: number): boolean {
+    const fee = 0.05;
+    return amount > 0;
+  }
+}
+`;
+		await fs.writeFile(filePath, content, "utf8");
+
+		const result = await reader.read({ filePath, level: 1 });
+		expect(result.level).toBe(1);
+		expect(result.content).toContain("@Injectable");
+		expect(result.content).toContain("export type StatusTag");
+		expect(result.symbolsFound).toContain("StatusTag");
+		expect(result.symbolsFound).toContain("PaymentProcessor");
+	});
+
+	it("TDD 2: should capture Level 2 signatures with method bodies elided", async () => {
+		const filePath = path.join(tempDir, "calculator.ts");
+		const content = `
+export class Calculator {
+  public compute(a: number, b: number): number {
+    const sum = a + b;
+    const factor = 2;
+    return sum * factor;
+  }
+}
+`;
+		await fs.writeFile(filePath, content, "utf8");
+
+		const result = await reader.read({ filePath, level: 2 });
+		expect(result.level).toBe(2);
+		expect(result.content).toContain("compute(a: number, b: number): number { … }");
+		expect(result.content).not.toContain("sum * factor");
+	});
+
+	it("TDD 3: should extract full method bodies in Level 3 even with nested inner braces", async () => {
+		const filePath = path.join(tempDir, "nested-logic.ts");
+		const content = `
+export class ComplexHandler {
+  public handleNested(items: string[]): Record<string, number> {
+    const map: Record<string, number> = {};
+    for (const item of items) {
+      if (item.length > 0) {
+        map[item] = item.length;
+      }
+    }
+    return map;
+  }
+
+  public otherMethod(): void {
+    console.log("unrelated");
+  }
+}
+`;
+		await fs.writeFile(filePath, content, "utf8");
+
+		const result = await reader.read({
+			filePath,
+			level: 3,
+			targetSymbols: ["handleNested"],
+		});
+
+		expect(result.level).toBe(3);
+		expect(result.symbolsFound).toContain("handleNested");
+		expect(result.content).toContain("map[item] = item.length");
+		expect(result.content).not.toContain("unrelated");
+	});
+
+	it("TDD 4: should route rollback and restore intents to transactional_engine", () => {
+		const decision1 = router.route("rollback to previous checkpoint");
+		expect(decision1.primaryTool).toBe("transactional_engine");
+		expect(decision1.confidence).toBe(0.99);
+
+		const decision2 = router.route("anything", { intentType: "rollback", filePath: "src/auth.ts" });
+		expect(decision2.primaryTool).toBe("transactional_engine");
+		expect(decision2.optimizedParams.targetPath).toBe("src/auth.ts");
+	});
+
+	it("TDD 5: should route test execution and verification intents to test_runner", () => {
+		const decision1 = router.route("run test suite for authentication");
+		expect(decision1.primaryTool).toBe("test_runner");
+		expect(decision1.confidence).toBeGreaterThan(0.95);
+
+		const decision2 = router.route("verify tests", { intentType: "test" });
+		expect(decision2.primaryTool).toBe("test_runner");
+		expect(decision2.secondaryFallback).toBe("grep");
+	});
+
+	it("TDD 6: should route security review queries to sec_review and large files to progressive_read", () => {
+		const secDecision = router.route("security audit of endpoint vulnerabilities");
+		expect(secDecision.primaryTool).toBe("sec_review");
+		expect(secDecision.confidence).toBe(0.97);
+
+		const largeFileDecision = router.route("read code", {
+			intentType: "inspect",
+			filePath: "big-file.ts",
+			fileSizeLines: 250,
+		});
+		expect(largeFileDecision.primaryTool).toBe("progressive_read");
+		expect(largeFileDecision.optimizedParams.level).toBe(2);
+
+		const outlineDecision = router.route("give me outline of file", {
+			filePath: "component.ts",
+		});
+		expect(outlineDecision.primaryTool).toBe("progressive_read");
+		expect(outlineDecision.optimizedParams.level).toBe(1);
+	});
 });

@@ -16,18 +16,21 @@ function RootRouter() {
     const path = window.location.pathname.toLowerCase();
     const hash = window.location.hash.toLowerCase();
     const search = window.location.search.toLowerCase();
+
+    // Apenas cai na landing se solicitado explicitamente
     if (
-      path.startsWith("/app") ||
-      path.startsWith("/gui") ||
-      path.startsWith("/aurora") ||
-      hash === "#app" ||
-      hash === "#gui" ||
-      search.includes("mode=app") ||
-      search.includes("mode=gui")
+      path.startsWith("/landing") ||
+      path.startsWith("/home") ||
+      hash === "#landing" ||
+      hash === "#home" ||
+      search.includes("mode=landing") ||
+      search.includes("mode=home")
     ) {
-      return "app";
+      return "landing";
     }
-    return "landing";
+
+    // Padrão imediato: GUI do OMSK / CosmoSky
+    return "app";
   });
 
   useEffect(() => {
@@ -36,17 +39,16 @@ function RootRouter() {
       const hash = window.location.hash.toLowerCase();
       const search = window.location.search.toLowerCase();
       if (
-        path.startsWith("/app") ||
-        path.startsWith("/gui") ||
-        path.startsWith("/aurora") ||
-        hash === "#app" ||
-        hash === "#gui" ||
-        search.includes("mode=app") ||
-        search.includes("mode=gui")
+        path.startsWith("/landing") ||
+        path.startsWith("/home") ||
+        hash === "#landing" ||
+        hash === "#home" ||
+        search.includes("mode=landing") ||
+        search.includes("mode=home")
       ) {
-        setRoute("app");
-      } else {
         setRoute("landing");
+      } else {
+        setRoute("app");
       }
     };
     window.addEventListener("popstate", handlePopState);
@@ -57,11 +59,12 @@ function RootRouter() {
     };
   }, []);
 
-  if (route === "app") {
-    return <AuroraApp />;
+  if (route === "landing") {
+    return <App />;
   }
 
-  return <App />;
+  // Padrão: AuroraApp (GUI OMSK)
+  return <AuroraApp />;
 }
 
 const root = document.getElementById("root");

@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import "./styles/aurora-tokens.css";
 import { ChatHeader } from "./components/chat/ChatHeader";
 import { ChatSidebar, type ChatSession } from "./components/chat/ChatSidebar";
+import { ChatTabsBar } from "./components/chat/ChatTabsBar";
+import { ChatSectionsWindow } from "./components/chat/ChatSectionsWindow";
 import { MessageItem, type Message } from "./components/chat/MessageItem";
 import { MessageComposer, type AttachedFile } from "./components/chat/MessageComposer";
 import { ChatWelcome } from "./components/chat/ChatWelcome";
@@ -32,6 +34,12 @@ import {
   type SystemStats,
 } from "./lib/omsk-api";
 
+// Chaves de armazenamento persistente para lembrar SEMPRE do modelo de IA e configurações
+const STORAGE_KEY_MODEL_ID = "omsk_saved_model_id";
+const STORAGE_KEY_MODEL_PROVIDER = "omsk_saved_model_provider";
+const STORAGE_KEY_THINKING_LEVEL = "omsk_saved_thinking_level";
+const STORAGE_KEY_SESSIONS = "omsk_saved_chat_sessions";
+
 const INITIAL_FOLDERS: WorkspaceFolder[] = [
   { id: "f1", name: "oh-my-shark", path: "C:/Users/guerr/Downloads/oh-my-shark/oh-my-shark", isDefault: true },
   { id: "f2", name: "backend-core", path: "C:/Projetos/backend-core" },
@@ -41,7 +49,7 @@ const INITIAL_FOLDERS: WorkspaceFolder[] = [
 const INITIAL_SESSIONS: ChatSession[] = [
   {
     id: "sess-1",
-    title: "Sessão Ativa OMSK",
+    title: "Sessão Principal OMSK",
     updatedAt: "Agora",
     modelId: "",
     thinkingLevelId: "high",
@@ -53,15 +61,31 @@ const INITIAL_SESSIONS: ChatSession[] = [
 
 export function AuroraApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sessions, setSessions] = useState<ChatSession[]>(INITIAL_SESSIONS);
-  const [activeSessionId, setActiveSessionId] = useState<string>("sess-1");
+  const [isSectionsWindowOpen, setIsSectionsWindowOpen] = useState(false);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_SESSIONS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return INITIAL_SESSIONS;
+  });
+  const [activeSessionId, setActiveSessionId] = useState<string>(() => sessions[0]?.id || "sess-1");
   const [messagesMap, setMessagesMap] = useState<Record<string, Message[]>>({ "sess-1": [] });
 
   const [models, setModels] = useState<OmskModel[]>([]);
   const [providers, setProviders] = useState<string[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<string>("all");
   const [currentModel, setCurrentModel] = useState<OmskModel | null>(null);
-  const [currentThinkingLevel, setCurrentThinkingLevel] = useState<string>("high");
+  const [currentThinkingLevel, setCurrentThinkingLevel] = useState<string>(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_THINKING_LEVEL) || "high";
+    } catch {
+      return "high";
+    }
+  });
   const [isLoadingModels, setIsLoadingModels] = useState(true);
 
   // Telemetria dinâmica real
@@ -93,7 +117,7 @@ export function AuroraApp() {
   const [topP, setTopP] = useState<number>(0.95);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(false);
 
-  const handleMacroExecution = (macroId: string, label: string) => {
+  const handleMacroExecution = (macroId: string, _label: string) => {
     const prefix = macroId.split("_")[0];
     switch (prefix) {
       case "doomania":
@@ -133,7 +157,7 @@ export function AuroraApp() {
         handleNewSession();
         break;
       default:
-        handleSendMessage(`Executar macro [${label}] na estação orbital OMSK.`, []);
+        break;
     }
   };
 
@@ -142,7 +166,7 @@ export function AuroraApp() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeSession =
-    sessions.find((s) => s.id === activeSessionId) || sessions[0];
+    sessions.find((s) => s.id === activeSessionId) || sessions[0] || INITIAL_SESSIONS[0];
   const activeMessages = messagesMap[activeSessionId] || [];
   const activeFolder =
     folders.find((f) => f.id === activeFolderId) || folders[0];
@@ -156,7 +180,7 @@ export function AuroraApp() {
     }, 0);
   }, [activeMessages]);
 
-  // Carrega os modelos reais do backend OMSK
+  // Carrega os modelos reais do backend OMSK e RESTAURA O ÚLTIMO MODELO USADO
   const loadModels = async () => {
     setIsLoadingModels(true);
     const data = await fetchOmskModels();
@@ -166,15 +190,74 @@ export function AuroraApp() {
       setModels(data.models);
       setProviders(data.providers);
 
-      if (!currentModel) {
-        const defaultModel = data.models[0];
-        setCurrentModel(defaultModel);
-        if (defaultModel.thinking.length > 0) {
-          setCurrentThinkingLevel(defaultModel.thinking[defaultModel.thinking.length - 1]);
+      // Recupera o modelo persistido do localStorage
+      let savedModelId: string | null = null;
+      let savedProvider: string | null = null;
+      let savedThinking: string | null = null;
+
+      try {
+        savedModelId = localStorage.getItem(STORAGE_KEY_MODEL_ID);
+        savedProvider = localStorage.getItem(STORAGE_KEY_MODEL_PROVIDER);
+        savedThinking = localStorage.getItem(STORAGE_KEY_THINKING_LEVEL);
+      } catch {}
+
+      let targetModel: OmskModel | undefined = undefined;
+
+      // 1. Tenta encontrar pelo ID e Provider exatos salvos
+      if (savedModelId) {
+        targetModel = data.models.find(
+          (m) => m.id === savedModelId && (!savedProvider || m.provider.toLowerCase() === savedProvider.toLowerCase())
+        );
+        // 2. Fallback: pelo ID do modelo
+        if (!targetModel) {
+          targetModel = data.models.find((m) => m.id === savedModelId);
         }
       }
+
+      // 3. Fallback: modelo atual em memória ou o primeiro da lista
+      const activeModelToSet = targetModel || currentModel || data.models[0];
+      setCurrentModel(activeModelToSet);
+
+      const targetThinking = savedThinking && activeModelToSet.thinking.includes(savedThinking)
+        ? savedThinking
+        : (activeModelToSet.thinking.length > 0 ? activeModelToSet.thinking[activeModelToSet.thinking.length - 1] : "off");
+
+      setCurrentThinkingLevel(targetThinking);
+
+      // Salva de volta para garantir coerência
+      try {
+        localStorage.setItem(STORAGE_KEY_MODEL_ID, activeModelToSet.id);
+        localStorage.setItem(STORAGE_KEY_MODEL_PROVIDER, activeModelToSet.provider);
+        localStorage.setItem(STORAGE_KEY_THINKING_LEVEL, targetThinking);
+      } catch {}
+
+      // Notifica o backend com o modelo lembrado
+      await selectOmskModel(activeModelToSet.provider, activeModelToSet.id, targetThinking);
     }
   };
+
+  // Salva no beforeunload para garantir que nunca seja perdido ao fechar o app
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (currentModel) {
+        try {
+          localStorage.setItem(STORAGE_KEY_MODEL_ID, currentModel.id);
+          localStorage.setItem(STORAGE_KEY_MODEL_PROVIDER, currentModel.provider);
+          localStorage.setItem(STORAGE_KEY_THINKING_LEVEL, currentThinkingLevel);
+          localStorage.setItem(STORAGE_KEY_SESSIONS, JSON.stringify(sessions));
+        } catch {}
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [currentModel, currentThinkingLevel, sessions]);
+
+  // Persiste sessões quando alteradas
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_SESSIONS, JSON.stringify(sessions));
+    } catch {}
+  }, [sessions]);
 
   // Carrega telemetria real periodicamente
   useEffect(() => {
@@ -201,7 +284,7 @@ export function AuroraApp() {
     const newId = `sess-${Date.now()}`;
     const newSession: ChatSession = {
       id: newId,
-      title: "Nova Conversa",
+      title: `Conversa ${sessions.length + 1}`,
       updatedAt: "Agora",
       modelId: currentModel?.id || "",
       thinkingLevelId: currentThinkingLevel,
@@ -223,16 +306,51 @@ export function AuroraApp() {
     }
   };
 
-  // Seleciona modelo no frontend e notifica o backend OMSK
+  const handleDuplicateSession = (id: string) => {
+    const original = sessions.find((s) => s.id === id);
+    if (!original) return;
+    const newId = `sess-${Date.now()}`;
+    const duplicated: ChatSession = {
+      ...original,
+      id: newId,
+      title: `${original.title} (Cópia)`,
+      updatedAt: "Agora",
+    };
+    setSessions((prev) => [duplicated, ...prev]);
+    setMessagesMap((prev) => ({
+      ...prev,
+      [newId]: [...(prev[id] || [])],
+    }));
+    setActiveSessionId(newId);
+  };
+
+  const handleRenameSession = (id: string, newTitle: string) => {
+    setSessions((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, title: newTitle } : s))
+    );
+  };
+
+  // Seleciona modelo no frontend, SALVA NO LOCALSTORAGE e notifica o backend OMSK
   const handleModelSelect = async (model: OmskModel) => {
     setCurrentModel(model);
     const nextThinking = model.thinking.length > 0 ? model.thinking[model.thinking.length - 1] : "off";
     setCurrentThinkingLevel(nextThinking);
+
+    // PERSISTÊNCIA ABSOLUTA: Grava imediatamente no localStorage
+    try {
+      localStorage.setItem(STORAGE_KEY_MODEL_ID, model.id);
+      localStorage.setItem(STORAGE_KEY_MODEL_PROVIDER, model.provider);
+      localStorage.setItem(STORAGE_KEY_THINKING_LEVEL, nextThinking);
+    } catch {}
+
     await selectOmskModel(model.provider, model.id, nextThinking);
   };
 
   const handleThinkingLevelSelect = async (levelId: string) => {
     setCurrentThinkingLevel(levelId);
+    try {
+      localStorage.setItem(STORAGE_KEY_THINKING_LEVEL, levelId);
+    } catch {}
     if (currentModel) {
       await selectOmskModel(currentModel.provider, currentModel.id, levelId);
     }
@@ -245,7 +363,11 @@ export function AuroraApp() {
   };
 
   // Envio de Mensagem com Streaming SSE REAL do OMSK
-  const handleSendMessage = async (content: string, attachments: AttachedFile[]) => {
+  const handleSendMessage = async (
+    content: string,
+    attachments: AttachedFile[],
+    specialMode?: string
+  ) => {
     const userMsgId = `user-${Date.now()}`;
     const userMsg: Message = {
       id: userMsgId,
@@ -256,9 +378,9 @@ export function AuroraApp() {
     };
 
     if (activeMessages.length === 0) {
-      const newTitle = content.slice(0, 32) || "Conversa";
+      const cleanTitle = content.replace(/^[/@]/, "").slice(0, 32) || "Conversa";
       setSessions((prev) =>
-        prev.map((s) => (s.id === activeSessionId ? { ...s, title: newTitle } : s))
+        prev.map((s) => (s.id === activeSessionId ? { ...s, title: cleanTitle } : s))
       );
     }
 
@@ -314,6 +436,11 @@ export function AuroraApp() {
       sender: m.sender,
       content: m.content,
     }));
+
+    // Se modo especial fastthinkworkerz foi acionado, injeta diretiva de aceleração radical
+    const effectiveSystemPrompt = specialMode === "fastthinkworkerz"
+      ? `${activeSession.systemPrompt || globalPrompt || ""}\n[FASTTHINKWORKERZ: Aceleração radical de entrega, baixa profundidade de pensamento e latência mínima ativadas]`.trim()
+      : (activeSession.systemPrompt || globalPrompt || undefined);
 
     await streamOmskChat(
       content,
@@ -383,7 +510,7 @@ export function AuroraApp() {
       {
         model: currentModel ? { provider: currentModel.provider, id: currentModel.id } : undefined,
         thinkingLevel: currentThinkingLevel,
-        systemPrompt: activeSession.systemPrompt || globalPrompt || undefined,
+        systemPrompt: effectiveSystemPrompt,
         history: historyPayload,
       }
     );
@@ -494,6 +621,16 @@ export function AuroraApp() {
             activeFolderName={activeFolder.name}
             hasCustomPrompt={Boolean(activeSession.systemPrompt)}
             isGenerating={isGenerating}
+          />
+
+          {/* Barra Horizontal de Abas de Seções de Chat (Nova Seção, Fechar Aba e Janela de Seções) */}
+          <ChatTabsBar
+            sessions={sessions}
+            activeSessionId={activeSessionId}
+            onSelectSession={setActiveSessionId}
+            onNewSession={handleNewSession}
+            onCloseSession={handleDeleteSession}
+            onOpenSectionsWindow={() => setIsSectionsWindowOpen(true)}
           />
 
           {/* Painel Tático Superior: Osciloscópio CRT Dinâmico + Cartuchos LLM */}
@@ -608,6 +745,20 @@ export function AuroraApp() {
           </div>
         </div>
       </div>
+
+      {/* Janela de Gerenciamento de Seções de Chat (Multi-Sessões em Janela) */}
+      <ChatSectionsWindow
+        isOpen={isSectionsWindowOpen}
+        onClose={() => setIsSectionsWindowOpen(false)}
+        sessions={sessions}
+        activeSessionId={activeSessionId}
+        onSelectSession={setActiveSessionId}
+        onNewSession={handleNewSession}
+        onDeleteSession={handleDeleteSession}
+        onDuplicateSession={handleDuplicateSession}
+        onRenameSession={handleRenameSession}
+        activeModelName={currentModel?.name || "OMSK-Core"}
+      />
 
       {/* Modal de Gerenciamento de Pastas Locais */}
       <WorkspaceFolderManager

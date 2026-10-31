@@ -9,6 +9,7 @@ import {
 } from "@oh-my-pi/pi-tui";
 import { DISPLAY_NAME, PRODUCT_BYLINE } from "@oh-my-pi/pi-utils";
 import { theme } from "../../modes/theme/theme";
+import { getDeepSeaCockpit } from "../../tui/deep-sea-command";
 import tipsText from "./tips.txt" with { type: "text" };
 
 /** Tips embedded at build time, one per line; blanks dropped. */
@@ -82,6 +83,7 @@ function renderNewTag(phase: number, encoding: ColorEncoding): string {
 	}
 	return out + reset;
 }
+
 export function renderWelcomeTip(tip: string, boxWidth: number, phase = 0): string[] {
 	const label = "Tip: ";
 	const labelWidth = visibleWidth(label);
@@ -94,9 +96,6 @@ export function renderWelcomeTip(tip: string, boxWidth: number, phase = 0): stri
 	const wrappedBody = wrapTextWithAnsi(replaceTabs(body), bodyBudget);
 	if (wrappedBody.length === 0) return [];
 
-	// Pull both colors from the active theme so the line stays readable on light
-	// themes; the previous hardcoded `#b48cff` / `#9ccfff` pastels (plus a manual
-	// `\x1b[2m` dim on the body) dropped to ~1.5:1 contrast on a white background.
 	const continuationIndent = padding(labelWidth);
 	const styledLabel = theme.fg("customMessageLabel", label);
 
@@ -107,12 +106,9 @@ export function renderWelcomeTip(tip: string, boxWidth: number, phase = 0): stri
 	});
 
 	if (isNew) {
-		// Append the rainbow tag to the final body line when it fits within the
-		// box; otherwise drop it onto its own indented continuation line so the
-		// styled glyphs never overflow or reflow the wrapped body.
 		const encoding: ColorEncoding = TERMINAL.trueColor ? "ansi-16m" : "ansi-256";
 		const tag = renderNewTag(phase, encoding);
-		const tagWidth = 1 + visibleWidth(NEW_TAG_TEXT); // 1 = space separator
+		const tagWidth = 1 + visibleWidth(NEW_TAG_TEXT);
 		const lastLine = lines[lines.length - 1];
 		if (lastLine !== undefined && visibleWidth(lastLine) + tagWidth <= boxWidth) {
 			lines[lines.length - 1] = `${lastLine} ${tag}`;
@@ -142,15 +138,8 @@ export class WelcomeComponent implements Component {
 	#animStart: number | null = null;
 	#animTimer: Timer | null = null;
 	#requestRender: (() => void) | null = null;
-	// Tip randomness is latched once so the tip is stable across renders, but
-	// the nerdfont-nag gate re-reads the live preset: the startup prepaint can
-	// run under the default "unicode" preset before settings resolve the real
-	// one, and a memoized nag would survive the switch to "nerd".
 	#nagRoll: number | undefined;
 	#tipRoll: number | undefined;
-	// Render cache: the welcome box is the first transcript-area component, so
-	// returning a stable array reference keeps the whole frame prefix stable.
-	// Bypassed while the intro animation runs (every frame differs).
 	#cachedWidth = -1;
 	#cachedLines: string[] | undefined;
 
@@ -161,6 +150,7 @@ export class WelcomeComponent implements Component {
 		private recentSessions: RecentSession[] = [],
 		private lspServers: LspServerInfo[] = [],
 	) {}
+
 	get tip(): string | undefined {
 		this.#nagRoll ??= Math.random();
 		this.#tipRoll ??= Math.random();
@@ -174,16 +164,11 @@ export class WelcomeComponent implements Component {
 		this.#cachedWidth = -1;
 		this.#cachedLines = undefined;
 	}
-	/** The intro keeps the welcome block mutable; settling lets it retire to history. */
+
 	isTranscriptBlockFinalized(): boolean {
 		return this.#animTimer == null;
 	}
 
-	/**
-	 * Play a one-shot intro that sweeps the gradient through every phase
-	 * before settling on the resting frame. Safe to call multiple times —
-	 * subsequent calls reset and replay.
-	 */
 	playIntro(requestRender: () => void): void {
 		this.#stopAnimation();
 		this.#requestRender = requestRender;
@@ -205,27 +190,19 @@ export class WelcomeComponent implements Component {
 		}
 		this.#animStart = null;
 		this.#requestRender = null;
-		// The settled (resting) frame differs from the last intro frame.
 		this.invalidate();
 	}
 
-	/**
-	 * Redirect a running intro's render callback to a new target when a host
-	 * remounts this component mid-animation.
-	 * Returns true while the intro is still animating; false = no-op (settled).
-	 */
 	retargetIntro(requestRender: () => void): boolean {
 		if (this.#animTimer == null) return false;
 		this.#requestRender = requestRender;
 		return true;
 	}
 
-	/** Stop the intro immediately and settle on the resting frame. Safe when idle. */
 	stopIntro(): void {
 		this.#stopAnimation();
 	}
 
-	/** Update the version embedded in the welcome border title. */
 	setVersion(version: string): void {
 		this.version = version;
 		this.invalidate();
@@ -340,9 +317,20 @@ export class WelcomeComponent implements Component {
 		}
 		while (lspLines.length < WELCOME_LSP_SLOTS) lspLines.push("");
 
+		let cockpitStatus = "Transactional Engine & Checkpoints";
+		try {
+			const cockpit = getDeepSeaCockpit();
+			const mission = cockpit.getMission();
+			if (mission.id && mission.id !== "MISSION-01") {
+				cockpitStatus = `[${mission.id}] ${mission.phase}`;
+			}
+		} catch {
+			// Non-blocking fallback
+		}
+
 		const panelLines = [
 			` ${theme.bold(theme.fg("accent", "Deep Sea Cockpit"))}`,
-			` ${theme.fg("success", "✔")} ${theme.fg("muted", "Transactional Engine & Checkpoints")}`,
+			` ${theme.fg("success", "✔")} ${theme.fg("muted", cockpitStatus)}`,
 			` ${theme.fg("success", "✔")} ${theme.fg("muted", "Mente em Teia SQLite Knowledge")}`,
 			` ${theme.fg("success", "✔")} ${theme.fg("muted", "Deterministic Tool Router")}`,
 			separator,
@@ -408,23 +396,13 @@ export class WelcomeComponent implements Component {
 		return lines.map(line => truncateToWidth(line, Math.max(0, termWidth)));
 	}
 
-	/**
-	 * Render the per-instance tip line: the `customMessageLabel`-themed `Tip:`
-	 * label followed by a `muted` body, the whole line italicized. Returns `[]`
-	 * when no tip is available or the box is too narrow to be useful.
-	 */
 	#renderTip(boxWidth: number): string[] {
 		const tip = this.tip;
 		if (!tip) return [];
-		// A trailing "[NEW]" marker paints an animated rainbow "NEW!" tag. Derive
-		// its hue phase from wall-clock time so it shimmers across the welcome
-		// intro's re-render frames, then settles into a still rainbow once the box
-		// caches its resting frame. Non-"[NEW]" tips ignore the phase entirely.
 		const phase = NEW_TIP_MARKER.test(tip) ? performance.now() / NEW_GLOW_PERIOD_MS : 0;
 		return renderWelcomeTip(tip, boxWidth, phase);
 	}
 
-	/** Center text within a given width */
 	#centerText(text: string, width: number): string {
 		const visLen = visibleWidth(text);
 		if (visLen >= width) {
@@ -435,7 +413,6 @@ export class WelcomeComponent implements Component {
 		return padding(leftPad) + text + padding(rightPad);
 	}
 
-	/** Fit string to exact width with ANSI-aware truncation/padding */
 	#fitToWidth(str: string, width: number): string {
 		const visLen = visibleWidth(str);
 		if (visLen > width) {
@@ -452,7 +429,10 @@ export class WelcomeComponent implements Component {
 					if (char === "m") inEscape = false;
 				} else if (currentWidth < maxWidth) {
 					truncated += char;
-					currentWidth++;
+					if (currentWidth < maxWidth) {
+						truncated += char;
+						currentWidth++;
+					}
 				}
 			}
 			return `${truncated}${ellipsis}`;
@@ -460,7 +440,6 @@ export class WelcomeComponent implements Component {
 		return str + padding(width - visLen);
 	}
 
-	/** Pick the logo frame for the current intro phase, or the resting frame. */
 	#currentLogoFrame(): readonly string[] {
 		if (this.#animStart == null) return REST_FRAME;
 		const elapsed = performance.now() - this.#animStart;
@@ -511,23 +490,14 @@ const GRADIENT_RAMP_256 = [25, 27, 33, 39, 45, 51, 87, 123];
 const SHINE_HALF_WIDTH = 0.18;
 
 export interface ShineConfig {
-	/** Overall opacity of the shine overlay, in [0, 1]. */
 	strength: number;
-	/** Center of the shine band along the diagonal, in [0, 1]. */
 	pos: number;
 }
 
-/**
- * Resolve the gradient SGR foreground escape for a normalized position `t`
- * (0..1) along the diagonal, compositing the optional sliding shine highlight.
- * Shared by {@link gradientLogo} and the setup splash so both stay
- * color-identical (truecolor when available, 256-color ramp otherwise).
- */
 export function gradientEscape(t: number, shine?: ShineConfig): string {
 	const shineStrength = shine && shine.strength > 0 ? shine.strength : 0;
 	const shinePos = shine ? shine.pos : 0;
 	if (TERMINAL.trueColor) {
-		// Interpolate across the downstream blue palette.
 		const stops = GRADIENT_STOPS;
 		const seg = t * (stops.length - 1);
 		const i = Math.min(stops.length - 2, Math.floor(seg));
@@ -553,18 +523,11 @@ export function gradientEscape(t: number, shine?: ShineConfig): string {
 	if (shineStrength > 0) {
 		const dist = Math.abs(t - shinePos);
 		const intensity = Math.max(0, 1 - dist / SHINE_HALF_WIDTH) * shineStrength;
-		// Promote to the brightest ramp slot when the shine band peaks here.
 		if (intensity > 0.5) idx = ramp.length - 1;
 	}
 	return `\x1b[38;5;${ramp[idx]}m`;
 }
 
-/**
- * Apply a multi-stop diagonal gradient (top-left → bottom-right) plus an
- * optional sliding shine band across multi-line art. `phase` (0..1) shifts the
- * gradient along the diagonal, wrapping at 1. When `shine` is provided, a soft
- * white highlight is composited on top, centered at `shine.pos`.
- */
 export function gradientLogo(lines: readonly string[], phase = 0, shine?: ShineConfig): string[] {
 	const reset = "\x1b[0m";
 	const rows = lines.length;
@@ -580,7 +543,6 @@ export function gradientLogo(lines: readonly string[], phase = 0, shine?: ShineC
 				result += char;
 				continue;
 			}
-			// Project the diagonal equally across both normalized axes.
 			const base = (x / xSpan + y / ySpan) / 2;
 			const t = normalizedPhase === 0 ? base : (base + normalizedPhase) % 1;
 			result += gradientEscape(t, shine) + char + reset;
@@ -589,25 +551,11 @@ export function gradientLogo(lines: readonly string[], phase = 0, shine?: ShineC
 	});
 }
 
-/** Total length of the intro animation. */
 const INTRO_MS = 3000;
-/** Render cadence during the intro (~30fps). */
 const INTRO_TICK_MS = 33;
-/** Number of full gradient rotations the sweep performs before settling. */
 const INTRO_SWEEPS = 2.5;
-/** Number of times the shine highlight crosses the diagonal across the intro. */
 const INTRO_SHINE_TRAVERSALS = 3;
 
-/**
- * Logo frame for a normalized intro progress in [0, 1).
- *
- * Ease-out cubic so the spin decelerates into the resting state. The gradient
- * sweeps backward through INTRO_SWEEPS full rotations (`eased == 1` → phase =
- * 0 = resting frame) while the shine traverses the diagonal at a steady pace,
- * decoupled from the gradient phase so the two layers parallax; its strength
- * fades with the same ease-out curve so the highlight is gone by the resting
- * frame.
- */
 function introLogoFrame(progress: number): string[] {
 	const eased = 1 - (1 - progress) ** 3;
 	const phase = ((((1 - eased) * INTRO_SWEEPS) % 1) + 1) % 1;
@@ -616,5 +564,4 @@ function introLogoFrame(progress: number): string[] {
 	return gradientLogo(SHARK_LOGO, phase, { strength: shineStrength, pos: shinePos });
 }
 
-/** Resting gradient frame, cached for re-renders outside of the intro. */
 const REST_FRAME = gradientLogo(SHARK_LOGO, 0);

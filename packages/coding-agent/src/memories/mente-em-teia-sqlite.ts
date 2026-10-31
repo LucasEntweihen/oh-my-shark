@@ -1,9 +1,10 @@
 /**
  * Mente em Teia (Web of Mind) - Structured Evidence & Provenance Knowledge Graph for OMSK.
  * Persists project decisions, symbols, files, tests, errors, and fixes into a fast local SQLite database.
- * Provides high-speed relational queries without requiring remote or heavy local neural models.
+ * Provides high-speed relational queries, FTS5 lexical search, multi-hop subgraphs, and invalidation management.
  */
 import { Database } from "bun:sqlite";
+import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -35,8 +36,26 @@ export interface TeiaConnectedGraph {
 	outgoing: Array<{ node: TeiaNode; relation: TeiaRelation; confidence: number }>;
 }
 
+export interface MultiHopSubgraph {
+	rootNodeId: string;
+	maxDepth: number;
+	nodes: TeiaNode[];
+	edges: TeiaEdge[];
+}
+
+export interface FileStalenessCheck {
+	isStale: boolean;
+	recordedHash?: string;
+	currentHash: string;
+}
+
+function computeHash(content: string): string {
+	return createHash("sha256").update(content, "utf8").digest("hex").slice(0, 16);
+}
+
 export class MenteEmTeiaStore {
 	private db: Database;
+	private hasFts = false;
 
 	constructor(dbPath: string) {
 		const dir = path.dirname(dbPath);
@@ -81,6 +100,21 @@ export class MenteEmTeiaStore {
 		this.db.run(`CREATE INDEX IF NOT EXISTS idx_teia_edges_source ON teia_edges(source_id);`);
 		this.db.run(`CREATE INDEX IF NOT EXISTS idx_teia_edges_target ON teia_edges(target_id);`);
 		this.db.run(`CREATE INDEX IF NOT EXISTS idx_teia_edges_relation ON teia_edges(relation);`);
+
+		// FTS5 Full-Text Search integration
+		try {
+			this.db.run(`
+				CREATE VIRTUAL TABLE IF NOT EXISTS teia_fts USING fts5(
+					id UNINDEXED,
+					name,
+					content,
+					tokenize='unicode61'
+				);
+			`);
+			this.hasFts = true;
+		} catch {
+			this.hasFts = false;
+		}
 	}
 
 	public upsertNode(node: TeiaNode): void {
@@ -104,6 +138,18 @@ export class MenteEmTeiaStore {
 			$created_at: node.createdAt,
 			$updated_at: node.updatedAt,
 		});
+
+		if (this.hasFts) {
+			try {
+				this.db.prepare(`DELETE FROM teia_fts WHERE id = ?`).run(node.id);
+				this.db.prepare(`
+					INSERT INTO teia_fts (id, name, content)
+					VALUES (?, ?, ?)
+				`).run(node.id, node.name, node.content ?? "");
+			} catch {
+				// Non-fatal if FTS indexing errors
+			}
+		}
 	}
 
 	public createEdge(edge: TeiaEdge): void {
@@ -127,15 +173,7 @@ export class MenteEmTeiaStore {
 		const row = stmt.get(id) as Record<string, unknown> | null;
 		if (!row) return null;
 
-		return {
-			id: String(row.id),
-			kind: row.kind as TeiaNodeKind,
-			name: String(row.name),
-			content: row.content ? String(row.content) : undefined,
-			metadata: row.metadata_json ? JSON.parse(String(row.metadata_json)) : undefined,
-			createdAt: Number(row.created_at),
-			updatedAt: Number(row.updated_at),
-		};
+		return this.mapNodeRow(row);
 	}
 
 	public recordDecision(
@@ -198,6 +236,20 @@ export class MenteEmTeiaStore {
 	}
 
 	public recordTestEvidence(testFile: string, targetFile: string, passed: boolean, details?: string): string {
+		return this.recordTestRun(testFile, targetFile, passed, 1, 0, details);
+	}
+
+	/**
+	 * Records a structured test run with assertions count, duration, and status.
+	 */
+	public recordTestRun(
+		testFile: string,
+		targetFile: string,
+		passed: boolean,
+		assertionsCount: number,
+		durationMs: number,
+		details?: string,
+	): string {
 		const now = Date.now();
 		const testId = `test_${now}_${Math.random().toString(36).slice(2, 7)}`;
 
@@ -205,13 +257,21 @@ export class MenteEmTeiaStore {
 			id: testId,
 			kind: "test",
 			name: `${testFile} -> ${targetFile}`,
-			content: details ?? (passed ? "All assertions passed" : "Test failed"),
-			metadata: { passed, timestamp: now },
+			content: details ?? (passed ? `${assertionsCount} assertions passed` : "Test failed"),
+			metadata: { passed, assertionsCount, durationMs, timestamp: now },
 			createdAt: now,
 			updatedAt: now,
 		});
 
 		const targetNodeId = `file:${targetFile}`;
+		this.upsertNode({
+			id: targetNodeId,
+			kind: "file",
+			name: targetFile,
+			createdAt: now,
+			updatedAt: now,
+		});
+
 		this.createEdge({
 			id: `edge_${testId}_${targetNodeId}`,
 			sourceId: testId,
@@ -224,6 +284,141 @@ export class MenteEmTeiaStore {
 		return testId;
 	}
 
+	/**
+	 * Records or updates a file node with SHA-256 content hash to monitor staleness.
+	 */
+	public recordFileNode(filePath: string, content?: string): string {
+		const fileNodeId = `file:${filePath}`;
+		const now = Date.now();
+		const hash = content !== undefined ? computeHash(content) : undefined;
+
+		this.upsertNode({
+			id: fileNodeId,
+			kind: "file",
+			name: filePath,
+			metadata: hash ? { hash, lastHashedAt: now } : undefined,
+			createdAt: now,
+			updatedAt: now,
+		});
+
+		return fileNodeId;
+	}
+
+	/**
+	 * Checks if a recorded file node has become stale compared to current disk content.
+	 */
+	public checkStaleness(fileNodeId: string, currentContent: string): FileStalenessCheck {
+		const node = this.getNode(fileNodeId);
+		const currentHash = computeHash(currentContent);
+
+		if (!node || !node.metadata || typeof node.metadata.hash !== "string") {
+			return { isStale: true, currentHash };
+		}
+
+		const recordedHash = node.metadata.hash as string;
+		return {
+			isStale: recordedHash !== currentHash,
+			recordedHash,
+			currentHash,
+		};
+	}
+
+	/**
+	 * Marks a node as invalidated with an explanation.
+	 */
+	public invalidateNode(nodeId: string, reason: string): boolean {
+		const node = this.getNode(nodeId);
+		if (!node) return false;
+
+		const now = Date.now();
+		const updatedMetadata = {
+			...(node.metadata ?? {}),
+			invalidated: true,
+			invalidationReason: reason,
+			invalidatedAt: now,
+		};
+
+		this.upsertNode({
+			...node,
+			metadata: updatedMetadata,
+			updatedAt: now,
+		});
+
+		return true;
+	}
+
+	/**
+	 * Invalidates all outgoing/incoming edges connected to a file path.
+	 */
+	public invalidateEdgesForFile(filePath: string, reason: string): number {
+		const fileNodeId = `file:${filePath}`;
+		const edgesStmt = this.db.prepare(`
+			SELECT id FROM teia_edges WHERE source_id = ? OR target_id = ?
+		`);
+		const edges = edgesStmt.all(fileNodeId, fileNodeId) as Array<{ id: string }>;
+
+		const updateStmt = this.db.prepare(`
+			UPDATE teia_edges SET confidence = 0.0 WHERE id = ?
+		`);
+
+		for (const edge of edges) {
+			updateStmt.run(edge.id);
+		}
+
+		const now = Date.now();
+		const invalidationNodeId = `invalidation_${now}_${Math.random().toString(36).slice(2, 6)}`;
+		this.upsertNode({
+			id: invalidationNodeId,
+			kind: "evidence",
+			name: `Invalidation: ${filePath}`,
+			content: reason,
+			createdAt: now,
+			updatedAt: now,
+		});
+
+		this.createEdge({
+			id: `edge_${invalidationNodeId}_${fileNodeId}`,
+			sourceId: invalidationNodeId,
+			targetId: fileNodeId,
+			relation: "invalidates",
+			confidence: 1.0,
+			createdAt: now,
+		});
+
+		return edges.length;
+	}
+
+	/**
+	 * Searches knowledge using SQLite FTS5 index. Falls back to lexical LIKE if FTS is unavailable.
+	 */
+	public searchFts(query: string, limit: number = 25): TeiaNode[] {
+		const trimmed = query.trim();
+		if (!trimmed) return [];
+
+		if (this.hasFts) {
+			try {
+				// Escape single quotes for FTS match
+				const cleanQuery = trimmed.replace(/'/g, "''").replace(/[^a-zA-Z0-9_* ]/g, " ");
+				const stmt = this.db.prepare(`
+					SELECT n.*
+					FROM teia_nodes n
+					JOIN teia_fts f ON n.id = f.id
+					WHERE teia_fts MATCH ?
+					ORDER BY rank
+					LIMIT ?
+				`);
+				const rows = stmt.all(cleanQuery, limit) as Record<string, unknown>[];
+				if (rows.length > 0) {
+					return rows.map((r) => this.mapNodeRow(r));
+				}
+			} catch {
+				// Fall through to LIKE search
+			}
+		}
+
+		return this.searchKnowledge(trimmed).slice(0, limit);
+	}
+
 	public searchKnowledge(query: string, kind?: TeiaNodeKind): TeiaNode[] {
 		const searchPattern = `%${query}%`;
 		const sql = kind
@@ -233,15 +428,7 @@ export class MenteEmTeiaStore {
 		const stmt = this.db.prepare(sql);
 		const rows = (kind ? stmt.all(kind, searchPattern, searchPattern) : stmt.all(searchPattern, searchPattern)) as Record<string, unknown>[];
 
-		return rows.map((row) => ({
-			id: String(row.id),
-			kind: row.kind as TeiaNodeKind,
-			name: String(row.name),
-			content: row.content ? String(row.content) : undefined,
-			metadata: row.metadata_json ? JSON.parse(String(row.metadata_json)) : undefined,
-			createdAt: Number(row.created_at),
-			updatedAt: Number(row.updated_at),
-		}));
+		return rows.map((r) => this.mapNodeRow(r));
 	}
 
 	public getConnectedGraph(nodeId: string): TeiaConnectedGraph | null {
@@ -269,27 +456,83 @@ export class MenteEmTeiaStore {
 			outgoing: outRows.map((r) => ({
 				relation: r.relation as TeiaRelation,
 				confidence: Number(r.confidence),
-				node: {
-					id: String(r.id),
-					kind: r.kind as TeiaNodeKind,
-					name: String(r.name),
-					content: r.content ? String(r.content) : undefined,
-					createdAt: Number(r.created_at),
-					updatedAt: Number(r.updated_at),
-				},
+				node: this.mapNodeRow(r),
 			})),
 			incoming: inRows.map((r) => ({
 				relation: r.relation as TeiaRelation,
 				confidence: Number(r.confidence),
-				node: {
-					id: String(r.id),
-					kind: r.kind as TeiaNodeKind,
-					name: String(r.name),
-					content: r.content ? String(r.content) : undefined,
-					createdAt: Number(r.created_at),
-					updatedAt: Number(r.updated_at),
-				},
+				node: this.mapNodeRow(r),
 			})),
+		};
+	}
+
+	/**
+	 * Traverses the graph in multiple hops starting from a root node up to maxDepth.
+	 * Prevents cyclical infinite loops using a visited set.
+	 */
+	public getMultiHopSubgraph(startNodeId: string, maxDepth: number = 2): MultiHopSubgraph {
+		const root = this.getNode(startNodeId);
+		if (!root) {
+			return { rootNodeId: startNodeId, maxDepth, nodes: [], edges: [] };
+		}
+
+		const visitedNodes = new Map<string, TeiaNode>();
+		const collectedEdges = new Map<string, TeiaEdge>();
+		visitedNodes.set(root.id, root);
+
+		let currentQueue = [root.id];
+		let currentDepth = 0;
+
+		const edgeStmt = this.db.prepare(`
+			SELECT * FROM teia_edges
+			WHERE source_id = ? OR target_id = ?
+		`);
+
+		while (currentQueue.length > 0 && currentDepth < maxDepth) {
+			const nextQueue: string[] = [];
+
+			for (const nodeId of currentQueue) {
+				const edges = edgeStmt.all(nodeId, nodeId) as Array<{
+					id: string;
+					source_id: string;
+					target_id: string;
+					relation: string;
+					confidence: number;
+					created_at: number;
+				}>;
+
+				for (const edge of edges) {
+					if (!collectedEdges.has(edge.id)) {
+						collectedEdges.set(edge.id, {
+							id: edge.id,
+							sourceId: edge.source_id,
+							targetId: edge.target_id,
+							relation: edge.relation as TeiaRelation,
+							confidence: edge.confidence,
+							createdAt: edge.created_at,
+						});
+					}
+
+					const neighborId = edge.source_id === nodeId ? edge.target_id : edge.source_id;
+					if (!visitedNodes.has(neighborId)) {
+						const neighborNode = this.getNode(neighborId);
+						if (neighborNode) {
+							visitedNodes.set(neighborId, neighborNode);
+							nextQueue.push(neighborId);
+						}
+					}
+				}
+			}
+
+			currentQueue = nextQueue;
+			currentDepth++;
+		}
+
+		return {
+			rootNodeId: startNodeId,
+			maxDepth,
+			nodes: Array.from(visitedNodes.values()),
+			edges: Array.from(collectedEdges.values()),
 		};
 	}
 
@@ -297,30 +540,33 @@ export class MenteEmTeiaStore {
 		const nodeRows = this.db.prepare(`SELECT * FROM teia_nodes ORDER BY updated_at DESC LIMIT 200`).all() as Record<string, unknown>[];
 		const edgeRows = this.db.prepare(`SELECT * FROM teia_edges ORDER BY created_at DESC LIMIT 300`).all() as Record<string, unknown>[];
 
-		const nodes: TeiaNode[] = nodeRows.map((r) => ({
-			id: String(r.id),
-			kind: r.kind as TeiaNodeKind,
-			name: String(r.name),
-			content: r.content ? String(r.content) : undefined,
-			metadata: r.metadata_json ? JSON.parse(String(r.metadata_json)) : undefined,
-			createdAt: Number(r.created_at),
-			updatedAt: Number(r.updated_at),
-		}));
-
-		const edges: TeiaEdge[] = edgeRows.map((e) => ({
-			id: String(e.id),
-			sourceId: String(e.source_id),
-			targetId: String(e.target_id),
-			relation: e.relation as TeiaRelation,
-			confidence: Number(e.confidence),
-			createdAt: Number(e.created_at),
-		}));
-
-		return { nodes, edges };
+		return {
+			nodes: nodeRows.map((r) => this.mapNodeRow(r)),
+			edges: edgeRows.map((e) => ({
+				id: String(e.id),
+				sourceId: String(e.source_id),
+				targetId: String(e.target_id),
+				relation: e.relation as TeiaRelation,
+				confidence: Number(e.confidence),
+				createdAt: Number(e.created_at),
+			})),
+		};
 	}
 
 	public close(): void {
 		this.db.close();
+	}
+
+	private mapNodeRow(row: Record<string, unknown>): TeiaNode {
+		return {
+			id: String(row.id),
+			kind: row.kind as TeiaNodeKind,
+			name: String(row.name),
+			content: row.content ? String(row.content) : undefined,
+			metadata: row.metadata_json ? JSON.parse(String(row.metadata_json)) : undefined,
+			createdAt: Number(row.created_at),
+			updatedAt: Number(row.updated_at),
+		};
 	}
 }
 

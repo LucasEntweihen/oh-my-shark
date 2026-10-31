@@ -1,9 +1,9 @@
 /**
  * Progressive Reader Tool for Oh My Shark (OMSK).
  * Implements 4-tier progressive code inspection to minimize context-token consumption:
- * - Level 1 (Outline): Metadata, exports, imports, class/function names without bodies.
+ * - Level 1 (Outline): Metadata, exports, imports, decorators, classes, interfaces, enums, functions without bodies.
  * - Level 2 (Signatures): Type definitions, parameters, and return types; bodies elided.
- * - Level 3 (Targeted Símbolos): Full bodies only for specifically requested symbols.
+ * - Level 3 (Targeted Symbols): Full bodies only for specifically requested symbols or methods.
  * - Level 4 (Full/Raw): Complete file contents when comprehensive context is mandatory.
  */
 import * as fs from "node:fs/promises";
@@ -27,6 +27,10 @@ export interface ProgressiveReadResult {
 	tokensEstimated: number;
 	content: string;
 	symbolsFound?: string[];
+}
+
+function estimateTokens(text: string): number {
+	return Math.max(1, Math.ceil(text.length / 3.8));
 }
 
 export class ProgressiveReader {
@@ -56,7 +60,7 @@ export class ProgressiveReader {
 				level: 4,
 				totalLines,
 				returnedLines: slice.length,
-				tokensEstimated: Math.ceil(text.length / 4),
+				tokensEstimated: estimateTokens(text),
 				content: text,
 			};
 		}
@@ -80,17 +84,27 @@ export class ProgressiveReader {
 			const line = lines[i];
 			const trimmed = line.trim();
 
+			// Decorators (@Component, @Injectable)
+			if (trimmed.startsWith("@") && /@[A-Za-z0-9_$]+(?:\(.*\))?/.test(trimmed)) {
+				outlineLines.push(`${i + 1}:${line}`);
+				continue;
+			}
+
+			// Declarations and exports
 			if (
 				trimmed.startsWith("import ") ||
 				trimmed.startsWith("export ") ||
 				trimmed.startsWith("class ") ||
+				trimmed.startsWith("abstract class ") ||
 				trimmed.startsWith("interface ") ||
 				trimmed.startsWith("type ") ||
+				trimmed.startsWith("enum ") ||
 				trimmed.startsWith("function ") ||
-				trimmed.startsWith("const ") && trimmed.includes("= (")
+				trimmed.startsWith("const ") && trimmed.includes("= (") ||
+				/^(?:public|protected|private)?\s*(?:async)?\s*(?:static)?\s*[A-Za-z0-9_$]+\s*\([^)]*\)\s*[:{]/.test(trimmed)
 			) {
 				outlineLines.push(`${i + 1}:${line}`);
-				const match = trimmed.match(/(?:class|interface|type|function|const)\s+([A-Za-z0-9_$]+)/);
+				const match = trimmed.match(/(?:class|interface|type|enum|function|const)\s+([A-Za-z0-9_$]+)/);
 				if (match && match[1]) {
 					symbols.push(match[1]);
 				}
@@ -98,7 +112,7 @@ export class ProgressiveReader {
 		}
 
 		const content = outlineLines.length > 0
-			? `[Outline - Level 1: Declarations & Exports]\n${outlineLines.join("\n")}`
+			? `[Outline - Level 1: Declarations, Exports & Decorators]\n${outlineLines.join("\n")}`
 			: `[Empty or non-symbol outline: ${lines.length} lines]`;
 
 		return {
@@ -106,7 +120,7 @@ export class ProgressiveReader {
 			level: 1,
 			totalLines: lines.length,
 			returnedLines: outlineLines.length,
-			tokensEstimated: Math.ceil(content.length / 4),
+			tokensEstimated: estimateTokens(content),
 			content,
 			symbolsFound: symbols,
 		};
@@ -122,19 +136,24 @@ export class ProgressiveReader {
 			const trimmed = line.trim();
 
 			if (!insideBlock) {
-				if (
+				if (trimmed.startsWith("@")) {
+					signatureLines.push(`${i + 1}:${line}`);
+				} else if (
 					trimmed.startsWith("import ") ||
 					trimmed.startsWith("export ") ||
 					trimmed.startsWith("interface ") ||
-					trimmed.startsWith("type ")
+					trimmed.startsWith("type ") ||
+					trimmed.startsWith("enum ")
 				) {
 					signatureLines.push(`${i + 1}:${line}`);
 				} else if (
 					trimmed.startsWith("function ") ||
 					trimmed.startsWith("public ") ||
 					trimmed.startsWith("private ") ||
+					trimmed.startsWith("protected ") ||
 					trimmed.startsWith("async ") ||
-					trimmed.startsWith("class ")
+					trimmed.startsWith("class ") ||
+					trimmed.startsWith("abstract class ")
 				) {
 					signatureLines.push(`${i + 1}:${line.replace(/\{.*$/, "{ … }")}`);
 					if (line.includes("{") && !line.includes("}")) {
@@ -161,7 +180,7 @@ export class ProgressiveReader {
 			level: 2,
 			totalLines: lines.length,
 			returnedLines: signatureLines.length,
-			tokensEstimated: Math.ceil(content.length / 4),
+			tokensEstimated: estimateTokens(content),
 			content,
 		};
 	}
@@ -180,6 +199,7 @@ export class ProgressiveReader {
 		const found: string[] = [];
 		let capturing = false;
 		let braceDepth = 0;
+		let hasOpenedBrace = false;
 
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
@@ -187,11 +207,13 @@ export class ProgressiveReader {
 
 			if (!capturing) {
 				for (const target of targets) {
-					const regex = new RegExp(`\\b(?:function|class|interface|type|const|let)\\s+${target}\\b`);
-					if (regex.test(trimmed)) {
+					const declRegex = new RegExp(`\\b(?:function|class|interface|type|const|let|enum)\\s+${target}\\b`);
+					const methodRegex = new RegExp(`(?:public|private|protected|async|static)?\\s*${target}\\s*\\(`);
+					if (declRegex.test(trimmed) || methodRegex.test(trimmed)) {
 						capturing = true;
-						found.push(target);
+						hasOpenedBrace = false;
 						braceDepth = 0;
+						found.push(target);
 						collectedLines.push(`\n--- Symbol: ${target} (Line ${i + 1}) ---`);
 						break;
 					}
@@ -201,10 +223,18 @@ export class ProgressiveReader {
 			if (capturing) {
 				collectedLines.push(`${i + 1}:${line}`);
 				for (const char of line) {
-					if (char === "{") braceDepth++;
-					else if (char === "}") braceDepth--;
+					if (char === "{") {
+						braceDepth++;
+						hasOpenedBrace = true;
+					} else if (char === "}") {
+						braceDepth--;
+					}
 				}
-				if (braceDepth <= 0 && line.includes("}")) {
+				if (hasOpenedBrace && braceDepth <= 0) {
+					capturing = false;
+					hasOpenedBrace = false;
+				} else if (!hasOpenedBrace && trimmed.endsWith(";")) {
+					// Single-line declaration (interface property, type alias, abstract signature)
 					capturing = false;
 				}
 			}
@@ -219,7 +249,7 @@ export class ProgressiveReader {
 			level: 3,
 			totalLines: lines.length,
 			returnedLines: collectedLines.length,
-			tokensEstimated: Math.ceil(content.length / 4),
+			tokensEstimated: estimateTokens(content),
 			content,
 			symbolsFound: found,
 		};
