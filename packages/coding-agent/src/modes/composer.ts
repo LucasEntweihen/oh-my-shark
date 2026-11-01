@@ -35,6 +35,7 @@ export interface ComposerPreferences {
 	readonly spellingTypoDetection: boolean;
 	readonly spellingAutocomplete: boolean;
 	readonly spellingAutocorrect: boolean;
+	readonly tuiLayout?: "cockpit" | "default" | "compact" | "classic";
 }
 
 /** Settings-schema-compatible defaults used when constructing a dependency-free composer. */
@@ -49,6 +50,7 @@ export const COMPOSER_DEFAULTS: ComposerPreferences = {
 	spellingTypoDetection: true,
 	spellingAutocomplete: true,
 	spellingAutocorrect: false,
+	tuiLayout: "cockpit",
 };
 
 /** Welcome data that can be supplied initially or patched as startup resolves it. */
@@ -58,6 +60,7 @@ export interface ComposerWelcomeUpdate {
 	readonly providerName?: string;
 	readonly recentSessions?: readonly RecentSession[];
 	readonly lspServers?: readonly LspServerInfo[];
+	readonly layoutMode?: "cockpit" | "default" | "compact" | "classic";
 }
 
 /**
@@ -559,6 +562,9 @@ export class Composer implements TerminalFrameProvider {
 			autocomplete: this.#preferences.spellingAutocomplete,
 			autocorrect: this.#preferences.spellingAutocorrect,
 		});
+		if (update.tuiLayout !== undefined) {
+			this.#welcome?.setLayoutMode(update.tuiLayout);
+		}
 		this.#applyStatusSnapshot();
 		if (this.#preferences.quiet) {
 			this.#welcome?.stopIntro();
@@ -580,6 +586,7 @@ export class Composer implements TerminalFrameProvider {
 		this.#ensureWelcome();
 		const welcome = this.#welcome;
 		if (!welcome) return;
+		if (update.layoutMode !== undefined) welcome.setLayoutMode(update.layoutMode);
 		if (update.version !== undefined) welcome.setVersion(this.#version);
 		if (update.modelName !== undefined || update.providerName !== undefined) {
 			welcome.setModel(this.#modelName, this.#providerName);
@@ -695,6 +702,7 @@ export class Composer implements TerminalFrameProvider {
 			this.#providerName,
 			this.#recentSessions,
 			this.#lspServers,
+			this.#preferences.tuiLayout ?? "cockpit",
 		);
 	}
 

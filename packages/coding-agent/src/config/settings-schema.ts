@@ -144,6 +144,11 @@ export const BUILTIN_COMPOSER_SHAPES = [
 		label: "Accent Rail",
 		description: "Filled one-row field anchored by a single accent rail",
 	},
+	{
+		value: "cockpit",
+		label: "Cockpit (Deep Sea)",
+		description: "Tactical engineering frame with status docked into the border and cyan telemetry accents",
+	},
 ] as const;
 
 /** Built-in composer ids used by tests and non-runtime consumers. */
@@ -201,7 +206,7 @@ export const TAB_METADATA: Record<SettingTab, { label: string; icon: `tab.${stri
  * Ungrouped settings render first, before any section heading.
  */
 export const TAB_GROUPS: Record<SettingTab, readonly string[]> = {
-	appearance: ["Theme", "Composer", "Status Line", "Display", "Images"],
+	appearance: ["Theme", "Composer", "Cockpit", "Status Line", "Display", "Images"],
 	model: ["Thinking", "Sampling", "Prompt", "Retry & Fallback", "Advisor", "Prewalk", "Vision"],
 	interaction: [
 		"Input",
@@ -1264,6 +1269,139 @@ export const SETTINGS_SCHEMA = {
 			group: "Display",
 			label: "Tight Layout",
 			description: "Remove the 1-character horizontal padding from the left and right of the terminal output",
+		},
+	},
+	"tui.layout": {
+		type: "enum",
+		values: ["cockpit", "compact", "default", "classic"] as const,
+		default: "cockpit",
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "TUI Layout",
+			description: "Overall layout style of the terminal interface (cockpit: Deep Sea Cockpit mission control dashboard; compact: single-line telemetry status; default/classic: standard welcome banner)",
+			options: [
+				{ value: "cockpit", label: "Deep Sea Cockpit (Default)", description: "Full engineering cockpit dashboard with active mission, telemetry cards, live diffs, and the true TUI shark" },
+				{ value: "compact", label: "Compact Cockpit", description: "Minimal single-line telemetry status" },
+				{ value: "default", label: "Classic Banner", description: "Standard welcome banner with shark mark and panels" },
+				{ value: "classic", label: "Minimal Classic", description: "Simple minimal banner without telemetry" },
+			],
+		},
+	},
+
+	"cockpit.density": {
+		type: "enum",
+		values: ["auto", "compact", "standard", "advanced"] as const,
+		default: "auto",
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "Cockpit Density",
+			description: "Information density of Deep Sea Cockpit (auto adapts dynamically to terminal columns and rows; or lock to compact, standard, or advanced)",
+			options: [
+				{ value: "auto", label: "Auto (Responsive)", description: "Dynamically adapt density to terminal dimensions" },
+				{ value: "advanced", label: "Advanced", description: "Full cards, live event stream & provenance, and lower panels" },
+				{ value: "standard", label: "Standard", description: "Mission, changes, checks cards and status" },
+				{ value: "compact", label: "Compact", description: "Single-line high-density telemetry stream" },
+			],
+		},
+	},
+
+	"cockpit.sidebar": {
+		type: "enum",
+		values: ["auto", "visible", "collapsed", "hidden"] as const,
+		default: "auto",
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "Cockpit Sidebar",
+			description: "Sidebar display mode (auto displays the authentic ASCII shark on wide terminals, compact crest on mid terminals, and single column on narrow terminals; or force visible, collapsed, or hidden)",
+			options: [
+				{ value: "auto", label: "Auto (Responsive)", description: "Adapt sidebar layout to terminal width (full shark on wide, compact on medium, collapsed on narrow)" },
+				{ value: "visible", label: "Always Visible", description: "Keep sidebar visible at all times" },
+				{ value: "collapsed", label: "Collapsed", description: "Show slim sidebar strip to save horizontal space" },
+				{ value: "hidden", label: "Hidden", description: "Hide sidebar completely to maximize width for cards, diffs, and stream" },
+			],
+		},
+	},
+
+	"cockpit.eventStreamLines": {
+		type: "number",
+		default: 4,
+		min: 0,
+		max: 16,
+		step: 1,
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "Cockpit Event Stream Rows",
+			description: "Number of rows dedicated to the live event stream in Deep Sea Cockpit (0 hides event stream)",
+		},
+	},
+
+	"cockpit.showTips": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "Cockpit Tips",
+			description: "Display quick tips and shortcuts in Cockpit sidebar",
+		},
+	},
+
+	"cockpit.showMemoryGraph": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "Cockpit Memory Graph",
+			description: "Display Mente em Teia knowledge graph panel in Cockpit",
+		},
+	},
+
+	"cockpit.showRecentFiles": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "Cockpit Recent Files",
+			description: "Display transactional edit engine recent files in Cockpit",
+		},
+	},
+
+	"cockpit.showProgress": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "Cockpit Progress & Activity",
+			description: "Display mission progress gauge and activity steps in Cockpit",
+		},
+	},
+
+	"cockpit.showShortcuts": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "Cockpit Shortcuts Bar",
+			description: "Display interactive shortcuts bar ([Ctrl+P], [Ctrl+J], [Ctrl+D], [Ctrl+L])",
+		},
+	},
+
+	"cockpit.autoHeight": {
+		type: "boolean",
+		default: true,
+		ui: {
+			tab: "appearance",
+			group: "Cockpit",
+			label: "Cockpit Auto Height",
+			description: "Automatically scale event stream and panels based on terminal row count to prevent viewport scrolling",
 		},
 	},
 

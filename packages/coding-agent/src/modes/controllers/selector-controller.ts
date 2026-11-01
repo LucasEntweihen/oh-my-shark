@@ -519,6 +519,18 @@ export class SelectorController {
 			case "composer.shape":
 				this.ctx.syncComposerShape();
 				break;
+			case "tui.layout":
+			case "cockpit.density":
+			case "cockpit.sidebar":
+			case "cockpit.eventStreamLines":
+			case "cockpit.showTips":
+			case "cockpit.showMemoryGraph":
+			case "cockpit.showRecentFiles":
+			case "cockpit.showProgress":
+			case "cockpit.showShortcuts":
+			case "cockpit.autoHeight":
+				this.ctx.syncTuiLayout();
+				break;
 			case "advisor.enabled":
 				this.ctx.session.setAdvisorEnabled(value as boolean);
 				this.ctx.statusLine.invalidate();

@@ -870,6 +870,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			spellingTypoDetection: settings.get("spelling.typoDetection"),
 			spellingAutocomplete: settings.get("spelling.autocomplete"),
 			spellingAutocorrect: settings.get("spelling.autocorrect"),
+			tuiLayout: settings.get("tui.layout") ?? "cockpit",
 		};
 		const wasStarted = composer?.started ?? false;
 		this.composer =
@@ -885,6 +886,7 @@ export class InteractiveMode implements InteractiveModeContext {
 						status: server.status,
 						fileTypes: server.fileTypes,
 					})),
+					layoutMode: settings.get("tui.layout") ?? "cockpit",
 				},
 			});
 		this.composer.setPreferences(preferences);
@@ -2142,6 +2144,12 @@ export class InteractiveMode implements InteractiveModeContext {
 			compactThinkingLevel: settings.get("statusLine.compactThinkingLevel"),
 			contextLine: settings.get("statusLine.contextLine"),
 		});
+	}
+	syncTuiLayout(): void {
+		const layout = settings.get("tui.layout") ?? "cockpit";
+		this.composer.setPreferences({ tuiLayout: layout });
+		this.composer.welcome?.setLayoutMode(layout);
+		this.ui.requestRender();
 	}
 	syncComposerShape(): void {
 		const shape = settings.get("composer.shape") ?? "band";

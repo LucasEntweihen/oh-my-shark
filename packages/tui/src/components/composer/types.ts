@@ -21,6 +21,7 @@ export const BUILTIN_EDITOR_BORDER_STYLES = [
 	"rule",
 	"field",
 	"rail",
+	"cockpit",
 ] as const;
 
 /** Identifier for a built-in composer shape. */

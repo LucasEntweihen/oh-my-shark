@@ -132,6 +132,7 @@ export interface InteractiveModeContext {
 	hookWidgetContainerBelow: Container;
 	statusLine: StatusLineComponent;
 	syncComposerShape(): void;
+	syncTuiLayout(): void;
 	syncEditorSpelling(): void;
 
 	// Session access

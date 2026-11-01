@@ -1599,6 +1599,7 @@ export async function runRootCommand(
 			spellingTypoDetection: settingsInstance.get("spelling.typoDetection"),
 			spellingAutocomplete: settingsInstance.get("spelling.autocomplete"),
 			spellingAutocorrect: settingsInstance.get("spelling.autocorrect"),
+			tuiLayout: settingsInstance.get("tui.layout") ?? "cockpit",
 			theme: {
 				symbolPreset: settingsInstance.get("symbolPreset"),
 				colorBlindMode: settingsInstance.get("colorBlindMode"),

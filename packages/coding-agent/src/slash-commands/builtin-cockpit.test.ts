@@ -105,4 +105,47 @@ describe("Builtin Cockpit Slash Commands", () => {
 		await handleEventsCommand({ name: "events", args: "", text: "/events" }, runtime);
 		expect(outputText).toContain("LIVE EVENT STREAM & PROVENANCE");
 	});
+
+	it("TDD C.6: should handle configuration subcommands: density, sidebar, config, layout, reset", async () => {
+		let outputText = "";
+		const settingsMap = new Map<string, unknown>();
+		const runtime = createMockRuntime((text) => {
+			outputText = text;
+		});
+		runtime.settings = {
+			set: (key: string, val: unknown) => {
+				settingsMap.set(key, val);
+			},
+			get: (key: string) => settingsMap.get(key),
+		} as unknown as SlashCommandRuntime["settings"];
+
+		// /cockpit density auto
+		await handleCockpitCommand({ name: "cockpit", args: "density auto", text: "/cockpit density auto" }, runtime);
+		expect(outputText).toContain("AUTO");
+		expect(settingsMap.get("cockpit.density")).toBe("auto");
+
+		// /cockpit sidebar hidden
+		await handleCockpitCommand({ name: "cockpit", args: "sidebar hidden", text: "/cockpit sidebar hidden" }, runtime);
+		expect(outputText).toContain("HIDDEN");
+		expect(settingsMap.get("cockpit.sidebar")).toBe("hidden");
+
+		// /cockpit layout cockpit
+		await handleCockpitCommand({ name: "cockpit", args: "layout cockpit", text: "/cockpit layout cockpit" }, runtime);
+		expect(outputText).toContain("COCKPIT");
+		expect(settingsMap.get("tui.layout")).toBe("cockpit");
+
+		// /cockpit config (view all)
+		await handleCockpitCommand({ name: "cockpit", args: "config", text: "/cockpit config" }, runtime);
+		expect(outputText).toContain("cockpit.density");
+		expect(outputText).toContain("cockpit.sidebar");
+
+		// /cockpit config showTips false
+		await handleCockpitCommand({ name: "cockpit", args: "config showTips false", text: "/cockpit config showTips false" }, runtime);
+		expect(outputText).toContain("showTips = false");
+		expect(settingsMap.get("cockpit.showTips")).toBe(false);
+
+		// /cockpit reset
+		await handleCockpitCommand({ name: "cockpit", args: "reset", text: "/cockpit reset" }, runtime);
+		expect(outputText).toContain("restauradas para os padrões");
+	});
 });

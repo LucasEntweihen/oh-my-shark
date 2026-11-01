@@ -17,6 +17,7 @@ const BUILTIN_COMPOSER_STYLES: Readonly<Record<string, ComposerStyle>> = {
 	rule: ruleComposerStyle,
 	field: fieldComposerStyle,
 	rail: railComposerStyle,
+	cockpit: boxComposerStyle,
 };
 const extensionComposerStyles = new Map<string, ComposerStyle>();
 

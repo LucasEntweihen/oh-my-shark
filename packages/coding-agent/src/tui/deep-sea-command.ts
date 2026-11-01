@@ -10,9 +10,48 @@
  * - Adaptive rendering from 20 columns up to ultra-wide displays
  * - 100% Pure TypeScript string & ANSI calculation for complete cross-platform portability.
  */
-import { truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
+import { truncateToWidth } from "@oh-my-pi/pi-tui";
+import { REST_FRAME, SHARK_LOGO, SHARK_WIDTH } from "../modes/components/shark-logo";
 import type { ChangesSummary, FileChangeDiff } from "../edit/transactional-engine";
+import { settings } from "../config/settings";
+import type { SettingPath } from "../config/settings-schema";
+
 export type CockpitDensity = "compact" | "standard" | "advanced";
+export type CockpitDensityMode = "auto" | "compact" | "standard" | "advanced";
+export type CockpitSidebarMode = "auto" | "visible" | "collapsed" | "hidden";
+
+export interface CockpitConfig {
+	density: CockpitDensityMode;
+	sidebar: CockpitSidebarMode;
+	eventStreamLines: number;
+	showTips: boolean;
+	showMemoryGraph: boolean;
+	showRecentFiles: boolean;
+	showProgress: boolean;
+	showShortcuts: boolean;
+	autoHeight: boolean;
+}
+
+export const DEFAULT_COCKPIT_CONFIG: CockpitConfig = {
+	density: "auto",
+	sidebar: "auto",
+	eventStreamLines: 4,
+	showTips: true,
+	showMemoryGraph: true,
+	showRecentFiles: true,
+	showProgress: true,
+	showShortcuts: true,
+	autoHeight: true,
+};
+
+function getSettingSafe<T>(key: SettingPath, fallback: T): T {
+	try {
+		const val = settings.get(key);
+		return val !== undefined ? (val as unknown as T) : fallback;
+	} catch {
+		return fallback;
+	}
+}
 
 export interface ActiveMissionInfo {
 	id: string;
@@ -83,6 +122,7 @@ export interface MemoryGraphData {
 
 export interface DeepSeaCockpitOptions {
 	density?: CockpitDensity;
+	config?: Partial<CockpitConfig>;
 	workspaceName?: string;
 	version?: string;
 	modelName?: string;
@@ -140,6 +180,7 @@ const style = {
 
 export class DeepSeaCockpit {
 	private density: CockpitDensity;
+	private config: CockpitConfig;
 	private workspaceName: string;
 	private version: string;
 	private modelName: string;
@@ -162,7 +203,25 @@ export class DeepSeaCockpit {
 	private totalSteps: number;
 
 	constructor(options: DeepSeaCockpitOptions = {}) {
-		this.density = options.density ?? "advanced";
+		this.config = {
+			density: options.config?.density ?? getSettingSafe("cockpit.density", DEFAULT_COCKPIT_CONFIG.density),
+			sidebar: options.config?.sidebar ?? getSettingSafe("cockpit.sidebar", DEFAULT_COCKPIT_CONFIG.sidebar),
+			eventStreamLines: options.config?.eventStreamLines ?? getSettingSafe("cockpit.eventStreamLines", DEFAULT_COCKPIT_CONFIG.eventStreamLines),
+			showTips: options.config?.showTips ?? getSettingSafe("cockpit.showTips", DEFAULT_COCKPIT_CONFIG.showTips),
+			showMemoryGraph: options.config?.showMemoryGraph ?? getSettingSafe("cockpit.showMemoryGraph", DEFAULT_COCKPIT_CONFIG.showMemoryGraph),
+			showRecentFiles: options.config?.showRecentFiles ?? getSettingSafe("cockpit.showRecentFiles", DEFAULT_COCKPIT_CONFIG.showRecentFiles),
+			showProgress: options.config?.showProgress ?? getSettingSafe("cockpit.showProgress", DEFAULT_COCKPIT_CONFIG.showProgress),
+			showShortcuts: options.config?.showShortcuts ?? getSettingSafe("cockpit.showShortcuts", DEFAULT_COCKPIT_CONFIG.showShortcuts),
+			autoHeight: options.config?.autoHeight ?? getSettingSafe("cockpit.autoHeight", DEFAULT_COCKPIT_CONFIG.autoHeight),
+		};
+		if (options.density !== undefined) {
+			this.density = options.density;
+			this.config.density = options.density;
+		} else if (this.config.density !== "auto") {
+			this.density = this.config.density;
+		} else {
+			this.density = "advanced";
+		}
 		this.workspaceName = options.workspaceName ?? "OMSK Workspace";
 		this.version = options.version ?? "0.0.45";
 		this.modelName = options.modelName ?? "gemini-2.5-pro";
@@ -243,8 +302,94 @@ export class DeepSeaCockpit {
 		this.registerShortcut("Ctrl+L", "Events", () => {});
 	}
 
-	public setDensity(density: CockpitDensity): void {
-		this.density = density;
+	public setConfig(update: Partial<CockpitConfig>): void {
+		this.config = { ...this.config, ...update };
+		if (update.density !== undefined && update.density !== "auto") {
+			this.density = update.density;
+		}
+	}
+
+	public getConfig(): Readonly<CockpitConfig> {
+		return { ...this.config };
+	}
+
+	public setDensity(density: CockpitDensity | "auto"): void {
+		if (density === "auto") {
+			this.config.density = "auto";
+		} else {
+			this.density = density;
+			this.config.density = density;
+		}
+	}
+
+	public setSidebar(sidebar: CockpitSidebarMode): void {
+		this.config.sidebar = sidebar;
+	}
+
+	public setEventStreamLines(lines: number): void {
+		this.config.eventStreamLines = Math.max(0, Math.min(16, lines));
+	}
+
+	public setShowTips(show: boolean): void {
+		this.config.showTips = show;
+	}
+
+	public setShowMemoryGraph(show: boolean): void {
+		this.config.showMemoryGraph = show;
+	}
+
+	public setShowRecentFiles(show: boolean): void {
+		this.config.showRecentFiles = show;
+	}
+
+	public setShowProgress(show: boolean): void {
+		this.config.showProgress = show;
+	}
+
+	public setShowShortcuts(show: boolean): void {
+		this.config.showShortcuts = show;
+	}
+
+	public setAutoHeight(auto: boolean): void {
+		this.config.autoHeight = auto;
+	}
+
+	public resolveEffectiveDensity(termWidth: number, termHeight?: number): CockpitDensity {
+		if (this.config.density !== "auto") {
+			return this.config.density;
+		}
+		const h = termHeight ?? (typeof process !== "undefined" && process.stdout?.rows ? process.stdout.rows : 35);
+		if (termWidth < 50 || h <= 20) {
+			return "compact";
+		}
+		if (termWidth < 85 || h <= 26) {
+			return "standard";
+		}
+		return "advanced";
+	}
+
+	public resolveSidebarWidth(termWidth: number): { show: boolean; width: number; isFullLogo: boolean } {
+		if (this.config.sidebar === "hidden") {
+			return { show: false, width: 0, isFullLogo: false };
+		}
+		if (this.config.sidebar === "collapsed") {
+			return { show: true, width: 20, isFullLogo: false };
+		}
+		if (this.config.sidebar === "visible") {
+			const w = termWidth >= 115
+				? Math.max(58, Math.min(62, Math.floor(termWidth * 0.48)))
+				: Math.max(20, Math.min(32, Math.floor(termWidth * 0.28)));
+			return { show: true, width: w, isFullLogo: w >= 56 };
+		}
+		if (termWidth < 80) {
+			return { show: false, width: 0, isFullLogo: false };
+		}
+		if (termWidth >= 115) {
+			const w = Math.max(58, Math.min(62, Math.floor(termWidth * 0.48)));
+			return { show: true, width: w, isFullLogo: true };
+		}
+		const w = Math.max(22, Math.min(32, Math.floor(termWidth * 0.28)));
+		return { show: true, width: w, isFullLogo: false };
 	}
 
 	public getDensity(): CockpitDensity {
@@ -484,15 +629,17 @@ export class DeepSeaCockpit {
 		const w = Math.max(15, width);
 		const lines: string[] = [];
 
-		// Pixel Art Shark Logo (faithful to Image #1)
-		lines.push(padToWidth(style.cyan("         ▄████▄   ▄"), w));
-		lines.push(padToWidth(style.cyan("       ▄████████▄██"), w));
-		lines.push(padToWidth(style.blue("      █████████████"), w));
-		lines.push(padToWidth(style.blue("     █████") + style.white("▲▲▲▲") + style.blue("▀▀▀▀"), w));
-		lines.push(padToWidth(style.blue("    ███████▀") + style.cyan("  ▄███▄"), w));
-		lines.push(padToWidth(style.blue("    ████████▄ ") + style.cyan(" ▀███"), w));
-		lines.push(padToWidth(style.blue("     ▀█████████▄"), w));
-		lines.push(padToWidth(style.cyan("       ▀▀███████▄"), w));
+		// Authentic TUI Shark Logo (stackedlol/ascii-sharks from welcome surface)
+		if (w >= 56) {
+			for (const line of REST_FRAME) {
+				lines.push(padToWidth(truncateToWidth(line, w), w));
+			}
+		} else {
+			// Compact focal rows of the authentic ASCII shark
+			for (const line of REST_FRAME.slice(5, 13)) {
+				lines.push(padToWidth(truncateToWidth(line, w), w));
+			}
+		}
 
 		// Wordmark & Tagline
 		lines.push(padToWidth(style.bold(style.cyan("OMSK")), w));
@@ -500,28 +647,30 @@ export class DeepSeaCockpit {
 		lines.push(padToWidth(style.borderBlue("─".repeat(w - 2)), w));
 
 		// Quick Tips
-		lines.push(padToWidth(style.yellow("💡 Quick Tips:"), w));
-		const tip = this.quickTips[0] ?? "Use [Ctrl+D] to view detailed changes! [NEW]";
-		const tipParts = tip.split(" [NEW]");
-		const tipBody = tipParts[0];
-		const hasNew = tip.includes("[NEW]");
-		const tipFormatted = hasNew
-			? `${tipBody} ${style.warning(style.bold("[NEW]"))}`
-			: tipBody;
+		if (this.config.showTips) {
+			lines.push(padToWidth(style.yellow("💡 Quick Tips:"), w));
+			const tip = this.quickTips[0] ?? "Use [Ctrl+D] to view detailed changes! [NEW]";
+			const tipParts = tip.split(" [NEW]");
+			const tipBody = tipParts[0];
+			const hasNew = tip.includes("[NEW]");
+			const tipFormatted = hasNew
+				? `${tipBody} ${style.warning(style.bold("[NEW]"))}`
+				: tipBody;
 
-		// Word wrap tip across lines
-		const words = tipFormatted.split(" ");
-		let curTipLine = "";
-		for (const word of words) {
-			if (visibleWidth(curTipLine + (curTipLine ? " " : "") + word) <= w - 2) {
-				curTipLine = curTipLine ? curTipLine + " " + word : word;
-			} else {
-				if (curTipLine) lines.push(padToWidth(curTipLine, w));
-				curTipLine = word;
+			// Word wrap tip across lines
+			const words = tipFormatted.split(" ");
+			let curTipLine = "";
+			for (const word of words) {
+				if (visibleWidth(curTipLine + (curTipLine ? " " : "") + word) <= w - 2) {
+					curTipLine = curTipLine ? curTipLine + " " + word : word;
+				} else {
+					if (curTipLine) lines.push(padToWidth(curTipLine, w));
+					curTipLine = word;
+				}
 			}
+			if (curTipLine) lines.push(padToWidth(curTipLine, w));
+			lines.push(padToWidth(style.borderBlue("─".repeat(w - 2)), w));
 		}
-		if (curTipLine) lines.push(padToWidth(curTipLine, w));
-		lines.push(padToWidth(style.borderBlue("─".repeat(w - 2)), w));
 
 		// Recent Sessions
 		lines.push(padToWidth(style.cyan("🕒 Recent Sessions:"), w));
@@ -801,14 +950,33 @@ export class DeepSeaCockpit {
 		const borderBottom = style.borderBlue(`╰${"─".repeat(w - 2)}╯`);
 
 		const header = style.cyan("Memory Graph");
-		const diagram = [
-			style.dim("     auth.service.ts"),
-			style.borderBlue("            │"),
-			`${style.blue("Tests")} ${style.borderBlue("────")} ${style.cyan(style.bold("AuthFlow"))} ${style.borderBlue("────")} ${style.white("Security")}`,
-			style.borderBlue("            │"),
-			style.yellow("        Decision:"),
-			style.dim("         Use JWT"),
-		];
+		let diagram: string[];
+
+		if (innerW >= 30) {
+			diagram = [
+				style.dim("     auth.service.ts"),
+				style.borderBlue("            │"),
+				`${style.blue("Tests")} ${style.borderBlue("────")} ${style.cyan(style.bold("AuthFlow"))} ${style.borderBlue("────")} ${style.white("Security")}`,
+				style.borderBlue("            │"),
+				style.yellow("        Decision:"),
+				style.dim("         Use JWT"),
+			];
+		} else if (innerW >= 22) {
+			diagram = [
+				style.dim("   auth.service.ts"),
+				style.borderBlue("          │"),
+				`${style.blue("Tests")} ${style.borderBlue("──")} ${style.cyan(style.bold("AuthFlow"))} ${style.borderBlue("──")} ${style.white("Sec")}`,
+				style.borderBlue("          │"),
+				style.yellow("      Decision:"),
+				style.dim("       Use JWT"),
+			];
+		} else {
+			diagram = [
+				style.dim("auth.service.ts"),
+				`${style.blue("Tests")} ${style.borderBlue("→")} ${style.cyan(style.bold("AuthFlow"))}`,
+				style.yellow("Decision: Use JWT"),
+			];
+		}
 
 		const rows: string[] = [
 			borderTop,
@@ -816,7 +984,11 @@ export class DeepSeaCockpit {
 		];
 
 		for (const line of diagram) {
-			rows.push(style.borderBlue("│ ") + padToWidth(line, innerW) + style.borderBlue(" │"));
+			rows.push(style.borderBlue("│ ") + padToWidth(truncateToWidth(line, innerW), innerW) + style.borderBlue(" │"));
+		}
+
+		while (rows.length < 8) {
+			rows.push(style.borderBlue("│ ") + padToWidth(" ", innerW) + style.borderBlue(" │"));
 		}
 
 		rows.push(borderBottom);
@@ -839,9 +1011,20 @@ export class DeepSeaCockpit {
 			const fileIcon = "📄";
 			const diff = `${style.success(`+${file.linesAdded}`)} ${style.error(`-${file.linesRemoved}`)}`;
 			const prefix = ` ${fileIcon} `;
-			const availForPath = Math.max(5, innerW - visibleWidth(diff) - visibleWidth(prefix) - 1);
-			const path = visibleWidth(file.path) > availForPath ? truncateToWidth(file.path, availForPath) : file.path;
-			const spaceCount = Math.max(1, innerW - visibleWidth(`${prefix}${path}`) - visibleWidth(diff));
+			const diffLen = visibleWidth(diff);
+			const availForPath = Math.max(4, innerW - diffLen - visibleWidth(prefix) - 1);
+			const rawPath = file.path;
+			let path = rawPath;
+			if (visibleWidth(rawPath) > availForPath) {
+				if (availForPath > 8 && rawPath.includes("/")) {
+					const parts = rawPath.split("/");
+					const filePart = parts[parts.length - 1];
+					path = truncateToWidth(`.../${filePart}`, availForPath);
+				} else {
+					path = truncateToWidth(rawPath, availForPath);
+				}
+			}
+			const spaceCount = Math.max(1, innerW - visibleWidth(`${prefix}${path}`) - diffLen);
 			const spacing = " ".repeat(spaceCount);
 			const fileLine = `${prefix}${path}${spacing}${diff}`;
 			rows.push(style.borderBlue("│") + padToWidth(fileLine, innerW) + style.borderBlue("│"));
@@ -857,27 +1040,80 @@ export class DeepSeaCockpit {
 
 	public renderLowerPanelsRow(width: number): string[] {
 		const safeWidth = Math.max(40, width);
-		const col1W = Math.floor(safeWidth * 0.35);
-		const col2W = Math.floor(safeWidth * 0.35);
-		const col3W = Math.max(12, safeWidth - col1W - col2W - 2);
 
-		const p1 = this.renderProgressPanel(col1W);
-		const p2 = this.renderMemoryGraphPanel(col2W);
-		const p3 = this.renderRecentFilesPanel(col3W);
+		const showProgress = this.config.showProgress;
+		const showMemory = this.config.showMemoryGraph;
+		const showFiles = this.config.showRecentFiles;
 
-		const maxH = Math.max(p1.length, p2.length, p3.length);
-		const rows: string[] = [];
+		const activePanels: Array<"progress" | "memory" | "files"> = [];
+		if (showProgress) activePanels.push("progress");
+		if (showMemory) activePanels.push("memory");
+		if (showFiles) activePanels.push("files");
 
-		for (let i = 0; i < maxH; i++) {
-			const line1 = padToWidth(p1[i] ?? "", col1W);
-			const line2 = padToWidth(p2[i] ?? "", col2W);
-			const line3 = padToWidth(p3[i] ?? "", col3W);
-			rows.push(`${line1} ${line2} ${line3}`);
+		if (activePanels.length === 0) {
+			return [];
 		}
 
-		return rows;
-	}
+		if (activePanels.length === 3 && safeWidth >= 95) {
+			const col1W = Math.floor(safeWidth * 0.35);
+			const col2W = Math.floor(safeWidth * 0.35);
+			const col3W = Math.max(12, safeWidth - col1W - col2W - 2);
 
+			const p1 = this.renderProgressPanel(col1W);
+			const p2 = this.renderMemoryGraphPanel(col2W);
+			const p3 = this.renderRecentFilesPanel(col3W);
+
+			const maxH = Math.max(p1.length, p2.length, p3.length);
+			const rows: string[] = [];
+
+			for (let i = 0; i < maxH; i++) {
+				const line1 = padToWidth(p1[i] ?? "", col1W);
+				const line2 = padToWidth(p2[i] ?? "", col2W);
+				const line3 = padToWidth(p3[i] ?? "", col3W);
+				rows.push(`${line1} ${line2} ${line3}`);
+			}
+
+			return rows;
+		}
+
+		if (activePanels.length >= 2) {
+			const panelsToRender = activePanels.length === 3
+				? (safeWidth >= 70 ? ["progress", "files"] : ["progress"])
+				: activePanels.slice(0, 2);
+
+			if (panelsToRender.length === 2) {
+				const col1W = Math.floor(safeWidth * 0.50) - 1;
+				const col2W = Math.max(16, safeWidth - col1W - 1);
+
+				const p1 = panelsToRender[0] === "progress"
+					? this.renderProgressPanel(col1W)
+					: panelsToRender[0] === "memory"
+						? this.renderMemoryGraphPanel(col1W)
+						: this.renderRecentFilesPanel(col1W);
+
+				const p2 = panelsToRender[1] === "files"
+					? this.renderRecentFilesPanel(col2W)
+					: panelsToRender[1] === "memory"
+						? this.renderMemoryGraphPanel(col2W)
+						: this.renderProgressPanel(col2W);
+
+				const maxH = Math.max(p1.length, p2.length);
+				const rows: string[] = [];
+				for (let i = 0; i < maxH; i++) {
+					const line1 = padToWidth(p1[i] ?? "", col1W);
+					const line2 = padToWidth(p2[i] ?? "", col2W);
+					rows.push(`${line1} ${line2}`);
+				}
+				return rows;
+			}
+		}
+
+		const singleW = safeWidth;
+		const primary = activePanels[0];
+		if (primary === "progress") return this.renderProgressPanel(singleW);
+		if (primary === "memory") return this.renderMemoryGraphPanel(singleW);
+		return this.renderRecentFilesPanel(singleW);
+	}
 	// ==========================================
 	// 8. BARRA INFERIOR DE STATUS
 	// ==========================================
@@ -911,34 +1147,83 @@ export class DeepSeaCockpit {
 	// ==========================================
 	public renderFullCockpit(termWidth: number, termHeight?: number): string[] {
 		const width = Math.max(20, termWidth);
+		const height = termHeight ?? (typeof process !== "undefined" && process.stdout?.rows ? process.stdout.rows : 35);
 
-		// Narrow screens (< 75): stacked vertical layout
-		if (width < 75) {
-			return [
-				...this.renderHeader(width),
-				...this.renderTopTitleBar(width),
-				...this.renderMissionCard(width),
-				...this.renderChangesCard(width),
-				...this.renderChecksCard(width),
-				...this.renderEventStream(width, 3),
-				...this.renderBottomStatus(width),
-			];
+		const effectiveDensity = this.resolveEffectiveDensity(width, height);
+		if (effectiveDensity === "compact") {
+			return this.renderCompact(width);
 		}
 
-		// Header top
-		const headerLines = this.renderHeader(width);
+		const compactHeight = this.config.autoHeight && height <= 26;
+		const streamLines = this.config.eventStreamLines > 0
+			? (compactHeight ? Math.min(2, this.config.eventStreamLines) : this.config.eventStreamLines)
+			: 0;
 
-		// Wide screen: Sidebar on left (24% width, max 28), Cockpit on right (76% width)
-		const sidebarW = Math.max(20, Math.min(28, Math.floor(width * 0.23)));
-		const mainW = width - sidebarW - 2;
+		const sidebarInfo = this.resolveSidebarWidth(width);
+
+		if (!sidebarInfo.show) {
+			const lines: string[] = [
+				...this.renderHeader(width),
+				...this.renderTopTitleBar(width),
+			];
+
+			if (width >= 60) {
+				lines.push(...this.renderCardsRow(width));
+			} else {
+				lines.push(...this.renderMissionCard(width));
+				lines.push(...this.renderChangesCard(width));
+				lines.push(...this.renderChecksCard(width));
+			}
+
+			if (streamLines > 0) {
+				lines.push(...this.renderEventStream(width, streamLines));
+			}
+
+			if (this.config.showShortcuts && width >= 40) {
+				lines.push(...this.renderShortcutBar(width));
+			}
+
+			if (!compactHeight && width >= 45) {
+				const lowerLines = this.renderLowerPanelsRow(width);
+				if (lowerLines.length > 0) {
+					lines.push(...lowerLines);
+				}
+			}
+
+			lines.push(...this.renderBottomStatus(width));
+			return lines;
+		}
+
+		const headerLines = this.renderHeader(width);
+		const sidebarW = sidebarInfo.width;
+		const mainW = Math.max(30, width - sidebarW - 2);
 
 		const mainLines: string[] = [
 			...this.renderTopTitleBar(mainW),
-			...this.renderCardsRow(mainW),
-			...this.renderEventStream(mainW, 4),
-			...this.renderShortcutBar(mainW),
-			...this.renderLowerPanelsRow(mainW),
 		];
+
+		if (mainW >= 60) {
+			mainLines.push(...this.renderCardsRow(mainW));
+		} else {
+			mainLines.push(...this.renderMissionCard(mainW));
+			mainLines.push(...this.renderChangesCard(mainW));
+			mainLines.push(...this.renderChecksCard(mainW));
+		}
+
+		if (streamLines > 0) {
+			mainLines.push(...this.renderEventStream(mainW, streamLines));
+		}
+
+		if (this.config.showShortcuts) {
+			mainLines.push(...this.renderShortcutBar(mainW));
+		}
+
+		if (!compactHeight) {
+			const lowerLines = this.renderLowerPanelsRow(mainW);
+			if (lowerLines.length > 0) {
+				mainLines.push(...lowerLines);
+			}
+		}
 
 		const sidebarLines = this.renderSidebar(sidebarW, mainLines.length);
 		const combinedLines: string[] = [];
@@ -965,11 +1250,15 @@ export class DeepSeaCockpit {
 	public render(termWidth: number): string[] {
 		const width = Math.max(20, termWidth - 2);
 
-		if (width <= 35 || this.density === "compact") {
+		const density = this.config.density === "auto"
+			? this.resolveEffectiveDensity(width)
+			: this.density;
+
+		if (width <= 35 || density === "compact") {
 			return this.renderCompact(width);
 		}
 
-		if (this.density === "standard") {
+		if (density === "standard") {
 			return this.renderStandard(width);
 		}
 
@@ -1068,6 +1357,19 @@ export class DeepSeaCockpit {
 		return lines;
 	}
 }
+export function syncCockpitFromSettings(cockpit: DeepSeaCockpit): void {
+	cockpit.setConfig({
+		density: getSettingSafe("cockpit.density", DEFAULT_COCKPIT_CONFIG.density),
+		sidebar: getSettingSafe("cockpit.sidebar", DEFAULT_COCKPIT_CONFIG.sidebar),
+		eventStreamLines: getSettingSafe("cockpit.eventStreamLines", DEFAULT_COCKPIT_CONFIG.eventStreamLines),
+		showTips: getSettingSafe("cockpit.showTips", DEFAULT_COCKPIT_CONFIG.showTips),
+		showMemoryGraph: getSettingSafe("cockpit.showMemoryGraph", DEFAULT_COCKPIT_CONFIG.showMemoryGraph),
+		showRecentFiles: getSettingSafe("cockpit.showRecentFiles", DEFAULT_COCKPIT_CONFIG.showRecentFiles),
+		showProgress: getSettingSafe("cockpit.showProgress", DEFAULT_COCKPIT_CONFIG.showProgress),
+		showShortcuts: getSettingSafe("cockpit.showShortcuts", DEFAULT_COCKPIT_CONFIG.showShortcuts),
+		autoHeight: getSettingSafe("cockpit.autoHeight", DEFAULT_COCKPIT_CONFIG.autoHeight),
+	});
+}
 
 let activeCockpit: DeepSeaCockpit | null = null;
 
@@ -1075,5 +1377,6 @@ export function getDeepSeaCockpit(options?: DeepSeaCockpitOptions): DeepSeaCockp
 	if (!activeCockpit || options) {
 		activeCockpit = new DeepSeaCockpit(options);
 	}
+	syncCockpitFromSettings(activeCockpit);
 	return activeCockpit;
 }
