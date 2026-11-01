@@ -73,7 +73,12 @@
     "@opentelemetry/sdk-trace-base": "catalog:",
     "@opentelemetry/sdk-trace-node": "catalog:",
     "puppeteer-core": "catalog:",
-    "@oh-my-pi/pi-vibe-toolkit": "catalog:"
+    "@oh-my-pi/pi-vibe-toolkit": "catalog:",
+    "@ohms/kernel": "catalog:",
+    "@ohms/project-intelligence": "catalog:",
+    "@ohms/capability-registry": "catalog:",
+    "@ohms/execution-engine": "catalog:",
+    "@ohms/terminal-layout": "catalog:"
   },
   "optionalDependencies": {
     "@huggingface/transformers": "catalog:",
