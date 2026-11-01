@@ -16,6 +16,9 @@
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"types": ["bun", "assets"],
-		"typeRoots": ["./types", "./node_modules/@types"]
+		"typeRoots": ["./types", "./node_modules/@types"],
+		"paths": {
+			"@ohms/*": ["./packages/*/src/index.ts"]
+		}
 	}
 }
