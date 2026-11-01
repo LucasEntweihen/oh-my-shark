@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-const releaseId = "430859272"; // omsk-v0.0.47
+const releaseId = process.argv[2] ?? "430914173"; // omsk-v0.0.48
 const binariesDir = path.resolve("packages/coding-agent/binaries");
 
 // Get GitHub token
