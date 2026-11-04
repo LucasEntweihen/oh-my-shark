@@ -4,6 +4,7 @@
  * token file → local SQLite) in one place so build-time tooling sees the same
  * credentials as the TUI.
  */
+import * as fs from "node:fs";
 import * as path from "node:path";
 import {
 	$envExact,
@@ -301,7 +302,11 @@ export async function discoverAuthStorage(options: DiscoverAuthStorageOptions = 
 		return storage;
 	}
 
-	const dbPath = getAgentDbPath(agentDir);
+	let dbPath = getAgentDbPath(agentDir);
+	const projectDbPath = path.join(process.cwd(), ".omsk", "agent.db");
+	if (fs.existsSync(projectDbPath)) {
+		dbPath = projectDbPath;
+	}
 	const storage = await AuthStorage.create(dbPath, {
 		configValueResolver: options.configValueResolver,
 		sourceLabel: options.sourceLabel ?? `local ${dbPath}`,

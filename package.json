@@ -4,6 +4,14 @@
   "homepage": "https://ohmyshark.vercel.app",
   "license": "MIT",
   "author": "LucasEntweihen",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./providers": "./src/providers/index.ts",
+    "./database": "./src/database/index.ts",
+    "./knowledge": "./src/knowledge/index.ts",
+    "./hub": "./src/hub/index.ts"
+  },
   "workspaces": {
     "packages": [
       "packages/*",
@@ -80,6 +88,8 @@
   },
   "type": "module",
   "scripts": {
+    "hub": "bun ./cli.ts",
+    "hub:serve": "bun ./cli.ts serve",
     "setup": "bun scripts/setup.ts",
     "dev": "bun --cwd=packages/coding-agent src/cli.ts",
     "dev:timing": "PI_TIMING=x bun --cwd=packages/coding-agent --preload ../utils/src/module-timer.ts src/cli.ts",

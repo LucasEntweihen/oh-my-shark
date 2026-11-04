@@ -1,3 +1,30 @@
+# OhMyShark v0.0.49 — Root Providers, Shared Database & Universal Knowledge Hub
+
+Esta release introduz a centralização e exportação universal dos subsistemas de **Provedores de IA**, **Autenticação/Login**, **Banco de Dados SQLite Compartilhado** e **Base de Conhecimento Relacional (Mente em Teia)** na raiz do projeto, permitindo consumo simultâneo e seguro por múltiplos sistemas, agentes e linguagens externas sem qualquer perda de performance ou degradação na conexão com os modelos.
+
+---
+
+## 🌟 Novidades da Versão 0.0.49
+
+### 1. Sistema de Provedores e Login na Raiz do Projeto (`OmskSharedProviders`)
+- **Persistência Local e Centralizada:** Credenciais salvas no banco de dados SQLite local da raiz em `.omsk/agent.db`.
+- **Sincronização Bidirecional Transparente:** Importação automática das credenciais globais existentes (`~/.omsk/agent/agent.db`) no primeiro boot e sincronização mútua ao salvar novas credenciais.
+- **Snapshot Interoperável (`.omsk/providers.json`):** Exportação atômica em formato JSON padronizado para leitura instantânea por sistemas em qualquer linguagem (Python, Go, Rust, Java, scripts bash) sem necessidade de dependências SQLite.
+- **Isolamento e Zero Overhead:** Conexões otimizadas com SQLite nativo, `PRAGMA journal_mode = WAL;`, `synchronous = NORMAL;` e `busy_timeout = 5000;`, eliminando contenção entre múltiplos processos.
+
+### 2. Base de Dados e Conhecimento Relacional Compartilhada (`OmskSharedKnowledge` & `OmskSharedDatabase`)
+- **Acesso Direto à Engine Mente em Teia:** Gestão de nós, arestas, decisões arquiteturais (`recordDecision`), fatos técnicos (`recordFact`), evidências (`recordEvidence`) e grafos relacionais.
+- **Busca Léxica FTS5 / Trigramas:** Pesquisa ultrarrápida na base de conhecimento com ranqueamento léxico e navegação em subgrafos multi-hop (`getMultiHopSubgraph`).
+- **Conexão SQLite Unificada de Alta Performance:** Suporte a queries parametrizadas tipadas, comandos DDL/DML e transações atômicas seguras para leituras e escritas concorrentes.
+
+### 3. Ecossistema de Consumo Universal na Raiz
+- **SDK TypeScript Raiz:** Exportado diretamente no ponto de entrada `./index.ts` e configurado no `package.json` (`ohmyshark`, `./providers`, `./database`, `./knowledge`, `./hub`).
+- **CLI Dedicado na Raiz (`bun run hub`):** Comandos diretos para `status`, `providers`, `models`, `login`, `knowledge`, `record-decision` e `export`.
+- **Servidor HTTP REST Embutido (`bun run hub:serve [porta]`):** Endpoints REST leves (`/api/status`, `/api/providers`, `/api/knowledge`, `/api/database/query`) com CORS habilitado para integração instantânea com microserviços e ferramentas externas.
+
+---
+
+
 # OhMyShark v0.0.48 — Architectural Independence & 5 Core Pillars
 
 Esta release marca o salto definitivo do OhMyShark (omsk/ohms) para uma plataforma de engenharia autônoma, extensível e 100% terminal-first, estabelecendo arquitetura autoral própria sobre os 5 pilares estruturais e 15 princípios inegociáveis de engenharia.
