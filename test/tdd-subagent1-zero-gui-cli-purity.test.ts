@@ -45,9 +45,20 @@ describe("Subagent 1 TDD: CLI Purity & Zero-GUI Invariants", () => {
 			cwd: process.cwd(),
 			env: { ...process.env, NO_COLOR: "1" },
 		});
-
 		expect(proc.exitCode).toBe(0);
 		const stdout = proc.stdout.toString().trim();
 		expect(stdout).toMatch(/^omsk[\/\s]\d+\.\d+\.\d+/);
+	});
+
+	it("verifies apps/desktop provides clean Tauri 2 OmskEngine adapter and pt-BR locale with zero CLI pollution", () => {
+		const desktopDir = path.resolve("apps/desktop");
+		expect(fs.existsSync(desktopDir)).toBe(true);
+		expect(fs.existsSync(path.join(desktopDir, "src-tauri", "src", "engine", "omsk.rs"))).toBe(true);
+		expect(fs.existsSync(path.join(desktopDir, "src", "i18n", "pt.ts"))).toBe(true);
+
+		const omskRs = fs.readFileSync(path.join(desktopDir, "src-tauri", "src", "engine", "omsk.rs"), "utf-8");
+		expect(omskRs).toContain('id: "omsk"');
+		expect(omskRs).toContain('home_dir_name: ".omsk"');
+		expect(omskRs).toContain('cmd.arg("rpc-ui")');
 	});
 });

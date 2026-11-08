@@ -162,4 +162,14 @@ describe("Subagent 4 TDD: Mente em Teia SQLite Knowledge Graph", () => {
 			expect(updated?.metadata?.invalidationReason).toBe("Superseded by terminal purity");
 		}
 	});
+
+	it("supports multiple knowledge nodes with bidirectional graph linking", () => {
+		const id1 = store.recordDecision("Pillar 1", "Kernel EventBus", ["packages/kernel/src/index.ts"], ["SharkEventBus"]);
+		const id2 = store.recordDecision("Pillar 2", "Project Intelligence", ["packages/project-intelligence/src/index.ts"], ["ProjectGraph"]);
+
+		expect(id1).not.toBe(id2);
+		const snapshot = store.exportGraphSnapshot();
+		expect(snapshot.nodes.length).toBeGreaterThanOrEqual(2);
+		expect(snapshot.edges.length).toBeGreaterThanOrEqual(2);
+	});
 });

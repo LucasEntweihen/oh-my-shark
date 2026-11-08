@@ -10,8 +10,8 @@ import {
 	VIBE_TOOL_CATALOG,
 	getPromptContent,
 	lookupPrompt,
+	lookupTool,
 } from "../packages/vibe-toolkit/src/index";
-
 describe("Subagent 5 TDD: Vibe Coding Toolkit Wave Planner & Quality Gates", () => {
 	it("correctly evaluates task file set disjointness", () => {
 		const taskA = {
@@ -108,9 +108,17 @@ describe("Subagent 5 TDD: Vibe Coding Toolkit Wave Planner & Quality Gates", () 
 		expect(secPrompt).toBeDefined();
 		expect(secPrompt?.id).toBe("13");
 		expect(secPrompt?.title).toContain("Security");
-
 		const content = getPromptContent("13");
-		expect(content).toBeDefined();
-		expect(content!.length).toBeGreaterThan(50);
+		expect(content.length).toBeGreaterThan(50);
+	});
+
+	it("verifies canonical tool catalog lookup and specifications", () => {
+		const editTool = lookupTool("edit");
+		expect(editTool).toBeDefined();
+		expect(editTool?.name).toBe("edit");
+
+		const readTool = lookupTool("read");
+		expect(readTool).toBeDefined();
+		expect(readTool?.name).toBe("read");
 	});
 });

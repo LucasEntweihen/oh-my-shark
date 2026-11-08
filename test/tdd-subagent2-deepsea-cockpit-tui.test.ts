@@ -5,7 +5,11 @@ import {
 	DeepSeaCockpit,
 	type CockpitEventItem,
 } from "../packages/coding-agent/src/tui/deep-sea-command";
-
+import {
+	SHARK_LOGO,
+	REST_FRAME,
+	SHARK_WIDTH,
+} from "../packages/coding-agent/src/modes/components/shark-logo";
 describe("Subagent 2 TDD: Deep Sea Cockpit TUI Reactive System", () => {
 	it("initializes cockpit with default metrics and status", () => {
 		const cockpit = new DeepSeaCockpit();
@@ -101,5 +105,15 @@ describe("Subagent 2 TDD: Deep Sea Cockpit TUI Reactive System", () => {
 		const ultraNarrow = cockpit.render(20);
 		expect(Array.isArray(ultraNarrow)).toBe(true);
 		expect(ultraNarrow.length).toBeGreaterThan(0);
+	});
+
+	it("verifies canonical ASCII shark logo rendering with cyan-blue gradient stops", () => {
+		expect(SHARK_LOGO.length).toBe(17); // 17-line canonical stackedlol/ascii-sharks
+		expect(SHARK_WIDTH).toBeGreaterThanOrEqual(50);
+
+		expect(REST_FRAME.length).toBe(17);
+		const combinedLogo = SHARK_LOGO.join("\n");
+		expect(combinedLogo).toContain("XSSS8SSX%XX8#");
+		expect(REST_FRAME[0]).toContain("\u001b[38;2;");
 	});
 });

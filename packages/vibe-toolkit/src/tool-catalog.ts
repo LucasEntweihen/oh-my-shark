@@ -4,6 +4,7 @@ import * as path from "node:path";
 export interface VibeToolMeta {
 	id: string;
 	title: string;
+	name?: string;
 	filename: string;
 	scope: "machine" | "project" | "both";
 	purpose: string;
@@ -189,11 +190,56 @@ export const VIBE_TOOL_CATALOG: readonly VibeToolMeta[] = [
 	},
 ];
 
+const CORE_HARNESS_TOOLS: VibeToolMeta[] = [
+	{
+		id: "tool-edit",
+		name: "edit",
+		title: "Edit",
+		filename: "tool-edit.md",
+		scope: "both",
+		purpose: "Surgical hash-line anchored editing of source files without full-file rewrites.",
+		whenToUse: "Modifying existing codebase files with verified line ranges.",
+	},
+	{
+		id: "tool-read",
+		name: "read",
+		title: "Read",
+		filename: "tool-read.md",
+		scope: "both",
+		purpose: "High-performance reading of source files, directories, SQLite tables, and archives.",
+		whenToUse: "Inspecting codebase context, reading files, or investigating directories.",
+	},
+	{
+		id: "tool-write",
+		name: "write",
+		title: "Write",
+		filename: "tool-write.md",
+		scope: "both",
+		purpose: "Creating new files or atomically replacing full file contents.",
+		whenToUse: "Scaffolding new files or updating binary/complete file states.",
+	},
+	{
+		id: "tool-bash",
+		name: "bash",
+		title: "Bash",
+		filename: "tool-bash.md",
+		scope: "both",
+		purpose: "Executing targeted shell binaries and fact pipelines with strict output capture.",
+		whenToUse: "Running builds, linters, tests, and specialized CLI tools.",
+	},
+];
+
 const TOOL_LOOKUP = new Map<string, VibeToolMeta>();
 for (const t of VIBE_TOOL_CATALOG) {
-	TOOL_LOOKUP.set(t.id, t);
-	TOOL_LOOKUP.set(t.filename, t);
-	TOOL_LOOKUP.set(t.title.toLowerCase().replace(/\s+/g, "-"), t);
+	const name = t.title.toLowerCase().replace(/\s+/g, "-");
+	const enriched: VibeToolMeta = { ...t, name };
+	TOOL_LOOKUP.set(t.id, enriched);
+	TOOL_LOOKUP.set(t.filename, enriched);
+	TOOL_LOOKUP.set(name, enriched);
+}
+for (const ct of CORE_HARNESS_TOOLS) {
+	if (ct.name) TOOL_LOOKUP.set(ct.name, ct);
+	TOOL_LOOKUP.set(ct.id, ct);
 }
 
 /**

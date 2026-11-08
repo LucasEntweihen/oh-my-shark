@@ -31,6 +31,7 @@ export interface CheckpointInfo {
 	label: string;
 	fileCount: number;
 	status: "open" | "committed" | "rolled_back";
+	files?: string[];
 }
 
 export interface FileChangeDiff {
@@ -374,6 +375,7 @@ export class TransactionalEditEngine {
 			label: c.label,
 			fileCount: c.files.size,
 			status: c.status,
+			files: Array.from(c.files.keys()),
 		}));
 	}
 

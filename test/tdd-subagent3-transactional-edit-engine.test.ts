@@ -108,4 +108,29 @@ describe("Subagent 3 TDD: Transactional Edit Engine & Safety Contracts", () => {
 		const finalContent = await fs.readFile(filePath, "utf8");
 		expect(finalContent).toBe("initial line\n");
 	});
+
+	it("supports multiple files transactionally within single checkpoint", async () => {
+		const fileA = path.join(tempDir, "fileA.ts");
+		const fileB = path.join(tempDir, "fileB.ts");
+		await fs.writeFile(fileA, "content A1\n", "utf8");
+		await fs.writeFile(fileB, "content B1\n", "utf8");
+
+		const ckptId = engine.begin("Multi-file batch");
+		await engine.recordBeforeModification(fileA);
+		await engine.recordBeforeModification(fileB);
+
+		await fs.writeFile(fileA, "content A2\n", "utf8");
+		await fs.writeFile(fileB, "content B2\n", "utf8");
+
+		await engine.recordAfterModification(fileA);
+		await engine.recordAfterModification(fileB);
+
+		engine.commit(ckptId);
+		const checkpoints = engine.listCheckpoints();
+		expect(checkpoints[0].files.length).toBe(2);
+
+		await engine.rollback(ckptId, { force: true });
+		expect(await fs.readFile(fileA, "utf8")).toBe("content A1\n");
+		expect(await fs.readFile(fileB, "utf8")).toBe("content B1\n");
+	});
 });
