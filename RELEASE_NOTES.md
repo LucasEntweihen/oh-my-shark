@@ -1,3 +1,40 @@
+# OhMyShark v0.0.51 — Autonomous Software Engineering Environment & Superiority Architecture
+
+Esta release eleva o OhMyShark de um agente de terminal tradicional para uma **plataforma completa de engenharia de software autônoma**, integrando inteligência de projeto profunda, verificação independente com provas observáveis, autocorreção controlada e sistema de benchmarking contínuo.
+
+---
+
+## 🌟 Novidades da Versão 0.0.51
+
+### 1. Shark Context Engine (`@ohms/project-intelligence`)
+- **Adaptação Dinâmica por Intenção:** Classificação automatizada do tipo de tarefa (`bug_fix`, `feature`, `refactor`, `optimization`, `security`) e ponderação seletiva de contexto.
+- **Pontuação Multidimensional de Relevância:** Avaliação léxica, estrutural e contextual garantindo que apenas arquivos e símbolos de alto sinal sejam incluídos no prompt.
+- **Orçamento Inteligente de Tokens & Detecção de Contexto Obsoleto:** Rastreamento por hash de conteúdo para invalidação imediata de caches de arquivos modificados.
+
+### 2. Shark Impact Analysis & Breaking Risk
+- **Mapeamento Prévio de Efeitos Colaterais:** Identificação precisa de símbolos exportados modificados, chamadores diretos e arquivos afetados antes de qualquer edição.
+- **Descoberta Automatizada de Testes Transitivos:** Priorização e execução automática dos testes unitários e de integração pertinentes aos módulos alterados.
+
+### 3. Independent Verification Engine (`@ohms/execution-engine`)
+- **Auditoria em Múltiplas Camadas Independentes:** Verificação rigorosa de Sintaxe, Tipagem Estrita (política zero-any e proibição de `@ts-ignore`), Quality Gates (limite de 350 linhas por arquivo) e Confinamento de Workspace.
+- **Zero Confiança em Auto-Declarações:** O sistema rejeita afirmações verbais de sucesso do executor sem código de saída limpo e evidências empíricas observáveis.
+
+### 4. Controlled Self-Repair & Transactional FSM
+- **Máquina de Estados Finita Transacional:** FSM formal de 8 estados (`CREATED` -> `INVESTIGATING` -> `PLANNED` -> `EXECUTING` -> `VALIDATING` -> `COMMITTED` / `RECOVERING` / `ABORTED`).
+- **Diagnóstico Categorizado & Limite de Retentativas:** Classificação estruturada de falhas (`SYNTAX_ERROR`, `TYPE_ERROR`, `IMPORT_ERROR`, `TEST_FAILURE`, `SAFETY_VIOLATION`) com teto rígido de retentativas (máximo 3) para impedir loops infinitos e acionar rollback automático em violações de segurança.
+
+### 5. Shark Hybrid Retrieval (4-Way Retrieval)
+- **Recuperação Híbrida Quádrupla:** Combinação calibrada de busca Léxica (FTS5 / tokens), Estrutural (AST e símbolos do grafo), Contextual (recência temporal) e Semântica com reranqueamento ponderado e deduplicação.
+
+### 6. Shark Benchmark Engine & Performance Lab
+- **Avaliação Objetiva em 13 Métricas:** Avaliação contínua de taxa de sucesso, taxa de regressão, eficiência de tokens, latência de ferramentas, precisão de contexto e velocidade de inicialização.
+- **Índice de Superioridade Mensurável:** Comparação matemática direta contra baselines com geração de relatórios estruturados de vantagens e desvantagens.
+
+### 7. Governança de Agentes Baseada em Competências (`AGENTS.md`)
+- **Roster Otimizado:** Substituição de agentes genéricos pelo `@verification-specialist`, focado em auditoria independente, conformidade contratual e quality gates.
+
+---
+
 # OhMyShark v0.0.50 — Hyper-Optimized Autonomous Multi-System Architecture & Unified Desktop Integration
 
 Esta release consolida o OhMyShark (OMSK) como uma plataforma autônoma de alta performance, unificando a integração nativa com o **OMSK Desktop (Tauri 2)**, motor de despacho de ondas e quality gates do **Vibe Coding Toolkit**, sistema reativo da TUI **Deep Sea Cockpit**, motor transacional atômico **TransactionalEditEngine** e base de conhecimento semântica **Mente em Teia (Graphify)**.

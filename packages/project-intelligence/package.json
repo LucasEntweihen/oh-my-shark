@@ -1,6 +1,6 @@
 {
   "name": "@ohms/project-intelligence",
-  "version": "0.0.50",
+  "version": "0.0.51",
   "description": "OhMyShark Project Intelligence Graph - Symbol & Dependency Mapping, Incremental Indexing, and Shark Impact Analysis",
   "type": "module",
   "main": "src/index.ts",
