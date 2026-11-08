@@ -1,6 +1,6 @@
 {
   "name": "@ohms/capability-registry",
-  "version": "0.0.48",
+  "version": "0.0.50",
   "description": "OhMyShark Universal Capability Ecosystem - Skills, MCP, Plugins, and Sandboxed Security Verification",
   "type": "module",
   "main": "src/index.ts",

@@ -1,3 +1,37 @@
+# OhMyShark v0.0.50 — Hyper-Optimized Autonomous Multi-System Architecture & Unified Desktop Integration
+
+Esta release consolida o OhMyShark (OMSK) como uma plataforma autônoma de alta performance, unificando a integração nativa com o **OMSK Desktop (Tauri 2)**, motor de despacho de ondas e quality gates do **Vibe Coding Toolkit**, sistema reativo da TUI **Deep Sea Cockpit**, motor transacional atômico **TransactionalEditEngine** e base de conhecimento semântica **Mente em Teia (Graphify)**.
+
+---
+
+## 🌟 Novidades da Versão 0.0.50
+
+### 1. OMSK Desktop Nativo via Tauri 2 (`apps/desktop`)
+- **Adaptador OmskEngine de Primeira Classe:** Backend nativo em Rust (`src-tauri/src/engine/omsk.rs`) com comunicação via stdio NDJSON (`--mode rpc-ui` para turnos interativos e `--mode acp` para sessões de plano transacional).
+- **Pureza CLI e Zero Overhead:** O comando `omsk desktop` encapsula o lançamento seguro do GUI mantendo os caminhos da CLI 100% headless e livres de acoplamento legado.
+- **Localização Completa em Português (pt-BR):** Suporte nativo completo a strings e fluxos de trabalho em pt-BR.
+
+### 2. Vibe Coding Toolkit Wave Engine & Catálogo Duplo
+- **Despacho em Ondas Paralelas Aclíclicas (Part C):** Particionamento inteligente de tarefas em conjuntos estritamente disjuntos de arquivos com commits serializados.
+- **Quality Gate Estrito de 350 Linhas:** Verificação automatizada de tamanho de arquivos para evitar acúmulo de complexidade e funções monolíticas.
+- **Catálogo Integrado de 22 Ferramentas e 14 Prompts Canônicos:** Inclui o Prompt 13 (Auditoria Diferencial de Segurança) e resolução instantânea das ferramentas do harness (`edit`, `read`, `write`, `bash`).
+
+### 3. Deep Sea Cockpit TUI Reativa & Otimização de Tokens
+- **Artwork Canônico do Tubarão em 17 Linhas:** ASCII shark autêntico (stackedlol/ascii-sharks) com degradê ciano-oceano para azul-abissal.
+- **Layout Responsivo Adaptativo:** Adaptação perfeita desde terminais ultra-compactos (20 colunas) até telas ultrawide (115+ colunas).
+- **Contrato DEEPSEANEURON:** Otimização dinâmica de tokens sem perda de sinal ou qualidade em raciocínios analíticos profundos.
+
+### 4. TransactionalEditEngine com Resiliência EBUSY
+- **Checkpoints Transacionais Multi-Arquivo:** Rastreamento atômico de arquivos alterados com hash SHA-256 antes e depois das mutações.
+- **Escrita Atômica com Swap Files:** Mitigação de conflitos de lock EBUSY no Windows e garantia de reversão bit-a-bit limpa.
+- **Confinamento Rígido de Workspace:** Proteção ativa contra travessia de diretórios (path traversal).
+
+### 5. Mente em Teia SQLite (Grafo de Conhecimento Graphify)
+- **Relacionamentos Semânticos Bidirecionais:** Mapeamento de nós, arestas e dependências com indexação de busca textual completa FTS5.
+- **Travessia de Subgrafos Multi-Hop Aclíclicos:** Recuperação rápida de contexto e histórico de decisões com rastreamento auditável de invalidações.
+
+---
+
 # OhMyShark v0.0.49 — Root Providers, Shared Database & Universal Knowledge Hub
 
 Esta release introduz a centralização e exportação universal dos subsistemas de **Provedores de IA**, **Autenticação/Login**, **Banco de Dados SQLite Compartilhado** e **Base de Conhecimento Relacional (Mente em Teia)** na raiz do projeto, permitindo consumo simultâneo e seguro por múltiplos sistemas, agentes e linguagens externas sem qualquer perda de performance ou degradação na conexão com os modelos.
