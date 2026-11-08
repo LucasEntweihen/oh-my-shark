@@ -27,6 +27,11 @@ export const commands: CommandEntry[] = [
 		help: commandHelp.acpHelp,
 	},
 	{
+		name: "desktop",
+		load: () => import("./commands/desktop").then(m => m.default),
+		help: commandHelp.desktopHelp,
+	},
+	{
 		name: "auth-broker",
 		load: () => import("./commands/auth-broker").then(m => m.default),
 		help: commandHelp.authBrokerHelp,
@@ -323,8 +328,7 @@ function leadingSubcommandIndex(argv: string[]): number {
  * and must be forwarded ({@link resolveCliArgv}, #2970). Every other subcommand
  * parses only its own flags.
  */
-export const LAUNCH_FLAG_COMMANDS: Record<string, true> = { launch: true, acp: true };
-
+export const LAUNCH_FLAG_COMMANDS: Record<string, true> = { launch: true, acp: true, desktop: true };
 /** Whether `arg` names a flag from the launch surface (bare or `--flag=value`). */
 function isLaunchGlobalFlag(arg: string): boolean {
 	const eq = arg.indexOf("=");

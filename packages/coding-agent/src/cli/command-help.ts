@@ -4,6 +4,10 @@ export const acpHelp = {
 	description: "Run Oh My Pi as an ACP (Agent Client Protocol) server over stdio",
 } satisfies CommandMetadata;
 
+export const desktopHelp = {
+	description: "Launch OhMyShark Desktop (OMSK Desktop Mission Control GUI)",
+} satisfies CommandMetadata;
+
 export const agentsHelp = { description: "Manage bundled task agents" } satisfies CommandMetadata;
 
 export const authBrokerHelp = {

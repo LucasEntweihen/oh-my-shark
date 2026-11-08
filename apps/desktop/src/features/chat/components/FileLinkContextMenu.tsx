@@ -1,0 +1,206 @@
+import { useTranslation } from "react-i18next";
+import FileText from "lucide-react/dist/esm/icons/file-text";
+import FolderOpen from "lucide-react/dist/esm/icons/folder-open";
+import Globe from "lucide-react/dist/esm/icons/globe";
+import Link2 from "lucide-react/dist/esm/icons/link-2";
+import Puzzle from "lucide-react/dist/esm/icons/puzzle";
+import { compareByOrder, fileLinkMenuRegistry, pluginIdFromRegistryKey, useRegistry } from "@ccgui/plugin-sdk";
+import { PluginBoundary } from "@/features/plugins/boundary/PluginBoundary";
+import { ContextMenu, type ContextMenuEntry } from "@/components/context-menu";
+import { copyText } from "@/lib/clipboard";
+import { ipc } from "@/lib/ipc";
+import { isWeb } from "@/lib/platform";
+import { canOpenInBrowser } from "@/features/files/editor-view-mode";
+import { useFilesStore } from "@/features/files/store";
+import { resolveChatFileLink } from "@/features/chat/file-link-resolution";
+import {
+  OPEN_APP_ICONS,
+  OPEN_APP_TARGETS,
+  openPathInTarget,
+  readSelectedOpenAppId,
+} from "@/features/open-app/open-app";
+
+export interface FileLinkMenuState {
+  x: number;
+  y: number;
+  /** Path as written in the message (may be workspace-relative). */
+  path: string;
+  /** Absolute path, or null when unresolvable (`~/`, `../`, empty). */
+  resolvedPath: string | null;
+  /** Session workspace root — anchors the async existence/index fallback
+   *  (see resolveChatFileLink). */
+  workspacePath: string;
+}
+
+/**
+ * Right-click menu for chat file links (the green dotted-underline paths in
+ * markdown). Chrome (portal anchoring, viewport clamping, Escape/outside
+ * dismissal) comes from the shared ContextMenu; this component only owns the
+ * file-link entry list:
+ *
+ * - 打开文件 → center-area editor tab (same as left-click)
+ * - 在浏览器中打开 → default web browser; HTML links on desktop only, the
+ *   same gate the file tree and changes panel menus use
+ * - plugin rows (`ctx.ui.registerFileLinkMenuItem`, `ui:file-link-menu`),
+ *   sorted among themselves by order, then scoped id
+ * - 在 <app> 中打开 → the header's selected "open with" target (VS Code,
+ *   Cursor, IDEA); when that target is the file manager this entry *is* the
+ *   reveal action, matching the reference app
+ * - 在访达/资源管理器中显示 → OS file manager
+ * - 复制链接 → file:// URL for absolute paths, raw path otherwise
+ *
+ * Failures are silent (console only), mirroring HeaderOpenActions: a missing
+ * editor binary isn't worth an error surface in the chat timeline.
+ */
+export function FileLinkContextMenu({
+  menu,
+  onClose,
+}: {
+  menu: FileLinkMenuState;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const pluginDefs = useRegistry(fileLinkMenuRegistry);
+
+  const target =
+    OPEN_APP_TARGETS.find((candidate) => candidate.id === readSelectedOpenAppId()) ??
+    OPEN_APP_TARGETS[0];
+
+  const isMac = navigator.platform.includes("Mac");
+  const isWindows = navigator.platform.includes("Win");
+  const revealLabel = isMac
+    ? t("files.revealInFinder")
+    : isWindows
+      ? t("files.revealInExplorer")
+      : t("files.revealInFileManager");
+
+  const resolved = menu.resolvedPath;
+  // Gate on the resolved path when there is one: a message may write
+  // `page.html:12` and resolveFilePath strips the source location before the
+  // extension check. With no resolution the entry stays visible-but-disabled,
+  // like 打开文件 / 在访达中显示.
+  const canBrowse = canOpenInBrowser(resolved ?? menu.path, !isWeb);
+  // The sync `resolved` gates an entry (instant feedback); the async resolver
+  // upgrades it to the path actually on disk before the action runs — a link
+  // whose file sits nested below the workspace root would otherwise open
+  // nothing. Resolving can reject only by returning null, so `act` is total.
+  const act = (run: (path: string) => void) => {
+    void resolveChatFileLink(menu.path, menu.workspacePath).then((path) => {
+      if (path) run(path);
+    });
+  };
+  const revealEntry: ContextMenuEntry = {
+    id: "reveal",
+    label: revealLabel,
+    icon: <FolderOpen className="size-4" aria-hidden />,
+    disabled: !resolved,
+    onSelect: () =>
+      act((path) => {
+        void ipc.revealInFileManager(path).catch(() => {});
+      }),
+  };
+
+  const pluginTarget = Object.freeze({
+    path: menu.path,
+    resolvedPath: resolved,
+    workspacePath: menu.workspacePath,
+  });
+  const pluginEntries: ContextMenuEntry[] = [];
+  for (const def of [...pluginDefs].sort(compareByOrder)) {
+    try {
+      if (def.visible?.(pluginTarget) === false) continue;
+      const label = def.label(pluginTarget);
+      // A blank label would render an unnamed but clickable row.
+      if (typeof label !== "string" || label.trim() === "") {
+        throw new TypeError("File-link menu label must be a non-empty string");
+      }
+      const Icon = def.icon ?? Puzzle;
+      pluginEntries.push({
+        id: def.id,
+        label,
+        disabled: !resolved,
+        icon: <PluginBoundary pluginId={pluginIdFromRegistryKey(def.id)}
+          fallback={<Puzzle className="size-4" aria-hidden />}>
+          <Icon className="size-4" aria-hidden />
+        </PluginBoundary>,
+        onSelect: () => act((path) => {
+          // A plugin may unload or replace its registration while resolution
+          // is pending. Do not dispatch its stale callback afterward.
+          if (fileLinkMenuRegistry.get(def.id) !== def) return;
+          try {
+            void Promise.resolve(def.run(Object.freeze({ ...pluginTarget, resolvedPath: path }))).catch(
+              (error: unknown) => console.error(`[plugins] file-link menu ${def.id} action failed`, error),
+            );
+          } catch (error) {
+            console.error(`[plugins] file-link menu ${def.id} action failed`, error);
+          }
+        }),
+      });
+    } catch (error) {
+      console.error(`[plugins] file-link menu ${def.id} failed to resolve`, error);
+    }
+  }
+
+  const entries: ContextMenuEntry[] = [
+    {
+      id: "open-file",
+      label: t("files.openFile"),
+      icon: <FileText className="size-4" aria-hidden />,
+      disabled: !resolved,
+      onSelect: () =>
+        act((path) => {
+          void useFilesStore.getState().openFile(path);
+        }),
+    },
+    // Silent on failure like the other entries here: the backend re-validates
+    // the (canonical) file, and the chat timeline has no per-action error row.
+    ...(canBrowse
+      ? [
+          {
+            id: "open-in-browser",
+            label: t("files.openInBrowser"),
+            icon: <Globe className="size-4" aria-hidden />,
+            disabled: !resolved,
+            onSelect: () =>
+              act((path) => {
+                void ipc.openInBrowser(path).catch(() => {});
+              }),
+          },
+        ]
+      : []),
+    ...pluginEntries,
+    target.kind === "finder"
+      ? revealEntry
+      : {
+          id: "open-in-app",
+          label: t("files.openInApp", { app: target.label }),
+          icon: <img src={OPEN_APP_ICONS[target.id]} alt="" className="size-4 rounded-[3px]" />,
+          disabled: !resolved,
+          onSelect: () =>
+            act((path) => {
+              void openPathInTarget(path, target).catch(() => {});
+            }),
+        },
+    ...(target.kind === "finder" ? [] : [revealEntry]),
+    {
+      id: "copy-link",
+      label: t("files.copyLink"),
+      icon: <Link2 className="size-4" aria-hidden />,
+      onSelect: () =>
+        act((path) => {
+          const link = path.startsWith("/") ? `file://${path}` : path;
+          void copyText(link);
+        }),
+    },
+  ];
+
+  return (
+    <ContextMenu
+      x={menu.x}
+      y={menu.y}
+      ariaLabel={menu.path}
+      entries={entries}
+      onClose={onClose}
+    />
+  );
+}
