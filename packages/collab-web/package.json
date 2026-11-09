@@ -42,7 +42,8 @@
     "lucide-react": "catalog:",
     "katex": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "scheduler": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "catalog:",
