@@ -6,7 +6,10 @@ export type SharkEventType =
   | "tool.completed"
   | "file.changed"
   | "validation.failed"
-  | "task.committed";
+  | "task.committed"
+  | "profiler.snapshot"
+  | "resource.pressure"
+  | "worker.lifecycle";
 
 export interface BaseEvent {
   type: SharkEventType;
@@ -67,6 +70,25 @@ export interface TaskCommittedEvent extends BaseEvent {
   checkpointId: string;
   artifacts: string[];
 }
+export interface ProfilerSnapshotEvent extends BaseEvent {
+  type: "profiler.snapshot";
+  ramCurrentMb: number;
+  cpuPercent: number;
+  activeWorkers: number;
+}
+
+export interface ResourcePressureEvent extends BaseEvent {
+  type: "resource.pressure";
+  level: "high" | "critical";
+  rssMb: number;
+}
+
+export interface WorkerLifecycleEvent extends BaseEvent {
+  type: "worker.lifecycle";
+  action: "spawned" | "reaped" | "completed";
+  workerId: string;
+}
+
 
 export type SharkEvent =
   | SessionStartedEvent
@@ -76,7 +98,10 @@ export type SharkEvent =
   | ToolCompletedEvent
   | FileChangedEvent
   | ValidationFailedEvent
-  | TaskCommittedEvent;
+  | TaskCommittedEvent
+  | ProfilerSnapshotEvent
+  | ResourcePressureEvent
+  | WorkerLifecycleEvent;
 
 export type EventHandler<T extends SharkEvent = SharkEvent> = (event: T) => void | Promise<void>;
 

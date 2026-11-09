@@ -28,6 +28,27 @@ export interface BenchmarkComparison {
   advantages: string[];
   disadvantages: string[];
 }
+export interface PerformanceScenarioRecord {
+  readonly scenario: string;
+  readonly metricName: string;
+  readonly beforeValue: number;
+  readonly afterValue: number;
+  readonly unit: string;
+  readonly targetReductionPercent: number;
+}
+
+export interface PerformanceScenarioResult extends PerformanceScenarioRecord {
+  readonly actualReductionPercent: number;
+  readonly targetMet: boolean;
+}
+
+export interface PerformanceReport {
+  readonly scenarios: readonly PerformanceScenarioResult[];
+  readonly overallPassRatePercent: number;
+  readonly averageReductionPercent: number;
+  readonly summary: string;
+}
+
 
 export class SharkBenchmarkEngine {
   /**
@@ -98,6 +119,40 @@ export class SharkBenchmarkEngine {
       summary,
       advantages,
       disadvantages,
+    };
+  }
+
+  /**
+   * Avalia a suíte obrigatória de 15 cenários de performance (Fase 18).
+   */
+  public evaluateOptimizationSuite(scenarios: readonly PerformanceScenarioRecord[]): PerformanceReport {
+    const results: PerformanceScenarioResult[] = [];
+    let totalReduction = 0;
+    let passedCount = 0;
+
+    for (const sc of scenarios) {
+      const diff = sc.beforeValue - sc.afterValue;
+      const actualReduction = sc.beforeValue > 0 ? Math.round((diff / sc.beforeValue) * 1000) / 10 : 0;
+      const targetMet = actualReduction >= sc.targetReductionPercent;
+
+      if (targetMet) passedCount++;
+      totalReduction += actualReduction;
+
+      results.push({
+        ...sc,
+        actualReductionPercent: actualReduction,
+        targetMet,
+      });
+    }
+
+    const passRate = scenarios.length > 0 ? Math.round((passedCount / scenarios.length) * 100) : 100;
+    const avgReduction = scenarios.length > 0 ? Math.round((totalReduction / scenarios.length) * 10) / 10 : 0;
+
+    return {
+      scenarios: results,
+      overallPassRatePercent: passRate,
+      averageReductionPercent: avgReduction,
+      summary: `OMSK Optimization Suite: ${passedCount}/${scenarios.length} metas de engenharia atingidas (${passRate}% de aprovação), com redução média de recursos de ${avgReduction}%.`,
     };
   }
 }

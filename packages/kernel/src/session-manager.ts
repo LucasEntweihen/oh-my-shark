@@ -1,4 +1,5 @@
 import type { SharkEventBus } from "./event-bus";
+import { PerformanceProfiler } from "./performance-profiler";
 
 export type SessionState = "idle" | "running" | "paused" | "finished";
 
@@ -12,10 +13,29 @@ export interface SessionInfo {
   tasksCompleted: number;
   tasksFailed: number;
 }
+export interface SessionMessage {
+  readonly id: string;
+  readonly role: "system" | "user" | "assistant" | "tool";
+  readonly content: string;
+  readonly timestamp: number;
+  readonly tokenCount?: number;
+  readonly blobHash?: string;
+}
+
+export interface PaginatedHistory {
+  readonly messages: readonly SessionMessage[];
+  readonly totalCount: number;
+  readonly offset: number;
+  readonly limit: number;
+  readonly hasMore: boolean;
+}
+
 
 export class SharkSessionManager {
   private currentSession: SessionInfo | null = null;
   private readonly eventBus?: SharkEventBus;
+  private history: SessionMessage[] = [];
+  private blobRegistry: Map<string, string> = new Map();
 
   constructor(eventBus?: SharkEventBus) {
     this.eventBus = eventBus;
@@ -31,6 +51,7 @@ export class SharkSessionManager {
       tasksFailed: 0,
     };
     this.currentSession = session;
+    this.history = [];
 
     this.eventBus?.emit({
       type: "session.started",
@@ -80,6 +101,7 @@ export class SharkSessionManager {
       artifacts,
       timestamp: Date.now(),
     });
+    PerformanceProfiler.getInstance().recordTaskCompletionHeapSample(taskId);
   }
 
   public failTask(taskId: string, reason: string, failedCheck: string): void {
@@ -96,6 +118,7 @@ export class SharkSessionManager {
       failedCheck,
       timestamp: Date.now(),
     });
+    PerformanceProfiler.getInstance().recordTaskCompletionHeapSample(taskId);
   }
 
   public pauseSession(): void {
@@ -120,5 +143,59 @@ export class SharkSessionManager {
 
     const finished = { ...this.currentSession };
     return finished;
+  }
+
+  // --- Incremental History & Memory Deduplication (Fases 04 e 05) ---
+
+  public appendMessage(msg: Omit<SessionMessage, "id" | "timestamp"> & { id?: string; timestamp?: number }): SessionMessage {
+    const id = msg.id ?? `msg_${this.history.length + 1}_${Date.now()}`;
+    const timestamp = msg.timestamp ?? Date.now();
+    const deduplicatedContent = this.deduplicateBlob(msg.content);
+
+    const fullMessage: SessionMessage = {
+      id,
+      role: msg.role,
+      content: deduplicatedContent,
+      timestamp,
+      tokenCount: msg.tokenCount,
+      blobHash: msg.blobHash,
+    };
+
+    this.history.push(fullMessage);
+    return fullMessage;
+  }
+
+  public getPaginatedHistory(offset: number = 0, limit: number = 50): PaginatedHistory {
+    const safeOffset = Math.max(0, offset);
+    const safeLimit = Math.max(1, limit);
+    const totalCount = this.history.length;
+    const slice = this.history.slice(safeOffset, safeOffset + safeLimit);
+
+    return {
+      messages: slice,
+      totalCount,
+      offset: safeOffset,
+      limit: safeLimit,
+      hasMore: safeOffset + safeLimit < totalCount,
+    };
+  }
+
+  public getMessageCount(): number {
+    return this.history.length;
+  }
+
+  public deduplicateBlob(content: string): string {
+    if (content.length < 128) return content;
+    const sampleKey = `${content.length}:${content.slice(0, 32)}:${content.slice(-32)}`;
+    const existing = this.blobRegistry.get(sampleKey);
+    if (existing !== undefined && existing === content) {
+      return existing;
+    }
+    this.blobRegistry.set(sampleKey, content);
+    return content;
+  }
+
+  public clearBlobRegistry(): void {
+    this.blobRegistry.clear();
   }
 }

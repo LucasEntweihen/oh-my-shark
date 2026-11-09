@@ -13,6 +13,24 @@ export class SecuritySandbox {
     return true;
   }
 
+  public static checkRealPathSafety(targetPath: string, workspaceRoot: string): boolean {
+    if (!this.checkPathSafety(targetPath, workspaceRoot)) return false;
+    try {
+      const fs = require("node:fs");
+      if (fs.existsSync(targetPath)) {
+        const realTarget = fs.realpathSync(targetPath);
+        const realRoot = fs.realpathSync(workspaceRoot);
+        const rel = path.relative(realRoot, realTarget);
+        if (rel.startsWith("..") || path.isAbsolute(rel)) {
+          return false;
+        }
+      }
+    } catch {
+      // File does not exist yet; structural path safety is retained
+    }
+    return true;
+  }
+
   public static redactSecrets(text: string): string {
     let result = text;
 

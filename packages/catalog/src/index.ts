@@ -6,6 +6,7 @@ export * from "./fireworks-model-id";
 export * from "./identity";
 export * from "./model-cache";
 export * from "./model-manager";
+export * from "./model-indexer";
 export * from "./model-thinking";
 export * from "./model-tokenizer";
 export * from "./models";
