@@ -79,11 +79,11 @@
       "vite": "^8.1.4",
       "vite-plugin-solid": "^2.11.12",
       "@oh-my-pi/pi-vibe-toolkit": "18.1.8",
-      "@ohms/kernel": "0.0.48",
-      "@ohms/project-intelligence": "0.0.48",
-      "@ohms/capability-registry": "0.0.48",
-      "@ohms/execution-engine": "0.0.48",
-      "@ohms/terminal-layout": "0.0.48"
+      "@ohms/kernel": "0.0.52",
+      "@ohms/project-intelligence": "0.0.52",
+      "@ohms/capability-registry": "0.0.52",
+      "@ohms/execution-engine": "0.0.52",
+      "@ohms/terminal-layout": "0.0.52"
     }
   },
   "type": "module",

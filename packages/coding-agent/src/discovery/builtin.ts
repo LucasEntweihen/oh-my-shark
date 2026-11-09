@@ -299,7 +299,21 @@ async function loadSkills(ctx: LoadContext): Promise<LoadResult<Skill>> {
 		requireDescription: true,
 	});
 
-	const results = await Promise.all([...projectScans, userScan]);
+	// Universal Skills Engine: user-installed and project-local skills
+	const ohmsInstalledScan = scanSkillsFromDir(ctx, {
+		dir: path.join(ctx.home, ".ohms", "skills", "installed"),
+		providerId: PROVIDER_ID,
+		level: "user",
+		requireDescription: false,
+	});
+	const ohmsProjectScan = scanSkillsFromDir(ctx, {
+		dir: path.join(ctx.cwd, ".ohms", "skills"),
+		providerId: PROVIDER_ID,
+		level: "project",
+		requireDescription: false,
+	});
+
+	const results = await Promise.all([...projectScans, userScan, ohmsInstalledScan, ohmsProjectScan]);
 	return {
 		items: results.flatMap(r => r.items),
 		warnings: results.flatMap(r => r.warnings ?? []),

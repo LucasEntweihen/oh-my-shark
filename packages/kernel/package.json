@@ -1,6 +1,6 @@
 {
   "name": "@ohms/kernel",
-  "version": "0.0.51",
+  "version": "0.0.52",
   "description": "OhMyShark Core Kernel - Typed Event Bus, Session Lifecycle, and Capability-Based Security",
   "type": "module",
   "main": "src/index.ts",
