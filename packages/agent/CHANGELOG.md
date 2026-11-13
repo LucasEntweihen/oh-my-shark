@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.0.53] - 2026-11-13
+
 ### Fixed
 
 - Fixed superseded read pruning to recognize equivalent relative paths with POSIX/Windows separators, preventing duplicate file contents from remaining in conversation context.

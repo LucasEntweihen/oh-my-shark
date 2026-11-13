@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@oh-my-pi/pi-vibe-toolkit",
-  "version": "18.1.8",
+  "version": "0.0.53",
   "description": "Vibe Coding Toolkit engine for Oh My Shark: wave dispatching, quality gates, canonical documentation, prompts and tool catalog",
   "homepage": "https://ohmyshark.vercel.app",
   "author": "LucasEntweihen",

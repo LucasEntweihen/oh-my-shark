@@ -2,9 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.53] - 2026-11-13
+
 ### Added
 
 - Reinvented collab web experience according to DESIGN.md with 3-column desktop layout, agency modes (Code, Research, Bible), Bible Strong Avatar procedural SVG studio, and split-screen theological dictionary with Strong numbers.
+
 ## [18.1.3] - 2026-09-02
 
 ### Fixed

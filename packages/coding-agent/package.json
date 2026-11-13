@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@oh-my-pi/pi-coding-agent",
-  "version": "18.1.8",
+  "version": "0.0.53",
   "description": "OhMyShark terminal coding agent (ohms CLI): one-command install, curated model setup, long sessions that stay sharp",
   "homepage": "https://ohmyshark.vercel.app",
   "author": "LucasEntweihen",

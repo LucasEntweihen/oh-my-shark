@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.0.53] - 2026-11-13
+
 ### Added
 
 - Added `openai/gpt-6-luna`, `openai/gpt-6-sol`, `openai-codex/gpt-6-luna`, and `openai-codex/gpt-6-sol` catalog models with accurate pricing, reasoning effort support, and 1.05M/272K context window configurations.

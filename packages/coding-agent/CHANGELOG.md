@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.0.53] - 2026-11-13
+
 ### Added
 
 - Added `/agent-sandbox` slash command and web studio with live Bible Strong Avatar integration, animated 5-color gradient shimmer, hidden `.omp-agents` storage, and `AGENTS.md` compilation.
@@ -39,15 +41,13 @@
 - Added native Windows ARM64 binaries with architecture-aware installation and updates.
 - Added an MLX backend for running local tiny models on Apple silicon. Configure providers.tinyModelDevice=mlx, or use PI_TINY_DEVICE=mlx or metal, to run title generation, memory tasks, and automatic thinking classification with MLX models, with an ONNX CPU fallback when Python is unavailable.
 - Added Qwen3 1.7B as a local memory and thinking-classification model for the MLX backend.
+- Added the `worktree.cleanSource` setting to reset and clean the original checkout when creating a worktree with `/wt`.
 
 ### Changed
 
 - Local tiny models for titles, memory, and automatic thinking classification now share on-demand workers across omp processes, reducing redundant resource usage; workers stop automatically after inactivity.
 - PI_TINY_DEVICE=metal now selects the MLX backend on macOS.
 - Updated agent reactions to trigger on the opening emoji instead of requiring a newline, consuming any following whitespace.
-### Added
-
-- Added the `worktree.cleanSource` setting to reset and clean the original checkout when creating a worktree with `/wt`.
 
 ### Fixed
 
