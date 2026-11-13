@@ -46,7 +46,7 @@ pub enum PlanApproval {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PlanReviewKind {
-    /// 原生请求真实暂停执行，等待客户端按原生格式回答（OMP/DSH/Grok/Qoder）。
+    /// 原生请求真实暂停执行，等待客户端按原生格式回答（OMSK/DSH/Grok/Qoder）。
     NativeRequest,
     /// 计划轮次正常结束后由客户端仲裁；批准 = 原子创建一次执行 turn（Codex）。
     NextTurn,
@@ -194,7 +194,7 @@ pub struct PlanReview {
     /// 用户看到并复制的最终 Markdown；必须与原生最终正文逐字一致。
     pub content: String,
     /// 正文变化检测（非安全哈希；submit 前重核，文件型来源 TOCTOU 限制按
-    /// PRD §5-OMP.3 记录在能力声明里）。
+    /// PRD §5-OMSK.3 记录在能力声明里）。
     pub content_hash: String,
     /// false = 草稿/来源不确定：任何批准路径都必须拒绝。
     pub complete: bool,
@@ -224,7 +224,7 @@ pub fn now_ms() -> i64 {
 
 /// 非加密的正文指纹：检测 revision 之间与提交前后的正文变化。不用于安全
 /// 绑定（原生文件并发修改的竞态只能由上游不可变 proposal 解决，见 PRD
-/// §5-OMP.3），所以标准库 SipHash 足够，不引入新依赖。
+/// §5-OMSK.3），所以标准库 SipHash 足够，不引入新依赖。
 pub fn content_hash(content: &str) -> String {
     use std::hash::{Hash, Hasher};
     let mut hasher = std::collections::hash_map::DefaultHasher::new();

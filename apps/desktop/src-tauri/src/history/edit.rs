@@ -106,7 +106,7 @@ fn validate_source_shape(engine: &str, session_id: &str, path: &Path) -> Result<
         "kimi" => name == "wire.jsonl",
         "minimax" => name == "messages.jsonl",
         "opencode" => super::split_opencode_db_path(path).is_some() || name == format!("{session_id}.json"),
-        // Timestamped OMP and Codex filenames are legitimate: their metadata
+        // Timestamped OMSK and Codex filenames are legitimate: their metadata
         // rows, not a guessed UUID-only filename, carry the session identity.
         "codex" | "pi" | "omp" | "omsk" | "ohms" => path.extension().and_then(|extension| extension.to_str()) == Some("jsonl"),
     };

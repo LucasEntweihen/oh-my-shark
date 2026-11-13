@@ -50,7 +50,7 @@ async fn real_clis_send_shell_credential_to_loopback_server() {
                 "cost": {"input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0}}]
         }}})
         .to_string();
-        // JSON 也是合法 YAML；两份文件仍分别走生产 PI/OMP 解析器。
+        // JSON 也是合法 YAML；两份文件仍分别走生产 PI/OMSK 解析器。
         std::fs::write(
             agent.join(if engine == "pi" {
                 "models.json"

@@ -7,7 +7,7 @@
 //!    可用 env `CCGUI_SKILLS_HUB_HOME` 覆盖（测试注入点）。参考实现用
 //!    `~/.ccgui/skills`，与本应用的可写存储隔离，不共享注册表。
 //! 2. 同步目标覆盖本应用接入的全部 CLI（Claude / Codex / Kimi / Grok / PI /
-//!    OMP / dsh / Antigravity / Gemini / OpenCode / Qoder / Qoder CN / Hermes）
+//!    OMSK / dsh / Antigravity / Gemini / OpenCode / Qoder / Qoder CN / Hermes）
 //!    加跨 agent 的 `~/.agents`；引擎目录解析走 `engine::engine_home` 与
 //!    `engine::codex_home`，尊重各 CLI 自己的 env（`CLAUDE_CONFIG_DIR` /
 //!    `CODEX_HOME` / `GROK_HOME` / `PI_CODING_AGENT_DIR`…）与设置页的 Codex

@@ -140,7 +140,7 @@ describe("EngineModelPanel channel picker", () => {
     act(() => {
       root.render(
         <EngineModelPanel
-          option={{ id: "omp", label: "OMP" }}
+          option={{ id: "omp", label: "OMSK" }}
           models={[]}
           selectedModelId=""
           query=""

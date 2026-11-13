@@ -603,6 +603,19 @@ describe("openai-completions wire-quirk compat detection", () => {
 		expect(resolveModelPolicy(completionsSpec()).compat.dropThinkingWhenReasoningEffort).toBe(false);
 	});
 
+	describe("Morph worker affinity", () => {
+		// Morph is reached only through custom providers, so the base URL alone identifies it.
+		it.each([
+			["openai-completions", completionsSpec],
+			["openai-responses", responsesSpec],
+		] as const)("sends x-session-id only to Morph over %s", (_api, spec) => {
+			const morph = resolveModelPolicy(spec({ provider: "my-morph", baseUrl: "https://api.morphllm.com/v1" }));
+			const other = resolveModelPolicy(spec({ provider: "my-morph", baseUrl: "https://llm.example.com/v1" }));
+			expect(morph.compat.promptCacheSessionHeader).toBe("x-session-id");
+			expect(other.compat.promptCacheSessionHeader).toBeUndefined();
+		});
+	});
+
 	it("floors the stream timeout for a loopback litellm proxy without enabling reasoning replay (#4786)", () => {
 		// A litellm proxy on a loopback baseUrl fronts a local llama-server whose
 		// prefill can exceed the 100s default first-event budget on large prompts.

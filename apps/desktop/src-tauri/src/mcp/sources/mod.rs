@@ -491,7 +491,7 @@ fn kimi_home() -> PathBuf {
 fn grok_home() -> PathBuf {
     crate::engine::engine_home(Some("GROK_HOME"), ".grok")
 }
-/// OMP 的 agent 目录（用户级 mcp.json 就在其下）。
+/// OMSK 的 agent 目录（用户级 mcp.json 就在其下）。
 fn omp_agent_dir() -> PathBuf {
     for key in ["OMP_CODING_AGENT_DIR", "PI_CODING_AGENT_DIR"] {
         if let Some(dir) = std::env::var_os(key).filter(|value| !value.is_empty()) {

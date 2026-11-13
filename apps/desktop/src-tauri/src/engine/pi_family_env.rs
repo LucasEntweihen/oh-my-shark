@@ -1,7 +1,7 @@
-//! 为 GUI 拉起的 PI/OMP 补充登录 shell 中的密钥，只读取当前引擎的配置。
+//! 为 GUI 拉起的 PI/OMSK 补充登录 shell 中的密钥，只读取当前引擎的配置。
 //!
-//! PI 使用 `$NAME` / `${NAME}` 模板（`$$` 转义）；OMP 的 providers.*.apiKey
-//! 使用裸变量名，`!` 命令和字面量由 OMP 自己处理。配置和用户 rc 文件均不改写。
+//! PI 使用 `$NAME` / `${NAME}` 模板（`$$` 转义）；OMSK 的 providers.*.apiKey
+//! 使用裸变量名，`!` 命令和字面量由 OMSK 自己处理。配置和用户 rc 文件均不改写。
 //! 状态：收集引用 → 跳过进程或命令已有项 → 复用未过期正值 → 按名字探测缺项。
 //! 未找到、失败和超时不缓存；正值最多缓存 5 秒，换密钥无需重启应用。
 //! 只注入本次子进程，不记录值。WSL 由调用方跳过，本机环境不跨 ssh。
@@ -163,7 +163,7 @@ fn collect_omp_env_refs(text: &str) -> BTreeSet<String> {
         .flat_map(|providers| providers.values())
         .filter_map(|provider| provider.get("apiKey"))
         .filter_map(serde_json::Value::as_str)
-        // OMP 把整个字符串当变量名；不 trim、不展开 $，也不执行 ! 命令。
+        // OMSK 把整个字符串当变量名；不 trim、不展开 $，也不执行 ! 命令。
         .filter(|key| is_valid_env_name(key))
         .map(ToOwned::to_owned)
         .collect()

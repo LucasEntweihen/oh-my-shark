@@ -1,13 +1,13 @@
-//! OMP 18.0.11 的 ACP 计划会话驱动（PRD §5-OMP 主方案，最高优先级引擎）。
+//! OMSK 18.0.11 的 ACP 计划会话驱动（PRD §5-OMSK 主方案，最高优先级引擎）。
 //!
 //! 协议事实全部来自本机安装源码
 //! （/Users/zhukunpeng/node_modules/@oh-my-pi/pi-coding-agent）与
-//! p0-evidence-plan-approval-2026-09-24.md §OMP：
+//! p0-evidence-plan-approval-2026-09-24.md §OMSK：
 //! - 入口：`omp --mode acp`（src/cli/flag-tables.ts:123-127；`omp acp`
 //!   子命令等价，src/commands/acp.ts:30-33）。裸 `--plan <value>` 是计划
 //!   **模型角色**标志，不是模式开关（args.ts:187-217 注释）。
 //! - initialize 的 clientCapabilities **必须声明 elicitation.form**
-//!   （pi-utils/src/acp/protocol.ts:150）：OMP 在审批前检查该声明，
+//!   （pi-utils/src/acp/protocol.ts:150）：OMSK 在审批前检查该声明，
 //!   **未声明时静默自动批准**（acp-agent.ts:2006-2007
 //!   `if (!supportsForm) return true;`）。启动前自检，缺失即 fail-closed。
 //! - session/new {cwd, mcpServers} → session/set_mode {modeId:"plan"}
@@ -30,12 +30,12 @@
 //!   （acp-agent.ts:670-736 vs 1844-1866），审批点跨重启不可恢复——恢复
 //!   请求直接拒绝。
 //!
-//! 计划文件白名单读取：限定 OMP 会话 artifacts 目录
+//! 计划文件白名单读取：限定 OMSK 会话 artifacts 目录
 //! （~/.omp/agent/sessions/<编码cwd>/<时间戳>_<sessionId>/local/，
 //! session-manager.ts:109-112 + session-paths.ts:62-95 + dirs.ts:567-574,
 //! 871-874），拒绝符号链接逃逸，大小上限 1 MiB，读后算 content_hash。
 //! 计划文件的最终选择以「文件前 12 行 == elicitation 预览」绑定本次提案
-//! 与正文版本，对不上就 fail-closed（PRD §5-OMP.3）。
+//! 与正文版本，对不上就 fail-closed（PRD §5-OMSK.3）。
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -56,22 +56,22 @@ use crate::engine::{
     VirtualRunGuard,
 };
 
-/// elicitation select 的批准选项标签；OMP 严格相等判定
+/// elicitation select 的批准选项标签；OMSK 严格相等判定
 /// （acp-agent.ts:97 `const APPROVE_OPTION = "Approve and execute";`、
 /// :2021 `return value === APPROVE_OPTION;`）。逐字漂移 = 落入 refine。
 const APPROVE_OPTION: &str = "Approve and execute";
 /// 修改选项标签（acp-agent.ts:98）。ACP 反馈只有这个二值信号，没有文本
 /// 载体；用户反馈文本留存于审批记录，无法写进回复帧。
 const REFINE_OPTION: &str = "Refine plan";
-/// OMP 计划提案到达的线上方法（pi-utils/src/acp/connection.ts:109-111）。
+/// OMSK 计划提案到达的线上方法（pi-utils/src/acp/connection.ts:109-111）。
 const ELICITATION_METHOD: &str = "elicitation/create";
 /// ACP plan 模式 id（acp-agent.ts:95 `const ACP_PLAN_MODE_ID = "plan";`）。
 const PLAN_MODE_ID: &str = "plan";
-/// 计划文件全文读取上限（适配器自设安全边界；OMP 本身无长度限制）。
+/// 计划文件全文读取上限（适配器自设安全边界；OMSK 本身无长度限制）。
 const MAX_PLAN_BYTES: usize = 1024 * 1024;
 
 /// 恢复请求的受控拒绝理由（build_command 与驱动双重把关共用）。
-pub(crate) const RESUME_REFUSAL: &str = "OMP ACP 计划会话必须从全新会话开始：审批点（planModeState 与 proposal handler）是纯内存状态，session/load 不会重新注册（acp-agent.ts:670-736 vs 1844-1866），恢复的会话没有可核验的人工等待点。请开新会话发起计划请求。";
+pub(crate) const RESUME_REFUSAL: &str = "OMSK ACP 计划会话必须从全新会话开始：审批点（planModeState 与 proposal handler）是纯内存状态，session/load 不会重新注册（acp-agent.ts:670-736 vs 1844-1866），恢复的会话没有可核验的人工等待点。请开新会话发起计划请求。";
 
 /// Per-turn projection state: prompt 结果里的 usage、tool_call 名称补丁表、
 /// usage_update 推送的上下文窗口。
@@ -82,7 +82,7 @@ struct TurnView {
     context_window: Option<i64>,
 }
 
-/// Drive one send as an OMP ACP plan-mode turn. Settle contract mirrors
+/// Drive one send as an OMSK ACP plan-mode turn. Settle contract mirrors
 /// grok_acp::run_acp_turn：停住的提问卡片与计划审批先落定/过期，再发终态
 /// 事件，最后按 run/session 键清理注册表。interrupt 语义与 grok 一致：
 /// killed 时 partial output 按正常 turn end 提交。
@@ -179,13 +179,13 @@ async fn handshake_and_prompt(
     req: &SendRequest,
     killed: &AtomicBool,
 ) -> Result<(), String> {
-    // P0 关键安全事实：OMP 只在客户端声明 elicitation.form 时才把计划审批
+    // P0 关键安全事实：OMSK 只在客户端声明 elicitation.form 时才把计划审批
     // 交给客户端，否则静默自动批准（acp-agent.ts:2006-2007）。构造后自检，
     // 缺失即在任何会话动作之前 fail-closed。
     let init = omp_initialize_params();
     if !elicitation_form_declared(&init) {
         return Err(
-            "OMP ACP 握手缺少 clientCapabilities.elicitation.form 声明：OMP 未收到声明时会静默自动批准计划（acp-agent.ts:2006-2007），按失败关闭拒绝启动"
+            "OMSK ACP 握手缺少 clientCapabilities.elicitation.form 声明：OMSK 未收到声明时会静默自动批准计划（acp-agent.ts:2006-2007），按失败关闭拒绝启动"
                 .to_string(),
         );
     }
@@ -210,10 +210,10 @@ async fn handshake_and_prompt(
         )
         .await?;
     let session_id = extract_session_id(&session_result)
-        .ok_or_else(|| "OMP session/new 未返回 sessionId".to_string())?;
+        .ok_or_else(|| "OMSK session/new 未返回 sessionId".to_string())?;
     if !plan_mode_advertised(&session_result) {
         return Err(
-            "OMP 会话未提供 plan 模式（plan.enabled 被关闭），无法进入人工计划审批".to_string(),
+            "OMSK 会话未提供 plan 模式（plan.enabled 被关闭），无法进入人工计划审批".to_string(),
         );
     }
     core.dispatch_event(state, EngineEvent::SessionId(session_id.clone()));
@@ -235,7 +235,7 @@ async fn handshake_and_prompt(
             &mut |_| None,
         )
         .await
-        .map_err(|error| format!("OMP 应用选定模型 `{model}` 失败: {error}"))?;
+        .map_err(|error| format!("OMSK 应用选定模型 `{model}` 失败: {error}"))?;
     }
     if let Some(effort) = req
         .effort
@@ -252,7 +252,7 @@ async fn handshake_and_prompt(
             &mut |_| None,
         )
         .await
-        .map_err(|error| format!("OMP 应用推理强度 `{effort}` 失败: {error}"))?;
+        .map_err(|error| format!("OMSK 应用推理强度 `{effort}` 失败: {error}"))?;
     }
     // set_mode 成功才 prompt（P0：plan.enabled 默认 true；被关闭时这里返回
     // "Unsupported ACP mode" 错误，直接失败而不是退回普通会话）。
@@ -265,7 +265,7 @@ async fn handshake_and_prompt(
         &mut |_| None,
     )
     .await
-    .map_err(|error| format!("OMP 进入 plan 模式失败: {error}"))?;
+    .map_err(|error| format!("OMSK 进入 plan 模式失败: {error}"))?;
 
     let blocks = prompt_blocks(&req.prompt, &req.images, &req.workspace)?;
     let workspace = req.workspace.clone();
@@ -314,7 +314,7 @@ async fn handshake_and_prompt(
 
 // ==================== 握手与能力自检 ====================
 
-/// OMP 的 initialize 参数：共享管线参数 + elicitation.form 声明
+/// OMSK 的 initialize 参数：共享管线参数 + elicitation.form 声明
 /// （protocol.ts:150 的 ClientCapabilities.elicitation.form）。
 fn omp_initialize_params() -> Value {
     let mut params = initialize_params();
@@ -322,7 +322,7 @@ fn omp_initialize_params() -> Value {
     params
 }
 
-/// 启动前自检：OMP 未收到 form 声明会静默自动批准，声明缺失必须 fail。
+/// 启动前自检：OMSK 未收到 form 声明会静默自动批准，声明缺失必须 fail。
 fn elicitation_form_declared(params: &Value) -> bool {
     params
         .get("clientCapabilities")
@@ -357,7 +357,7 @@ fn extract_session_id(value: &Value) -> Option<String> {
         .map(str::to_string)
 }
 
-/// ACP prompt content blocks: text plus base64 image blocks（OMP 声明
+/// ACP prompt content blocks: text plus base64 image blocks（OMSK 声明
 /// promptCapabilities.image=true，acp-agent.ts:668-673）。
 fn prompt_blocks(text: &str, images: &[String], workspace: &Path) -> Result<Vec<Value>, String> {
     let mut blocks = vec![json!({ "type": "text", "text": text })];
@@ -453,7 +453,7 @@ fn preview_matches(content: &str, preview: &str) -> bool {
 
 // ==================== 计划文件白名单定位与读取 ====================
 
-/// OMP 会话根目录候选（pi-utils/dirs.ts:567-574 getAgentDir、:871-874
+/// OMSK 会话根目录候选（pi-utils/dirs.ts:567-574 getAgentDir、:871-874
 /// getSessionsDir）：PI_CODING_AGENT_DIR 直接覆盖 agent 目录；默认布局下
 /// XDG_DATA_HOME/omp 已存在时拍平 agent/ 前缀（dirs.ts:336-372）；
 /// 否则 ~/.<PI_CONFIG_DIR=.omp>/agent/sessions。profile 布局
@@ -697,7 +697,7 @@ fn read_plan_candidate(local_root: &Path, name: &str) -> Result<Option<String>, 
     };
     if !file_canonical.starts_with(&root_canonical) {
         return Err(format!(
-            "计划文件 `{name}` 经符号链接逃逸出 OMP 会话 artifacts 目录，拒绝读取"
+            "计划文件 `{name}` 经符号链接逃逸出 OMSK 会话 artifacts 目录，拒绝读取"
         ));
     }
     let meta = std::fs::metadata(&file_canonical).map_err(|error| error.to_string())?;
@@ -718,17 +718,17 @@ fn read_plan_candidate(local_root: &Path, name: &str) -> Result<Option<String>, 
 
 /// 定位并核验本次提案的计划文件：elicitation 只带前 12 行预览，全文必须
 /// 从计划文件读；「前 12 行 == 预览」把提案与正文版本绑在一起，对不上
-/// 绝不批准（PRD §5-OMP.3）。返回 (全文, elicitation 标题)。
+/// 绝不批准（PRD §5-OMSK.3）。返回 (全文, elicitation 标题)。
 fn load_verified_plan(local_roots: &[PathBuf], params: &Value) -> Result<(String, String), String> {
     let message = params
         .get("message")
         .and_then(Value::as_str)
-        .ok_or_else(|| "OMP 计划 elicitation 缺少 message，无法核验正文".to_string())?;
+        .ok_or_else(|| "OMSK 计划 elicitation 缺少 message，无法核验正文".to_string())?;
     let (title, preview) = parse_approval_message(message)
-        .ok_or_else(|| "OMP 计划 elicitation 的 message 不是计划审批格式，拒绝凭摘要批准".to_string())?;
+        .ok_or_else(|| "OMSK 计划 elicitation 的 message 不是计划审批格式，拒绝凭摘要批准".to_string())?;
     if local_roots.is_empty() {
         return Err(
-            "在本机 OMP 会话目录中找不到该会话的 artifacts 目录（自定义 session-dir/profile 布局未覆盖），按失败关闭拒绝批准"
+            "在本机 OMSK 会话目录中找不到该会话的 artifacts 目录（自定义 session-dir/profile 布局未覆盖），按失败关闭拒绝批准"
                 .to_string(),
         );
     }
@@ -749,7 +749,7 @@ fn load_verified_plan(local_roots: &[PathBuf], params: &Value) -> Result<(String
         "计划文件与 elicitation 预览不一致（提案后正文被改动？），按失败关闭拒绝批准；请让引擎重新提案"
             .to_string()
     } else {
-        "OMP 会话 artifacts 目录中没有计划文件（local://*plan.md），按失败关闭拒绝批准".to_string()
+        "OMSK 会话 artifacts 目录中没有计划文件（local://*plan.md），按失败关闭拒绝批准".to_string()
     })
 }
 
@@ -853,7 +853,7 @@ fn build_review(
     Ok((record, context))
 }
 
-/// One `session/update` notification projected to engine events. OMP 的
+/// One `session/update` notification projected to engine events. OMSK 的
 /// 增量词汇与 qoder/grok 相同，复用共享映射；usage_update 只取上下文
 /// 窗口（acp-agent.ts:2153-2158），token 总量以 prompt 应答为准。
 fn handle_session_update(
@@ -1059,7 +1059,7 @@ mod tests {
             params["clientCapabilities"]["elicitation"],
             json!({ "form": {} })
         );
-        // 共享管线的裸参数没有声明——OMP 会因此静默自动批准，自检必须拦下。
+        // 共享管线的裸参数没有声明——OMSK 会因此静默自动批准，自检必须拦下。
         assert!(!elicitation_form_declared(&initialize_params()));
         assert!(!elicitation_form_declared(&json!({
             "clientCapabilities": { "elicitation": { "form": null } }

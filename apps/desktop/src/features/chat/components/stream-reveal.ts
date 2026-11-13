@@ -10,7 +10,7 @@
  * 40 tok/s, which is why slow streams never showed it).
  *
  * The holdback is drained linearly so everything received is on screen by
- * `REVEAL_MAX_LAG_MS`: a provider burst (OMP writes ~100 characters every
+ * `REVEAL_MAX_LAG_MS`: a provider burst (OMSK writes ~100 characters every
  * ~144ms at 200 tok/s) is spread across the frames of its own arrival
  * cadence, and continuous output advances at the arrival rate with a bounded
  * lag. Done/hidden/reduced-motion paths bypass the animation entirely.

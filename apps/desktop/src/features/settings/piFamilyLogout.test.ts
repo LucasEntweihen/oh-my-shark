@@ -47,7 +47,7 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe("Pi family subscription logout", () => {
-  it("runs OMP logout for the selected credential id in a new terminal tab", async () => {
+  it("runs OMSK logout for the selected credential id in a new terminal tab", async () => {
     expect(await launchPiFamilyLogout("omp", "openai-codex")).toBe(true);
     expect(newTab).toHaveBeenCalledWith("/project");
     expect(terminalWrite).toHaveBeenCalledWith(

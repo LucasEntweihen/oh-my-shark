@@ -10,7 +10,7 @@ import { CliMenu } from "./cli-menu";
 const OPTIONS = [
   { id: "claude", label: "Claude Code", available: true },
   { id: "codex", label: "Codex", available: true },
-  { id: "omp", label: "OMP", available: true },
+  { id: "omp", label: "OMSK", available: true },
 ];
 
 const MODELS = {

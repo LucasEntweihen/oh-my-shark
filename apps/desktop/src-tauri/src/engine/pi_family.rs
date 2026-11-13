@@ -2,7 +2,7 @@ use super::{
     command_for_binary, images, push_session_id, BuiltCommand, Engine, EngineEvent, SendRequest,
 };
 use serde_json::Value;
-/// OMP ACP 计划会话驱动（P3 主方案）。声明在这里而不是 mod.rs：适配器
+/// OMSK ACP 计划会话驱动（P3 主方案）。声明在这里而不是 mod.rs：适配器
 /// 归 pi_family 所有，mod.rs 只需 send_reserved 的 Own 分支条件与
 /// send_host_stream 的 "omp" 匹配臂两处路由改动。
 #[path = "omp_acp.rs"]
@@ -427,7 +427,7 @@ fn build_omp_acp_plan_command(
     // 受控拒绝而非静默降级。
     if req.computer_use == Some(true) {
         return Err(
-            "操作电脑与 OMP ACP 计划会话不兼容：.omp/mcp.json 注入未在 ACP 传输验证".to_string(),
+            "操作电脑与 OMSK ACP 计划会话不兼容：.omp/mcp.json 注入未在 ACP 传输验证".to_string(),
         );
     }
     // 记忆不受此限：它只是读写本机数据库，没有指针/急停这类绑定 rpc 通道
@@ -452,7 +452,7 @@ fn build_omp_acp_plan_command(
     }) {
         if let Some(tier) = req.service_tier.as_deref() {
             if !matches!(tier, "default" | "priority") {
-                return Err("Invalid OMP OpenAI service tier".to_string());
+                return Err("Invalid OMSK OpenAI service tier".to_string());
             }
             cmd.args(["--service-tier", tier]);
         }
@@ -490,9 +490,9 @@ impl Engine for PiFamilyEngine {
     }
     /// omp exposes real approval switches (`--approval-mode`,
     /// `--auto-approve`); pi 0.85 has none of them, so it keeps the trait
-    /// default. "plan" 由 OMP 原生 ACP 计划流程承接（plan_approval 的
+    /// default. "plan" 由 OMSK 原生 ACP 计划流程承接（plan_approval 的
     /// Typed 声明 + omp_acp 驱动）；`--plan-yolo` 自动批准流程已移除，
-    /// 永远不会再作为"人工计划审批"入口回来（PRD §5-OMP.7）。
+    /// 永远不会再作为"人工计划审批"入口回来（PRD §5-OMSK.7）。
     ///
     /// `always-ask`/`write` are deliberately absent: they leave write/exec
     /// tools on a `prompt` policy, and print mode has no UI to answer with —
@@ -507,16 +507,16 @@ impl Engine for PiFamilyEngine {
         }
     }
 
-    /// OMP 的人工计划审批走原生 ACP 计划流程（session/set_mode plan +
+    /// OMSK 的人工计划审批走原生 ACP 计划流程（session/set_mode plan +
     /// elicitation.form 握手 + 计划文件全文，omp_acp 驱动）。pi 没有任何
     /// 计划能力，静默回退到 auto 是被禁止的降级。旧的 `--plan-yolo`
     /// 无头流程自动批准计划，永远不能再作为"人工计划审批"入口
-    /// （PRD §5-OMP.7）。
+    /// （PRD §5-OMSK.7）。
     fn plan_approval(&self) -> crate::engine::plan_review::PlanApproval {
         if self.id == "omp" {
             crate::engine::plan_review::PlanApproval::Typed {
                 review_kind: crate::engine::plan_review::PlanReviewKind::NativeRequest,
-                evidence: "OMP 18.0.11 acp-agent.ts elicitation.form 握手 + 计划文件全文（行号见 P0）",
+                evidence: "OMSK 18.0.11 acp-agent.ts elicitation.form 握手 + 计划文件全文（行号见 P0）",
                 limitations: "ACP 反馈仅二值 Refine 信号无文本载体；审批点跨重启不可恢复；仅新会话可进入计划模式",
             }
         } else {
@@ -551,7 +551,7 @@ impl Engine for PiFamilyEngine {
             }
             cmd.args(["--no-extensions", "--tools", &tools.join(",")]);
         }
-        // OMP 原生 ACP 计划流程（PRD §5-OMP 主方案）：显式 plan 请求改走
+        // OMSK 原生 ACP 计划流程（PRD §5-OMSK 主方案）：显式 plan 请求改走
         // ACP 传输，omp_acp 驱动接管子进程（stdio JSON-RPC + elicitation
         // 停车）。计划审批是用户决策——这条命令行绝不携带
         // --plan-yolo/--plan-yolo-into/--auto-approve。
@@ -594,7 +594,7 @@ impl Engine for PiFamilyEngine {
         {
             if let Some(tier) = req.service_tier.as_deref() {
                 if !matches!(tier, "default" | "priority") {
-                    return Err("Invalid OMP OpenAI service tier".to_string());
+                    return Err("Invalid OMSK OpenAI service tier".to_string());
                 }
                 cmd.args(["--service-tier", tier]);
             }
@@ -652,7 +652,7 @@ impl Engine for PiFamilyEngine {
             // 害:输入循环在 session 就绪后才启动,管道会缓冲这些行。
             let is_omp_compact =
                 self.id == "omp" && req.native_compact && req.images.is_empty();
-            // OMP 将 /compact 作为本地 RPC 命令处理。用普通 prompt 会得到
+            // OMSK 将 /compact 作为本地 RPC 命令处理。用普通 prompt 会得到
             // agentInvoked:false 和 command_output,但不会发 agent_end,宿主因此
             // 永远等不到回合终态。原生命令的 response 在压缩完成后才返回。
             let request = if is_omp_compact {
@@ -769,7 +769,7 @@ pub(crate) fn parse_pi_family_line_for_engine(
     line: &str,
     out: &mut Vec<EngineEvent>,
 ) {
-    // Avoid a second JSON parse for normal OMP/OMSK stream frames; only compact
+    // Avoid a second JSON parse for normal OMSK/OMSK stream frames; only compact
     // responses need the specific terminal mapping below.
     if (id == "omp" || id == "omsk" || id == "ohms")
         && line.contains("\"command\"")
@@ -985,7 +985,7 @@ fn parse_pi_family_line_with_sidecar(
             }
         }
         // omp rpc-ui 的命令响应:get_state 带回 sessionId(json 模式的
-        // session 头帧在 rpc 模式没有等价物);prompt 下发失败和 OMP compact
+        // session 头帧在 rpc 模式没有等价物);prompt 下发失败和 OMSK compact
         // 失败是致命的,其余命令失败仅告警。negotiate_protocol 失败 = 服务端
         // 只讲 v1,大帧可能截断降级,但会话本身不受影响。
         "response" => {
@@ -1174,7 +1174,7 @@ fn parse_pi_family_line_with_sidecar(
         }
         "turn_end" | "agent_end" => {
             let error = attempt_error(&value);
-            // turn_end precedes the retry decision. OMP explicitly marks its
+            // turn_end precedes the retry decision. OMSK explicitly marks its
             // final agent_end; pi/older CLIs may emit agent_end BEFORE retry
             // and lack isTerminal, so their outcome remains provisional to EOF.
             if event_type == "agent_end"
@@ -1387,7 +1387,7 @@ mod tests {
     }
     #[test]
     fn omp_native_compact_uses_the_rpc_command_and_nothing_else_does() {
-        // ccgui 的内置 /compact：OMP 改走原生 compact 命令。
+        // ccgui 的内置 /compact：OMSK 改走原生 compact 命令。
         let mut req = plan_req(None);
         req.prompt = "/compact".to_string();
         req.native_compact = true;
@@ -1463,7 +1463,7 @@ mod tests {
         // ACP 入口 flag（flag-tables.ts:123-127），stdin 由驱动接管。
         let mode = args.iter().position(|arg| arg == "--mode").expect("--mode");
         assert_eq!(args[mode + 1], "acp");
-        // 自动批准参数绝不出现在计划命令行（PRD §5-OMP.5）。
+        // 自动批准参数绝不出现在计划命令行（PRD §5-OMSK.5）。
         assert!(!args.contains(&"--plan-yolo".to_string()), "{args:?}");
         assert!(!args.contains(&"--plan-yolo-into".to_string()), "{args:?}");
         assert!(!args.contains(&"--auto-approve".to_string()), "{args:?}");
@@ -1908,7 +1908,7 @@ mod tests {
         );
         assert!(matches!(&out[..], [EngineEvent::Error(_)]), "got {out:?}");
 
-        // The shared Pi-family parser must not make Pi treat an OMP-only
+        // The shared Pi-family parser must not make Pi treat an OMSK-only
         // response as a terminal event.
         let mut out = Vec::new();
         pi().parse_line(&compact_success, &mut out);

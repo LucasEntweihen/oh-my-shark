@@ -271,7 +271,7 @@ fn build_windows_extra_search_paths(
         }
     }
     if let Some(local_app_data) = local_app_data {
-        // Official OMP CLI Windows installer layout: %LOCALAPPDATA%\omp\omp.exe.
+        // Official OMSK CLI Windows installer layout: %LOCALAPPDATA%\omp\omp.exe.
         paths.push(local_app_data.join("omp"));
         // Hermes prefixes also live under %LOCALAPPDATA% (per-shell layout);
         // dsh ships as a Node-global bin there.

@@ -1877,16 +1877,14 @@ export const grepToolRenderer = {
 				: undefined;
 
 		if (matchCount === 0) {
-			const meta = ["0 matches"];
+			const meta = [uiTheme.fg("warning", "0 matches")];
 			const scopeMeta = searchScopeMeta(details);
 			if (scopeMeta) meta.push(scopeMeta);
 			const header = renderStatusLine(
 				{ icon: "warning", title: "Grep", titleColor: "toolTitle", description: args?.pattern, meta },
 				uiTheme,
 			);
-			const lines = [header, formatEmptyMessage("No matches found", uiTheme)];
-			if (missingNote) lines.push(missingNote);
-			return new Text(lines.join("\n"), 1, 0);
+			return new Text(missingNote ? `${header}\n${missingNote}` : header, 1, 0);
 		}
 
 		const summaryParts = [formatCount("match", matchCount), formatCount("file", fileCount)];

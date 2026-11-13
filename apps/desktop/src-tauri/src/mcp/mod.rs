@@ -216,7 +216,7 @@ pub(crate) async fn mcp_inventory(
             .unwrap_or(false)
     };
     let mut config = read_config_entries(workspace.as_deref());
-    // 其余引擎的声明式来源（Kimi / Grok / OMP / OpenCode / Antigravity /
+    // 其余引擎的声明式来源（Kimi / Grok / OMSK / OpenCode / Antigravity /
     // Qoder / dsh）追加到同一份清单，按 engine 过滤后分给各自的 tab。
     sources::append_entries(&mut config, workspace.as_deref());
     let collected_at = now_ms();

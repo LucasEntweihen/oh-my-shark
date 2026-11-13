@@ -18,13 +18,13 @@ prioriza execução prática: ler o repositório, editar com segurança, validar
 resultado e manter o contexto útil em sessões longas.
 
 O projeto é um fork público independente construído sobre a base do
-[Oh My Pi](https://github.com/can1357/oh-my-pi), que por sua vez descende do
-[Pi](https://github.com/badlogic/pi-mono). OMP fornece a fundação de agente,
+[Oh My Shark](https://github.com/can1357/oh-my-pi), que por sua vez descende do
+[Pi](https://github.com/badlogic/pi-mono). OMSK fornece a fundação de agente,
 ferramentas e runtime; o OMSK mantém identidade, comandos, branding, releases,
 configuração e fluxos próprios.
 
 > **Proporção de escopo:** este README documenta o OMSK como produto principal.
-> Conceitos herdados do OMP aparecem apenas onde ajudam a explicar a base
+> Conceitos herdados do OMSK aparecem apenas onde ajudam a explicar a base
 > arquitetural compartilhada; comandos e URLs abaixo são do OMSK.
 
 ## Instalação
@@ -234,9 +234,9 @@ Crates Rust relevantes:
 - `crates/pi-iso` — isolamento de tarefas;
 - `crates/pi-builtins` — builtins e utilitários executados no shell.
 
-## Relação com o Oh My Pi
+## Relação com o Oh My Shark
 
-O [Oh My Pi](https://github.com/can1357/oh-my-pi) é uma referência upstream e
+O [Oh My Shark](https://github.com/can1357/oh-my-pi) é uma referência upstream e
 parte importante da linhagem técnica do OMSK. O OMSK não é um espelho automático:
 
 - melhorias upstream são avaliadas antes de serem portadas;
@@ -245,7 +245,7 @@ parte importante da linhagem técnica do OMSK. O OMSK não é um espelho automá
 - alterações de arquitetura que removam recursos do OMSK não são incorporadas
   automaticamente.
 
-A referência do OMP é usada principalmente para ideias de superfície de agente:
+A referência do OMSK é usada principalmente para ideias de superfície de agente:
 ferramentas nativas, LSP, sessões, subagentes, memória e extensibilidade. A
 experiência final, a distribuição e os contratos de compatibilidade são os do
 OhMyShark.
@@ -266,9 +266,9 @@ Consulte [`CONTRIBUTING.md`](CONTRIBUTING.md) para o fluxo de contribuição.
 
 OhMyShark é distribuído sob a [licença MIT](LICENSE). Componentes de terceiros
 mantêm suas respectivas licenças e avisos. O projeto reconhece a linhagem
-Pi → Oh My Pi → OhMyShark e os respectivos mantenedores upstream.
+Pi → Oh My Shark → OhMyShark e os respectivos mantenedores upstream.
 
 - [Site](https://ohmyshark.vercel.app)
 - [Repositório](https://github.com/LucasEntweihen/oh-my-shark)
-- [Oh My Pi](https://github.com/can1357/oh-my-pi)
+- [Oh My Shark](https://github.com/can1357/oh-my-pi)
 - [Issues](https://github.com/LucasEntweihen/oh-my-shark/issues)

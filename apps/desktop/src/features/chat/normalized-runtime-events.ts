@@ -122,7 +122,7 @@ export function normalizeEngineEvent(
     const args = data.args;
     const toolName = toolNameFromLabel(label).toLowerCase();
 
-    // A mutating tool call may report its path in the call args, while OMP's
+    // A mutating tool call may report its path in the call args, while OMSK's
     // edit tool reports the authoritative path only in result.details.path.
     // Either shape is structured host data; neither asserts write success.
     if (Object.hasOwn(MUTATING_TOOLS, toolName) && data.hasResult) {
@@ -286,7 +286,7 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-/** OMP edit results report the authoritative target at result.details.path. */
+/** OMSK edit results report the authoritative target at result.details.path. */
 function resultDetailsPath(result: unknown): string | null {
   const details = asRecord(asRecord(result)?.details);
   return details ? firstString(details, PATH_ARGS) : null;

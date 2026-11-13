@@ -419,7 +419,7 @@ echo '{"type":"agent_end"}'
             if events.lock().unwrap().iter().any(|e| e["kind"] == "done") {
                 break;
             }
-            assert!(std::time::Instant::now() < deadline, "OMP did not complete");
+            assert!(std::time::Instant::now() < deadline, "OMSK did not complete");
             tokio::time::sleep(std::time::Duration::from_millis(20)).await;
         }
         let text = std::fs::read_to_string(workspace.join("omp-args.txt")).unwrap();

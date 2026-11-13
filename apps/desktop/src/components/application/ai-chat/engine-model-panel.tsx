@@ -419,7 +419,7 @@ function sectionTitle(engineId: string, key: string, t: TFunction): string {
 
 /** Filters the catalog by the search query and shapes the rows for
  *  ModelGroupList: provider sections layer the list whenever the engine's
- *  catalog mixes sources (OMP serving several relays) — including while
+ *  catalog mixes sources (OMSK serving several relays) — including while
  *  filtering, so the results keep naming their origin instead of collapsing
  *  into identical rows. Pinning the active row to the top would tear it out
  *  of its section, so a grouped list keeps the catalog order and marks the
@@ -483,7 +483,7 @@ function ModelSearchField({
 }
 
 /** Panel footer: full-bleed divider (like the reference submenu) over the
- *  effort section. For OMP models supporting Fast mode and for Codex the
+ *  effort section. For OMSK models supporting Fast mode and for Codex the
  *  effort header additionally carries the speed-tier picker. */
 function EffortFooter({
   engineId,

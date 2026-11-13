@@ -961,7 +961,7 @@ export const ko: Messages = {
       grok: "Grok",
       codex: "Codex",
       pi: "Pi",
-      omp: "OMP",
+      omp: "OMSK",
       dsh: "DeepSeek Harness",
       agy: "Antigravity",
       opencode: "OpenCode",

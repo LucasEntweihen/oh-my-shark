@@ -56,7 +56,7 @@ pub struct AppSettings {
     pub custom_models: HashMap<String, Vec<String>>,
     #[serde(default)]
     pub default_efforts: HashMap<String, String>,
-    /// Per-app OMP OpenAI tier override; None preserves native CLI settings.
+    /// Per-app OMSK OpenAI tier override; None preserves native CLI settings.
     #[serde(default)]
     pub omp_openai_service_tier: Option<String>,
     /// Per-app Codex Fast override (`service_tier`); None preserves ~/.codex.
@@ -845,7 +845,7 @@ fn persist_settings_to(
         .as_deref()
         .is_some_and(|tier| !matches!(tier, "default" | "priority"))
     {
-        return Err("Invalid OMP OpenAI service tier".to_string());
+        return Err("Invalid OMSK OpenAI service tier".to_string());
     }
     if settings
         .codex_service_tier

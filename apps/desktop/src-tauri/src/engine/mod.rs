@@ -143,7 +143,7 @@ pub struct SendRequest {
     /// Reasoning effort ("low" | "medium" | "high" | "xhigh" | "max" | "ultra"); engines without an
     /// effort knob ignore it. Engines that accept a level pass the requested string through.
     pub effort: Option<String>,
-    /// OpenAI service tier override (OMP `--service-tier` / Codex `-c service_tier`),
+    /// OpenAI service tier override (OMSK `--service-tier` / Codex `-c service_tier`),
     /// independent of reasoning effort.
     pub service_tier: Option<String>,
     /// Permission mode ("auto" | "manual" | "plan" | "bypass"); each engine
@@ -292,7 +292,7 @@ pub trait Engine: Send + Sync {
     /// 计划预览与人工审批能力(engine/plan_review.rs)。默认 Legacy:引擎
     /// 自身的原生计划入口保持既有行为。返回 Unavailable 时,显式 plan 请求
     /// 必须在发送前受控拒绝——计划审批是用户决策,auto/bypass、静默回退
-    /// 和自动批准参数都不能代替(OMP/Codex/DSH/Grok/Qoder 在各自适配器
+    /// 和自动批准参数都不能代替(OMSK/Codex/DSH/Grok/Qoder 在各自适配器
     /// 接通前都是 Unavailable;PRD §1 原则 1/4)。
     fn plan_approval(&self) -> PlanApproval {
         PlanApproval::Legacy
@@ -1107,7 +1107,7 @@ async fn send_reserved(
         wsl_tp.is_some(),
     )?;
     if wsl_tp.is_none() && matches!(engine.as_str(), "pi" | "omp" | "omsk" | "ohms") {
-        // 只向登录 shell 查询当前引擎配置中的变量：PI 用 $VAR，OMP 用裸名字。
+        // 只向登录 shell 查询当前引擎配置中的变量：PI 用 $VAR，OMSK 用裸名字。
         // 只注入这次子进程；WSL 不带本机 env，跳过。
         pi_family_env::apply(&mut launch.built.command, &engine).await;
     }
@@ -1129,7 +1129,7 @@ async fn send_reserved(
     // registry entry only routes interrupts to the transport task. Their
     // drivers spawn locally, so a remote workspace either keeps the CLI
     // transport (codex/grok) or has no path at all — 显式拒绝。
-    // OMP 的显式计划会话固定走 ACP 传输(elicitation.form 握手 + 计划文件
+    // OMSK 的显式计划会话固定走 ACP 传输(elicitation.form 握手 + 计划文件
     // 全文,见 omp_acp.rs);其余 omp/pi 请求保持既有子进程路径,不迁移。
     if launch.engine_impl.transport_for(wsl_tp.is_some()) == Transport::Own
         || ((engine == "omp" || engine == "omsk" || engine == "ohms") && pi_family::acp_plan_requested(&launch.req))

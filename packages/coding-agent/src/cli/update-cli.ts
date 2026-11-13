@@ -103,8 +103,8 @@ export async function withUpdateFileLock<T>(
 	throw new Error(`Timed out acquiring update lock for ${filePath}`);
 }
 const REPO = "LucasEntweihen/oh-my-shark";
-/** Release tag prefix: OhMyShark publishes `ohms-v<semver>` tags. */
-const TAG_PREFIX = "ohms-v";
+/** Release tag prefix: OhMyShark publishes `omsk-v<semver>` (or `ohms-v<semver>`) tags. */
+const TAG_PREFIX = "omsk-v";
 const GITHUB_API = "https://api.github.com";
 const RELEASE_METADATA_TIMEOUT_MS = 30_000;
 const BINARY_DOWNLOAD_TIMEOUT_MS = 15 * 60_000;
@@ -181,9 +181,17 @@ export function resolveReleaseBinaryAsset(
 		throw new Error(`GitHub release ${expectedTag} has no asset list`);
 	}
 
-	const matches = release.assets.filter(asset => isRecord(asset) && asset.name === binaryName);
+	let matches = release.assets.filter(asset => isRecord(asset) && asset.name === binaryName);
+	if (matches.length === 0) {
+		const alternateName = binaryName.startsWith("ohms-")
+			? `omsk-${binaryName.slice(5)}`
+			: binaryName.startsWith("omsk-")
+				? `ohms-${binaryName.slice(5)}`
+				: binaryName;
+		matches = release.assets.filter(asset => isRecord(asset) && asset.name === alternateName);
+	}
 	if (matches.length !== 1) {
-		throw new Error(`GitHub release ${expectedTag} has ${matches.length} assets named ${binaryName}`);
+		throw new Error(`GitHub release ${expectedTag} has ${matches.length} assets matching ${binaryName}`);
 	}
 
 	const asset = matches[0];
@@ -201,11 +209,11 @@ export function resolveReleaseBinaryAsset(
 		throw new Error(`GitHub release asset ${binaryName} has an unsupported digest`);
 	}
 
-	const expectedUrl = `https://github.com/${REPO}/releases/download/${expectedTag}/${binaryName}`;
+	const matchedName = (asset as Record<string, unknown>).name as string;
+	const expectedUrl = `https://github.com/${REPO}/releases/download/${expectedTag}/${matchedName}`;
 	if (asset.browser_download_url !== expectedUrl) {
-		throw new Error(`GitHub release asset ${binaryName} has an unexpected download URL`);
+		throw new Error(`GitHub release asset ${matchedName} has an unexpected download URL`);
 	}
-
 	return {
 		url: expectedUrl,
 		size: asset.size,
@@ -246,6 +254,21 @@ async function getReleaseBinaryAsset(
 		if (isUnsupportedProxyError(err)) throw new Error(unsupportedProxyMessage(), { cause: err });
 		throw err;
 	}
+	if (response.status === 404 && !expectedTag) {
+		const altTag = tag.startsWith("omsk-v") ? `ohms-v${expectedVersion}` : `omsk-v${expectedVersion}`;
+		try {
+			const altResp = await fetchImpl(`${GITHUB_API}/repos/${REPO}/releases/tags/${encodeURIComponent(altTag)}`, {
+				headers,
+				signal: withTimeoutSignal(RELEASE_METADATA_TIMEOUT_MS),
+			});
+			if (altResp.ok) {
+				tag = altTag;
+				response = altResp;
+			}
+		} catch {
+			// ignore alternate tag probe failure
+		}
+	}
 	if (response.status === 403 || response.status === 429) {
 		// Attempt resolution via gh CLI if installed
 		try {
@@ -271,15 +294,22 @@ async function getReleaseBinaryAsset(
 				const sumsText = await sumsResponse.text();
 				const lines = sumsText.split("\n");
 				let foundDigest: string | undefined;
+				const altBinaryName = binaryName.startsWith("ohms-")
+					? `omsk-${binaryName.slice(5)}`
+					: binaryName.startsWith("omsk-")
+						? `ohms-${binaryName.slice(5)}`
+						: binaryName;
+				let matchedName = binaryName;
 				for (const line of lines) {
 					const parts = line.trim().split(/\s+/);
-					if (parts.length >= 2 && parts[1] === binaryName) {
+					if (parts.length >= 2 && (parts[1] === binaryName || parts[1] === altBinaryName)) {
 						foundDigest = parts[0]?.toLowerCase();
+						matchedName = parts[1] ?? binaryName;
 						break;
 					}
 				}
 				if (foundDigest && /^[0-9a-f]{64}$/i.test(foundDigest)) {
-					const binaryUrl = `https://github.com/${REPO}/releases/download/${encodeURIComponent(tag)}/${binaryName}`;
+					const binaryUrl = `https://github.com/${REPO}/releases/download/${encodeURIComponent(tag)}/${matchedName}`;
 					const headResponse = await fetchImpl(binaryUrl, {
 						method: "HEAD",
 						redirect: "follow",
@@ -749,7 +779,11 @@ function getBinaryName(): string {
  * Resolve the path that `ohms` maps to in the user's PATH.
  */
 function resolveOmpPath(): string | undefined {
-	return $which(APP_NAME) ?? undefined;
+	return $which("omsk") ?? $which("ohms") ?? $which(APP_NAME) ?? (
+		process.execPath && !process.execPath.endsWith("bun") && !process.execPath.endsWith("bun.exe")
+			? process.execPath
+			: undefined
+	);
 }
 
 /**

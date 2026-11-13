@@ -1,7 +1,7 @@
 ---
 version: "alpha"
-name: "Oh My Pi (OMP) — Home Page Official Design System"
-description: "Especificação arquitetural e visual exaustiva da Home Page do ecossistema de agentes de codificação autónomos Oh My Pi (OMP), unindo precisão industrial de terminal TUI, compressão semântica, integração nativa Rust/Bun/Bazel e orquestração multi-modelo."
+name: "Oh My Shark (OMSK) — Home Page Official Design System"
+description: "Especificação arquitetural e visual exaustiva da Home Page do ecossistema de agentes de codificação autónomos Oh My Shark (OMSK), unindo precisão industrial de terminal TUI, compressão semântica, integração nativa Rust/Bun/Bazel e orquestração multi-modelo."
 theme: "Dark Mode Exclusivo — Cybernetic Terminal & Precision TUI"
 
 colors:
@@ -15,7 +15,7 @@ colors:
   surface-glass: "rgba(18, 22, 31, 0.78)"
   surface-glass-heavy: "rgba(10, 12, 16, 0.92)"
 
-  # Identidade de Marca & Acentos (Core OMP Spectrum)
+  # Identidade de Marca & Acentos (Core OMSK Spectrum)
   primary: "#FF5500"
   primary-hover: "#FF6E26"
   primary-pressed: "#CC4400"
@@ -167,23 +167,23 @@ components:
     padding: "{spacing.xl}"
 ---
 
-# DESIGN.md — Especificação Oficial da Home Page do Oh My Pi (`omp`)
+# DESIGN.md — Especificação Oficial da Home Page do Oh My Shark (`omp`)
 
-Este documento constitui a **Fonte Única de Verdade (Single Source of Truth)** para o desenvolvimento, manutenção e evolução visual da **Home Page do Oh My Pi (`omp`)**. Projetado especificamente para ser consumido de forma determinística por agentes de codificação de IA (Claude Code, Cursor, Windsurf, Google Stitch, Kiro) e engenheiros de front-end humanos, este arquivo combina **design tokens legíveis por máquina** no cabeçalho YAML com **regras arquiteturais, heurísticas, diretrizes vetoriais e especificações de interface legíveis por humanos** em Markdown. 
+Este documento constitui a **Fonte Única de Verdade (Single Source of Truth)** para o desenvolvimento, manutenção e evolução visual da **Home Page do Oh My Shark (`omp`)**. Projetado especificamente para ser consumido de forma determinística por agentes de codificação de IA (Claude Code, Cursor, Windsurf, Google Stitch, Kiro) e engenheiros de front-end humanos, este arquivo combina **design tokens legíveis por máquina** no cabeçalho YAML com **regras arquiteturais, heurísticas, diretrizes vetoriais e especificações de interface legíveis por humanos** em Markdown. 
 
-A sua existência na raiz do repositório (`oh-my-pi/DESIGN.md`), posicionado estrategicamente ao lado de `AGENTS.md`, elimina definitivamente a improvisação estilística (*vibe coding* / *AI slop*) e garante que cada componente gerado reflita a engenharia de extrema precisão do ecossistema **Oh My Pi** — construído sobre **Rust** (`Cargo.toml` / `Cargo.lock`), **TypeScript / Bun** (`.omp/tools/tui.ts`, `bun.lock`), **Bazel 9.2.0** (`BUILD.bazel`, `MODULE.bazel`) e **Nix** (`nix.yml`), equipado com *skills* nativas de **Semantic Compression**, **System Prompts Optimization** (incluindo suporte a *Small Models*), **Tool Prompt Optimization** (`probe.ts`, `probe-builtin.ts`), automação via comandos (`.omp/commands/cleanup.md`, `fix-issues.md`, `release.md`, `review-prs.md`, `triage.md`) e execução isolada com `Dockerfile.robomp`.
+A sua existência na raiz do repositório (`oh-my-pi/DESIGN.md`), posicionado estrategicamente ao lado de `AGENTS.md`, elimina definitivamente a improvisação estilística (*vibe coding* / *AI slop*) e garante que cada componente gerado reflita a engenharia de extrema precisão do ecossistema **Oh My Shark** — construído sobre **Rust** (`Cargo.toml` / `Cargo.lock`), **TypeScript / Bun** (`.omp/tools/tui.ts`, `bun.lock`), **Bazel 9.2.0** (`BUILD.bazel`, `MODULE.bazel`) e **Nix** (`nix.yml`), equipado com *skills* nativas de **Semantic Compression**, **System Prompts Optimization** (incluindo suporte a *Small Models*), **Tool Prompt Optimization** (`probe.ts`, `probe-builtin.ts`), automação via comandos (`.omp/commands/cleanup.md`, `fix-issues.md`, `release.md`, `review-prs.md`, `triage.md`) e execução isolada com `Dockerfile.robomp`.
 
 ---
 
 ## 1. Visão Geral e Heurísticas (Overview & UX Heuristics)
 
 ### 1.1. Direção Visual e Atmosfera ("Tactical TUI Meets High-Velocity Systems Engineering")
-A Home Page do **Oh My Pi (`omp`)** não deve parecer um template SaaS genérico de marketing; ela deve transpirar a atmosfera de um **ambiente de engenharia de sistemas de altíssima performance e baixa latência**. A estética funde o rigor geométrico das interfaces de terminal modernas (**TUI — Terminal User Interface**, derivada diretamente de `.omp/tools/tui.ts`) com camadas tonais escuras de acabamento fosco (*matte dark obsidian*), acentos elétricos em **Pi-Flame Orange (`#FF5500`)** e **Telemetry Cyan (`#00E5FF`)**, e diagramas vetoriais de compressão de tokens e árvores sintáticas abstratas (LSPV).
+A Home Page do **Oh My Shark (`omp`)** não deve parecer um template SaaS genérico de marketing; ela deve transpirar a atmosfera de um **ambiente de engenharia de sistemas de altíssima performance e baixa latência**. A estética funde o rigor geométrico das interfaces de terminal modernas (**TUI — Terminal User Interface**, derivada diretamente de `.omp/tools/tui.ts`) com camadas tonais escuras de acabamento fosco (*matte dark obsidian*), acentos elétricos em **Pi-Flame Orange (`#FF5500`)** e **Telemetry Cyan (`#00E5FF`)**, e diagramas vetoriais de compressão de tokens e árvores sintáticas abstratas (LSPV).
 
 ### 1.2. Aplicação Implacável das 10 Heurísticas de Nielsen e Leis da Psicologia Cognitiva
 Toda decisão de layout e microinteração na Home Page submete-se às 10 Heurísticas de Usabilidade de Jakob Nielsen e à Lei de Hick:
 
-1. **Visibilidade do Status do Sistema (Heurística #1):** Como o `omp` é uma ferramenta centrada em execução de agentes e otimização de prompts, a Home Page deve exibir telemetria viva simulada e interativa. O emulador de TUI no Hero mostra em tempo real o estado do agente (`[OMP::IDLE]`, `[OMP::PROBING_TOOLS]`, `[OMP::COMPRESSING_CONTEXT]`), a contagem exata de tokens economizados via `semantic-compression` e a latência de resposta em milissegundos (`14ms`). Ao clicar no botão de copiar o comando de instalação (`curl -fsSL https://ohmypi.dev/install.sh | sh` ou `bunx oh-my-pi`), o feedback visual é instantâneo (mudança de ícone para `✓ COPIED TO CLIPBOARD [0.4ms]`, alteração de borda para `#00E676` e anúncio via `aria-live`).
+1. **Visibilidade do Status do Sistema (Heurística #1):** Como o `omp` é uma ferramenta centrada em execução de agentes e otimização de prompts, a Home Page deve exibir telemetria viva simulada e interativa. O emulador de TUI no Hero mostra em tempo real o estado do agente (`[OMSK::IDLE]`, `[OMSK::PROBING_TOOLS]`, `[OMSK::COMSKRESSING_CONTEXT]`), a contagem exata de tokens economizados via `semantic-compression` e a latência de resposta em milissegundos (`14ms`). Ao clicar no botão de copiar o comando de instalação (`curl -fsSL https://ohmypi.dev/install.sh | sh` ou `bunx oh-my-pi`), o feedback visual é instantâneo (mudança de ícone para `✓ COPIED TO CLIPBOARD [0.4ms]`, alteração de borda para `#00E676` e anúncio via `aria-live`).
 2. **Correspondência entre o Sistema e o Mundo Real (Heurística #2):** O público-alvo é composto por engenheiros de software seniores, arquitetos de IA e hackers de sistemas. A linguagem visual utiliza metáforas reais do cotidiano de desenvolvimento: janelas de terminal com caracteres de desenho de caixa Unicode (`┌─┐│└─┘`), diffs de código reais, árvores de diretórios do próprio repositório (`.omp/skills/`, `.omp/commands/`), badges de build do Bazel (`9.2.0 PASS`) e gráficos de chamadas LSP (`lspv`). Jargões vazios de marketing corporativo são estritamente proibidos.
 3. **Controle e Liberdade do Usuário (Heurística #3):** Nenhum vídeo, simulação de terminal ou carrossel de demonstração (`ask.webp`, `discovery.webp`, `models.webp`, `lspv.webp`, `perplexity.webp`, `arxiv.webp`) pode prender o usuário ou sequestrar o scroll (*scroll-jacking*). O terminal interativo da Home Page possui botões explícitos de `[PAUSE]`, `[RESET]`, `[STEP FORWARD]` e atalhos de teclado (`Esc` para fechar modais de inspeção de imagem, `Space` para pausar a simulação TUI).
 4. **Consistência e Padrões (Heurística #4):** Um código de cores semântico inquebrável governa toda a página:
@@ -195,15 +195,15 @@ Toda decisão de layout e microinteração na Home Page submete-se às 10 Heurí
 6. **Reconhecimento em vez de Memorização — Diálogo com a Lei de Miller (Heurística #6):** A arquitetura do `omp` possui múltiplos submódulos (`.omp/commands/`, `.omp/skills/`, `.omp/tools/`). Em vez de forçar o usuário a memorizar flags de CLI, a seção de *Interactive Showcase* mantém os 6 pilares visuais (`Ask`, `Discovery`, `LSPV`, `Models`, `ArXiv`, `Perplexity`) sempre visíveis em abas com ícones semânticos e previews instantâneos, respeitando o limite cognitivo de $7 \pm 2$ blocos de informação por seção visual.
 7. **Flexibilidade e Eficiência de Uso (Heurística #7):** A Home Page suporta navegação completa para *power users* via teclado: pressionar `/` ou `Cmd+K` (`Ctrl+K`) abre uma paleta de comandos estilo TUI diretamente no navegador, permitindo saltar para qualquer seção, copiar o comando de instalação, alternar a visualização de compressão de prompts ou abrir o repositório GitHub em menos de 200ms.
 8. **Design Estético e Minimalista (Heurística #8):** Cada pixel na tela deve justificar a sua presença através de utilidade informacional. Fundos decorativos caóticos, blobs flutuantes sem significado técnico ou gradientes arco-íris genéricos são banidos. O espaço negativo em `#06070A` e `#0A0C10` é utilizado generosamente para isolar os diagramas técnicos e capturas do `tui.ts`.
-9. **Ajudar a Reconhecer, Diagnosticar e Recuperar-se de Erros (Heurística #9):** No playground interativo de *Semantic Compression* e *Tool Prompt Probe* da Home Page, caso o usuário insira um prompt inválido ou vazio para testar o compressor, a interface não exibe um alerta genérico; ela renderiza um diagnóstico estilo compilador Rust/Oxlint: `error[OMP-E042]: Empty prompt buffer provided. Hint: Paste a system prompt (>50 tokens) or click [Load Sample Prompt] to benchmark compression.`.
+9. **Ajudar a Reconhecer, Diagnosticar e Recuperar-se de Erros (Heurística #9):** No playground interativo de *Semantic Compression* e *Tool Prompt Probe* da Home Page, caso o usuário insira um prompt inválido ou vazio para testar o compressor, a interface não exibe um alerta genérico; ela renderiza um diagnóstico estilo compilador Rust/Oxlint: `error[OMSK-E042]: Empty prompt buffer provided. Hint: Paste a system prompt (>50 tokens) or click [Load Sample Prompt] to benchmark compression.`.
 10. **Ajuda e Documentação Contextual (Heurística #10):** Cada termo técnico exclusivo do repositório (`RoboMP`, `Semantic Compression`, `Tool Prompt Probe`, `Small-Model Routing`, `LSPV`) possui *tooltips* instantâneos acionáveis por *hover* ou foco (`Tab`), exibindo um resumo técnico conciso de 2 linhas e o caminho direto para o arquivo correspondente no repositório (ex: `.omp/skills/semantic-compression/SKILL.md`).
-11. **Lei de Hick e Funil Vertical de Conversão:** O tempo de decisão cresce logaritmicamente com o número de escolhas ($T = b \cdot \log_2(n + 1)$). Portanto, acima da dobra (*Above the Fold*), existem apenas **duas ações competitivas**: o CTA Primário (`Install Oh My Pi` / Copiar Comando CLI) em destaque absoluto (`#FF5500`) e o CTA Secundário (`Explore Architecture & GitHub`) em superfície neutra.
+11. **Lei de Hick e Funil Vertical de Conversão:** O tempo de decisão cresce logaritmicamente com o número de escolhas ($T = b \cdot \log_2(n + 1)$). Portanto, acima da dobra (*Above the Fold*), existem apenas **duas ações competitivas**: o CTA Primário (`Install Oh My Shark` / Copiar Comando CLI) em destaque absoluto (`#FF5500`) e o CTA Secundário (`Explore Architecture & GitHub`) em superfície neutra.
 
 ---
 
 ## 2. Os Elementos Visuais e Cores (Visual Elements & Color Palette)
 
-A paleta de cores da Home Page do **Oh My Pi** é estritamente controlada pelos tokens definidos no YAML Frontmatter, desenhada para monitores OLED e LCD modernos em ambientes de baixa luminosidade, garantindo fadiga visual zero e contraste cirúrgico.
+A paleta de cores da Home Page do **Oh My Shark** é estritamente controlada pelos tokens definidos no YAML Frontmatter, desenhada para monitores OLED e LCD modernos em ambientes de baixa luminosidade, garantindo fadiga visual zero e contraste cirúrgico.
 
 ### 2.1. Tabela Normativa de Cores e Papéis Semânticos
 
@@ -283,7 +283,7 @@ A Home Page é arquitetada como uma experiência unificada de **1 Página Princi
 
 1. **View 01 — Global Tactical Navbar & Telemetry Bar (Topo Fixo):** Logo vetorial `icon.svg` + `oh-my-pi`, links de ancoragem semântica (`#features`, `#compression`, `#architecture`, `#commands`, `#benchmarks`), indicador de versão e build (`v0.9.2 · Bazel 9.2.0`), botão de acionamento da Command Palette (`Cmd+K`) e link para o repositório GitHub com contador de stars.
 2. **View 02 — Hero Section (Above the Fold — Funil Nível 1):**
-   * **Esquerda:** Badge de lançamento (`[OMP::CORE] Rust + Bun + TUI Agent Framework`), `<h1>` de alto impacto (*"The Sub-Millisecond Terminal Agent Harness with Semantic Compression"*), Subheadline técnica, Caixa de Instalação Rápida com seletor de pacote (`bun`, `cargo`, `nix`, `docker robomp`), CTA Primário (`Quickstart Guide →`) e CTA Secundário (`Inspect TUI Live`).
+   * **Esquerda:** Badge de lançamento (`[OMSK::CORE] Rust + Bun + TUI Agent Framework`), `<h1>` de alto impacto (*"The Sub-Millisecond Terminal Agent Harness with Semantic Compression"*), Subheadline técnica, Caixa de Instalação Rápida com seletor de pacote (`bun`, `cargo`, `nix`, `docker robomp`), CTA Primário (`Quickstart Guide →`) e CTA Secundário (`Inspect TUI Live`).
    * **Direita:** Janela interativa em tempo real reproduzindo a interface de `.omp/tools/tui.ts` com abas para alternar entre a renderização viva em DOM/Canvas e o ativo visual `assets/hero.png`.
 3. **View 03 — Interactive Visual Showcase (Aba/Bento dos 6 Módulos Core do Repo):** Exibição estruturada e interativa integrando diretamente os ativos reais do projeto:
    * **Módulo A (`assets/ask.webp`):** Fluxo conversacional direto e execução de queries complexas no terminal (`omp ask`).
@@ -304,14 +304,14 @@ O planejamento estrutural parte deste wireframe esquemático para fixar a hierar
 
 ```text
 +--------------------------------------------------------------------------------------------------+
-| [SVG: icon.svg] OH MY PI (omp)   [Features] [Compression] [LSPV] [Commands]   [Cmd+K] [GitHub *] | <- z-index: 50 (64px)
+| [SVG: icon.svg] OH MY SHARK (omp)   [Features] [Compression] [LSPV] [Commands]   [Cmd+K] [GitHub *] | <- z-index: 50 (64px)
 +--------------------------------------------------------------------------------------------------+
 |                                                                                                  |
-|  [BADGE: BAZEL 9.2.0 | RUST + BUN | ROBOMP SANDBOX]       +-----------------------------------+  |
+|  [BADGE: BAZEL 9.2.0 | RUST + BUN | ROBOMSK SANDBOX]       +-----------------------------------+  |
 |                                                           | [o][o][o] omp-tui — 120x42  [TUI] |  |
 |  H1: AUTONOMOUS TERMINAL                                  +-----------------------------------+  |
 |  ENGINEERING AT THE                                       | ┌─ Context Compression ─────────┐ |  |
-|  SPEED OF THOUGHT.                                        | │ Raw: 14,280 tok -> OMP: 4,120 │ |  |
+|  SPEED OF THOUGHT.                                        | │ Raw: 14,280 tok -> OMSK: 4,120 │ |  |
 |                                                           | │ Saved: 71.1% [██████████░░░░] │ |  |
 |  Lead: Sub-millisecond TUI harness powered by             | └─ Tool Probe (probe.ts) ───────┘ |  |
 |  Semantic Compression, LSPV AST graphs, and               | > omp ask "Refactor AST parser"   |  |
@@ -320,10 +320,10 @@ O planejamento estrutural parte deste wireframe esquemático para fixar a hierar
 |  +-------------------------------------------+ [COPY]     |   └─ [Patch] Applied in 180ms ✓   |  |
 |  | $ bunx oh-my-pi init --compression=max    | [Cmd ]     +-----------------------------------+  |
 |  +-------------------------------------------+            | [View: Live TUI] [View: hero.png] |  |
-|  [ CTA: INSTALL OH MY PI (#FF5500) ]  [ Read Docs -> ]    +-----------------------------------+  |
+|  [ CTA: INSTALL OH MY SHARK (#FF5500) ]  [ Read Docs -> ]    +-----------------------------------+  |
 |                                                                                                  |
 +--------------------------------------------------------------------------------------------------+
-|  H2: THE 6 CORE PILLARS OF THE OMP RUNTIME (BENTO GRID — 12 COLUMNS)                             |
+|  H2: THE 6 CORE PILLARS OF THE OMSK RUNTIME (BENTO GRID — 12 COLUMNS)                             |
 |  +---------------------------------------------------+ +---------------------------------------+ |
 |  | [SPAN 8] LSPV & AST CODE INTELLIGENCE (lspv.webp) | | [SPAN 4] ASK ENGINE (ask.webp)        | |
 |  | Deep symbol graph & real-time diagnostics         | | Zero-latency terminal Q&A & patching  | |
@@ -333,9 +333,9 @@ O planejamento estrutural parte deste wireframe esquemático para fixar a hierar
 |  | (discovery.webp)        | | (models.webp + small-models.md)   | | (arxiv.webp + perplexity) | |
 |  +-------------------------+ +-----------------------------------+ +---------------------------+ |
 +--------------------------------------------------------------------------------------------------+
-|  H2: SEMANTIC COMPRESSION & TOOL PROMPT OPTIMIZATION (.omp/skills/)                              |
+|  H2: SEMANTIC COMSKRESSION & TOOL PROMSKT OPTIMIZATION (.omp/skills/)                              |
 |  +-----------------------------------------+   >>>   +-----------------------------------------+ |
-|  | BEFORE: Bloated System Prompt (4,820t)  |  -68%   | AFTER: OMP Compressed Prompt (1,540t)   | |
+|  | BEFORE: Bloated System Prompt (4,820t)  |  -68%   | AFTER: OMSK Compressed Prompt (1,540t)   | |
 |  | [Red highlights on redundant tokens]    |  TOKENS | [Violet highlights on dense primitives] | |
 |  +-----------------------------------------+         +-----------------------------------------+ |
 +--------------------------------------------------------------------------------------------------+

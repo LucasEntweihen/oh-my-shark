@@ -8,7 +8,7 @@ export const CLI_DISPLAY_NAMES: Record<string, string> = {
   grok: "Grok CLI",
   kimi: "Kimi CLI",
   pi: "PI CLI",
-  omp: "OMP CLI",
+  omp: "OMSK CLI",
   dsh: "DeepSeek Harness",
   agy: "Antigravity CLI",
   opencode: "OpenCode",
@@ -20,7 +20,7 @@ export const CLI_DISPLAY_NAMES: Record<string, string> = {
 
 /**
  * Infer a provider brand from a model name so cross-provider engines
- * (e.g. OMP CLI serving Kimi K3) show the model's own mark in the model
+ * (e.g. OMSK CLI serving Kimi K3) show the model's own mark in the model
  * list instead of the engine's. Returns null when no brand matches —
  * callers fall back to the engine icon.
  */

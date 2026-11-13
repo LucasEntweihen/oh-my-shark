@@ -211,7 +211,7 @@ pub(super) fn command_and_args(source: &Source, spec_object: &Map<String, Value>
 }
 
 /// 启停字段：`enabled`（缺省 true）/ `disabled`（缺省 false）；字符串
-/// `"false"` / `"0"` 也按停用处理（OMP 的宽容解析）。
+/// `"false"` / `"0"` 也按停用处理（OMSK 的宽容解析）。
 fn bool_field(object: &Map<String, Value>, key: &str) -> Option<bool> {
     match object.get(key) {
         Some(Value::Bool(value)) => Some(*value),

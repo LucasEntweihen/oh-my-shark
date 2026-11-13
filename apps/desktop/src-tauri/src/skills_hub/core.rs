@@ -7,7 +7,7 @@
 //!    可用 env `CCGUI_SKILLS_HUB_HOME` 覆盖（测试注入点）。参考实现用
 //!    `~/.ccgui/skills`，与本应用的可写存储隔离，不共享注册表。
 //! 2. 同步目标覆盖本应用接入的全部 CLI（Claude / Codex / Kimi / Grok / PI /
-//!    OMP / dsh / Antigravity / Gemini / OpenCode / Qoder / Qoder CN / Hermes）
+//!    OMSK / dsh / Antigravity / Gemini / OpenCode / Qoder / Qoder CN / Hermes）
 //!    加跨 agent 的 `~/.agents`；每个 CLI 的 home 走它自己的 env 与设置页
 //!    覆盖（见 `engine::engine_home` / `engine::codex_home`）。home 不存在的
 //!    目标标 `available: false`，UI 隐去。只出现在 CLI 目录、不属于本应用
@@ -244,7 +244,7 @@ pub(super) static TARGETS: [Target; 14] = [
     },
     Target {
         id: "omp",
-        label: "OMP",
+        label: "OMSK",
         visible: true,
         kind: TargetKind::Omp,
     },

@@ -212,7 +212,7 @@ const FrozenStepRow = memo(function FrozenStepRow({
 /** Thinking body: brain header + left-railed gray content, mirroring the
  * reference chat UI. Plain pre-wrapped text — never markdown-reparsed per
  * delta — but paced by the same reveal as assistant markdown: a provider
- * burst (at 200 tok/s OMP writes ~100 characters every ~144ms) is spread
+ * burst (at 200 tok/s OMSK writes ~100 characters every ~144ms) is spread
  * across the frames of its own arrival cadence instead of landing whole. */
 export function ThinkingSurface({
   text,

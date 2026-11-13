@@ -64,7 +64,7 @@ describe("getLatestRelease fork releases", () => {
 	it("rejects a foreign tag instead of installing it", async () => {
 		stubReleases({ tag_name: "v18.1.8", draft: false, prerelease: false });
 
-		await expect(getLatestRelease()).rejects.toThrow("is not an ohms-v<semver> release");
+		await expect(getLatestRelease()).rejects.toThrow("is not an omsk-v<semver> release");
 	});
 	it("falls back to GitHub web redirect when API returns 403 rate limit", async () => {
 		const urls: string[] = [];

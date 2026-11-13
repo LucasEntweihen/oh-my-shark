@@ -422,7 +422,7 @@ describe("ProcessDisclosure thinking expansion", () => {
     // Mount shows what had already arrived — history must never animate in.
     expect(body()).toBe(opening);
 
-    // One provider burst (OMP writes ~100 characters every ~144ms at
+    // One provider burst (OMSK writes ~100 characters every ~144ms at
     // 200 tok/s) must not appear in a single commit. The reveal is a layout
     // effect, so this is deterministic: no frame has run yet.
     const burst = "汉".repeat(100);

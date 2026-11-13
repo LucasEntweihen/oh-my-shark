@@ -177,7 +177,7 @@ struct SendMessageArgs {
     prompt: String,
     #[serde(default)]
     prompt_contributions: Vec<crate::engine::PromptContribution>,
-    /// ccgui 内置 `/compact`：OMP 走原生 compact RPC 命令。默认值让旧客户端保持可用。
+    /// ccgui 内置 `/compact`：OMSK 走原生 compact RPC 命令。默认值让旧客户端保持可用。
     #[serde(default)]
     native_compact: Option<bool>,
     image_paths: Option<Vec<String>>,
