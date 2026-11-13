@@ -11,7 +11,7 @@ import { createHash, randomUUID } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { $env } from "@oh-my-pi/pi-utils/env";
-import { APP_NAME, PRODUCT_VERSION } from "@oh-my-pi/pi-utils/dirs";
+import { APP_NAME } from "@oh-my-pi/pi-utils/dirs";
 import { isEnoent } from "@oh-my-pi/pi-utils/fs-error";
 import { compareVersions } from "@oh-my-pi/pi-utils/version";
 import { $which } from "@oh-my-pi/pi-utils/which";
@@ -1181,22 +1181,36 @@ function installerHint(): string {
  * Run the update command.
  *
  * Binary-only: the release is always the fork's latest stable `ohms-v<semver>`
- * GitHub release, compared against PRODUCT_VERSION, and the PATH-resolved
- * launcher is replaced in place. A leftover npm script shim on Windows is
- * taken over beside the launcher instead.
+ * GitHub release, compared against the version the installed binary reports,
+ * and the PATH-resolved launcher is replaced in place. A leftover npm script
+ * shim on Windows is taken over beside the launcher instead.
  */
 export async function runUpdateCommand(opts: {
 	force: boolean;
 	check: boolean;
 	channel?: UpdateChannel;
 }): Promise<void> {
-	console.log(chalk.dim(`Current version: ${PRODUCT_VERSION}`));
 	const channel = opts.channel ?? "stable";
 	if (channel === "canary") {
 		console.error(chalk.red(`No canary channel exists for ${APP_NAME}; stable is the only update channel.`));
 		console.log(chalk.dim(`Run \`${APP_NAME} update --stable\` to switch back to stable.`));
 		process.exit(1);
 	}
+
+	// Resolve the installed launcher and read its reported version so the
+	// update check is against what is actually on disk (not PRODUCT_VERSION,
+	// which is the source-tree version and can be ahead of the installed binary).
+	const target = await resolveUpdateTarget();
+	let installedVersion: string | undefined;
+	try {
+		const result = await $`${target.path} --version`.quiet().nothrow();
+		if (result.exitCode === 0) {
+			installedVersion = parseReportedVersion(result.text().trim());
+		}
+	} catch {
+		// version unknown; proceed to check anyway
+	}
+	console.log(chalk.dim(`Current version: ${installedVersion ?? "unknown"}`));
 
 	// Check for updates
 	let release: ReleaseInfo;
@@ -1207,7 +1221,9 @@ export async function runUpdateCommand(opts: {
 		process.exit(1);
 	}
 
-	const comparison = compareVersions(release.version, PRODUCT_VERSION);
+	// Unknown installed version means we cannot confirm up-to-date; treat as
+	// out of date unless --force is off and we can compare.
+	const comparison = installedVersion ? compareVersions(release.version, installedVersion) : 1;
 
 	if (comparison <= 0 && !opts.force) {
 		console.log(chalk.green("✔ Already up to date"));
@@ -1228,7 +1244,6 @@ export async function runUpdateCommand(opts: {
 	// The PATH-resolved launcher is always replaced in place with the release
 	// binary verified against the SHA-256 digest the GitHub API reports.
 	try {
-		const target = await resolveUpdateTarget();
 		if (process.platform === "win32" && isWindowsScriptLauncherPath(target.path)) {
 			console.log(chalk.dim("This release ships as a standalone binary; replacing the script launcher."));
 			await updateViaShimTakeover(target.path, release.version, { expectedTag: release.tag });
