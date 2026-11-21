@@ -332,7 +332,7 @@ export class MenteEmTeiaStore {
 
 		const now = Date.now();
 		const updatedMetadata = {
-			...(node.metadata ?? {}),
+			...node.metadata,
 			invalidated: true,
 			invalidationReason: reason,
 			invalidatedAt: now,

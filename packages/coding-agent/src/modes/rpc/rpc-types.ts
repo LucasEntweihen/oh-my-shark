@@ -1,3 +1,20 @@
+/** Structured provenance preserved for GUI settings persistence/source displays. */
+export interface RpcSettingProvenance {
+	layers: ("global" | "project" | "overlay" | "runtime")[];
+	globalValue?: unknown;
+	globalPath?: string;
+}
+
+/** One chat's own settings (`get_chat_config`, `set_chat_config`); a chat that saved none follows `chat.*`. */
+export interface RpcChatConfig {
+	/** Sent as the whole system prompt; blank sends the built-in chat prompt. */
+	systemPrompt: string;
+	/** `single` sends every message on its own. */
+	history: "continuous" | "single";
+	/** Earlier turns a continuous chat sends with each message; 0 sends all of them. */
+	historyTurns: number;
+}
+
 /**
  * RPC protocol types for headless operation.
  *
@@ -6,119 +23,957 @@
  */
 import type { AgentMessage, AgentToolResult, ThinkingLevel, ToolLoadMode } from "@oh-my-pi/pi-agent-core";
 import type { CompactionResult } from "@oh-my-pi/pi-agent-core/compaction";
-import type { Effort, ImageContent, Model, ToolExample } from "@oh-my-pi/pi-ai";
-import type { BashResult } from "../../exec/bash-executor";
-import type { ContextUsage } from "../../extensibility/extensions/types";
-import type { AgentSessionEvent, SessionStats } from "../../session/agent-session";
-import type { FileEntry } from "../../session/session-entries";
-import type { AvailableSlashCommandSource } from "../../slash-commands/available-commands";
 import type {
-	AgentProgress,
-	SubagentEventPayload,
-	SubagentLifecyclePayload,
-	SubagentProgressPayload,
-} from "../../task";
-import type { TodoPhase } from "../../tools/todo";
+	AssistantMessage,
+	AssistantMessageEvent,
+	Effort,
+	ImageContent,
+	Model,
+	TextContent,
+	ThinkingContent,
+	ToolExample,
+} from "@oh-my-pi/pi-ai";
+import type { ModelKind } from "@oh-my-pi/pi-catalog/types";
+import type { LivePhase } from "@oh-my-pi/pi-tui/apps/live-visualizer";
+import type { FormBlock, FormSpan } from "@oh-my-pi/pi-tui/html-form/parse";
+import type { CopyTarget } from "@oh-my-pi/pi-tui/overlays/copy-targets";
+import type { LogoutAccount } from "@oh-my-pi/pi-tui/overlays/logout-account-selector";
+import type { LoopLimitRuntime } from "@oh-my-pi/pi-tui/status-line/loop";
+import type { ConfiguredThinkingLevel } from "@oh-my-pi/pi-tui/thinking";
+import type { GoalStatus } from "@oh-my-pi/pi-tui/tools/goal";
+import type { AgentProgress } from "@oh-my-pi/pi-tui/tools/task";
+import type { TodoPhase } from "@oh-my-pi/pi-tui/tools/todo";
+import type { ProviderDiscoveryState } from "../../config/model-provider-discovery";
+import type { BashResult } from "../../exec/bash-executor";
+import type {
+	ContextUsage,
+	ExtensionAskDialogQuestion,
+	ExtensionAskDialogResult,
+} from "../../extensibility/extensions/types";
+import type { GoalModeState } from "../../goals/state";
+import type { MemoryListEditResult } from "../../memories";
+import type { MemoryOverview } from "../../memories/workbench";
+import type { MemoryBackendId } from "../../memory-backend/types";
+import type { AgentSessionEvent, SessionStats } from "../../session/agent-session";
+import type {
+	AsyncJobSnapshotItem,
+	ContextUsageBreakdown,
+	RestoredQueuedMessage,
+	RestoredQueuedMessageWithDelivery,
+} from "../../session/agent-session-types";
+import type { BtwHistoryRecord } from "../../session/btw-history";
+import type { WireSessionEvent } from "../../session/loop-end-wire";
+import type { SessionLeaseReport } from "../../session/session-storage";
+import type { CacheWarmingMode } from "../../session/cache-warmer";
+import type { FileEntry, SessionEntry, SessionTreeNode } from "../../session/session-entries";
+import type { UsageLimitState } from "../../session/usage-limit";
+import type { ChangesSummary } from "../../edit/transactional-engine";
+import type {
+	OrchestratorApprovalPolicy,
+	OrchestratorPhase,
+	OrchestratorRun,
+	OrchestratorRunSummary,
+	OrchestratorTaskDraft,
+	OrchestratorWave,
+	OrchestratorWorker,
+	VerificationGateResult,
+} from "../../orchestrator/types";
+import type { AvailableSlashCommandSource } from "../../slash-commands/available-commands";
+import type { SubagentEventPayload, SubagentLifecyclePayload, SubagentProgressPayload } from "../../task";
+import type { DebugParams } from "../../tools/debug";
+import type { ActiveMissionInfo } from "../../tui/deep-sea-command";
+import type { RpcBrowserHostInfo } from "./rpc-browser-host";
+import type { RpcGoalOp, RpcGoalResult } from "./rpc-goal";
 import type { RpcMessagesPage } from "./rpc-messages";
 
 // ============================================================================
 // RPC Commands (stdin)
 // ============================================================================
 
+/**
+ * `set_event_filter` projection: `"full"` keeps both accumulated snapshots in `message_update`, `"delta"` replaces them
+ * with the block a start event opens or an end event closes (see {@link RpcDeltaAssistantMessageEvent}).
+ */
+export type RpcMessageUpdates = "full" | "delta";
+
 export type RpcCommand =
 	// Protocol
 	| { id?: string; type: "negotiate_protocol"; protocolVersion: number }
 
 	// Prompting
-	| { id?: string; type: "prompt"; message: string; images?: ImageContent[]; streamingBehavior?: "steer" | "followUp" }
+	| {
+			id?: string;
+			type: "prompt";
+			message: string;
+			images?: ImageContent[];
+			streamingBehavior?: "steer" | "followUp";
+	  }
 	| { id?: string; type: "steer"; message: string; images?: ImageContent[] }
 	| { id?: string; type: "follow_up"; message: string; images?: ImageContent[] }
+	| {
+			id?: string;
+			type: "remove_queued_message";
+			message: string;
+			queue: "steering" | "followUp";
+	  }
+	| { id?: string; type: "promote_queued_message"; message: string }
 	| { id?: string; type: "abort" }
-	| { id?: string; type: "abort_and_prompt"; message: string; images?: ImageContent[] }
+	| {
+			id?: string;
+			type: "abort_and_prompt";
+			message: string;
+			images?: ImageContent[];
+	  }
+	| { id?: string; type: "abort_and_restore_queue" }
 	| { id?: string; type: "new_session"; parentSession?: string }
+	| { id?: string; type: "drop_session" }
+	| {
+			id?: string;
+			type: "open_session";
+			sessionDir: string;
+			provider?: string;
+			modelId?: string;
+	  }
 
 	// State
 	| { id?: string; type: "get_state" }
-	| { id?: string; type: "set_fast_mode"; enabled: boolean }
+	| { id?: string; type: "set_fast_mode"; enabled: boolean; ultrafast?: boolean }
+	| { id?: string; type: "set_slow_mode"; enabled: boolean }
+	| {
+			id?: string;
+			type: "goal";
+			op: RpcGoalOp;
+			objective?: string;
+			token_budget?: number;
+	  }
+	| { id?: string; type: "set_ask_dialog"; enabled: boolean; form?: boolean }
 	| { id?: string; type: "get_available_commands" }
+	| { id?: string; type: "get_entries"; since?: string }
+	| { id?: string; type: "get_tree" }
 	| { id?: string; type: "set_todos"; phases: TodoPhase[] }
 	| { id?: string; type: "set_host_tools"; tools: RpcHostToolDefinition[] }
-	| { id?: string; type: "set_host_uri_schemes"; schemes: RpcHostUriSchemeDefinition[] }
-	| { id?: string; type: "set_subagent_subscription"; level: RpcSubagentSubscriptionLevel }
+	| {
+			id?: string;
+			type: "set_host_uri_schemes";
+			schemes: RpcHostUriSchemeDefinition[];
+	  }
+	| {
+			id?: string;
+			type: "set_subagent_subscription";
+			level: RpcSubagentSubscriptionLevel;
+	  }
+	| {
+			id?: string;
+			type: "set_event_filter";
+			events: string[] | null;
+			messageUpdates?: RpcMessageUpdates;
+	  }
 	| { id?: string; type: "get_subagents" }
-	| { id?: string; type: "get_subagent_messages"; subagentId?: string; sessionFile?: string; fromByte?: number }
+	| {
+			id?: string;
+			type: "get_subagent_messages";
+			subagentId?: string;
+			sessionFile?: string;
+			fromByte?: number;
+	  }
+	| { id?: string; type: "cancel_subagent"; subagentId: string }
+	| { id?: string; type: "steer_subagent"; subagentId: string; message: string }
+	// Live voice (GPT live bound to this session)
+	| { id?: string; type: "live_start"; voice?: string; instructions?: string }
+	| { id?: string; type: "live_connect"; sdpOffer: string; voice?: string; instructions?: string }
+	| { id?: string; type: "live_stop" }
+	| { id?: string; type: "live_mute"; muted?: boolean }
+	// Host-fed dictation (the host's microphone feeding the dictation model; see rpc-host-dictation.ts).
+	// `host_dictation_audio.pcm16Base64` is little-endian PCM16 mono at 16 kHz.
+	| { id?: string; type: "host_dictation_start" }
+	| { id?: string; type: "host_dictation_audio"; pcm16Base64: string }
+	| { id?: string; type: "host_dictation_stop" }
+	| { id?: string; type: "host_dictation_cancel" }
+	// Interactive terminals (host-rendered PTYs; see rpc-terminal.ts)
+	| { id?: string; type: "terminal_open"; cols?: number; rows?: number; cwd?: string }
+	/** Run an omp subcommand that brings its own terminal UI in a revealed terminal. */
+	| { id?: string; type: "terminal_run_cli"; subcommand: RpcTerminalCliSubcommand; args?: string[] }
+	/** Open a TUI-only screen in a revealed terminal; resolves once it is showing. */
+	| { id?: string; type: "tui_open"; surface: RpcTuiSurface }
+	| { id?: string; type: "terminal_input"; terminalId: string; data: string }
+	| { id?: string; type: "terminal_resize"; terminalId: string; cols: number; rows: number }
+	| { id?: string; type: "terminal_close"; terminalId: string }
+	| { id?: string; type: "terminal_list" }
+	| { id?: string; type: "terminal_snapshot"; terminalId: string }
+	/**
+	 * Opt in to running `pty: true` bash calls in a host terminal (`terminal_opened`
+	 * with `reveal`) and, with `agentTools`, to the agent's `terminal` tool, which
+	 * reads the host's terminals and runs long-lived commands in new ones.
+	 */
+	| { id?: string; type: "terminal_configure"; interactiveCommands: boolean; agentTools?: boolean }
+	// Browser panel (host-served relay; see rpc-browser-host.ts)
+	/** Serve a private browser relay the host dials as its extension; browser opens go to the host's panel. */
+	| { id?: string; type: "browser_host_start" }
+	| { id?: string; type: "browser_host_stop" }
+
+	// Draft-only speech-to-text
+	| { id?: string; type: "dictation_start"; captureId: string }
+	| { id?: string; type: "dictation_stop" }
 
 	// Model
 	| { id?: string; type: "set_model"; provider: string; modelId: string }
-	| { id?: string; type: "cycle_model" }
-	| { id?: string; type: "get_available_models" }
+	| { id?: string; type: "cycle_model"; direction?: "forward" | "backward" }
+	| { id?: string; type: "get_available_models"; forceRefresh?: boolean }
+	| {
+			id?: string;
+			type: "discover_provider_models";
+			/** A saved provider whose credential authenticates the request when `apiKey` is absent. */
+			provider?: string;
+			api: string;
+			baseUrl: string;
+			apiKey?: string;
+			authHeader?: boolean;
+			headers?: Record<string, string>;
+			/** The server's model-list protocol; `openai-models-list` by default. */
+			discoveryType?: "ollama" | "llama.cpp" | "lm-studio" | "openai-models-list" | "proxy" | "litellm";
+			timeoutMs?: number;
+	  }
 
 	// Thinking
-	| { id?: string; type: "set_thinking_level"; level: ThinkingLevel }
+	| { id?: string; type: "set_thinking_level"; level: ThinkingLevel | "auto" }
 	| { id?: string; type: "cycle_thinking_level" }
+	| { id?: string; type: "get_available_thinking_levels" }
 
 	// Queue modes
 	| { id?: string; type: "set_steering_mode"; mode: "all" | "one-at-a-time" }
 	| { id?: string; type: "set_follow_up_mode"; mode: "all" | "one-at-a-time" }
 	| { id?: string; type: "set_interrupt_mode"; mode: "immediate" | "wait" }
 
+	// Queue restore (TUI Alt+Up parity: pull queued steer/follow-up messages back out)
+	| { id?: string; type: "dequeue" }
+
+	// Queue management (stable per-entry ids — never array indices, which
+	// drift under concurrent enqueue). `queueId` names the entry id surfaced
+	// by get_queue; it cannot ride the frame envelope's `id` slot, which is
+	// the request-correlation id. queue_edit changes plain user text while
+	// preserving attachments and delivery metadata. queue_move addresses the
+	// visible-user order, with a clamped target; `toLane` switches lanes while
+	// preserving the stable id. queue_clear drops user-restorable entries only
+	// (hidden companions ride out with them; advisor cards and internal steers
+	// survive), lane-scoped when `lane` is given.
+	| { id?: string; type: "get_queue" }
+	| { id?: string; type: "queue_edit"; queueId: string; text: string }
+	| { id?: string; type: "queue_remove"; queueId: string }
+	| {
+			id?: string;
+			type: "queue_move";
+			queueId: string;
+			toIndex: number;
+			toLane?: "steering" | "followUp";
+	  }
+	| { id?: string; type: "queue_clear"; lane?: "steering" | "followUp" }
+
 	// Compaction
 	| { id?: string; type: "compact"; customInstructions?: string }
 	| { id?: string; type: "set_auto_compaction"; enabled: boolean }
+
+	// Cache warming
+	| { id?: string; type: "set_cache_warming"; mode: CacheWarmingMode }
 
 	// Retry
 	| { id?: string; type: "set_auto_retry"; enabled: boolean }
 	| { id?: string; type: "abort_retry" }
 
 	// Bash
-	| { id?: string; type: "bash"; command: string }
+	| { id?: string; type: "bash"; command: string; excludeFromContext?: boolean }
 	| { id?: string; type: "abort_bash" }
+
+	// Eval (user-initiated `$`/`$$` execution; `excluded` is the `$$` exclude-from-context form)
+	| {
+			id?: string;
+			type: "eval";
+			language?: RpcEvalLanguage;
+			code: string;
+			excluded?: boolean;
+	  }
+	| { id?: string; type: "abort_eval" }
 
 	// Session
 	| { id?: string; type: "get_session_stats" }
+	| { id?: string; type: "get_chat_config" }
+	| { id?: string; type: "set_chat_config"; config: Partial<RpcChatConfig> }
+	| {
+			id?: string;
+			type: "set_session_pinned";
+			sessionId: string;
+			pinned: boolean;
+	  }
+	| { id?: string; type: "get_session_lease"; sessionIds: string[] }
 	| { id?: string; type: "export_html"; outputPath?: string }
-	| { id?: string; type: "switch_session"; sessionPath: string }
+	| {
+			id?: string;
+			type: "switch_session";
+			sessionPath: string;
+			provider?: string;
+			modelId?: string;
+	  }
 	| { id?: string; type: "branch"; entryId: string }
+	| { id?: string; type: "fork"; entryId?: string }
+	| { id?: string; type: "navigate_tree"; entryId: string; summarize?: boolean; customInstructions?: string }
+	| { id?: string; type: "abort_branch_summary" }
+	| { id?: string; type: "set_label"; entryId: string; label?: string }
 	| { id?: string; type: "get_branch_messages" }
+	| { id?: string; type: "get_config_warnings" }
+	| { id?: string; type: "get_advisor_status" }
+	| { id?: string; type: "list_reset_credits" }
+	| { id?: string; type: "redeem_reset_credit"; target: RpcResetCreditTarget; label: string }
 	| { id?: string; type: "get_last_assistant_text" }
-	| { id?: string; type: "set_session_name"; name: string }
+	| { id?: string; type: "get_copy_targets" }
+	| {
+			id?: string;
+			type: "set_session_name";
+			name: string;
+			sessionPath?: string;
+	  }
+	| { id?: string; type: "set_entry_label"; entryId: string; label?: string }
 	| { id?: string; type: "handoff"; customInstructions?: string }
 
 	// Messages
 	| { id?: string; type: "get_messages" }
 	| { id?: string; type: "get_messages_page"; cursor?: string; limit?: number }
+	| {
+			id?: string;
+			type: "get_transcript_page";
+			cursor?: string;
+			limit?: number;
+	  }
 
 	// Login
 	| { id?: string; type: "get_login_providers" }
-	| { id?: string; type: "login"; providerId: string };
+	| { id?: string; type: "login"; providerId: string }
+	| { id?: string; type: "set_api_key"; providerId: string; apiKey: string }
+	| { id?: string; type: "get_logout_accounts"; providerId: string }
+	| { id?: string; type: "logout"; providerId: string; credentialId: number }
+
+	// Usage
+	| { id?: string; type: "get_usage" }
+
+	// Settings
+	| { id?: string; type: "get_settings_schema" }
+	| { id?: string; type: "get_settings"; paths?: string[] }
+	| { id?: string; type: "set_setting"; path: string; value: unknown }
+
+	// Providers
+	| { id?: string; type: "get_providers"; forceRefresh?: boolean }
+
+	// Plan mode
+	| { id?: string; type: "set_plan_mode"; enabled: boolean }
+	| { id?: string; type: "get_plan_mode" }
+	| {
+			id?: string;
+			type: "plan_approval";
+			approved: boolean;
+			option?: RpcPlanApprovalOption;
+			feedback?: string;
+			savePath?: string;
+	  }
+
+	// Session modes (vibe / goal / loop)
+	| { id?: string; type: "get_vibe_mode" }
+	| { id?: string; type: "set_vibe_mode"; enabled: boolean }
+	| { id?: string; type: "get_goal" }
+	| { id?: string; type: "guided_goal"; initial?: string }
+	| { id?: string; type: "set_agents_paused"; enabled: boolean }
+	| { id?: string; type: "btw_branch" }
+	| { id?: string; type: "tan"; work: string }
+	| { id?: string; type: "omfg"; complaint: string }
+	| {
+			id?: string;
+			type: "set_goal";
+			objective?: string;
+			/** Token budget for the goal; `null` clears it (the TUI's `off`). */
+			tokenBudget?: number | null;
+			/** Lifecycle action on an existing goal; omit to set/replace by objective. */
+			action?: "pause" | "resume" | "drop";
+	  }
+	| { id?: string; type: "get_loop_mode" }
+	| {
+			id?: string;
+			type: "set_loop_mode";
+			enabled: boolean;
+			/** Raw `/loop` argument string (`"10"`, `"5m keep going"`, …) parsed by the TUI's own parser. */
+			args?: string;
+	  }
+
+	// Model roles
+	| { id?: string; type: "get_model_roles" }
+	| {
+			id?: string;
+			type: "set_model_role";
+			role: string;
+			modelId: string | null;
+			/** Stored as `modelId`'s `:level` suffix; must be one of the candidate's `thinkingLevels`. */
+			thinkingLevel?: ConfiguredThinkingLevel;
+	  }
+	| { id?: string; type: "get_model_role_metadata" }
+
+	// Domain inspection (read-only)
+	| { id?: string; type: "get_skills" }
+	| { id?: string; type: "get_skill_detail"; name: string }
+	| { id?: string; type: "get_hooks" }
+	| { id?: string; type: "get_mcp_servers" }
+	| { id?: string; type: "get_gui_themes" }
+	| { id?: string; type: "get_plugins" }
+	| { id?: string; type: "get_marketplaces" }
+	| { id?: string; type: "get_prompt_templates" }
+	| { id?: string; type: "get_memory_report" }
+	// Memory workbench (local backend). `cwd` picks the project; it defaults to the session's.
+	| { id?: string; type: "get_memory_overview"; cwd?: string }
+	| { id?: string; type: "get_memory_activity"; cwd?: string }
+	| { id?: string; type: "edit_memory"; cwd?: string; edit: RpcMemoryEdit }
+	| { id?: string; type: "update_memory"; cwd?: string; minIdleMinutes?: number }
+	| { id?: string; type: "get_security_dashboard" }
+	| { id?: string; type: "get_security_scan"; scanId: string }
+	| { id?: string; type: "get_ssh_hosts" }
+	| { id?: string; type: "get_omp_update" }
+
+	// Session reports (structured TUI /context /tools /share /jobs parity)
+	| { id?: string; type: "get_context_report" }
+	| { id?: string; type: "get_active_tools" }
+	| { id?: string; type: "preview_share_session" }
+	| { id?: string; type: "share_session"; snapshotId?: string }
+	| { id?: string; type: "get_jobs" }
+
+	// One-shot session actions (TUI /prewalk /fresh /shake /reload-plugins
+	// /force parity). set_force_tool takes exactly one of `tool` (force the
+	// next turn onto that active tool) or `clear: true` (drop a pending
+	// force); fresh is refused with code "busy" while streaming.
+	| { id?: string; type: "set_prewalk"; enabled: boolean }
+	| { id?: string; type: "fresh" }
+	| {
+			id?: string;
+			type: "shake_context";
+			mode: "elide" | "images" | "thinking";
+	  }
+	| { id?: string; type: "reload_plugins" }
+	| { id?: string; type: "set_force_tool"; tool?: string; clear?: boolean }
+	| { id?: string; type: "get_force_tool" }
+
+	// Domain actions (mutating). Payload ids are `hookId`/`pluginId` — the
+	// envelope `id` field is reserved for request correlation.
+	| { id?: string; type: "set_skill_enabled"; name: string; enabled: boolean }
+	| {
+			id?: string;
+			type: "manage_skill";
+			action: "create" | "update" | "delete";
+			name: string;
+			description?: string;
+			body?: string;
+	  }
+	| { id?: string; type: "set_hook_enabled"; hookId: string; enabled: boolean }
+	| {
+			id?: string;
+			type: "set_plugin_enabled";
+			pluginId: string;
+			enabled: boolean;
+			scope?: "user" | "project";
+	  }
+	| {
+			id?: string;
+			type: "mcp_action";
+			name: string;
+			action: "enable" | "disable" | "reconnect" | "remove";
+			/** Config file for `remove` (defaults to project, mirroring `/mcp remove`). */
+			scope?: "user" | "project";
+	  }
+	| {
+			id?: string;
+			type: "security_start";
+			target: RpcSecurityTargetInput;
+	  }
+	| { id?: string; type: "security_cancel"; operationId: string }
+	| {
+			id?: string;
+			type: "security_validate";
+			scanId: string;
+			findingId: string;
+	  }
+	| {
+			id?: string;
+			type: "security_set_disposition";
+			scanId: string;
+			findingId: string;
+			status: RpcSecurityDispositionStatus;
+			rationale?: string;
+	  }
+	| {
+			id?: string;
+			type: "ssh_manage";
+			action: "create" | "update" | "delete";
+			scope: "user" | "project";
+			name: string;
+			previousName?: string;
+			previousScope?: "user" | "project";
+			host?: RpcSshHostInput;
+	  }
+	| { id?: string; type: "ssh_test"; host: RpcSshHostInput & { name: string } }
+
+	// Session tree (visual branch navigation)
+	| { id?: string; type: "get_session_tree" }
+
+	// Available UI themes (for theme dropdowns)
+	| { id?: string; type: "get_themes" }
+
+	// Resolved color tokens of one UI theme (for GUI theme overlays)
+	| { id?: string; type: "get_theme_colors"; name: string }
+
+	// Full display transcript (all messages, not the LLM context window)
+	| { id?: string; type: "get_transcript" }
+
+	// Voice (speech in/out). `transcribe_audio.audioBase64` carries a canonical
+	// RIFF/WAVE buffer — PCM16, mono, 16 kHz (the STT pipeline's native rate);
+	// `mimeType` is informational ("audio/wav").
+	| {
+			id?: string;
+			type: "transcribe_audio";
+			audioBase64: string;
+			mimeType: string;
+	  }
+	| { id?: string; type: "synthesize_speech"; text: string }
+
+	// Turn recovery (TUI /retry parity): retry the last failed assistant turn.
+	// Separate from abort_retry (which cancels a scheduled auto-retry).
+	| { id?: string; type: "retry" }
+
+	// In-place context reset (TUI /clear parity): drops the conversation
+	// context, keeps the session id + transcript file. Refused with code "busy"
+	// while streaming or a foreground bash/eval execution is in flight.
+	| { id?: string; type: "clear_context" }
+
+	// Per-subagent lifecycle (TUI Agent Hub `x`/`r` parity). `agentId` names
+	// the registry row; the main agent and read-only advisor transcripts are
+	// refused via the result's `reason`.
+	| { id?: string; type: "abort_subagent"; agentId: string }
+	| { id?: string; type: "revive_subagent"; agentId: string }
+
+	// Agent control-center inventory. Returns every definition discoverable for
+	// the attached workspace, including unused project/user/bundled agents.
+	| { id?: string; type: "get_agent_definitions" }
+
+	// Write a large paste into the session's local:// store. The name counter
+	// is allocated agent-side so multiple GUI windows on one session can never
+	// collide (the TUI counter is per-input-controller and can).
+	| { id?: string; type: "write_local_paste"; content: string }
+
+	// Foreign session import (Claude/Codex → a fresh OMP session copy; the
+	// source data is never modified). `foreignId` is the `id` from
+	// list_foreign_sessions; import re-lists to resolve it.
+	| { id?: string; type: "list_foreign_sessions"; source: "claude" | "codex" }
+	| {
+			id?: string;
+			type: "import_foreign_session";
+			source: "claude" | "codex";
+			foreignId: string;
+	  }
+
+	// Session tree navigation. fork_from writes an INDEPENDENT new session
+	// file containing only the path from root to `entryId` and does not switch
+	// (Codex-style "new session from here"); switch_leaf moves the active leaf
+	// in place (TUI tree-selector Enter parity, navigateTree underneath).
+	| { id?: string; type: "fork_from"; entryId: string }
+	| {
+			id?: string;
+			type: "switch_leaf";
+			entryId: string;
+			summarize?: boolean;
+			customInstructions?: string;
+	  }
+	| { id?: string; type: "resume_after_ask_reanswer" }
+
+	// Slash-command argument completions for a remote composer. Static
+	// subcommand data already rides RpcAvailableSlashCommand; this covers the
+	// dynamic candidates (MCP server names, /move directories).
+	| {
+			id?: string;
+			type: "get_command_arg_completions";
+			command: string;
+			prefix: string;
+	  }
+
+	// MCP server management (C1). mcp_test/mcp_reauth are background-dispatched
+	// (see dispatchRpcInputFrame) so a slow probe or a browser OAuth login never
+	// wedges the serial command queue — that is what lets mcp_reauth_cancel
+	// overtake an in-flight mcp_reauth. mcp_test takes exactly one of
+	// `name` (probe a configured server) or `config` (probe an inline definition).
+	| {
+			id?: string;
+			type: "mcp_add";
+			name: string;
+			config: RpcMcpServerInput;
+			scope?: "user" | "project";
+	  }
+	| { id?: string; type: "mcp_test"; name?: string; config?: RpcMcpServerInput }
+	| { id?: string; type: "mcp_reauth"; name: string }
+	| { id?: string; type: "mcp_reauth_cancel"; name: string }
+
+	// Marketplace management (C1). `add` takes `source`; remove/update take
+	// `marketplace`; install takes `plugin` + `marketplace`; uninstall/upgrade
+	// take `plugin` ("name@marketplace" id, or a bare name with `marketplace`);
+	// list_available optionally filters by `marketplace`.
+	| {
+			id?: string;
+			type: "marketplace_action";
+			action: "add" | "remove" | "update" | "install" | "uninstall" | "upgrade" | "list_available";
+			marketplace?: string;
+			plugin?: string;
+			source?: string;
+	  }
+	| { id?: string; type: "debug"; params: DebugParams }
+	| { id?: string; type: "collab_start"; relayUrl?: string; view?: boolean }
+	| { id?: string; type: "collab_join"; link: string }
+	| { id?: string; type: "collab_leave" }
+	| { id?: string; type: "get_collab_state" }
+
+	// Plugin detail and settings (C1). `pluginId` is the npm package name (the
+	// npm install channel backs settings/features; see rpc-plugins.ts).
+	| { id?: string; type: "get_plugin_detail"; pluginId: string }
+	| {
+			id?: string;
+			type: "set_plugin_features";
+			pluginId: string;
+			features: string[];
+	  }
+	| {
+			id?: string;
+			type: "set_plugin_setting";
+			pluginId: string;
+			key: string;
+			value: unknown;
+	  }
+	| {
+			id?: string;
+			type: "delete_plugin_setting";
+			pluginId: string;
+			key: string;
+	  }
+
+	// Workspace directories (TUI /dirs /add-dir /remove-dir /move parity).
+	// Paths may be absolute or cwd-relative and follow TUI `~` expansion.
+	// add_directory/remove_directory return the post-mutation directory list;
+	// remove_directory refuses the primary (cwd) directory with a clear error;
+	// move_session relocates the session file's cwd association on disk.
+	| { id?: string; type: "get_directories" }
+	| { id?: string; type: "add_directory"; path: string }
+	| { id?: string; type: "remove_directory"; path: string }
+	| { id?: string; type: "move_session"; path: string }
+
+	// Git worktrees (GUI tab × worktree binding). get_git_status is the live
+	// source for the footer git segment (branch + porcelain counts; isRepo
+	// false outside a repository). worktree_create materializes a new branch
+	// omp/gui/<name> at ~/.omp/wt/gui-<name>-<hash7>; baseRef "HEAD" (current
+	// checkout) or "default" (repository default branch). worktree_remove
+	// refuses a dirty worktree unless force, the refusal carrying the counts.
+	| { id?: string; type: "get_git_status" }
+	| { id?: string; type: "get_git_changes" }
+	| { id?: string; type: "get_git_diff"; path: string }
+	| {
+			id?: string;
+			type: "worktree_create";
+			name: string;
+			baseCwd?: string;
+			baseRef?: "HEAD" | "default";
+	  }
+	| { id?: string; type: "worktree_remove"; path: string; force?: boolean }
+
+	// Pull requests (GUI PR Center, plan/21). All resolve the GitHub repo from
+	// the session cwd via the gh CLI; pr_diff is per-file (lazy) so frames stay
+	// small, pr_draft is the one model call, pr_checkout lands the PR in a
+	// ~/.omp/wt worktree (plan/20 scheme).
+	| { id?: string; type: "pr_repo" }
+	| {
+			id?: string;
+			type: "pr_list";
+			state?: "open" | "closed" | "merged" | "all";
+			limit?: number;
+	  }
+	| { id?: string; type: "pr_get"; number: number }
+	| { id?: string; type: "pr_diff"; number: number; path: string }
+	| { id?: string; type: "pr_draft"; base?: string; head?: string }
+	| {
+			id?: string;
+			type: "pr_create";
+			title: string;
+			body: string;
+			base?: string;
+			head?: string;
+			draft?: boolean;
+	  }
+	| { id?: string; type: "pr_checkout"; number: number }
+
+	// Word prediction (composer ghost text); `cursor` is a UTF-16 offset into `text`
+	| { id?: string; type: "predict_word"; text: string; cursor: number }
+	| {
+			id?: string;
+			type: "predict_word_feedback";
+			text: string;
+			cursor: number;
+			suggestion: string;
+			accepted: boolean;
+	  }
+
+	// Side questions (/btw); answers stream as `btw_delta` / `btw_record` frames
+	| { id?: string; type: "btw"; question: string; recordId?: string }
+	| { id?: string; type: "btw_cancel"; recordId?: string }
+	| { id?: string; type: "btw_inject"; recordId: string }
+	| { id?: string; type: "get_btw_history" }
+	// Composer predictions; alternatives arrive as `composer_prediction` frames
+	| { id?: string; type: "composer_prediction_request" }
+	| { id?: string; type: "composer_prediction_feedback"; action: RpcComposerPredictionFeedback; rank?: number }
+	// Cancel a manual compaction (a background handoff included) and keep the live turn
+	| { id?: string; type: "abort_compaction" }
+
+	// Shark Orchestrator Engine
+	| { id?: string; type: "orchestrator_get_state"; runId?: string }
+	| {
+			id?: string;
+			type: "orchestrator_plan";
+			goal: string;
+			tasks?: RpcOrchestratorTaskDraft[];
+			approvalPolicy?: OrchestratorApprovalPolicy;
+			maxConcurrency?: number;
+	  }
+	| { id?: string; type: "orchestrator_start"; runId: string }
+	| { id?: string; type: "orchestrator_approve_plan"; runId: string; notes?: string }
+	| { id?: string; type: "orchestrator_reject_plan"; runId: string; reason: string }
+	| {
+			id?: string;
+			type: "orchestrator_steer_worker";
+			runId: string;
+			workerId: string;
+			message: string;
+	  }
+	| { id?: string; type: "orchestrator_pause"; runId: string }
+	| { id?: string; type: "orchestrator_resume"; runId: string }
+	| { id?: string; type: "orchestrator_abort"; runId: string; reason?: string }
+	| { id?: string; type: "orchestrator_verify_wave"; runId: string; waveIndex: number }
+	| { id?: string; type: "orchestrator_rollback_wave"; runId: string; waveIndex: number }
+
+	// Shark Harness & Deep Sea Cockpit
+	| { id?: string; type: "shark_get_status" }
+	| { id?: string; type: "shark_get_events"; limit?: number }
+	| { id?: string; type: "shark_impact_analysis"; target: string }
+	| { id?: string; type: "shark_get_capabilities"; query?: string }
+	| { id?: string; type: "shark_get_checkpoints" }
+	| { id?: string; type: "shark_rollback_checkpoint"; checkpointId: string; force?: boolean }
+	| { id?: string; type: "shark_teia_search"; query?: string; kind?: string; limit?: number }
+	| {
+			id?: string;
+			type: "shark_teia_record_decision";
+			title: string;
+			rationale: string;
+			files?: string[];
+			symbols?: string[];
+	  }
+	| { id?: string; type: "shark_set_cockpit_config"; patch: Record<string, unknown> };
+
+// ============================================================================
+// Shark Orchestrator & Harness Wire Types
+// ============================================================================
+
+export type RpcOrchestratorWorker = OrchestratorWorker;
+export type RpcOrchestratorWave = OrchestratorWave;
+export type RpcVerificationGateResult = VerificationGateResult;
+export type RpcOrchestratorRun = OrchestratorRun;
+export type RpcOrchestratorTaskDraft = OrchestratorTaskDraft;
+export type RpcOrchestratorRunSummary = OrchestratorRunSummary;
+
+export interface RpcOrchestratorEventFrame {
+	type: "orchestrator_event";
+	runId: string;
+	eventType: string;
+	phase: OrchestratorPhase;
+	timestamp: number;
+	payload: Record<string, unknown>;
+	run?: RpcOrchestratorRun;
+}
+
+export interface RpcSharkEventRecord {
+	type: string;
+	timestamp: number;
+	details: Record<string, unknown>;
+}
+
+export interface RpcSharkEventFrame {
+	type: "shark_event";
+	event: RpcSharkEventRecord;
+}
+
+export interface RpcSharkStatusSnapshot {
+	version: string;
+	kernel: {
+		eventCount: number;
+		permissions: string[];
+		sessionState: string;
+	};
+	intelligence: {
+		graphNodes: number;
+		cachedFiles: number;
+	};
+	capabilities: {
+		count: number;
+	};
+	execution: {
+		fsmState: string;
+		checkpointsCount: number;
+	};
+	layout: {
+		preset: string;
+		theme: string;
+		panelCount: number;
+	};
+	cockpit: {
+		config: Record<string, unknown>;
+		mission: ActiveMissionInfo;
+		changes: ChangesSummary;
+		passedChecks: number;
+		totalChecks: number;
+	};
+}
+
+export interface RpcSharkImpactResult {
+	targetId: string;
+	affectedFiles: string[];
+	dependentCallers: string[];
+	associatedTests: string[];
+	contractRisk: string;
+	explanation: string;
+}
+
+export interface RpcSharkCapabilityInfo {
+	id: string;
+	name: string;
+	description: string;
+	originType: string;
+	originSource: string;
+	permissions: string[];
+	dependencies: string[];
+	riskLevel: string;
+	verified: boolean;
+	enabled: boolean;
+}
+
+export interface RpcSharkCheckpointInfo {
+	id: string;
+	timestamp: number;
+	label: string;
+	fileCount: number;
+	status: "open" | "committed" | "rolled_back";
+	files: string[];
+}
+
+export interface RpcSharkChangesSummary {
+	totalAdded: number;
+	totalRemoved: number;
+	modifiedCount: number;
+	checkpointsCount: number;
+	lastCheckpointId?: string;
+}
+
+export interface RpcTeiaNodeInfo {
+	id: string;
+	kind: string;
+	name: string;
+	content?: string;
+	metadata?: Record<string, unknown>;
+	createdAt: number;
+	updatedAt: number;
+}
+
+export interface RpcTeiaEdgeInfo {
+	id: string;
+	sourceId: string;
+	targetId: string;
+	relation: string;
+	confidence: number;
+	createdAt: number;
+}
 
 // ============================================================================
 // RPC State
 // ============================================================================
 
 export interface RpcSessionState {
+	collab?: RpcCollabState;
 	model?: Model;
 	thinkingLevel: ThinkingLevel | undefined;
+	/** Configured selector: `auto` while auto mode is active, else the effective level. Drives pickers (Codex-style) rather than cyclers. */
+	thinkingConfigured?: ConfiguredThinkingLevel;
+	/** Levels the active model actually supports (empty = model does not reason); pickers must not offer unsupported values. */
+	availableThinkingLevels?: ThinkingLevel[];
 	isStreaming: boolean;
 	isCompacting: boolean;
+	/** Manual compaction that prepares without blocking the current turn. */
+	isBackgroundCompacting?: boolean;
 	steeringMode: "all" | "one-at-a-time";
 	followUpMode: "all" | "one-at-a-time";
 	interruptMode: "immediate" | "wait";
 	sessionFile?: string;
+	cwd: string;
 	sessionId: string;
 	sessionName?: string;
 	autoCompactionEnabled: boolean;
+	autoRetryEnabled: boolean;
 	fastModeEnabled: boolean;
 	fastModeActive: boolean;
+	/** Fast mode runs at the model's Ultrafast tier; absent from hosts that predate it. */
+	fastModeUltrafast?: boolean;
+	/** `/slow` applies to the active model (flex tier on OpenAI/Google, low priority on Claude subscriptions). */
+	slowModeSupported: boolean;
+	/** `/slow` is on for the active model; always `false` when `slowModeSupported` is `false`. */
+	slowModeEnabled: boolean;
+	/**
+	 * Where the active model's `/slow` lives: `global` (persisted config shared by every
+	 * session, e.g. Claude low priority) or `session` (this session's flex tier). Absent when unsupported.
+	 */
+	slowModeScope?: "session" | "global";
+	/** Usage-limit stage of the active model's account; absent outside wrap-up and low priority. */
+	usageLimit?: UsageLimitState;
 	tokensPerSecond: number | null;
 	messageCount: number;
 	queuedMessageCount: number;
+	/** Background jobs, their deliveries, child agents or queued peer messages can still wake the session. */
+	hasPendingAsyncWork: boolean;
+	/** Same predicate as `session_settled`: idle with nothing queued or pending. */
+	isSettled: boolean;
+	/** Displayable queue-chip text for pending user-authored messages, mirroring
+	 *  `AgentSession.getQueuedMessages()`. Render the queue from this snapshot
+	 *  (and the `queue_update` event) instead of tracking chips independently.
+	 *  `liveSteered` counts the leading `steering` entries already sent into the
+	 *  streaming response; `remove_queued_message` cannot reach them. */
+	queuedMessages: { steering: string[]; followUp: string[]; liveSteered: number };
 	todoPhases: TodoPhase[];
 	/** For session dump / export (plain-text parity with /dump). */
 	systemPrompt?: string[];
-	dumpTools?: Array<{ name: string; description: string; parameters: unknown; examples?: readonly ToolExample[] }>;
+	dumpTools?: Array<{
+		name: string;
+		description: string;
+		parameters: unknown;
+		examples?: readonly ToolExample[];
+	}>;
 	/** Current context window usage. */
 	contextUsage?: ContextUsage;
+	/** Whether plan mode is currently enabled. */
+	planModeEnabled: boolean;
+	/** Whether a prewalk model switch is armed and waiting for the first edit/write. */
+	prewalkArmed?: boolean;
+	/** Process-global agent pause state. */
+	agentsPaused: boolean;
+	agentsPausedAt?: number;
+	/** Session kind. Absent = "agent" (tools enabled); "chat" = tool-free conversation. Immutable per session. */
+	kind?: "chat";
+	/** Current goal-mode state; `null` when the session has no goal. */
+	goal: GoalModeState | null;
+}
+
+/** Authoritative selector/effective pair returned after set_thinking_level. */
+export interface RpcThinkingLevelState {
+	thinkingLevel: ThinkingLevel | undefined;
+	thinkingConfigured: ConfiguredThinkingLevel | undefined;
 }
 
 export interface RpcAvailableSlashCommand {
@@ -128,6 +983,54 @@ export interface RpcAvailableSlashCommand {
 	input?: { hint?: string };
 	subcommands?: Array<{ name: string; description?: string; usage?: string }>;
 	source: AvailableSlashCommandSource;
+	/** Whether the command consumes text after its name (drives post-space completion). */
+	allowArgs?: boolean;
+	/** Whether dynamic candidates exist (get_command_arg_completions); static-only commands never need the round trip. */
+	hasDynamicArgCompletion?: boolean;
+}
+
+/** Result of switch_leaf (session.navigateTree passthrough + the leaf after the move). */
+export interface RpcSwitchLeafResult {
+	cancelled: boolean;
+	aborted?: boolean;
+	/** Set when the target is an `ask` toolResult and the caller must re-open the ask picker first (issue #5642). */
+	reopenAsk?: { toolCallId: string; html: string };
+	/** Draft text/images of the target user message — restore into the composer. */
+	editorText?: string;
+	editorImages?: ImageContent[];
+	/** The active leaf after navigation (undefined when cancelled/aborted). */
+	activeLeafId?: string;
+	/** The caller must rebuild its transcript, then send resume_after_ask_reanswer. */
+	askReanswerCommitted?: boolean;
+}
+
+export interface RpcCollabParticipant {
+	name: string;
+	role: "host" | "guest";
+	readOnly?: boolean;
+}
+
+/** Current live-collaboration attachment. Secret write links never enter logs. */
+export interface RpcCollabState {
+	role: "host" | "guest" | null;
+	readOnly: boolean;
+	link?: string;
+	viewLink?: string;
+	webLink?: string;
+	webViewLink?: string;
+	participants: RpcCollabParticipant[];
+}
+
+/** Lightweight metadata of one Claude/Codex session offered for import. */
+export interface RpcForeignSessionInfo {
+	id: string;
+	path: string;
+	cwd: string;
+	title?: string;
+	created: string;
+	modified: string;
+	messageCount?: number;
+	firstMessage?: string;
 }
 
 export interface RpcAvailableCommandsUpdateFrame {
@@ -135,10 +1038,326 @@ export interface RpcAvailableCommandsUpdateFrame {
 	commands: RpcAvailableSlashCommand[];
 }
 
+/** How a prompt's work ended, as reported by its {@link RpcPromptResultFrame}. */
+export type RpcPromptStatus = "completed" | "aborted" | "error";
+
+/**
+ * Failure detail for a `prompt_result` with `status: "error"`. `message` is the
+ * provider's error text without OMP-local diagnostics (e.g. request dump paths).
+ */
+export interface RpcPromptError {
+	message: string;
+	provider?: string;
+	model?: string;
+	/** HTTP status reported by the provider, when the failure came from a request. */
+	httpStatus?: number;
+	/** The failure is classified transient: resubmitting later may succeed. OMP's own retries are already exhausted. */
+	retryable: boolean;
+	/** `cost_cap`: the session reached `session.maxCost` (`--max-cost`) and omp did not send the next request. */
+	code?: "cost_cap";
+}
+
+/**
+ * Terminal frame emitted exactly once per accepted `prompt`/`abort_and_prompt`,
+ * after all work the prompt caused has settled. Correlate on `id`.
+ */
 export interface RpcPromptResultFrame {
 	type: "prompt_result";
 	id?: string;
+	/** False when the prompt completed locally (slash command) or failed before reaching the agent. */
 	agentInvoked: boolean;
+	status: RpcPromptStatus;
+	error?: RpcPromptError;
+	/**
+	 * The agent yielded and nothing will wake the session again: no run is live and no
+	 * queued message or background job (async bash/task/eval) will inject a follow-up.
+	 * When false, a {@link RpcSessionSettledFrame} follows once that work is done.
+	 */
+	sessionSettled: boolean;
+}
+
+/**
+ * Emitted when the session goes quiet after agent activity: the last run yielded
+ * and no background work remains that could inject messages and wake it again.
+ * Distinct from a terminal `agent_end`, which only means one run yielded.
+ */
+export interface RpcSessionSettledFrame {
+	type: "session_settled";
+}
+
+// ============================================================================
+// Live Voice Frames (stdout, unsolicited; not session events, so `set_event_filter` never drops them)
+// ============================================================================
+
+/** Live session phase change. */
+export interface RpcLivePhaseFrame {
+	type: "live_phase";
+	phase: LivePhase;
+}
+
+/** Microphone/speaker RMS in [0, 1], at most one frame per 100 ms carrying the latest values. */
+export interface RpcLiveLevelsFrame {
+	type: "live_levels";
+	input: number;
+	output: number;
+}
+
+/** Incremental (`final: false`) or final transcript of one realtime turn; coalesce on `role` + `turn`. */
+export interface RpcLiveTranscriptFrame {
+	type: "live_transcript";
+	role: "user" | "assistant";
+	turn: number;
+	text: string;
+	final: boolean;
+}
+
+/** Emitted exactly once per live session when it has ended; `error` carries the failure cause. */
+export interface RpcLiveEndFrame {
+	type: "live_end";
+	error?: string;
+}
+
+export type RpcLiveFrame = RpcLivePhaseFrame | RpcLiveLevelsFrame | RpcLiveTranscriptFrame | RpcLiveEndFrame;
+
+// ============================================================================
+// Host Dictation Frames (stdout, unsolicited; see rpc-host-dictation.ts)
+// ============================================================================
+
+/**
+ * `preparing`: loading (or downloading) the model, microphone audio is not yet consumed;
+ * `recording`: `host_dictation_audio` is transcribed live; `transcribing`: finishing after stop.
+ */
+export type RpcHostDictationState = "preparing" | "recording" | "transcribing" | "idle";
+
+export interface RpcHostDictationStateFrame {
+	type: "host_dictation_state";
+	state: RpcHostDictationState;
+}
+
+/**
+ * Edits to the host's text box. `volatile` replaces the in-progress words (not yet final);
+ * `commit` inserts final text at the dictation point and clears the volatile words; `clear` drops
+ * them; `trim` deletes `count` characters before the dictation point (a spoken submit command);
+ * `submit` sends the message, per the `stt.submitTrigger` setting.
+ */
+export type RpcHostDictationTextFrame =
+	| { type: "host_dictation_text"; op: "volatile"; text: string }
+	| { type: "host_dictation_text"; op: "commit"; text: string }
+	| { type: "host_dictation_text"; op: "clear" }
+	| { type: "host_dictation_text"; op: "trim"; count: number }
+	| { type: "host_dictation_text"; op: "submit" };
+
+/** A warning (the capture failed or cannot start) or a status line (e.g. "No speech detected."). */
+export interface RpcHostDictationNoticeFrame {
+	type: "host_dictation_notice";
+	level: "warning" | "status";
+	message: string;
+}
+
+/** Download progress of the dictation model while preparing, as an integer percent. */
+export interface RpcHostDictationDownloadFrame {
+	type: "host_dictation_download";
+	label: string;
+	percent: number;
+}
+
+export type RpcHostDictationFrame =
+	| RpcHostDictationStateFrame
+	| RpcHostDictationTextFrame
+	| RpcHostDictationNoticeFrame
+	| RpcHostDictationDownloadFrame;
+
+// ============================================================================
+// Terminal Frames (stdout, unsolicited; see rpc-terminal.ts)
+// ============================================================================
+
+/** One host-rendered terminal. */
+/** `get_advisor_status`: the roster behind the TUI's advisor eye badge, plus advisor spend. */
+export interface RpcAdvisorStatus {
+	/** `advisor.enabled` is on; `advisors` lists the configured roster either way. */
+	configured: boolean;
+	advisors: Array<{
+		name: string;
+		status: "running" | "paused" | "quota_exhausted" | "error" | "no_model";
+		/** Every comment on the yielded primary turn is in; none arrive until the next turn. */
+		yielded: boolean;
+	}>;
+	/** Cumulative advisor cost recorded for this session, in USD. */
+	cost: number;
+	usingSubscription: boolean;
+}
+
+/** A saved-reset option bound to one stored credential; pass back unchanged to `redeem_reset_credit`. */
+export interface RpcResetCreditTarget {
+	provider: string;
+	credentialId: number;
+	creditId?: string;
+	accountId?: string;
+	email?: string;
+	orgId?: string;
+}
+
+/** One provider account row of `list_reset_credits`, active account first. */
+export interface RpcResetCreditAccount {
+	label: string;
+	provider: string;
+	providerLabel: string;
+	/** Banked resets, including grants that cannot be spent right now. */
+	availableCount: number;
+	/** Resets the provider currently permits this account to spend. */
+	redeemableCount: number;
+	target: RpcResetCreditTarget;
+	active: boolean;
+	error?: string;
+	unavailableReason?: string;
+	expiresAt?: string;
+}
+
+/** `redeem_reset_credit`: whether a reset was applied, plus the TUI's human-facing summary. */
+export interface RpcResetCreditRedeemResult {
+	ok: boolean;
+	code: string;
+	message: string;
+}
+
+/** omp subcommands `terminal_run_cli` may launch: each renders its own full-screen terminal UI. */
+export type RpcTerminalCliSubcommand = "git" | "cleanse";
+
+/** TUI-only screens `tui_open` hosts in a terminal view. */
+export type RpcTuiSurface = "advisor_config";
+
+export interface RpcTerminalInfo {
+	terminalId: string;
+	/**
+	 * `shell`: a login shell the host opened; `command`: a `pty: true` bash tool
+	 * call the agent waits on; `background`: a long-lived command the agent
+	 * started with the `terminal` tool (a dev server, a watcher); `session`: a
+	 * shell the agent drives command by command with the `terminal` tool, on
+	 * this machine or over SSH.
+	 */
+	kind: "shell" | "command" | "background" | "session";
+	/** Shell name, the command's first line, or a session's label. */
+	title: string;
+	cwd: string;
+	running: boolean;
+	/** Exit code once the process ended (absent when it was killed by a signal). */
+	exitCode?: number;
+	pid?: number;
+	cols: number;
+	rows: number;
+	/** SSH destination of a remote session. */
+	host?: string;
+	/**
+	 * A session's state: `starting` until its shell is ready, `idle` at the
+	 * prompt, `busy` running the agent's command, `input` waiting for the user
+	 * to answer a password, passphrase, or host-key question.
+	 */
+	state?: "starting" | "idle" | "busy" | "input";
+	/** The session's shell runs as root. */
+	root?: boolean;
+}
+
+/** A terminal exists; `reveal` asks the host to show it (an agent command waits for the user). */
+export interface RpcTerminalOpenedFrame {
+	type: "terminal_opened";
+	terminal: RpcTerminalInfo;
+	reveal?: boolean;
+}
+
+/** Raw PTY output; `seq` counts characters sent for this terminal through the end of `data`. */
+export interface RpcTerminalOutputFrame {
+	type: "terminal_output";
+	terminalId: string;
+	data: string;
+	seq: number;
+}
+
+/** The terminal's process ended; the terminal stays until closed. */
+export interface RpcTerminalExitFrame {
+	type: "terminal_exit";
+	terminalId: string;
+	exitCode?: number;
+	cancelled: boolean;
+	timedOut: boolean;
+}
+
+/** The terminal is gone. */
+export interface RpcTerminalClosedFrame {
+	type: "terminal_closed";
+	terminalId: string;
+}
+
+export type RpcTerminalFrame =
+	| RpcTerminalOpenedFrame
+	| RpcTerminalOutputFrame
+	| RpcTerminalExitFrame
+	| RpcTerminalClosedFrame;
+
+/** `terminal_snapshot` result: recent output through `seq`; later frames have a larger `seq`. */
+export interface RpcTerminalSnapshot {
+	terminal: RpcTerminalInfo;
+	data: string;
+	seq: number;
+}
+
+/** Draft-only dictation frames bypass the session event filter. */
+export interface RpcDictationStateFrame {
+	type: "dictation_state";
+	captureId: string;
+	state: "starting" | "recording" | "transcribing";
+}
+
+/** Full accumulated preview, replacing the previous preview for this capture. */
+export interface RpcDictationTranscriptFrame {
+	type: "dictation_transcript";
+	captureId: string;
+	text: string;
+}
+
+/** Exactly one terminal frame per capture, including any failure. */
+export interface RpcDictationEndFrame {
+	type: "dictation_end";
+	captureId: string;
+	text: string;
+	error?: string;
+}
+
+export type RpcDictationFrame = RpcDictationStateFrame | RpcDictationTranscriptFrame | RpcDictationEndFrame;
+
+/** `open_session` result: `resumed` is false when a fresh session was started in the directory. */
+export interface RpcOpenSessionResult {
+	cancelled: boolean;
+	resumed: boolean;
+	sessionId: string;
+	sessionFile?: string;
+}
+
+/** `navigate_tree` result. */
+export interface RpcNavigateTreeResult {
+	cancelled: boolean;
+	/** Only ever `true`: `abort_branch_summary` stopped the summary; nothing moved. */
+	aborted?: boolean;
+	/** The target was a user message: its text, for the editor (the leaf moved to its parent). */
+	editorText?: string;
+}
+
+/** `remove_queued_message` result. */
+export interface RpcRemoveQueuedMessageResult {
+	removed: boolean;
+	/** The removed message's images, so the client can restore them with its text. */
+	images?: ImageContent[];
+	/** Set when the images exceeded the transport limit and were omitted; the removal still happened. */
+	imagesDropped?: true;
+}
+
+/** `abort_and_restore_queue` result: the user-authored queued input withdrawn before the abort, oldest first. */
+export interface RpcAbortAndRestoreQueueResult {
+	steering: RestoredQueuedMessage[];
+	followUp: RestoredQueuedMessage[];
+	/** Set when the full result exceeded the transport limit and every entry's `images` was omitted. */
+	imagesDropped?: true;
+	/** Set when even the text-only result exceeded the limit: only an oldest-first prefix is listed. */
+	truncated?: true;
 }
 
 export interface RpcReadyFrame {
@@ -147,6 +1366,8 @@ export interface RpcReadyFrame {
 	supportedProtocolVersions: [1, 2];
 	maxFrameBytes: number;
 	maxReassembledFrameBytes: number;
+	/** `bash` accepts `excludeFromContext`; older runtimes omit this capability. Require exactly `true`. */
+	supportsBashExcludeFromContext?: boolean;
 }
 
 export interface RpcChunkFrame {
@@ -162,21 +1383,931 @@ export interface RpcHandoffResult {
 	savedPath?: string;
 }
 
+// ============================================================================
+// Eval / Dequeue Wire Types
+// ============================================================================
+
+/**
+ * Languages accepted by the `eval` command. Only `"python"` is wired to the
+ * interactive user-eval path today (`AgentSession.executePython`, the same
+ * machinery the TUI `$`/`$$` composer modes use); the other eval backends
+ * remain agent-tool-only and the command rejects them with an error response.
+ */
+export type RpcEvalLanguage = "python" | "js" | "ruby" | "julia";
+
+/**
+ * Result of an `eval` command: the execution outcome plus a request echo so
+ * the host can render an execution bubble without retaining the request.
+ * Operational failures (kernel unavailable, disposal in progress) arrive as
+ * `success: false` error responses instead — a non-zero `exitCode` here is a
+ * user-code failure, not a transport/handler failure.
+ */
+export interface RpcEvalResult {
+	language: RpcEvalLanguage;
+	code: string;
+	/** Combined stdout + stderr (sanitized, possibly truncated). */
+	output: string;
+	/** Kernel exit code (0 ok, 1 error); omitted when the run was cancelled. */
+	exitCode?: number;
+	/** Whether the execution was cancelled (abort_eval / session dispose). */
+	cancelled: boolean;
+	/** Whether the output was truncated. */
+	truncated: boolean;
+	/** Echo of the request's `excluded` flag (the `$$` exclude-from-context form). */
+	excluded: boolean;
+}
+
+/**
+ * Result of a `dequeue` command. Messages retain their original delivery lane
+ * and are ordered by enqueue time across both queues (oldest first).
+ */
+export interface RpcDequeueResult {
+	messages: RestoredQueuedMessageWithDelivery[];
+}
+
+/**
+ * One user-restorable queued message surfaced by `get_queue`. `id` is the
+ * stable per-entry queue id assigned at enqueue time (lane-prefixed counter
+ * like `s1`/`f1`), valid for queue operations until the entry is consumed or
+ * removed. Only user-authored, displayable entries appear here; `editable`
+ * distinguishes plain user prompts from structured command payloads.
+ */
+export interface RpcQueuedMessage {
+	id: string;
+	text: string;
+	images?: ImageContent[];
+	editable: boolean;
+	timestamp: number;
+}
+
+/** Result of a `get_queue` command: both lanes in visible execution order. */
+export interface RpcGetQueueResult {
+	steering: RpcQueuedMessage[];
+	followUp: RpcQueuedMessage[];
+}
+
+/** Result of a `queue_edit` command. Unknown/read-only ids produce an error response. */
+export interface RpcQueueEditResult {
+	updated: true;
+}
+
+/** Result of a `queue_remove` command. Unknown ids produce an error response instead. */
+export interface RpcQueueRemoveResult {
+	removed: true;
+}
+
+/** Result of a `queue_move` command: the entry's lane and final visible index. */
+export interface RpcQueueMoveResult {
+	lane: "steering" | "followUp";
+	index: number;
+}
+
+/** Result of a `queue_clear` command: count of user-restorable messages removed. */
+export interface RpcQueueClearResult {
+	removed: number;
+}
+
+// ============================================================================
+// Extension Feature Wire Types (usage / settings / providers)
+// ============================================================================
+
+/** A single normalized usage limit bucket for one provider window/quota. */
+export interface RpcUsageLimit {
+	id: string;
+	label: string;
+	/** Used fraction 0..1 (>1 = overage); undefined when the provider omits it. */
+	usedFraction?: number;
+	used?: number;
+	limit?: number;
+	unit?: string;
+	remainingFraction?: number;
+	windowLabel?: string;
+	resetsAt?: number;
+	status?: string;
+	notes?: string[];
+}
+
+/** Aggregated usage report for one provider/account. */
+export interface RpcUsageReport {
+	provider: string;
+	fetchedAt: number;
+	limits: RpcUsageLimit[];
+	notes?: string[];
+	/** Account identity (email/org) when the provider reports it. */
+	account?: string;
+	/** Saved rate-limit resets available to redeem, when reported. */
+	resetCreditsAvailable?: number;
+}
+
+/** Local session token/cost tallies (fallback when no provider usage API). */
+export interface RpcUsageSessionStats {
+	input: number;
+	output: number;
+	cacheRead: number;
+	cacheWrite: number;
+	totalTokens: number;
+	orchestrationTokens: number;
+	premiumRequests: number;
+	cost: number;
+}
+
+export interface RpcUsageResult {
+	/** Provider-reported quota reports; empty when the provider has no usage API. */
+	reports: RpcUsageReport[];
+	session: RpcUsageSessionStats;
+}
+
+/** One setting entry from the unified schema, projected for the GUI. */
+export interface RpcSettingEntry {
+	provenance?: RpcSettingProvenance;
+	path: string;
+	type: "boolean" | "string" | "number" | "enum" | "array" | "record";
+	value: unknown;
+	default: unknown;
+	label?: string;
+	description?: string;
+	tab?: string;
+	group?: string;
+	/** Enum choices (for `enum` type) or submenu options. */
+	options?: Array<{ value: string; label: string; description?: string }>;
+	/** True when the value is a credential and must be masked in the UI. */
+	secret?: boolean;
+	/** True when the setting has no UI metadata (config-file only). */
+	advanced?: boolean;
+	/**
+	 * Visibility gate name from the schema ui metadata (e.g. "advisorEnabled").
+	 * Clients that can resolve the gate hide the entry while it evaluates false;
+	 * unknown gates stay visible.
+	 */
+	condition?: string;
+	/** True when array order is meaningful and editors should support reordering. */
+	ordered?: boolean;
+	/**
+	 * True when the setting only affects TUI chrome. Non-TUI clients should
+	 * hide it or clearly identify that it has no effect there.
+	 */
+	tuiOnly?: boolean;
+	/**
+	 * True when the value is cached at session/agent construction: edits take
+	 * effect only after a sidecar/session restart, in every client.
+	 */
+	restartRequired?: boolean;
+}
+
+export interface RpcSettingsSchemaResult {
+	entries: RpcSettingEntry[];
+	tabs: Array<{ id: string; label: string; groups: string[] }>;
+}
+
+/** A configured model provider and its auth/config state. */
+export interface RpcProviderInfo {
+	id: string;
+	name: string;
+	/** True when a credential (OAuth or API key) is present. */
+	authenticated: boolean;
+	/** Auth kind when authenticated. */
+	authKind?: "oauth" | "apikey" | "env";
+	/** Account identity (email/org) for OAuth providers. */
+	account?: string;
+	/** True when the provider has a registered interactive credential flow. */
+	loginAvailable: boolean;
+	/** True when `set_api_key` can sign the provider in: it also reads an API key from the environment. */
+	apiKeyLogin?: boolean;
+	/** True when the provider is disabled in settings. */
+	disabled: boolean;
+	/** Base URL override, when configured. */
+	baseUrl?: string;
+	/** Number of models currently available from this provider. */
+	modelCount: number;
+}
+
+/** A model an endpoint offers, as `discover_provider_models` reports it. */
+export interface RpcDiscoveredModel {
+	id: string;
+	name: string;
+	reasoning: boolean;
+	/** Accepted input modalities, e.g. `text`, `image`. */
+	input: string[];
+	/** Null when the server does not report a limit. */
+	contextWindow: number | null;
+	/** Null when the server does not report a limit. */
+	maxTokens: number | null;
+}
+
+export interface RpcProvidersResult {
+	providers: RpcProviderInfo[];
+	models: Model[];
+	discoveryStates: ProviderDiscoveryState[];
+	refreshPending: boolean;
+	generation: number;
+}
+
+export interface RpcAvailableModelsResult {
+	models: Model[];
+	discoveryStates: ProviderDiscoveryState[];
+	refreshPending: boolean;
+	generation: number;
+}
+
+/** Emitted after a bounded model-listing response when discovery finishes later. */
+export interface RpcModelCatalogUpdateFrame extends RpcAvailableModelsResult {
+	type: "model_catalog_update";
+	providers: RpcProviderInfo[];
+}
+
+export interface RpcPlanModeState {
+	enabled: boolean;
+	planFilePath?: string;
+}
+
+/**
+ * Execution option for an approved plan. Mirrors the TUI plan-review choices:
+ * `"execute"` starts a fresh session (context cleared), `"compact"` distills
+ * the planning transcript first, `"keep_context"` executes on the intact
+ * transcript, and `"save"` writes the plan to a host-selected path without
+ * starting execution. The TUI's refine choice maps to
+ * `plan_approval { approved: false, feedback }` instead of an option here.
+ */
+export type RpcPlanApprovalOption = "execute" | "compact" | "keep_context" | "save";
+
+export interface RpcPlanApprovalResult {
+	approved: boolean;
+	/** True when the execution/refinement turn was dispatched to the agent. */
+	dispatched: boolean;
+	/** Present when nothing was dispatched (plain reject, compaction failure). */
+	reason?: string;
+	/** Host-selected destination after a successful save-only approval. */
+	savedPath?: string;
+	/** Whether save-only approval also completed the requested fresh-session transition. */
+	freshSessionStarted?: boolean;
+}
+
+/**
+ * Emitted when the agent submits a plan for approval (a `write` to
+ * `xd://propose` while plan mode is active). The host answers with a
+ * `plan_approval` command. `options` lists the approval choices; `"refine"`
+ * is answered with `approved: false` plus `feedback`, not `option`.
+ */
+export interface RpcPlanProposalFrame {
+	type: "plan_proposal";
+	planFilePath: string;
+	title: string;
+	suggestedFileName: string;
+	planContent: string;
+	options: string[];
+}
+
+// ============================================================================
+// Session Mode Wire Types (vibe / goal / loop)
+// ============================================================================
+
+export interface RpcVibeModeState {
+	enabled: boolean;
+	/** Worker sessions killed by a disable transition (omit semantics: only set on set_vibe_mode). */
+	killedWorkers?: number;
+}
+
+/** Current goal-mode state projected for the wire; absent fields mean "no goal". */
+export interface RpcGoalState {
+	enabled: boolean;
+	status?: GoalStatus;
+	objective?: string;
+	tokenBudget?: number;
+	tokensUsed?: number;
+	timeUsedSeconds?: number;
+	/** GoalModeState.mode: "active" while running, "exiting" on the completion transition. */
+	mode?: "active" | "exiting";
+}
+
+export type RpcLoopModeRunState = "off" | "waiting" | "running" | "paused";
+
+export interface RpcLoopModeState {
+	enabled: boolean;
+	/**
+	 * "waiting": enabled, next host prompt becomes the loop prompt. "running": a
+	 * loop prompt is captured and re-submits after each yield. "paused": an abort
+	 * dropped the current prompt (TUI pauseLoop); the next host prompt re-arms.
+	 */
+	state: RpcLoopModeRunState;
+	prompt?: string;
+	limit?: LoopLimitRuntime;
+}
+
+/** Emitted on every loop-mode transition, including auto-disable on limit exhaustion. */
+export interface RpcLoopModeUpdateFrame {
+	type: "loop_mode_update";
+	state: RpcLoopModeState;
+}
+
+export interface RpcModelRoleCandidate {
+	provider: string;
+	id: string;
+	name: string;
+	kind: ModelKind;
+	/** Thinking selectors a role assignment can apply to this model, in menu order; empty when it does not reason. */
+	thinkingLevels: ConfiguredThinkingLevel[];
+}
+
+/** The candidate a role's configured selector names directly, with its `:level` suffix split off. */
+export interface RpcModelRoleSelection {
+	provider: string;
+	id: string;
+	/** Explicit `:level` suffix; absent when the selector carries none. */
+	thinkingLevel?: ConfiguredThinkingLevel;
+}
+
+export interface RpcModelRoleEntry extends RpcModelRoleMetadata {
+	/** Configured selector, preserved verbatim even when absent from candidates. */
+	model?: string;
+	/** Set when `model` names one of `candidates`; absent for aliases, fallback chains and other models. */
+	selected?: RpcModelRoleSelection;
+	source: string;
+	/** Available models accepted by this role, including keyless/local runners. */
+	candidates: RpcModelRoleCandidate[];
+}
+
+export interface RpcModelRolesResult {
+	roles: RpcModelRoleEntry[];
+}
+
+export interface RpcModelRoleMetadata {
+	id: string;
+	name: string;
+	tag?: string;
+	color?: string;
+	hidden?: boolean;
+	section: "chat" | "kind";
+}
+
+export interface RpcModelRoleMetadataResult {
+	roles: RpcModelRoleMetadata[];
+}
+
+// ============================================================================
+// Domain Inspection Wire Types (skills / hooks / mcp / plugins / templates / memory)
+// ============================================================================
+
+/** A discoverable skill with its session enable state. */
+export interface RpcSkillInfo {
+	name: string;
+	description: string;
+	/** "<provider>:<level>", e.g. "native:project", "claude:user", "custom:user". */
+	source: string;
+	/** True when the live session actually loaded this skill. */
+	enabled: boolean;
+	/** Absolute path to the SKILL.md file. */
+	location: string;
+	/** Discovery provider id, e.g. "native", "codex", or "omp-managed". */
+	provider: string;
+	/** Human-readable discovery provider name. */
+	providerName: string;
+	/** Filesystem/config scope reported by capability discovery. */
+	level: "user" | "project" | "native";
+	/** Only managed skills can be changed or deleted through RPC. */
+	managed: boolean;
+	/** Managed skills only: last write to SKILL.md, ms since epoch. */
+	modifiedAt?: number;
+	/** Hidden skills remain manually invocable but are omitted from model discovery. */
+	hidden: boolean;
+}
+
+export interface RpcSkillsResult {
+	skills: RpcSkillInfo[];
+}
+
+export interface RpcSkillDetail extends RpcSkillInfo {
+	body: string;
+}
+
+export interface RpcManageSkillResult {
+	action: "create" | "update" | "delete";
+	name: string;
+}
+
+/** A discovered pre/post tool hook. */
+export interface RpcHookInfo {
+	/** Stable id used by the `disabledExtensions` setting: "hook:<type>:<tool>:<name>". */
+	id: string;
+	name: string;
+	/** Hook event: "<pre|post>:<tool>", e.g. "pre:bash" or "post:*". */
+	event: string;
+	enabled: boolean;
+	/** Id of the discovery provider that found this hook (e.g. "claude", "codex", "omp-plugins"). */
+	source: string;
+	/** Absolute path to the hook file. */
+	path: string;
+}
+
+export interface RpcHooksResult {
+	hooks: RpcHookInfo[];
+}
+
+/** A configured or discovered MCP server with live connection state. */
+export interface RpcMcpServerInfo {
+	name: string;
+	/** Configured transport; "unknown" when no config exists anywhere (disabled-marker-only entries). */
+	transport: "stdio" | "http" | "sse" | "unknown";
+	/** Live connection state from the MCP manager ("disconnected" when no manager is running). */
+	status: "connected" | "connecting" | "disconnected";
+	/** Tools currently exposed by this server (0 when not connected). */
+	toolCount: number;
+	/** False when disabled in config (`enabled: false`) or via `/mcp disable`. */
+	enabled: boolean;
+	/** True when stored OAuth credentials or a static Authorization header exist. */
+	authed: boolean;
+	/** Which writable config file declared the server; omitted for discovered-only entries. */
+	scope?: "user" | "project";
+	/** Configured stdio command (stdio transports only). */
+	command?: string;
+	/** Configured URL (http/sse transports only). */
+	url?: string;
+	/**
+	 * Last connection error for this server. Currently always omitted: the MCP
+	 * manager surfaces connection failures through transient status events, not
+	 * a queryable per-server error store.
+	 */
+	lastError?: string;
+	/**
+	 * OAuth credential state derived from the config and stored credentials:
+	 * "none" (no OAuth configured), "authorized" (usable credential or static
+	 * Authorization header), "expired" (stored credential past its expiry),
+	 * "required" (OAuth configured but no usable credential stored).
+	 */
+	authState?: "none" | "authorized" | "expired" | "required";
+}
+
+export interface RpcMcpServersResult {
+	servers: RpcMcpServerInfo[];
+}
+
+/** An installed plugin (npm package or marketplace install). */
+export interface RpcPluginInfo {
+	name: string;
+	/** Marketplace name for marketplace installs; "npm" for npm package installs. */
+	marketplace: string;
+	enabled: boolean;
+	version: string;
+	/** Full "name@marketplace" id (marketplace installs only). */
+	id?: string;
+	/** Install scope (marketplace installs only). */
+	scope?: "user" | "project";
+	/** Set when a user-scope install is shadowed by an enabled project-scope install. */
+	shadowedBy?: "project";
+}
+
+export interface RpcPluginsResult {
+	plugins: RpcPluginInfo[];
+}
+
+/** Theme tokens contributed by one enabled plugin's gui.theme asset. */
+export interface RpcGuiThemeInfo {
+	id: string;
+	tokens: Record<string, string>;
+}
+
+/** Result of `get_gui_themes`: declarative GUI theme tokens from enabled plugins. */
+export interface RpcGuiThemesResult {
+	themes: RpcGuiThemeInfo[];
+}
+
+/** A configured marketplace source. */
+export interface RpcMarketplaceInfo {
+	name: string;
+	/** Source URI (github repo, git/url, or local path). */
+	source: string;
+	/** Plugins in the cached catalog; omitted until the catalog is fetched (`/marketplace update`). */
+	pluginCount?: number;
+}
+
+export interface RpcMarketplacesResult {
+	marketplaces: RpcMarketplaceInfo[];
+}
+
+/** Whether a plugin mutation takes effect live or needs a sidecar restart to load/unload. */
+export type RpcPluginActivation = "live" | "restart-required";
+
+/** Result of `set_plugin_enabled`: which install channel persisted the toggle. */
+export interface RpcPluginSetEnabledResult {
+	id: string;
+	enabled: boolean;
+	channel: "npm" | "marketplace";
+	/** Executable plugins report restart-required in both directions (load/unload). */
+	activation?: RpcPluginActivation;
+}
+
+/** Result of `mcp_action`; `status` reports the live connection state when a manager is running. */
+export interface RpcMcpActionResult {
+	name: string;
+	action: "enable" | "disable" | "reconnect" | "remove";
+	status?: "connected" | "connecting" | "disconnected";
+}
+
+// ============================================================================
+// C1 Management Wire Types (mcp add/test/reauth, marketplace, plugin settings)
+// ============================================================================
+
+/**
+ * Wire form of one MCP server definition (`mcp_add.config`, `mcp_test.config`).
+ * Maps onto {@link MCPServerConfig}: stdio takes command/args/env, http/sse
+ * take url/headers, `timeoutMs` maps to the config's `timeout`.
+ */
+export interface RpcMcpServerInput {
+	transport: "stdio" | "http" | "sse";
+	/** stdio: executable to spawn. */
+	command?: string;
+	/** stdio: argv. */
+	args?: string[];
+	/** stdio: environment overrides. */
+	env?: Record<string, string>;
+	/** http/sse: server URL. */
+	url?: string;
+	/** http/sse: extra headers. */
+	headers?: Record<string, string>;
+	/** MCP request timeout in milliseconds (maps to the config's `timeout`). */
+	timeoutMs?: number;
+}
+
+/** Result of `mcp_add`: the refreshed live view of the just-added server. */
+export interface RpcMcpAddResult {
+	added: true;
+	server: RpcMcpServerInfo;
+}
+
+/**
+ * Result of `mcp_test`. Probe failures (connect/handshake/tool-list, unknown
+ * server name, invalid arguments) ride `error` with `ok:false`.
+ */
+export interface RpcMcpTestResult {
+	ok: boolean;
+	toolNames?: string[];
+	toolCount?: number;
+	error?: string;
+}
+
+/**
+ * Result of `mcp_reauth`. User cancellation resolves `{ ok:false, error:"cancelled" }`;
+ * a second reauth claimed while one is in flight is refused at the envelope
+ * (`success:false, code:"oauth_busy"`), not here.
+ */
+export interface RpcMcpReauthResult {
+	ok: boolean;
+	error?: string;
+}
+
+/** Result of `mcp_reauth_cancel`: false when no reauth for that name was in flight. */
+export interface RpcMcpReauthCancelResult {
+	cancelled: boolean;
+}
+
+/** Where a catalog plugin's files come from, as the catalog declares it. A string is a path inside the marketplace. */
+export type RpcMarketplacePluginSource =
+	| string
+	| { source: "github"; repo: string; ref?: string; sha?: string }
+	| { source: "url"; url: string; ref?: string; sha?: string }
+	| { source: "git-subdir"; url: string; path: string; ref?: string; sha?: string }
+	| { source: "npm"; package: string; version?: string; registry?: string };
+
+/** Components a catalog entry declares itself, in the catalog's own shape. The plugin's files can add more. */
+export interface RpcMarketplacePluginComponents {
+	commands?: unknown;
+	agents?: unknown;
+	skills?: unknown;
+	hooks?: unknown;
+	mcpServers?: unknown;
+	lspServers?: unknown;
+}
+
+/** One catalog entry from a marketplace, with its local install state. */
+export interface RpcMarketplacePluginInfo {
+	name: string;
+	description?: string;
+	version?: string;
+	installed: boolean;
+	/** Catalog metadata; each field is absent when the catalog entry omits it. */
+	displayName?: string;
+	author?: string;
+	license?: string;
+	repository?: string;
+	homepage?: string;
+	category?: string;
+	tags?: string[];
+	source?: RpcMarketplacePluginSource;
+	components?: RpcMarketplacePluginComponents;
+}
+
+/**
+ * Result of `marketplace_action`. Domain failures (unknown marketplace/plugin,
+ * invalid source, install errors) ride `error` with `ok:false`. `plugins` is
+ * populated only for `action:"list_available"`; catalogs are cache-backed
+ * (populated by `add`/`update`), so the listing reflects the last fetch.
+ */
+export interface RpcMarketplaceActionResult {
+	ok: boolean;
+	error?: string;
+	plugins?: RpcMarketplacePluginInfo[];
+	/** install/upgrade verdict: restart-required when the plugin ships executable entry points. */
+	activation?: RpcPluginActivation;
+}
+
+/**
+ * Full detail for one plugin: manifest-declared features with live enable
+ * state, the declared settings schema (omitted when the manifest declares
+ * none), non-secret effective setting values (project overrides merged over
+ * user), and the keys with persisted values. Secret values never cross the
+ * RPC boundary; `configuredKeys` lets clients render their write-only state.
+ */
+export interface RpcPluginDetail {
+	id: string;
+	enabled: boolean;
+	features: Array<{ id: string; description?: string; enabled: boolean }>;
+	settingsSchema?: unknown;
+	values: Record<string, unknown>;
+	configuredKeys: string[];
+}
+
+/**
+ * Result of the plugin feature/setting mutations. Validation feedback (unknown
+ * feature, schema violation) rides `error` with `ok:false`.
+ */
+export interface RpcPluginMutationResult {
+	ok: boolean;
+	error?: string;
+	/** Feature mutations that (de)activate executable entry points report restart-required. */
+	activation?: RpcPluginActivation;
+}
+
+/** A file-based prompt template. */
+export interface RpcPromptTemplateInfo {
+	name: string;
+	description: string;
+	/** "(user)", "(project)", or a scoped variant like "(project:frontend)". */
+	source: string;
+	/** "[arguments]" when the template body consumes args inline; omitted otherwise. */
+	argumentHint?: string;
+}
+
+export interface RpcPromptTemplatesResult {
+	templates: RpcPromptTemplateInfo[];
+}
+
+/** Structured memory backend status, projected for the wire (mirrors MemoryBackendStatus). */
+export interface RpcMemoryStatus {
+	active: boolean;
+	writable: boolean;
+	searchable: boolean;
+	scope?: string;
+	retainBank?: string;
+	recallBanks?: string[];
+	workingCount?: number;
+	episodicCount?: number;
+	tripleCount?: number;
+	lastMemory?: string;
+	lastRecall?: boolean;
+	database?: string;
+	message?: string;
+	error?: string;
+}
+
+/** One project's local memory as the workbench shows it. */
+export type RpcMemoryOverview = MemoryOverview;
+
+/** A workbench edit. Notes and lessons are named by their stored `line`. */
+export type RpcMemoryEdit =
+	| { kind: "note"; action: "add"; text: string }
+	| { kind: "note" | "lesson"; action: "update"; line: string; text: string; context?: string }
+	| { kind: "note" | "lesson"; action: "delete"; line: string }
+	| { kind: "source"; action: "forget" | "restore"; threadId: string }
+	| { kind: "erase" };
+
+export interface RpcMemoryEditResult {
+	/** `ok: false` names an expected refusal (empty text, entry changed elsewhere, notes full). */
+	result: MemoryListEditResult;
+	overview: RpcMemoryOverview;
+}
+
+export interface RpcMemoryUpdateResult {
+	/** False when this process was already updating the project. */
+	started: boolean;
+	overview: RpcMemoryOverview;
+}
+
+/** Read-only memory backend report. Optional fields are omitted when the backend lacks (or fails) that hook. */
+export interface RpcMemoryReport {
+	backend: MemoryBackendId;
+	/** working + episodic entry counts, when the backend reports them. */
+	entryCount?: number;
+	status?: RpcMemoryStatus;
+	/** `/memory stats` markdown payload. */
+	stats?: string;
+	/** `/memory diagnose` markdown payload. */
+	diagnosis?: string;
+}
+
+export type RpcSecurityDispositionStatus = "open" | "false_positive" | "accepted_risk" | "fixed" | "wont_fix";
+export type RpcSecuritySeverityLevel = "critical" | "high" | "medium" | "low" | "informational";
+
+export type RpcSecurityTargetInput =
+	| { kind: "repository" }
+	| { kind: "working_tree" }
+	| { kind: "ref_diff"; baseRevision: string; headRevision: string };
+
+export interface RpcSecurityFindingInfo {
+	id: string;
+	scanId: string;
+	title: string;
+	summary: string;
+	severity: RpcSecuritySeverityLevel;
+	confidence: "high" | "medium" | "low";
+	path?: string;
+	line?: number;
+	disposition: RpcSecurityDispositionStatus;
+	validation: "unvalidated" | "validated" | "rejected" | "partial" | "error";
+	remediation?: string;
+	evidence: Array<{
+		label: string;
+		explanation: string;
+		excerpt?: string;
+		path?: string;
+		line?: number;
+	}>;
+}
+
+export interface RpcSecurityScanInfo {
+	id: string;
+	status: "planned" | "running" | "completed" | "partial" | "cancelled" | "failed";
+	createdAt: string;
+	completedAt?: string;
+	producer: string;
+	findingCount: number;
+	target: {
+		kind: "repository" | "scoped_path" | "ref_diff" | "working_tree" | "imported";
+		displayName: string;
+		revision?: string;
+		baseRevision?: string;
+		headRevision?: string;
+	};
+}
+
+export interface RpcSecurityOperationInfo {
+	operationId: string;
+	planId: string;
+	scanId: string;
+	phase: "queued" | "preparing" | "reviewing" | "publishing" | "completed" | "partial" | "cancelled" | "failed";
+	createdAt: string;
+	updatedAt: string;
+	findingCount: number;
+	error?: string;
+}
+
+export interface RpcSecurityDashboardResult {
+	enabled: boolean;
+	modelReady: boolean;
+	modelLabel?: string;
+	repositoryRoot: string;
+	revision?: string;
+	scans: RpcSecurityScanInfo[];
+	operations: RpcSecurityOperationInfo[];
+	latest?: RpcSecurityScanResult;
+}
+
+export interface RpcSecurityScanResult {
+	scan: RpcSecurityScanInfo;
+	findings: RpcSecurityFindingInfo[];
+}
+
+export interface RpcSshHostInput {
+	host: string;
+	username?: string;
+	port?: number;
+	keyPath?: string;
+	description?: string;
+	compat?: boolean;
+}
+
+export interface RpcSshHostInfo extends RpcSshHostInput {
+	name: string;
+	scope: "user" | "project" | "native";
+	editable: boolean;
+	source: string;
+	os?: "windows" | "linux" | "macos" | "unknown";
+	shell?: "cmd" | "powershell" | "bash" | "zsh" | "sh" | "unknown";
+	compatShell?: "bash" | "sh";
+	transferShell?: "sh" | "bash" | "zsh";
+}
+
+export interface RpcSshHostsResult {
+	openSshAvailable: boolean;
+	hosts: RpcSshHostInfo[];
+	warnings: string[];
+}
+
+export interface RpcSshTestResult {
+	name: string;
+	ok: boolean;
+	checkedAt: string;
+	os?: RpcSshHostInfo["os"];
+	shell?: RpcSshHostInfo["shell"];
+	compatShell?: RpcSshHostInfo["compatShell"];
+	transferShell?: RpcSshHostInfo["transferShell"];
+	error?: string;
+}
+
+export interface RpcOmpUpdateResult {
+	currentVersion: string;
+	latestVersion: string;
+	updateAvailable: boolean;
+	checkedAt: string;
+	distribution: "bundled";
+	installStrategy: "gui-update";
+}
+
+/** A node in the session's branch tree (visual session navigation). */
+export interface RpcSessionTreeNode {
+	entryId: string;
+	/** Nearest ancestor that is itself included in the tree array (null for roots). */
+	parentId: string | null;
+	role: "user" | "assistant" | "system";
+	/** Whitespace-collapsed, pre-truncated preview (~200 chars). */
+	textPreview: string;
+	/** ms epoch. */
+	timestamp: number;
+	label?: string;
+	/** True when this node lies on the path from root to the active leaf. */
+	onActiveBranch: boolean;
+	/** True when no other included node lists this as its parent. */
+	isLeaf: boolean;
+}
+
+export interface RpcSessionTreeResult {
+	tree: RpcSessionTreeNode[];
+	/** The active leaf, resolved to the nearest included message entry (null when none). */
+	activeLeafId: string | null;
+}
+
+/** An available UI theme (built-in or custom file). */
+export interface RpcThemeInfo {
+	name: string;
+	path?: string;
+}
+export interface RpcThemesResult {
+	themes: RpcThemeInfo[];
+}
+
+/** A UI theme's resolved colors as CSS hex strings, keyed by theme token (accent, statusLineBg, …). */
+export interface RpcThemeColorsResult {
+	name: string;
+	colors: Record<string, string>;
+}
+
 export type RpcSubagentSubscriptionLevel = "off" | "progress" | "events";
 
 export interface RpcSubagentSnapshot {
 	id: string;
 	index: number;
 	agent: string;
-	agentSource: AgentProgress["agentSource"];
+	agentSource?: AgentProgress["agentSource"];
 	description?: string;
-	status: AgentProgress["status"];
+	status: string;
+	/** False when a registry ref claims running but has no turn in flight. */
+	live?: boolean;
 	task?: string;
 	assignment?: string;
 	sessionFile?: string;
 	lastUpdate: number;
+	/** When the agent first started, ms since the epoch; a revival keeps the first start. */
+	spawnedAt?: number;
 	progress?: AgentProgress;
 	parentToolCallId?: string;
+	/** Registry id of the spawning subagent for nested spawns; absent at the root. */
+	parentSubagentId?: string;
+	kind?: "sub" | "advisor";
+}
+
+export interface RpcAgentDefinitionInfo {
+	name: string;
+	description: string;
+	filePath?: string;
+	model?: string[];
+	thinkingLevel?: string;
+	tools?: string[];
+	spawns?: string[] | "*";
+	autoloadSkills?: string[];
+	output?: unknown;
+	blocking?: boolean;
+	readSummarize?: boolean;
+	prewalk?: boolean | string;
+	defaultPatterns: string[];
+	defaultResolved?: string;
+	effectivePatterns: string[];
+	effectiveResolved?: string;
+	effectiveThinkingLevel?: string;
+	prewalkPattern?: string;
+	prewalkResolved?: string;
+	source: "bundled" | "user" | "project";
+}
+
+export interface RpcAgentDefinitionsResult {
+	agents: RpcAgentDefinitionInfo[];
 }
 
 export interface RpcSubagentMessagesResult {
@@ -186,6 +2317,227 @@ export interface RpcSubagentMessagesResult {
 	reset: boolean;
 	entries: FileEntry[];
 	messages: AgentMessage[];
+}
+
+// ============================================================================
+// Workspace Directory Wire Types (/dirs /add-dir /remove-dir /move parity)
+// ============================================================================
+
+/** One session workspace root. Exactly one entry — the session cwd — is primary. */
+export interface RpcWorkspaceDirectory {
+	path: string;
+	primary: boolean;
+}
+
+/**
+ * Result of get_directories / add_directory / remove_directory: the session's
+ * workspace roots, primary (cwd) first, additional directories in their
+ * stored order.
+ */
+export interface RpcWorkspaceDirectoriesResult {
+	directories: RpcWorkspaceDirectory[];
+}
+
+/**
+ * Result of get_git_status: the footer git segment's live state for the
+ * session cwd (TUI gitSegment parity). `isRepo` false outside a repository
+ * (counts zeroed, branch null); `branch` null when detached.
+ */
+/** Net changes from the current HEAD to this checkout, including untracked files. */
+export interface RpcGitChanges {
+	isRepo: boolean;
+	root: string | null;
+	base: string | null;
+	files: { path: string; oldPath?: string; status: string }[];
+	truncated: boolean;
+}
+
+export interface RpcGitDiff {
+	path: string;
+	diff: string;
+	kind: "text" | "binary" | "large" | "symlink" | "directory";
+	truncated: boolean;
+}
+
+export interface RpcGitStatus {
+	isRepo: boolean;
+	branch: string | null;
+	staged: number;
+	unstaged: number;
+	untracked: number;
+}
+
+/**
+ * Result of worktree_create: the materialized worktree. `path` is the
+ * checkout root (~/.omp/wt/gui-<name>-<hash7>), `branch` the new
+ * omp/gui/<name> ref, `baseCwd` the repo's primary checkout it forked from.
+ */
+export interface RpcWorktreeCreateResult {
+	path: string;
+	branch: string;
+	baseCwd: string;
+}
+
+/** pr_repo: gh availability + the session cwd's GitHub repo, or the typed reason it's unusable. */
+export type RpcPrRepo =
+	| { available: true; repo: string; defaultBranch: string | null }
+	| {
+			available: false;
+			reason: "gh_missing" | "not_a_repo" | "no_github_remote";
+	  };
+
+/** pr_list row: one PR with rollup CI counts (success/failure/pending). */
+export interface RpcPrListItem {
+	number: number;
+	title: string;
+	url: string;
+	isDraft: boolean;
+	authorLogin: string;
+	headRefName: string;
+	baseRefName: string;
+	additions: number;
+	deletions: number;
+	updatedAt: string;
+	reviewDecision: string | null;
+	checks: { success: number; failure: number; pending: number };
+}
+
+/** pr_get detail: everything the PR Center renders except per-file diff text. */
+export interface RpcPrDetail {
+	number: number;
+	title: string;
+	url: string;
+	isDraft: boolean;
+	authorLogin: string;
+	body: string;
+	baseRefName: string;
+	headRefName: string;
+	mergeStateStatus: string;
+	additions: number;
+	deletions: number;
+	reviewDecision: string | null;
+	files: Array<{
+		path: string;
+		changeType: string;
+		additions: number;
+		deletions: number;
+	}>;
+	checks: Array<{ name: string; status: string; conclusion: string | null }>;
+}
+
+/** pr_draft result (AI-drafted, user-editable before pr_create). */
+export interface RpcPrDraftResult {
+	title: string;
+	body: string;
+}
+
+/** pr_create result. */
+export interface RpcPrCreateResult {
+	url: string;
+	number: number;
+}
+
+// ============================================================================
+// Session Report Wire Types (/context /tools /share /jobs parity)
+// ============================================================================
+
+/**
+ * Result of get_context_report: the provider-anchored token breakdown from
+ * `session.getContextBreakdown()` verbatim, plus the header fields the TUI
+ * renders above it. `contextWindow` is 0 (and `model` empty) when no model
+ * is selected — the TUI's "unavailable" state.
+ */
+export interface RpcContextReportResult {
+	breakdown: ContextUsageBreakdown | undefined;
+	contextWindow: number;
+	/** Active model id; empty when no model is selected. */
+	model: string;
+}
+
+/** Tool provenance bucket. `plugin` is reserved: plugin-shipped tools load
+ * through the extension/custom-tool path and surface as `extension`. */
+export type RpcToolSource = "builtin" | "mcp" | "extension" | "plugin";
+
+export interface RpcActiveTool {
+	name: string;
+	description?: string;
+	source: RpcToolSource;
+}
+
+/**
+ * Result of get_active_tools: active top-level tools (TUI /tools rows),
+ * followed by xd:// mounted entries (the `~ xd://name` rows).
+ */
+export interface RpcActiveToolsResult {
+	tools: RpcActiveTool[];
+}
+
+/** Result of share_session. `truncated` rides only when content was trimmed. */
+export interface RpcShareSessionPreview {
+	/** The local preview already reflects upload size limits. */
+	truncated?: boolean;
+	snapshotId: string;
+	preview: string;
+	serverUrl: string;
+	store: "blob" | "gist";
+	redactionEnabled: boolean;
+}
+
+export interface RpcShareSessionResult {
+	url: string;
+	truncated?: boolean;
+}
+
+/**
+ * One get_jobs tree row: a job (a task job also heads the subagent it runs), or
+ * a header for a subagent whose task job is no longer listed.
+ */
+export interface RpcJobTreeRow {
+	/** 0 for the viewing agent's own jobs; one more per subagent level. */
+	depth: number;
+	job?: AsyncJobSnapshotItem;
+	/** Registry id of the subagent this row heads. */
+	agentId?: string;
+}
+
+/**
+ * Result of get_jobs: running jobs first, then recent (TUI /jobs ordering),
+ * items as-is from the session's async-job snapshot. Empty when the session
+ * has no job registry.
+ */
+export interface RpcJobsResult {
+	jobs: AsyncJobSnapshotItem[];
+	/** This agent's and its subagents' jobs nested as the TUI /jobs tree shows them, in display order. */
+	tree?: RpcJobTreeRow[];
+}
+
+// ============================================================================
+// One-Shot Session Action Wire Types (prewalk / fresh / shake / reload / force)
+// ============================================================================
+
+/** Result of set_prewalk: the armed state after the toggle. */
+export interface RpcPrewalkState {
+	enabled: boolean;
+}
+
+/** Result of fresh (provider stream state reset); deliberately empty. */
+export type RpcFreshResult = Record<string, never>;
+
+/** Result of shake_context. `removed` is the one-line operator summary (TUI formatShakeSummary). */
+export interface RpcShakeContextResult {
+	removed: string;
+}
+
+/** Result of reload_plugins: post-reload inventory counts. */
+export interface RpcReloadPluginsResult {
+	plugins: number;
+	skills: number;
+	commands: number;
+}
+
+/** Result of set_force_tool / get_force_tool: the pending forced tool, or null. */
+export interface RpcForceToolState {
+	tool: string | null;
 }
 
 // ============================================================================
@@ -204,21 +2556,100 @@ export type RpcResponse =
 	  }
 
 	// Prompting (async - events follow)
-	| { id?: string; type: "response"; command: "prompt"; success: true; data?: { agentInvoked: boolean } }
+	| {
+			id?: string;
+			type: "response";
+			command: "prompt";
+			success: true;
+			data?: { agentInvoked: boolean };
+	  }
 	| { id?: string; type: "response"; command: "steer"; success: true }
 	| { id?: string; type: "response"; command: "follow_up"; success: true }
+	| {
+			id?: string;
+			type: "response";
+			command: "remove_queued_message";
+			success: true;
+			data: RpcRemoveQueuedMessageResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "promote_queued_message";
+			success: true;
+			data: { promoted: boolean };
+	  }
 	| { id?: string; type: "response"; command: "abort"; success: true }
-	| { id?: string; type: "response"; command: "abort_and_prompt"; success: true }
-	| { id?: string; type: "response"; command: "new_session"; success: true; data: { cancelled: boolean } }
+	| {
+			id?: string;
+			type: "response";
+			command: "abort_and_prompt";
+			success: true;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "abort_and_restore_queue";
+			success: true;
+			data: RpcAbortAndRestoreQueueResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "new_session";
+			success: true;
+			data: { cancelled: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "drop_session";
+			success: true;
+			data: { cancelled: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "open_session";
+			success: true;
+			data: RpcOpenSessionResult;
+	  }
 
 	// State
-	| { id?: string; type: "response"; command: "get_state"; success: true; data: RpcSessionState }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_state";
+			success: true;
+			data: RpcSessionState;
+	  }
 	| {
 			id?: string;
 			type: "response";
 			command: "set_fast_mode";
 			success: true;
-			data: { enabled: boolean; active: boolean };
+			data: { enabled: boolean; active: boolean; ultrafast: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_slow_mode";
+			success: true;
+			data: { enabled: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "goal";
+			success: true;
+			data: RpcGoalResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_ask_dialog";
+			success: true;
+			data: { enabled: boolean };
 	  }
 	| {
 			id?: string;
@@ -227,9 +2658,48 @@ export type RpcResponse =
 			success: true;
 			data: { commands: RpcAvailableSlashCommand[] };
 	  }
-	| { id?: string; type: "response"; command: "set_todos"; success: true; data: { todoPhases: TodoPhase[] } }
-	| { id?: string; type: "response"; command: "set_host_tools"; success: true; data: { toolNames: string[] } }
-	| { id?: string; type: "response"; command: "set_host_uri_schemes"; success: true; data: { schemes: string[] } }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_entries";
+			success: true;
+			data: { entries: SessionEntry[]; leafId: string | null };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_tree";
+			success: true;
+			data: { tree: SessionTreeNode[]; leafId: string | null };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_todos";
+			success: true;
+			data: { todoPhases: TodoPhase[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_host_tools";
+			success: true;
+			data: { toolNames: string[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_host_uri_schemes";
+			success: true;
+			data: { schemes: string[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_event_filter";
+			success: true;
+			data: { events: string[] | null; messageUpdates: RpcMessageUpdates };
+	  }
 	| {
 			id?: string;
 			type: "response";
@@ -251,6 +2721,14 @@ export type RpcResponse =
 			success: true;
 			data: RpcSubagentMessagesResult;
 	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "cancel_subagent";
+			success: true;
+			data: { cancelled: boolean };
+	  }
+	| { id?: string; type: "response"; command: "steer_subagent"; success: true }
 
 	// Model
 	| {
@@ -265,18 +2743,35 @@ export type RpcResponse =
 			type: "response";
 			command: "cycle_model";
 			success: true;
-			data: { model: Model; thinkingLevel: ThinkingLevel | undefined; isScoped: boolean } | null;
+			data: {
+				model: Model;
+				thinkingLevel: ThinkingLevel | undefined;
+				isScoped: boolean;
+			} | null;
 	  }
 	| {
 			id?: string;
 			type: "response";
 			command: "get_available_models";
 			success: true;
-			data: { models: Model[] };
+			data: RpcAvailableModelsResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "discover_provider_models";
+			success: true;
+			data: { models: RpcDiscoveredModel[] };
 	  }
 
 	// Thinking
-	| { id?: string; type: "response"; command: "set_thinking_level"; success: true }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_thinking_level";
+			success: true;
+			data: RpcThinkingLevelState;
+	  }
 	| {
 			id?: string;
 			type: "response";
@@ -284,29 +2779,233 @@ export type RpcResponse =
 			success: true;
 			data: { level: Effort } | null;
 	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_available_thinking_levels";
+			success: true;
+			data: { levels: ThinkingLevel[] };
+	  }
 
 	// Queue modes
-	| { id?: string; type: "response"; command: "set_steering_mode"; success: true }
-	| { id?: string; type: "response"; command: "set_follow_up_mode"; success: true }
-	| { id?: string; type: "response"; command: "set_interrupt_mode"; success: true }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_steering_mode";
+			success: true;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_follow_up_mode";
+			success: true;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_interrupt_mode";
+			success: true;
+	  }
+
+	// Queue restore
+	| {
+			id?: string;
+			type: "response";
+			command: "dequeue";
+			success: true;
+			data: RpcDequeueResult;
+	  }
 
 	// Compaction
-	| { id?: string; type: "response"; command: "compact"; success: true; data: CompactionResult }
-	| { id?: string; type: "response"; command: "set_auto_compaction"; success: true }
+	| {
+			id?: string;
+			type: "response";
+			command: "compact";
+			success: true;
+			data: CompactionResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_auto_compaction";
+			success: true;
+	  }
+
+	// Cache warming
+	| {
+			id?: string;
+			type: "response";
+			command: "set_cache_warming";
+			success: true;
+			data: { mode: CacheWarmingMode };
+	  }
 
 	// Retry
 	| { id?: string; type: "response"; command: "set_auto_retry"; success: true }
 	| { id?: string; type: "response"; command: "abort_retry"; success: true }
+	| {
+			id?: string;
+			type: "response";
+			command: "retry";
+			success: true;
+			data: { retried: boolean };
+	  }
+
+	// Context reset
+	| {
+			id?: string;
+			type: "response";
+			command: "clear_context";
+			success: true;
+			data: { cleared: boolean; droppedCount?: number };
+	  }
+
+	// Per-subagent lifecycle
+	| {
+			id?: string;
+			type: "response";
+			command: "abort_subagent";
+			success: true;
+			data: { ok: boolean; reason?: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "revive_subagent";
+			success: true;
+			data: { ok: boolean; reason?: string };
+	  }
+
+	// Session local:// paste write
+	| {
+			id?: string;
+			type: "response";
+			command: "write_local_paste";
+			success: true;
+			data: { name: string; url: string };
+	  }
+
+	// Foreign sessions
+	| {
+			id?: string;
+			type: "response";
+			command: "list_foreign_sessions";
+			success: true;
+			data: { sessions: RpcForeignSessionInfo[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "import_foreign_session";
+			success: true;
+			data: { sessionPath: string; sessionId: string };
+	  }
+
+	// Slash-command argument completions
+	| {
+			id?: string;
+			type: "response";
+			command: "get_command_arg_completions";
+			success: true;
+			data: {
+				items: Array<{
+					value: string;
+					label?: string;
+					description?: string;
+					hint?: string;
+				}>;
+			};
+	  }
 
 	// Bash
-	| { id?: string; type: "response"; command: "bash"; success: true; data: BashResult }
+	| {
+			id?: string;
+			type: "response";
+			command: "bash";
+			success: true;
+			data: BashResult;
+	  }
 	| { id?: string; type: "response"; command: "abort_bash"; success: true }
 
+	// Eval
+	| {
+			id?: string;
+			type: "response";
+			command: "eval";
+			success: true;
+			data: RpcEvalResult;
+	  }
+	| { id?: string; type: "response"; command: "abort_eval"; success: true }
+
 	// Session
-	| { id?: string; type: "response"; command: "get_session_stats"; success: true; data: SessionStats }
-	| { id?: string; type: "response"; command: "export_html"; success: true; data: { path: string } }
-	| { id?: string; type: "response"; command: "switch_session"; success: true; data: { cancelled: boolean } }
-	| { id?: string; type: "response"; command: "branch"; success: true; data: { text: string; cancelled: boolean } }
+	| { id?: string; type: "response"; command: "get_chat_config"; success: true; data: RpcChatConfig }
+	| { id?: string; type: "response"; command: "set_chat_config"; success: true; data: RpcChatConfig }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_session_stats";
+			success: true;
+			data: SessionStats;
+	  }
+	| { id?: string; type: "response"; command: "get_session_lease"; success: true; data: SessionLeaseReport }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_session_pinned";
+			success: true;
+			data: { pinned: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "export_html";
+			success: true;
+			data: { path: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "switch_session";
+			success: true;
+			data: { cancelled: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "branch";
+			success: true;
+			data: { text: string; cancelled: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "fork";
+			success: true;
+			data: { cancelled: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "fork_from";
+			success: true;
+			data: { sessionPath: string; sessionId: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "switch_leaf";
+			success: true;
+			data: RpcSwitchLeafResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "resume_after_ask_reanswer";
+			success: true;
+	  }
+	| { id?: string; type: "response"; command: "navigate_tree"; success: true; data: RpcNavigateTreeResult }
+	| { id?: string; type: "response"; command: "abort_branch_summary"; success: true }
+	| { id?: string; type: "response"; command: "set_label"; success: true }
 	| {
 			id?: string;
 			type: "response";
@@ -317,16 +3016,186 @@ export type RpcResponse =
 	| {
 			id?: string;
 			type: "response";
+			command: "get_config_warnings";
+			success: true;
+			data: { warnings: string[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_advisor_status";
+			success: true;
+			data: RpcAdvisorStatus;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "list_reset_credits";
+			success: true;
+			data: { accounts: RpcResetCreditAccount[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "redeem_reset_credit";
+			success: true;
+			data: RpcResetCreditRedeemResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
 			command: "get_last_assistant_text";
 			success: true;
 			data: { text: string | null };
 	  }
-	| { id?: string; type: "response"; command: "set_session_name"; success: true }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_copy_targets";
+			success: true;
+			data: { targets: CopyTarget[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "guided_goal";
+			success: true;
+			data: { started: true };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "btw_branch";
+			success: true;
+			data: { cancelled: boolean; sessionFile?: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "tan";
+			success: true;
+			data: { jobId: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "omfg";
+			success: true;
+			data: { state: "saved" | "rejected" | "aborted"; savedPath?: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_agents_paused";
+			success: true;
+			data: { paused: boolean; pausedAt?: number; heldMs?: number };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_session_name";
+			success: true;
+	  }
+	| { id?: string; type: "response"; command: "set_entry_label"; success: true }
+	| {
+			id?: string;
+			type: "response";
+			command: "handoff";
+			success: true;
+			data: RpcHandoffResult | null;
+	  }
+	// Live voice
+	| {
+			id?: string;
+			type: "response";
+			command: "live_start";
+			success: true;
+			data: { voice: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "live_connect";
+			success: true;
+			data: { voice: string; sdpAnswer: string };
+	  }
+	| { id?: string; type: "response"; command: "live_stop"; success: true }
+	// Host-fed dictation (the host's microphone; see rpc-host-dictation.ts)
+	| {
+			id?: string;
+			type: "response";
+			command: "host_dictation_start";
+			success: true;
+			data: { state: RpcHostDictationState };
+	  }
+	| { id?: string; type: "response"; command: "host_dictation_audio"; success: true }
+	| { id?: string; type: "response"; command: "host_dictation_stop"; success: true }
+	| { id?: string; type: "response"; command: "host_dictation_cancel"; success: true }
+	// Interactive terminals
+	| { id?: string; type: "response"; command: "terminal_open"; success: true; data: RpcTerminalInfo }
+	| { id?: string; type: "response"; command: "terminal_run_cli"; success: true; data: RpcTerminalInfo }
+	| { id?: string; type: "response"; command: "tui_open"; success: true }
+	| { id?: string; type: "response"; command: "terminal_input"; success: true }
+	| { id?: string; type: "response"; command: "terminal_resize"; success: true }
+	| { id?: string; type: "response"; command: "terminal_close"; success: true }
+	| {
+			id?: string;
+			type: "response";
+			command: "terminal_list";
+			success: true;
+			data: { terminals: RpcTerminalInfo[] };
+	  }
+	| { id?: string; type: "response"; command: "terminal_snapshot"; success: true; data: RpcTerminalSnapshot }
+	| {
+			id?: string;
+			type: "response";
+			command: "terminal_configure";
+			success: true;
+			data: { interactiveCommands: boolean; agentTools: boolean };
+	  }
+	// Browser panel
+	| {
+			id?: string;
+			type: "response";
+			command: "browser_host_start";
+			success: true;
+			data: RpcBrowserHostInfo;
+	  }
+	| { id?: string; type: "response"; command: "browser_host_stop"; success: true }
+	| {
+			id?: string;
+			type: "response";
+			command: "live_mute";
+			success: true;
+			data: { muted: boolean };
+	  }
+	// Draft-only speech-to-text
+	| { id?: string; type: "response"; command: "dictation_start"; success: true }
+	| { id?: string; type: "response"; command: "dictation_stop"; success: true; data: { text: string } }
 	| { id?: string; type: "response"; command: "handoff"; success: true; data: RpcHandoffResult | null }
 
 	// Messages
-	| { id?: string; type: "response"; command: "get_messages"; success: true; data: { messages: AgentMessage[] } }
-	| { id?: string; type: "response"; command: "get_messages_page"; success: true; data: RpcMessagesPage }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_messages";
+			success: true;
+			data: { messages: AgentMessage[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_messages_page";
+			success: true;
+			data: RpcMessagesPage;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_transcript_page";
+			success: true;
+			data: RpcMessagesPage;
+	  }
 
 	// Login
 	| {
@@ -334,12 +3203,984 @@ export type RpcResponse =
 			type: "response";
 			command: "get_login_providers";
 			success: true;
-			data: { providers: Array<{ id: string; name: string; available: boolean; authenticated: boolean }> };
+			data: {
+				providers: Array<{
+					id: string;
+					name: string;
+					available: boolean;
+					authenticated: boolean;
+				}>;
+			};
 	  }
-	| { id?: string; type: "response"; command: "login"; success: true; data: { providerId: string } }
+	| {
+			id?: string;
+			type: "response";
+			command: "login";
+			success: true;
+			data: { providerId: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "logout";
+			success: true;
+			data: { providerId: string };
+	  }
+
+	// Usage
+	| {
+			id?: string;
+			type: "response";
+			command: "get_usage";
+			success: true;
+			data: RpcUsageResult;
+	  }
+
+	// Settings
+	| {
+			id?: string;
+			type: "response";
+			command: "get_settings_schema";
+			success: true;
+			data: RpcSettingsSchemaResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_settings";
+			success: true;
+			data: {
+				values: Record<string, unknown>;
+				provenance?: Record<string, RpcSettingProvenance>;
+				advisorEnabled: boolean;
+				advisorActive: boolean;
+			};
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_setting";
+			success: true;
+			data: {
+				path: string;
+				value: unknown;
+				savedValue?: unknown;
+				provenance?: RpcSettingProvenance;
+				advisorEnabled?: boolean;
+				advisorActive?: boolean;
+			};
+	  }
+
+	// Providers
+	| {
+			id?: string;
+			type: "response";
+			command: "get_providers";
+			success: true;
+			data: RpcProvidersResult;
+	  }
+
+	// Plan mode
+	| {
+			id?: string;
+			type: "response";
+			command: "set_plan_mode";
+			success: true;
+			data: RpcPlanModeState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_plan_mode";
+			success: true;
+			data: RpcPlanModeState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "plan_approval";
+			success: true;
+			data: RpcPlanApprovalResult;
+	  }
+
+	// Session modes (vibe / goal / loop)
+	| {
+			id?: string;
+			type: "response";
+			command: "get_vibe_mode";
+			success: true;
+			data: RpcVibeModeState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_vibe_mode";
+			success: true;
+			data: RpcVibeModeState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_goal";
+			success: true;
+			data: RpcGoalState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_goal";
+			success: true;
+			data: RpcGoalState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_loop_mode";
+			success: true;
+			data: RpcLoopModeState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_loop_mode";
+			success: true;
+			data: RpcLoopModeState;
+	  }
+
+	// Model roles
+	| {
+			id?: string;
+			type: "response";
+			command: "get_model_roles";
+			success: true;
+			data: RpcModelRolesResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_model_role";
+			success: true;
+			/** `modelId` is the stored role value, `:level` suffix included. */
+			data: { role: string; modelId: string | null };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_model_role_metadata";
+			success: true;
+			data: RpcModelRoleMetadataResult;
+	  }
+
+	// Domain inspection (read-only)
+	| {
+			id?: string;
+			type: "response";
+			command: "get_skills";
+			success: true;
+			data: RpcSkillsResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_skill_detail";
+			success: true;
+			data: RpcSkillDetail;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_agent_definitions";
+			success: true;
+			data: RpcAgentDefinitionsResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_hooks";
+			success: true;
+			data: RpcHooksResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_mcp_servers";
+			success: true;
+			data: RpcMcpServersResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_plugins";
+			success: true;
+			data: RpcPluginsResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_marketplaces";
+			success: true;
+			data: RpcMarketplacesResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_gui_themes";
+			success: true;
+			data: RpcGuiThemesResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_prompt_templates";
+			success: true;
+			data: RpcPromptTemplatesResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_memory_report";
+			success: true;
+			data: RpcMemoryReport;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_memory_overview";
+			success: true;
+			data: RpcMemoryOverview;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_memory_activity";
+			success: true;
+			data: Pick<RpcMemoryOverview, "activity">;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "edit_memory";
+			success: true;
+			data: RpcMemoryEditResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "update_memory";
+			success: true;
+			data: RpcMemoryUpdateResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_security_dashboard";
+			success: true;
+			data: RpcSecurityDashboardResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_security_scan";
+			success: true;
+			data: RpcSecurityScanResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_ssh_hosts";
+			success: true;
+			data: RpcSshHostsResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_omp_update";
+			success: true;
+			data: RpcOmpUpdateResult;
+	  }
+
+	// Session reports (read-only)
+	| {
+			id?: string;
+			type: "response";
+			command: "get_context_report";
+			success: true;
+			data: RpcContextReportResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_active_tools";
+			success: true;
+			data: RpcActiveToolsResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "preview_share_session";
+			success: true;
+			data: RpcShareSessionPreview;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "share_session";
+			success: true;
+			data: RpcShareSessionResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_jobs";
+			success: true;
+			data: RpcJobsResult;
+	  }
+
+	// One-shot session actions
+	| {
+			id?: string;
+			type: "response";
+			command: "set_prewalk";
+			success: true;
+			data: RpcPrewalkState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "fresh";
+			success: true;
+			data: RpcFreshResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "shake_context";
+			success: true;
+			data: RpcShakeContextResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "reload_plugins";
+			success: true;
+			data: RpcReloadPluginsResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_force_tool";
+			success: true;
+			data: RpcForceToolState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_force_tool";
+			success: true;
+			data: RpcForceToolState;
+	  }
+
+	// Domain actions (mutating)
+	| {
+			id?: string;
+			type: "response";
+			command: "set_skill_enabled";
+			success: true;
+			data: { name: string; enabled: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "manage_skill";
+			success: true;
+			data: RpcManageSkillResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_hook_enabled";
+			success: true;
+			data: { id: string; enabled: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_plugin_enabled";
+			success: true;
+			data: RpcPluginSetEnabledResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "mcp_action";
+			success: true;
+			data: RpcMcpActionResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "security_start";
+			success: true;
+			data: RpcSecurityOperationInfo;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "security_cancel";
+			success: true;
+			data: { cancelled: boolean };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "security_validate";
+			success: true;
+			data: { accepted: true };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "security_set_disposition";
+			success: true;
+			data: RpcSecurityFindingInfo;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "ssh_manage";
+			success: true;
+			data: RpcSshHostInfo | { deleted: true };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "ssh_test";
+			success: true;
+			data: RpcSshTestResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_session_tree";
+			success: true;
+			data: RpcSessionTreeResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_themes";
+			success: true;
+			data: RpcThemesResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_theme_colors";
+			success: true;
+			data: RpcThemeColorsResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_transcript";
+			success: true;
+			data: { messages: AgentMessage[] };
+	  }
+
+	// Voice (speech in/out). `synthesize_speech` returns the local TTS model's
+	// output as a base64 WAV (PCM16) buffer for host-side playback.
+	| {
+			id?: string;
+			type: "response";
+			command: "transcribe_audio";
+			success: true;
+			data: { text: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "synthesize_speech";
+			success: true;
+			data: { audioBase64: string; mimeType: string };
+	  }
+
+	// MCP server management (C1)
+	| {
+			id?: string;
+			type: "response";
+			command: "mcp_add";
+			success: true;
+			data: RpcMcpAddResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "mcp_test";
+			success: true;
+			data: RpcMcpTestResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "mcp_reauth";
+			success: true;
+			data: RpcMcpReauthResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "mcp_reauth_cancel";
+			success: true;
+			data: RpcMcpReauthCancelResult;
+	  }
+
+	// Marketplace management (C1)
+	| {
+			id?: string;
+			type: "response";
+			command: "marketplace_action";
+			success: true;
+			data: RpcMarketplaceActionResult;
+	  }
+
+	// Plugin detail and settings (C1)
+	| {
+			id?: string;
+			type: "response";
+			command: "get_plugin_detail";
+			success: true;
+			data: RpcPluginDetail;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_plugin_features";
+			success: true;
+			data: RpcPluginMutationResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_plugin_setting";
+			success: true;
+			data: RpcPluginMutationResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "delete_plugin_setting";
+			success: true;
+			data: RpcPluginMutationResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "debug";
+			success: true;
+			data: { content: unknown; details?: unknown };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "collab_start";
+			success: true;
+			data: RpcCollabState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "collab_join";
+			success: true;
+			data: RpcCollabState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "collab_leave";
+			success: true;
+			data: RpcCollabState;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_collab_state";
+			success: true;
+			data: RpcCollabState;
+	  }
+
+	// Workspace directories
+	| {
+			id?: string;
+			type: "response";
+			command: "get_directories";
+			success: true;
+			data: RpcWorkspaceDirectoriesResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "add_directory";
+			success: true;
+			data: RpcWorkspaceDirectoriesResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "remove_directory";
+			success: true;
+			data: RpcWorkspaceDirectoriesResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "move_session";
+			success: true;
+			data: { cwd: string };
+	  }
+
+	// Git worktrees
+	| {
+			id?: string;
+			type: "response";
+			command: "get_git_status";
+			success: true;
+			data: RpcGitStatus;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_git_changes";
+			success: true;
+			data: RpcGitChanges;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_git_diff";
+			success: true;
+			data: RpcGitDiff;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "worktree_create";
+			success: true;
+			data: RpcWorktreeCreateResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "worktree_remove";
+			success: true;
+			data: { removed: true };
+	  }
+
+	// Pull requests
+	| {
+			id?: string;
+			type: "response";
+			command: "pr_repo";
+			success: true;
+			data: RpcPrRepo;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "pr_list";
+			success: true;
+			data: RpcPrListItem[];
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "pr_get";
+			success: true;
+			data: RpcPrDetail;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "pr_diff";
+			success: true;
+			data: { diff: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "pr_draft";
+			success: true;
+			data: RpcPrDraftResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "pr_create";
+			success: true;
+			data: RpcPrCreateResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "pr_checkout";
+			success: true;
+			data: { path: string; branch: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "login";
+			success: true;
+			data: { providerId: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "set_api_key";
+			success: true;
+			data: { providerId: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_logout_accounts";
+			success: true;
+			data: { accounts: LogoutAccount[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "logout";
+			success: true;
+			data: { remainingSource?: string };
+	  }
+
+	// Word prediction
+	| {
+			id?: string;
+			type: "response";
+			command: "predict_word";
+			success: true;
+			data: { suffix: string | null };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "predict_word_feedback";
+			success: true;
+	  }
+
+	// Side questions (/btw)
+	| { id?: string; type: "response"; command: "btw"; success: true; data: { record: RpcBtwHistoryRecord } }
+	| { id?: string; type: "response"; command: "btw_cancel"; success: true; data: { cancelled: boolean } }
+	| { id?: string; type: "response"; command: "btw_inject"; success: true; data: { sent: boolean; reason?: string } }
+	| {
+			id?: string;
+			type: "response";
+			command: "get_btw_history";
+			success: true;
+			data: { records: readonly RpcBtwHistoryRecord[] };
+	  }
+	| { id?: string; type: "response"; command: "composer_prediction_request"; success: true }
+	| { id?: string; type: "response"; command: "composer_prediction_feedback"; success: true }
+	| { id?: string; type: "response"; command: "abort_compaction"; success: true; data: { aborted: boolean } }
+
+	// Shark Orchestrator Engine
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_get_state";
+			success: true;
+			data: { activeRun: RpcOrchestratorRun | null; runs: RpcOrchestratorRunSummary[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_plan";
+			success: true;
+			data: { run: RpcOrchestratorRun };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_start";
+			success: true;
+			data: { run: RpcOrchestratorRun };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_approve_plan";
+			success: true;
+			data: { run: RpcOrchestratorRun };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_reject_plan";
+			success: true;
+			data: { run: RpcOrchestratorRun };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_steer_worker";
+			success: true;
+			data: { ok: boolean; worker?: RpcOrchestratorWorker };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_pause";
+			success: true;
+			data: { run: RpcOrchestratorRun };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_resume";
+			success: true;
+			data: { run: RpcOrchestratorRun };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_abort";
+			success: true;
+			data: { run: RpcOrchestratorRun };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_verify_wave";
+			success: true;
+			data: { passed: boolean; report: RpcVerificationGateResult; run: RpcOrchestratorRun };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "orchestrator_rollback_wave";
+			success: true;
+			data: { rolledBackFiles: string[]; run: RpcOrchestratorRun };
+	  }
+
+	// Shark Harness & Deep Sea Cockpit
+	| {
+			id?: string;
+			type: "response";
+			command: "shark_get_status";
+			success: true;
+			data: RpcSharkStatusSnapshot;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "shark_get_events";
+			success: true;
+			data: { events: RpcSharkEventRecord[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "shark_impact_analysis";
+			success: true;
+			data: RpcSharkImpactResult;
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "shark_get_capabilities";
+			success: true;
+			data: { capabilities: RpcSharkCapabilityInfo[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "shark_get_checkpoints";
+			success: true;
+			data: { checkpoints: RpcSharkCheckpointInfo[]; changes: RpcSharkChangesSummary };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "shark_rollback_checkpoint";
+			success: true;
+			data: { rolledBackFiles: string[]; conflicts: string[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "shark_teia_search";
+			success: true;
+			data: { nodes: RpcTeiaNodeInfo[]; edges: RpcTeiaEdgeInfo[] };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "shark_teia_record_decision";
+			success: true;
+			data: { id: string };
+	  }
+	| {
+			id?: string;
+			type: "response";
+			command: "shark_set_cockpit_config";
+			success: true;
+			data: { config: Record<string, unknown> };
+	  }
 
 	// Error response (any command can fail); `code` is an optional machine-readable reason.
-	| { id?: string; type: "response"; command: string; success: false; error: string; code?: string };
+	| {
+			id?: string;
+			type: "response";
+			command: string;
+			success: false;
+			error: string;
+			code?: string;
+	  };
+
+// ============================================================================
+// Side question (/btw) frames (stdout)
+// ============================================================================
+
+/**
+ * A BTW topic as sent to RPC hosts. The TUI-only `title` heading is never on the wire,
+ * which keeps the released record shape: hosts show the topic's opening question.
+ */
+export type RpcBtwHistoryRecord = Omit<BtwHistoryRecord, "title"> & {
+	/**
+	 * The latest turn's `<inject>` block (`btw.inject`): `ready` to send with `btw_inject`,
+	 * `sending`, or `sent`. Absent when the turn was not asked with the setting on or drafted none.
+	 */
+	inject?: RpcBtwInjectState;
+};
+
+/** Where a side answer's steering prompt stands; only this process's answers can be sent. */
+export type RpcBtwInjectState = "ready" | "sending" | "sent";
+
+/** Text appended to the running side question's latest answer. */
+export interface RpcBtwDeltaFrame {
+	type: "btw_delta";
+	recordId: string;
+	delta: string;
+}
+
+/** Full record snapshot on every lifecycle change: started, complete, cancelled, error. */
+export interface RpcBtwRecordFrame {
+	type: "btw_record";
+	record: RpcBtwHistoryRecord;
+}
+
+/** How the host used the composer prediction it was offered. */
+export type RpcComposerPredictionFeedback = "shown" | "accepted" | "dismissed";
+
+/**
+ * The composer prediction for the conversation as it stands: the user's likely next message,
+ * most likely first. Empty when a prediction was withdrawn (dismissed, or the conversation moved on).
+ */
+export interface RpcComposerPredictionFrame {
+	type: "composer_prediction";
+	choices: string[];
+}
 
 // ============================================================================
 // Subagent Events (stdout)
@@ -362,7 +4203,53 @@ export interface RpcSubagentEventFrame {
 
 export type RpcSubagentFrame = RpcSubagentLifecycleFrame | RpcSubagentProgressFrame | RpcSubagentEventFrame;
 
-export type RpcSessionEventFrame = AgentSessionEvent | RpcSubagentFrame;
+/** Message lifecycle event kinds that RPC mode stamps with a `messageId`. */
+export type RpcMessageEventType = "message_start" | "message_update" | "message_end";
+
+/**
+ * Message lifecycle frame as written by RPC mode. `messageId` is shared by the
+ * `message_start`, every `message_update`, and the `message_end` of one message;
+ * it is unique within the RPC process.
+ */
+export type RpcMessageEventFrame = Extract<AgentSessionEvent, { type: RpcMessageEventType }> & { messageId: string };
+
+type WithoutPartial<T> = T extends unknown ? Omit<T, "partial"> : never;
+type DeltaOf<Type extends AssistantMessageEvent["type"]> = WithoutPartial<
+	Extract<AssistantMessageEvent, { type: Type }>
+>;
+
+/**
+ * `assistantMessageEvent` of a delta `message_update`: `*_delta` carries only the increment; a `*_start` carries the
+ * shell of the block it opened (`partial.content[contentIndex]` with its text, thinking, or tool arguments emptied, so
+ * the deltas that follow apply cleanly); `text_end`/`thinking_end` carry the rest of the block (everything but the text
+ * their `content` already holds); `image_end` and `toolcall_end` carry the whole block as `content` / `toolCall`. A
+ * re-`start` carries the whole message it restarts from; that snapshot may already be ahead of the stream, so each
+ * block's `*_end` is authoritative. `block` is absent only if the provider's `contentIndex` points at no block.
+ */
+export type RpcDeltaAssistantMessageEvent =
+	| DeltaOf<"text_delta" | "thinking_delta" | "toolcall_delta" | "image_end" | "toolcall_end">
+	| (DeltaOf<"text_start" | "thinking_start" | "toolcall_start"> & { block?: AssistantMessage["content"][number] })
+	| (DeltaOf<"text_end"> & { block?: Omit<TextContent, "text"> })
+	| (DeltaOf<"thinking_end"> & { block?: Omit<ThinkingContent, "thinking"> })
+	| (DeltaOf<"start"> & { message: AssistantMessage })
+	| Extract<AssistantMessageEvent, { type: "done" | "error" }>;
+
+/** Opt-in projection (`messageUpdates: "delta"`): enough to rebuild the message client-side; terminal subtypes pass through. */
+export type RpcDeltaMessageUpdateFrame = Omit<
+	Extract<RpcMessageEventFrame, { type: "message_update" }>,
+	"message" | "assistantMessageEvent"
+> & {
+	message: Pick<AgentMessage, "role">;
+	assistantMessageEvent: RpcDeltaAssistantMessageEvent;
+};
+
+/** Session event as written to stdout by default: message lifecycle events carry a `messageId`. */
+export type RpcAgentSessionEventFrame = Exclude<WireSessionEvent, { type: RpcMessageEventType }> | RpcMessageEventFrame;
+
+/** Every session event shape RPC mode can write, including the opt-in `messageUpdates: "delta"` projection. */
+export type RpcProjectedSessionEventFrame = RpcAgentSessionEventFrame | RpcDeltaMessageUpdateFrame;
+
+export type RpcSessionEventFrame = RpcAgentSessionEventFrame | RpcSubagentFrame;
 
 // ============================================================================
 // Extension UI Events (stdout)
@@ -370,6 +4257,26 @@ export type RpcSessionEventFrame = AgentSessionEvent | RpcSubagentFrame;
 /** Positional presentation metadata for an RPC select option. */
 export interface RpcExtensionUISelectOptionDetail {
 	description?: string;
+}
+
+/** One question of an RPC `ask` dialog. Options never include "Other"; hosts always offer free text. */
+export interface RpcAskDialogQuestion {
+	id: string;
+	question: string;
+	header?: string;
+	options: Array<{ label: string; description?: string; preview?: string }>;
+	multi?: boolean;
+	/** Index of the recommended option. */
+	recommended?: number;
+}
+
+/** A form block as hosts receive it: pictures travel as their alt text. */
+export type RpcFormBlock = Exclude<FormBlock, { kind: "image" | "svg" }>;
+
+/** One titled part of an RPC `form` dialog. */
+export interface RpcFormSection {
+	title: FormSpan[];
+	blocks: RpcFormBlock[];
 }
 
 /** Emitted when an extension needs user input */
@@ -381,9 +4288,31 @@ export type RpcExtensionUIRequest =
 			title: string;
 			options: string[];
 			optionDetails?: RpcExtensionUISelectOptionDetail[];
+			/** Index into `options` to focus first. */
+			initialIndex?: number;
+			/** Marker style for the first `markableCount` options. */
+			selectionMarker?: "radio" | "checkbox";
+			/** For `checkbox`: indices into `options` currently checked. */
+			checkedIndices?: number[];
+			/** Leading options that get a marker; trailing ones are actions. */
+			markableCount?: number;
 			timeout?: number;
 	  }
-	| { type: "extension_ui_request"; id: string; method: "confirm"; title: string; message: string; timeout?: number }
+	| {
+			type: "extension_ui_request";
+			id: string;
+			method: "confirm";
+			title: string;
+			message: string;
+			timeout?: number;
+	  }
+	| {
+			type: "extension_ui_request";
+			id: string;
+			method: "askDialog";
+			questions: ExtensionAskDialogQuestion[];
+			timeout?: number;
+	  }
 	| {
 			type: "extension_ui_request";
 			id: string;
@@ -391,6 +4320,22 @@ export type RpcExtensionUIRequest =
 			title: string;
 			placeholder?: string;
 			timeout?: number;
+			/**
+			 * Set when the prompt asks for a pasted OAuth authorization code: the id
+			 * of the `open_url` request it belongs to, so hosts can show the field
+			 * inside that dialog. omp closes the prompt (`cancel` frame) when the
+			 * browser callback signs in first.
+			 */
+			authCodeFor?: string;
+			/**
+			 * Set on any other login prompt asked after an authorization URL, such as
+			 * an API key: the id of that `open_url` request. The login waits for this
+			 * answer, so a host must show the prompt while the `open_url` is still up.
+			 */
+			loginPromptFor?: string;
+			/** Set on a login prompt whose answer may be left blank. */
+			allowEmpty?: boolean;
+			secret?: boolean;
 	  }
 	| {
 			type: "extension_ui_request";
@@ -400,6 +4345,24 @@ export type RpcExtensionUIRequest =
 			prefill?: string;
 			promptStyle?: boolean;
 	  }
+	/** Emitted only after the host opts in with `set_ask_dialog`. */
+	| {
+			type: "extension_ui_request";
+			id: string;
+			method: "ask";
+			questions: RpcAskDialogQuestion[];
+			timeout?: number;
+	  }
+	/** The whole form of one `ask` tool call. Emitted only after `set_ask_dialog` with `form: true`. */
+	| {
+			type: "extension_ui_request";
+			id: string;
+			method: "form";
+			sections: RpcFormSection[];
+			timeout?: number;
+	  }
+	/** The whole HTML form of one `ui.formDialog` call (the `ask` tool or an extension); no opt-in is required. */
+	| { type: "extension_ui_request"; id: string; method: "form"; html: string; timeout?: number }
 	| { type: "extension_ui_request"; id: string; method: "cancel"; targetId: string }
 	| {
 			type: "extension_ui_request";
@@ -423,11 +4386,28 @@ export type RpcExtensionUIRequest =
 			widgetLines: string[] | undefined;
 			widgetPlacement?: "aboveEditor" | "belowEditor";
 	  }
-	| { type: "extension_ui_request"; id: string; method: "setTitle"; title: string }
-	| { type: "extension_ui_request"; id: string; method: "set_editor_text"; text: string }
 	| {
 			type: "extension_ui_request";
 			id: string;
+			method: "setTitle";
+			title: string;
+	  }
+	| {
+			type: "extension_ui_request";
+			id: string;
+			method: "set_editor_text";
+			text: string;
+			images?: ImageContent[];
+			prepend?: boolean;
+	  }
+	| {
+			type: "extension_ui_request";
+			id: string;
+			/**
+			 * Answering with `cancelled: true` cancels the `login` or `mcp_reauth`
+			 * that emitted it. omp closes a dialog the host has not answered
+			 * (`cancel` frame) when that flow ends.
+			 */
 			method: "open_url";
 			url: string;
 			/**
@@ -451,6 +4431,8 @@ export interface RpcHostToolDefinition {
 	hidden?: boolean;
 	/** How this host tool is presented when enabled; omission normalizes to `"discoverable"` at the adapter boundary. */
 	loadMode?: ToolLoadMode;
+	/** Whether this host tool can read `skill://` instruction content. */
+	readsSkillUris?: boolean;
 }
 
 /** Emitted by the RPC server when it needs the host to execute a registered tool. */
@@ -547,7 +4529,27 @@ export interface RpcHostUriResult {
 export type RpcExtensionUIResponse =
 	| { type: "extension_ui_response"; id: string; value: string }
 	| { type: "extension_ui_response"; id: string; confirmed: boolean }
-	| { type: "extension_ui_response"; id: string; cancelled: true; timedOut?: boolean };
+	| {
+			type: "extension_ui_response";
+			id: string;
+			askDialog: ExtensionAskDialogResult;
+	  }
+	| {
+			type: "extension_ui_response";
+			id: string;
+			cancelled: true;
+			timedOut?: boolean;
+	  }
+	/** Answers to a `form` request by control name: a string, or a string array for a multi-choice field. */
+	| { type: "extension_ui_response"; id: string; formData: Record<string, unknown> }
+	/** Answers to an `ask` request, one per question in request order. */
+	| {
+			type: "extension_ui_response";
+			id: string;
+			answers: Array<{ id: string; selectedOptions: string[]; customInput?: string }>;
+	  }
+	/** Submitted data of a `form` request, by control `name`; validated against the form. */
+	| { type: "extension_ui_response"; id: string; data: Record<string, unknown> };
 
 // ============================================================================
 // Helper type for extracting command types

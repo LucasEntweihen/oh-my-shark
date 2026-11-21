@@ -4,7 +4,7 @@ import {
 	DEEPSEANEURON_NOTICE,
 	highlightDeepseaneuron,
 } from "@oh-my-pi/pi-coding-agent/modes/deepseaneuron";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
 
 beforeAll(() => {
 	initTheme();

@@ -4,10 +4,16 @@
  * Handles `omp stats` subcommand for viewing AI usage statistics.
  */
 
+import { formatKeyHint } from "@oh-my-pi/pi-tui/key-hint-format";
 import { truncateToWidth } from "@oh-my-pi/pi-tui/utils";
-import { formatDuration, formatNumber, formatPercent } from "@oh-my-pi/pi-utils";
+import { $env, postmortem } from "@oh-my-pi/pi-utils";
 import chalk from "@oh-my-pi/pi-utils/chalk";
+import { openStandaloneJudge } from "../judgment/standalone";
+import { startParentWatchdog } from "../subprocess/parent-watchdog";
+import { openTernPage } from "../tools/browser/tern/user-page";
 import { openPath } from "../utils/open";
+
+const REUSED_DASHBOARD_POLL_MS = 2_000;
 
 /**
  * Single-line TTY progress bar. On a non-TTY stream we just stay quiet -
@@ -60,16 +66,8 @@ export interface StatsCommandArgs {
 	host: string;
 	json: boolean;
 	summary: boolean;
-}
-
-function formatCost(n: number): string {
-	if (n < 0.01) return `$${n.toFixed(4)}`;
-	if (n < 1) return `$${n.toFixed(3)}`;
-	return `$${n.toFixed(2)}`;
-}
-
-function normalizePremiumRequests(n: number): number {
-	return Math.round((n + Number.EPSILON) * 100) / 100;
+	/** Run the dashboard server without opening a browser (headless / embedded use). */
+	noOpen: boolean;
 }
 
 // =============================================================================
@@ -78,87 +76,99 @@ function normalizePremiumRequests(n: number): number {
 
 export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 	// Lazy import to avoid loading stats module when not needed
-	const { closeDb, formatStatsDashboardUrl, getDashboardStats, getTotalMessageCount, startServer, syncAllSessions } =
-		await import("@oh-my-pi/omp-stats");
+	const {
+		closeDb,
+		formatStatsDashboardUrl,
+		getDashboardStats,
+		getTotalMessageCount,
+		isStatsDashboardAlive,
+		printStatsSummary,
+		refreshRollups,
+		setStatsCloseHandler,
+		startServer,
+		syncAllSessions,
+	} = await import("@oh-my-pi/omp-stats");
 
-	// Sync session files first
-	const progress = createSyncProgressReporter();
-	process.stderr.write("Syncing session files...\n");
-	const { processed, files } = await syncAllSessions({ onProgress: progress.onProgress });
-	progress.finish();
-	const total = await getTotalMessageCount();
-	console.log(`Synced ${processed} new entries from ${files} files (${total} total)\n`);
-
-	if (cmd.json) {
-		const stats = await getDashboardStats();
-		console.log(JSON.stringify(stats, null, 2));
+	// One-shot reports need fully ingested, fully rolled-up data before printing.
+	if (cmd.json || cmd.summary) {
+		const progress = createSyncProgressReporter();
+		process.stderr.write("Syncing session files...\n");
+		const { processed, files } = await syncAllSessions({ onProgress: progress.onProgress });
+		progress.finish();
+		await refreshRollups();
+		const total = await getTotalMessageCount();
+		process.stderr.write(`Synced ${processed} new entries from ${files} files (${total} total)\n\n`);
+		if (cmd.json) {
+			console.log(JSON.stringify(await getDashboardStats(), null, 2));
+		} else {
+			await printStatsSummary();
+		}
 		return;
 	}
 
-	if (cmd.summary) {
-		await printStatsSummary();
-		return;
-	}
+	// A host embedding the dashboard (the GUI) names itself here. If it is
+	// force-killed or crashes it runs no cleanup, and nothing else would stop
+	// this server. A dashboard started by hand outlives its shell on purpose.
+	const ownerPid = Number($env.PI_STATS_OWNER_PID);
+	if (Number.isInteger(ownerPid) && ownerPid > 0) startParentWatchdog(ownerPid);
 
-	// Start the dashboard server
-	const { hostname, port } = await startServer(cmd.port, cmd.host);
+	// The dashboard starts immediately and ingests sessions in the background,
+	// streaming progress to the page. The judge (settings, auth, registry)
+	// resolves on the first Frustration estimate/run and lives until exit.
+	// In a Tern pane the page takes this block's place until the user closes
+	// it (its Close, Esc, Ctrl+C, or Tern's Close block), which stops the
+	// dashboard; elsewhere the system browser shows it.
+	const cwd = process.cwd();
+	const { hostname, port, reused } = await startServer(cmd.port, cmd.host, {
+		judge: async () => (await openStandaloneJudge(cwd, "stats_frustration")).judge,
+	});
 	const url = formatStatsDashboardUrl(hostname, port);
 	console.log(chalk.green(`Dashboard available at: ${url}`));
 
-	// Open browser
-	openPath(url);
+	// Headless (e.g. embedded by the GUI) beside another process's dashboard: open
+	// nothing. No server here holds the process open, and an embedder reads this
+	// process's life as the dashboard's, so stay while it answers, then exit
+	// non-zero so the embedder starts its own.
+	if (reused && cmd.noOpen) {
+		while (await isStatsDashboardAlive(port, hostname)) await Bun.sleep(REUSED_DASHBOARD_POLL_MS);
+		await postmortem.quit(1);
+		return;
+	}
 
-	console.log("Press Ctrl+C to stop\n");
+	// Another process owns a reused dashboard: show it, never stop it.
+	if (reused) {
+		const page = await openTernPage(url, "over");
+		if (!page) {
+			openPath(url);
+			return;
+		}
+		console.log("Showing it in place of this block: close it to return\n");
+		await page.closed();
+		return;
+	}
 
-	// Keep process running
-	process.on("SIGINT", () => {
-		console.log("\nShutting down...");
+	// Close is on before the page first loads, and off again for the system
+	// browser, where closing would leave a dead tab.
+	if (!cmd.noOpen) setStatsCloseHandler(() => void postmortem.quit(0));
+	const page = cmd.noOpen ? undefined : await openTernPage(url, "over");
+	if (page) {
+		console.log("Showing it in place of this block: close it to stop\n");
+	} else if (!cmd.noOpen) {
+		setStatsCloseHandler(undefined);
+		openPath(url);
+		console.log(`Press ${formatKeyHint("ctrl+c")} to stop\n`);
+	}
+
+	// Ctrl+C and the other signals exit through omp's cleanup, which takes the
+	// page away with the dashboard.
+	postmortem.register("stats-dashboard", async () => {
+		await page?.close();
 		closeDb();
-		process.exit(0);
 	});
-
+	if (page) {
+		await page.closed();
+		await postmortem.quit(0);
+	}
 	// Keep the process alive
 	await new Promise(() => {});
-}
-
-async function printStatsSummary(): Promise<void> {
-	const { getDashboardStats } = await import("@oh-my-pi/omp-stats");
-	const stats = await getDashboardStats();
-	const { overall, byModel, byFolder } = stats;
-
-	console.log(chalk.bold("\n=== AI Usage Statistics ===\n"));
-
-	console.log(chalk.bold("Overall:"));
-	console.log(`  Requests: ${formatNumber(overall.totalRequests)} (${formatNumber(overall.failedRequests)} errors)`);
-	console.log(`  Error Rate: ${formatPercent(overall.errorRate)}`);
-	console.log(`  Total Tokens: ${formatNumber(overall.totalInputTokens + overall.totalOutputTokens)}`);
-	console.log(`  Input Tokens: ${formatNumber(overall.totalInputTokens)}`);
-	console.log(`  Output Tokens: ${formatNumber(overall.totalOutputTokens)}`);
-	console.log(`  Cache Rate: ${formatPercent(overall.cacheRate)}`);
-	console.log(`  Cache Savings: ${formatPercent(overall.cacheSavings)}`);
-	console.log(`  Total Cost: ${formatCost(overall.totalCost)}`);
-	console.log(`  Premium Requests: ${formatNumber(normalizePremiumRequests(overall.totalPremiumRequests ?? 0))}`);
-	console.log(`  Avg Duration: ${overall.avgDuration !== null ? formatDuration(overall.avgDuration) : "-"}`);
-	console.log(`  Avg TTFT: ${overall.avgTtft !== null ? formatDuration(overall.avgTtft) : "-"}`);
-	if (overall.avgTokensPerSecond !== null) {
-		console.log(`  Avg Tokens/s: ${overall.avgTokensPerSecond.toFixed(1)}`);
-	}
-
-	if (byModel.length > 0) {
-		console.log(chalk.bold("\nBy Model:"));
-		for (const m of byModel.slice(0, 10)) {
-			console.log(
-				`  ${m.model}: ${formatNumber(m.totalRequests)} reqs, ${formatCost(m.totalCost)}, ${formatPercent(m.cacheRate)} cache rate, ${formatPercent(m.cacheSavings)} cache savings`,
-			);
-		}
-	}
-
-	if (byFolder.length > 0) {
-		console.log(chalk.bold("\nBy Folder:"));
-		for (const f of byFolder.slice(0, 10)) {
-			console.log(`  ${f.folder}: ${formatNumber(f.totalRequests)} reqs, ${formatCost(f.totalCost)}`);
-		}
-	}
-
-	console.log("");
 }

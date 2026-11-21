@@ -1,28 +1,27 @@
+import { createTheme, getAvailableThemes, getBuiltinThemes, loadThemeJson } from "@oh-my-pi/pi-tui/theme/loader";
+import { validateThemeJson } from "@oh-my-pi/pi-tui/theme/schema-validation";
 import { describe, expect, it } from "bun:test";
 import { genericThemes } from "../src/modes/theme/generic";
-import { createTheme, getAvailableThemes, getBuiltinThemes, loadThemeJson } from "../src/modes/theme/loader";
-import { themeJsonSchema } from "../src/modes/theme/schema";
 
 describe("100 Generic Color Patterns for OMSK CLI", () => {
 	it("provides exactly 100 generic themes (50 dark and 50 light)", () => {
 		const keys = Object.keys(genericThemes);
 		expect(keys.length).toBe(100);
 
-		const darkThemes = keys.filter((k) => k.startsWith("dark-spectrum-"));
-		const lightThemes = keys.filter((k) => k.startsWith("light-spectrum-"));
+		const darkThemes = keys.filter(k => k.startsWith("dark-spectrum-"));
+		const lightThemes = keys.filter(k => k.startsWith("light-spectrum-"));
 
 		expect(darkThemes.length).toBe(50);
 		expect(lightThemes.length).toBe(50);
 	});
 
-	it("validates every generic theme against themeJsonSchema", () => {
+	it("validates every generic theme against validateThemeJson", () => {
 		for (const [name, themeDef] of Object.entries(genericThemes)) {
-			const res = themeJsonSchema(themeDef);
-			expect(res instanceof Error).toBe(false);
-			expect(themeDef.name).toBe(name);
-			expect(themeDef.colors.accent).toBeTruthy();
-			expect(themeDef.colors.syntaxKeyword).toBeTruthy();
-			expect(themeDef.colors.syntaxFunction).toBeTruthy();
+			const res = validateThemeJson(themeDef);
+			expect(res.name).toBe(name);
+			expect(res.colors.accent).toBeTruthy();
+			expect(res.colors.syntaxKeyword).toBeTruthy();
+			expect(res.colors.syntaxFunction).toBeTruthy();
 		}
 	});
 

@@ -1,6 +1,6 @@
+import { createGradientHighlighter, type KeywordHighlighter } from "@oh-my-pi/pi-tui/prompt/gradient-highlight";
+import { keywordInProse } from "@oh-my-pi/pi-tui/prompt/markdown-prose";
 import fastthinkworkerzNotice from "../prompts/system/fastthinkworkerz-notice.md" with { type: "text" };
-import { createGradientHighlighter, type KeywordHighlighter } from "./gradient-highlight";
-import { keywordInProse } from "./markdown-prose";
 
 /**
  * "fastthinkworkerz" keyword support for radical execution acceleration and low-latency delivery.
@@ -11,7 +11,7 @@ import { keywordInProse } from "./markdown-prose";
  * streamline code, and maximize delivery velocity at all costs while preserving the agent flow.
  */
 
-const FASTTHINKWORKERZ_PROBE = /fastthinkworkerz/;
+const FASTTHINKWORKERZ_PROBE = "fastthinkworkerz";
 const FASTTHINKWORKERZ_HIGHLIGHT =
 	/(?<![\p{L}\p{N}_./\\-])(?<!::)(?:[/|\\])?fastthinkworkerz(?![\p{L}\p{N}_/\\-])(?!\.[\p{L}\p{N}_-])(?!\()/gu;
 const FASTTHINKWORKERZ_WORD =
@@ -32,5 +32,7 @@ export const highlightFastthinkworkerz: KeywordHighlighter = createGradientHighl
 	probe: FASTTHINKWORKERZ_PROBE,
 	highlight: FASTTHINKWORKERZ_HIGHLIGHT,
 	stops: 16,
-	colors: ["#FFE600", "#FFD700", "#FFF8DC", "#FFFFFF"],
+	hue: (t: number) => 45 + t * 20,
+	saturation: 95,
+	lightness: (t: number) => 58 + t * 28,
 });

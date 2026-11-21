@@ -1,5 +1,7 @@
 import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
 import { isRecord } from "@oh-my-pi/pi-utils";
+import type { SessionEntry } from "../../session/session-entries";
+import { sameMessageContent, sessionMessagePersistenceKey } from "../../session/turn-persistence";
 
 const DEFAULT_RPC_MESSAGE_PAGE_LIMIT = 100;
 const MAX_RPC_MESSAGE_PAGE_LIMIT = 256;
@@ -9,7 +11,7 @@ const MAX_RPC_MESSAGE_CURSOR_CHARS = 2048;
 export const RPC_MESSAGES_PAGE_BUSY_ERROR = "Cannot page messages while the session is changing";
 export const RPC_MESSAGES_PAGE_STALE_ERROR = "RPC message cursor is stale";
 
-/** Machine-readable reasons a `get_messages_page` request can fail; carried as `code` on the error response. */
+/** Machine-readable reasons a message-page request can fail; carried as `code` on the error response. */
 export type RpcMessagesPageErrorCode = "session_busy" | "stale_cursor";
 
 /** Paging failure that maps to a structured wire `code`, so clients can react without matching message text. */
@@ -43,6 +45,44 @@ interface RpcMessageCursorPayload extends RpcMessageSnapshot {
 export interface RpcMessagesPageOptions {
 	cursor?: string;
 	limit?: number;
+}
+
+/** Attach persisted tree node ids to committed conversation messages on the RPC wire. */
+export function attachRpcMessageEntryIds(
+	messages: readonly AgentMessage[],
+	branch: readonly SessionEntry[],
+	entryIdForMessage?: (message: AgentMessage) => string | undefined,
+): AgentMessage[] {
+	const directIds = new Map<AgentMessage, string>();
+	const entriesByKey = new Map<string, { id: string; message: AgentMessage }[]>();
+	for (const entry of branch) {
+		if (entry.type !== "message") continue;
+		directIds.set(entry.message, entry.id);
+		const key = sessionMessagePersistenceKey(entry.message);
+		if (!key) continue;
+		const keyed = entriesByKey.get(key);
+		if (keyed) keyed.push(entry);
+		else entriesByKey.set(key, [entry]);
+	}
+
+	return messages.map(message => {
+		const key = sessionMessagePersistenceKey(message);
+		const keyed = key ? entriesByKey.get(key) : undefined;
+		const keyedEntry =
+			keyed?.length === 1 ? keyed[0] : keyed?.find(entry => sameMessageContent(entry.message, message));
+		const entryId = entryIdForMessage?.(message) ?? directIds.get(message) ?? keyedEntry?.id;
+		if (!entryId) return message;
+		return { ...message, entryId };
+	});
+}
+
+/** Attach ids from the exact transcript projection; no content or timestamp matching. */
+export function attachRpcTranscriptEntryIds(
+	messages: readonly AgentMessage[],
+	entryIds: readonly string[],
+): AgentMessage[] {
+	if (messages.length !== entryIds.length) throw new Error("RPC transcript entry ids do not match messages");
+	return messages.map((message, index) => ({ ...message, entryId: entryIds[index] }));
 }
 
 function encodeCursor(snapshot: RpcMessageSnapshot, offset: number): string {

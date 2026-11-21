@@ -1,10 +1,12 @@
 import { beforeAll, describe, expect, it } from "bun:test";
+import { MAGIC_KEYWORDS } from "@oh-my-pi/pi-coding-agent/modes/magic-keywords";
 import { containsVibecoding, highlightVibecoding } from "@oh-my-pi/pi-coding-agent/modes/vibecoding";
-import { hasMagicKeyword, highlightMagicKeywords } from "@oh-my-pi/pi-coding-agent/modes/magic-keywords";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { hasMagicKeyword, highlightMagicKeywords, setMagicKeywords } from "@oh-my-pi/pi-tui/prompt/magic-keywords";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
 
-beforeAll(() => {
-	initTheme();
+beforeAll(async () => {
+	await initTheme(false);
+	setMagicKeywords(MAGIC_KEYWORDS);
 });
 
 describe("vibecoding keyword detection", () => {
@@ -31,8 +33,8 @@ describe("vibecoding keyword detection", () => {
 	});
 
 	it("registers in hasMagicKeyword aggregator", () => {
-		expect(hasMagicKeyword("start vibe mode")).toBe(true);
-		expect(hasMagicKeyword("run /vibecoding today")).toBe(true);
+		expect(hasMagicKeyword("start vibecoding mode")).toBe(true);
+		expect(hasMagicKeyword("run vibecoding today")).toBe(true);
 		expect(hasMagicKeyword("normal prompt")).toBe(false);
 	});
 });
@@ -47,7 +49,7 @@ describe("vibecoding keyword highlighting", () => {
 	});
 
 	it("runs through highlightMagicKeywords pipeline cleanly", () => {
-		const input = "start /vibe now";
+		const input = "start vibecoding now";
 		const decorated = highlightMagicKeywords(input);
 		expect(decorated).not.toBe(input);
 		expect(Bun.stripANSI(decorated)).toBe(input);

@@ -1,10 +1,12 @@
 import { beforeAll, describe, expect, it } from "bun:test";
+import { MAGIC_KEYWORDS } from "@oh-my-pi/pi-coding-agent/modes/magic-keywords";
 import { highlightLearnerProj } from "@oh-my-pi/pi-coding-agent/modes/learner-proj";
-import { highlightMagicKeywords } from "@oh-my-pi/pi-coding-agent/modes/magic-keywords";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { highlightMagicKeywords, setMagicKeywords } from "@oh-my-pi/pi-tui/prompt/magic-keywords";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
 
-beforeAll(() => {
-	initTheme();
+beforeAll(async () => {
+	await initTheme(false);
+	setMagicKeywords(MAGIC_KEYWORDS);
 });
 
 describe("/learner-proj gradient highlighting", () => {
@@ -17,7 +19,7 @@ describe("/learner-proj gradient highlighting", () => {
 	});
 
 	it("integrates into highlightMagicKeywords", () => {
-		const input = "run /learner-proj please";
+		const input = "run learner-proj please";
 		const decorated = highlightMagicKeywords(input);
 		expect(decorated).not.toBe(input);
 		expect(decorated).toContain("\x1b");

@@ -1,11 +1,25 @@
+import type { SessionHeader, SessionState } from "@oh-my-pi/pi-wire";
 import { LogOut, PanelRight, Volume2, VolumeX } from "lucide-react";
 import type { ReactNode } from "react";
-import type { GuestSnapshot } from "../../lib/client";
+import { memo } from "react";
+import type { ConnectionPhase } from "../../lib/client";
 import { fmtPercent } from "../../lib/format";
+import { OmpMark } from "./OmpMark";
 import { ThemeToggle } from "./ThemeToggle";
 
+const PHASE_LABEL: Record<ConnectionPhase, string> = {
+	connecting: "Connecting",
+	waiting: "Joining",
+	live: "Live",
+	reconnecting: "Reconnecting",
+	ended: "Ended",
+};
+
 export interface HeaderBarProps {
-	snapshot: GuestSnapshot;
+	header: SessionHeader | null;
+	state: SessionState | null;
+	phase: ConnectionPhase;
+	readOnly: boolean;
 	subCount: number;
 	railOpen: boolean;
 	sharkOpen?: boolean;
@@ -17,8 +31,13 @@ export interface HeaderBarProps {
 	onToggleTts?(): void;
 	onLeave(): void;
 }
-export function HeaderBar({
-	snapshot,
+
+/** Memoized on its snapshot fields, so streaming frames that leave them untouched skip it. */
+export const HeaderBar = memo(function HeaderBar({
+	header,
+	state,
+	phase,
+	readOnly,
 	subCount,
 	railOpen,
 	sharkOpen,
@@ -30,7 +49,6 @@ export function HeaderBar({
 	onToggleTts,
 	onLeave,
 }: HeaderBarProps): ReactNode {
-	const { header, state, phase, readOnly } = snapshot;
 	const title = header?.title ?? state?.sessionName ?? "session";
 	const usage = state?.contextUsage;
 	let pct: number | null = null;
@@ -45,6 +63,10 @@ export function HeaderBar({
 	return (
 		<header className="sh-header">
 			<div className="sh-header-left">
+				<span className="sh-brand" aria-label="ohmyshark collab">
+					<OmpMark />
+					<span className="sh-brand-slash">/</span>
+				</span>
 				<span
 					className="sh-title"
 					title={title}
@@ -67,7 +89,7 @@ export function HeaderBar({
 						onClick={() => onSelectAgencyMode?.("code")}
 						style={{
 							background: agencyMode === "code" ? "var(--neon-cyan, #00F0FF)" : "transparent",
-							color: agencyMode === "code" ? "#070B14" : "var(--text-muted, #94A3B8)",
+							color: agencyMode === "code" ? "#070B14" : "var(--fg-muted, #94A3B8)",
 							border: "none",
 							borderRadius: "4px",
 							fontSize: "0.72rem",
@@ -83,7 +105,7 @@ export function HeaderBar({
 						onClick={() => onSelectAgencyMode?.("research")}
 						style={{
 							background: agencyMode === "research" ? "var(--abyssal-purple, #8A2BE2)" : "transparent",
-							color: agencyMode === "research" ? "#FFFFFF" : "var(--text-muted, #94A3B8)",
+							color: agencyMode === "research" ? "#FFFFFF" : "var(--fg-muted, #94A3B8)",
 							border: "none",
 							borderRadius: "4px",
 							fontSize: "0.72rem",
@@ -99,7 +121,7 @@ export function HeaderBar({
 						onClick={() => onSelectAgencyMode?.("bible")}
 						style={{
 							background: agencyMode === "bible" ? "var(--aged-gold, #D4AF37)" : "transparent",
-							color: agencyMode === "bible" ? "#000000" : "var(--text-muted, #94A3B8)",
+							color: agencyMode === "bible" ? "#000000" : "var(--fg-muted, #94A3B8)",
 							border: "none",
 							borderRadius: "4px",
 							fontSize: "0.72rem",
@@ -112,30 +134,11 @@ export function HeaderBar({
 					</button>
 				</div>
 			</div>
-			{/* Global status indicator (DESIGN.md section 3.1) */}
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					gap: "8px",
-					fontSize: "0.75rem",
-					color: "var(--neon-cyan, #00F0FF)",
-					fontFamily: "var(--font-mono, monospace)",
-				}}
-			>
-				<span
-					style={{
-						width: "8px",
-						height: "8px",
-						borderRadius: "50%",
-						background: "var(--ok, #10B981)",
-						display: "inline-block",
-						boxShadow: "0 0 8px #10B981",
-					}}
-				/>
-				<span>{subCount + 1} Agentes Ativos · Consumo: 48 t/s</span>
-			</div>
 			<div className="sh-header-right">
+				<span className={`sh-status sh-status-${phase}`} title={`connection: ${phase}`}>
+					<span className={`sh-dot sh-dot-${phase}`} />
+					{PHASE_LABEL[phase]}
+				</span>
 				{readOnly && (
 					<span className="sh-chip" title="you joined with a read-only link — watching only">
 						read-only
@@ -167,7 +170,6 @@ export function HeaderBar({
 						))}
 					</span>
 				)}
-				<span className={`sh-dot sh-dot-${phase}`} title={phase} />
 				{onToggleTts && (
 					<button
 						type="button"
@@ -204,4 +206,4 @@ export function HeaderBar({
 			</div>
 		</header>
 	);
-}
+});

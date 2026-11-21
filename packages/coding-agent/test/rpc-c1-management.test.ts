@@ -1,0 +1,897 @@
+import { Database } from "bun:sqlite";
+import { afterEach, beforeEach, describe, expect, it, vi } from "bun:test";
+import * as fs from "node:fs";
+import * as os from "node:os";
+import * as path from "node:path";
+import { AuthStorage, SqliteAuthCredentialStore } from "@oh-my-pi/pi-ai";
+import * as marketplaceModule from "@oh-my-pi/pi-coding-agent/extensibility/plugins/marketplace";
+import { MarketplaceManager } from "@oh-my-pi/pi-coding-agent/extensibility/plugins/marketplace";
+import * as mcpClient from "@oh-my-pi/pi-coding-agent/mcp/client";
+import { MCPManager } from "@oh-my-pi/pi-coding-agent/mcp/manager";
+import { applyRpcPluginEnabled } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-actions";
+import { buildRpcMcpServersResult } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-domains";
+import { applyRpcMarketplaceAction } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-marketplace";
+import {
+	applyRpcMcpAdd,
+	applyRpcMcpReauth,
+	applyRpcMcpReauthCancel,
+	applyRpcMcpTest,
+	type RpcMcpOAuthUi,
+	RpcMcpReauthBusyError,
+	resetRpcMcpOAuthStateForTests,
+	serializeMcpReload,
+} from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mcp-extra";
+import {
+	dispatchRpcInputFrame,
+	type PendingExtensionRequest,
+	type RpcInputFrameDeps,
+} from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mode";
+import {
+	applyRpcDeletePluginSetting,
+	applyRpcSetPluginFeatures,
+	applyRpcSetPluginSetting,
+	buildRpcGuiThemes,
+	buildRpcPluginDetail,
+} from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-plugins";
+import type { RpcCommand, RpcResponse } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-types";
+import type { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
+import * as piUtils from "@oh-my-pi/pi-utils";
+
+import { removeSyncWithRetries } from "@oh-my-pi/pi-utils";
+import * as fileLock from "@oh-my-pi/pi-utils/file-lock";
+
+/**
+ * Route every marketplace/registry path helper into the test's temp root.
+ * Spies the coding-agent barrel exports (live bindings) plus pi-utils
+ * getPluginsDir for the npm-channel lockfile reads.
+ */
+function spyMarketplacePaths(): void {
+	const pluginsDir = path.join(tmpRoot, "plugins");
+	fs.mkdirSync(pluginsDir, { recursive: true });
+	vi.spyOn(marketplaceModule, "getMarketplacesRegistryPath").mockReturnValue(path.join(tmpRoot, "marketplaces.json"));
+	vi.spyOn(marketplaceModule, "getMarketplacesCacheDir").mockReturnValue(
+		path.join(pluginsDir, "cache", "marketplaces"),
+	);
+	vi.spyOn(marketplaceModule, "getPluginsCacheDir").mockReturnValue(path.join(pluginsDir, "cache", "plugins"));
+	vi.spyOn(marketplaceModule, "getInstalledPluginsRegistryPath").mockReturnValue(
+		path.join(pluginsDir, "installed_plugins.json"),
+	);
+	vi.spyOn(piUtils, "getPluginsDir").mockReturnValue(pluginsDir);
+}
+
+/**
+ * Contract tests for the C1 management RPC helpers (mcp add/test/reauth,
+ * marketplace_action, plugin detail/settings). Asserts the wire-result shapes
+ * from the C1 contract: throwaway-manager probing, the oauth_busy concurrency
+ * code, source-form validation, detail composition, and schema-validation
+ * feedback. Real config/lockfile fixtures under temp dirs; the pi-utils path
+ * spies mirror plugin-config.test.ts / marketplace/manager.test.ts.
+ */
+
+let tmpRoot: string;
+
+beforeEach(() => {
+	tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "omp-rpc-c1-"));
+});
+
+afterEach(() => {
+	vi.restoreAllMocks();
+	resetRpcMcpOAuthStateForTests();
+	removeSyncWithRetries(tmpRoot);
+});
+
+function stubSession(overrides?: { refreshMCPTools?: AgentSession["refreshMCPTools"] }): AgentSession {
+	return {
+		sessionManager: { getCwd: () => tmpRoot },
+		modelRegistry: { authStorage: undefined },
+		settings: { get: () => undefined },
+		refreshMCPTools: overrides?.refreshMCPTools ?? vi.fn(async () => {}),
+		setMCPPromptCommands: vi.fn(),
+	} as unknown as AgentSession;
+}
+
+function stubOAuthUi(): RpcMcpOAuthUi {
+	return {
+		openUrl: vi.fn(),
+		notify: vi.fn(),
+		input: vi.fn(async () => undefined),
+	};
+}
+
+/** Route MCP config reads/writes into the temp root. */
+function spyMcpConfigPaths(): { userPath: string; projectPath: string } {
+	const userPath = path.join(tmpRoot, "user-mcp.json");
+	const projectPath = path.join(tmpRoot, "project-mcp.json");
+	vi.spyOn(piUtils, "getMCPConfigPath").mockImplementation((scope: "user" | "project") =>
+		scope === "user" ? userPath : projectPath,
+	);
+	return { userPath, projectPath };
+}
+
+function writeMcpConfig(filePath: string, servers: Record<string, unknown>): void {
+	fs.mkdirSync(path.dirname(filePath), { recursive: true });
+	fs.writeFileSync(filePath, JSON.stringify({ mcpServers: servers }, null, 2));
+}
+
+// Closed loopback port: ECONNREFUSED is immediate and deterministic.
+const UNREACHABLE_HTTP_CONFIG = { transport: "http", url: "http://127.0.0.1:1/" } as const;
+
+describe("applyRpcMcpTest", () => {
+	it("probes with a throwaway manager and never touches MCPManager.instance()", async () => {
+		const instanceSpy = vi.spyOn(MCPManager, "instance");
+		const result = await applyRpcMcpTest(stubSession(), undefined, UNREACHABLE_HTTP_CONFIG);
+		// The probe ran (and failed fast against the closed port)...
+		expect(result.ok).toBe(false);
+		expect(result.error).toBeTruthy();
+		// ...without ever consulting the shared manager singleton.
+		expect(instanceSpy).not.toHaveBeenCalled();
+	});
+
+	it("probes a configured server by name, still throwaway-only", async () => {
+		const { projectPath } = spyMcpConfigPaths();
+		writeMcpConfig(projectPath, { probe: { type: "http", url: "http://127.0.0.1:1/" } });
+		const instanceSpy = vi.spyOn(MCPManager, "instance");
+		const result = await applyRpcMcpTest(stubSession(), "probe", undefined);
+		expect(result.ok).toBe(false);
+		expect(result.error).toBeTruthy();
+		expect(instanceSpy).not.toHaveBeenCalled();
+	});
+
+	it("reports unknown server names in the result error channel", async () => {
+		spyMcpConfigPaths();
+		const result = await applyRpcMcpTest(stubSession(), "ghost", undefined);
+		expect(result).toEqual({
+			ok: false,
+			error: 'Server "ghost" not found. Run get_mcp_servers to see configured servers.',
+		});
+	});
+
+	it("requires exactly one of name|config", async () => {
+		const session = stubSession();
+		expect((await applyRpcMcpTest(session, undefined, undefined)).ok).toBe(false);
+		expect((await applyRpcMcpTest(session, "x", UNREACHABLE_HTTP_CONFIG)).ok).toBe(false);
+	});
+
+	it("rejects invalid inline configs through the shared validator", async () => {
+		const result = await applyRpcMcpTest(stubSession(), undefined, { transport: "stdio" });
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('stdio server requires "command" field');
+	});
+});
+
+describe("applyRpcMcpReauth mutex", () => {
+	it("refuses a concurrent claim with code oauth_busy, then releases", async () => {
+		spyMcpConfigPaths();
+		const session = stubSession();
+		const ui = stubOAuthUi();
+
+		// The claim is taken synchronously on entry; the first reauth then fails
+		// fast on the unknown server but still holds the claim this tick.
+		const first = applyRpcMcpReauth(session, "server-a", ui);
+		const second = applyRpcMcpReauth(session, "server-b", ui);
+		await expect(second).rejects.toThrow(RpcMcpReauthBusyError);
+		await expect(second).rejects.toMatchObject({ code: "oauth_busy" });
+
+		// First claim settles (unknown server) and the mutex releases.
+		await expect(first).resolves.toEqual({ ok: false, error: 'Server "server-a" not found.' });
+		await expect(applyRpcMcpReauth(session, "server-c", ui)).resolves.toEqual({
+			ok: false,
+			error: 'Server "server-c" not found.',
+		});
+	});
+
+	it("mcp_reauth_cancel reports false when nothing is in flight", () => {
+		expect(applyRpcMcpReauthCancel("server-a")).toEqual({ cancelled: false });
+	});
+});
+
+describe("applyRpcMcpReauth dialogs", () => {
+	const authStores: AuthStorage[] = [];
+	beforeEach(() => {
+		// A finished reauth reloads through the process-wide manager; another
+		// test file may have left one behind.
+		vi.spyOn(MCPManager, "instance").mockReturnValue(undefined);
+	});
+	afterEach(() => {
+		while (authStores.length > 0) authStores.pop()?.close();
+	});
+
+	/** A loopback port nothing listens on, for the OAuth callback server. */
+	function freePort(): number {
+		const server = Bun.serve({ port: 0, fetch: () => new Response() });
+		const port = server.port;
+		server.stop(true);
+		if (!port) throw new Error("no free port");
+		return port;
+	}
+
+	function portIsFree(port: number): boolean {
+		try {
+			Bun.serve({ port, fetch: () => new Response() }).stop(true);
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
+	/**
+	 * An OAuth-protected MCP server whose token endpoint accepts `code`.
+	 * Returns the session and the codes the token endpoint was sent.
+	 */
+	function setupOAuthServer(callbackPort: number) {
+		const { userPath } = spyMcpConfigPaths();
+		writeMcpConfig(userPath, {
+			srv: { type: "http", url: "https://mcp.example.com/mcp", oauth: { clientId: "client-1", callbackPort } },
+		});
+		vi.spyOn(mcpClient, "connectToServer").mockRejectedValue(
+			new Error(
+				'HTTP 401: {"authorization_url":"https://auth.example.com/authorize","token_url":"https://auth.example.com/token"}',
+			),
+		);
+		const realFetch = globalThis.fetch;
+		const exchanged: string[] = [];
+		vi.spyOn(globalThis, "fetch").mockImplementation((async (input: Request | string | URL, init?: RequestInit) => {
+			const url = input instanceof Request ? input.url : String(input);
+			if (url !== "https://auth.example.com/token") return realFetch(input, init);
+			exchanged.push(new URLSearchParams(String(init?.body)).get("code") ?? "");
+			return Response.json({ access_token: "at", token_type: "Bearer", expires_in: 3600, refresh_token: "rt" });
+		}) as typeof fetch);
+		const authStorage = new AuthStorage(new SqliteAuthCredentialStore(new Database(":memory:")));
+		authStores.push(authStorage);
+		const session = {
+			sessionManager: { getCwd: () => tmpRoot },
+			modelRegistry: { authStorage },
+			settings: { get: () => undefined },
+			refreshMCPTools: vi.fn(async () => {}),
+			setMCPPromptCommands: vi.fn(),
+		} as unknown as AgentSession;
+		return { session, exchanged, realFetch };
+	}
+
+	type Prompt = { authCodeFor?: string; signal?: AbortSignal; answer: (value: string | undefined) => void };
+
+	/** Records the URL dialog and paste prompts the flow opens; `onPrompt` plays the user. */
+	function recordingUi(handlers: {
+		onUrl?: (info: { url: string }, options: { onDismiss: () => void }) => void;
+		onPrompt?: (prompt: Prompt, index: number) => void;
+	}) {
+		const urls: Array<{ url: string; signal: AbortSignal }> = [];
+		const prompts: Prompt[] = [];
+		const ui: RpcMcpOAuthUi = {
+			openUrl: (info, options) => {
+				urls.push({ url: info.url, signal: options.signal });
+				handlers.onUrl?.(info, options);
+				return `url-${urls.length}`;
+			},
+			notify: () => {},
+			input: (_title, _placeholder, signal, authCodeFor) => {
+				const { promise, resolve } = Promise.withResolvers<string | undefined>();
+				signal?.addEventListener("abort", () => resolve(undefined), { once: true });
+				const prompt = { authCodeFor, signal, answer: resolve };
+				prompts.push(prompt);
+				handlers.onPrompt?.(prompt, prompts.length - 1);
+				return promise;
+			},
+		};
+		return { ui, urls, prompts };
+	}
+
+	it("cancels when the user dismisses the authorization URL, closing the paste prompt and freeing the port", async () => {
+		const port = freePort();
+		const { session } = setupOAuthServer(port);
+		let dismiss: (() => void) | undefined;
+		const { ui, urls, prompts } = recordingUi({
+			onUrl: (_info, options) => {
+				dismiss = options.onDismiss;
+			},
+			// The user gives up on the browser step while the paste prompt is showing.
+			onPrompt: () => queueMicrotask(() => dismiss?.()),
+		});
+
+		expect(await applyRpcMcpReauth(session, "srv", ui)).toEqual({ ok: false, error: "cancelled" });
+		expect(prompts).toHaveLength(1);
+		expect(prompts[0]?.authCodeFor).toBe("url-1");
+		expect(prompts[0]?.signal?.aborted).toBe(true);
+		expect(urls[0]?.signal.aborted).toBe(true);
+		expect(portIsFree(port)).toBe(true);
+	}, 15_000);
+
+	it("finishes through the browser callback and closes the paste prompt and URL dialog", async () => {
+		const { session, exchanged, realFetch } = setupOAuthServer(freePort());
+		const { ui, urls, prompts } = recordingUi({
+			// The browser lands on the redirect URI with the code.
+			onUrl: info => {
+				const authorize = new URL(info.url);
+				const callback = new URL(authorize.searchParams.get("redirect_uri") ?? "");
+				callback.searchParams.set("code", "browser-code");
+				callback.searchParams.set("state", authorize.searchParams.get("state") ?? "");
+				void realFetch(callback);
+			},
+		});
+
+		expect(await applyRpcMcpReauth(session, "srv", ui)).toEqual({ ok: true });
+		expect(exchanged).toEqual(["browser-code"]);
+		expect(prompts[0]?.authCodeFor).toBe("url-1");
+		// The paste prompt would otherwise sit open after the browser signed in.
+		expect(prompts[0]?.signal?.aborted).toBe(true);
+		expect(urls[0]?.signal.aborted).toBe(true);
+	}, 15_000);
+
+	it("asks again when a pasted value is not a usable code", async () => {
+		const { session, exchanged } = setupOAuthServer(freePort());
+		const { ui, prompts } = recordingUi({
+			onPrompt: (prompt, index) =>
+				queueMicrotask(() =>
+					prompt.answer(index === 0 ? "https://example.invalid/callback?code=x&state=wrong" : "pasted-code"),
+				),
+		});
+
+		expect(await applyRpcMcpReauth(session, "srv", ui)).toEqual({ ok: true });
+		expect(prompts).toHaveLength(2);
+		expect(exchanged).toEqual(["pasted-code"]);
+	}, 15_000);
+});
+
+describe("serializeMcpReload", () => {
+	it("runs shared-manager mutations one at a time and recovers after rejection", async () => {
+		const firstGate = Promise.withResolvers<void>();
+		const events: string[] = [];
+		const first = serializeMcpReload(async () => {
+			events.push("first:start");
+			await firstGate.promise;
+			events.push("first:end");
+		});
+		const second = serializeMcpReload(async () => {
+			events.push("second:start");
+		});
+
+		await Promise.resolve();
+		expect(events).toEqual(["first:start"]);
+		firstGate.resolve();
+		await Promise.all([first, second]);
+		expect(events).toEqual(["first:start", "first:end", "second:start"]);
+
+		await expect(
+			serializeMcpReload(async () => {
+				throw new Error("reload failed");
+			}),
+		).rejects.toThrow("reload failed");
+		await expect(serializeMcpReload(async () => "next")).resolves.toBe("next");
+	});
+});
+
+describe("applyRpcMcpAdd", () => {
+	beforeEach(() => {
+		// The native FileLock binding is unavailable in some test environments
+		// (stale prebuilt natives); the lock primitive is config-writer's own
+		// contract — here the read-modify-write just needs to run.
+		vi.spyOn(fileLock, "withFileLock").mockImplementation(async (_filePath, fn) => await fn());
+	});
+
+	it("writes the config (colon-namespaced name) and returns the refreshed server row", async () => {
+		const { projectPath } = spyMcpConfigPaths();
+		const refreshMCPTools = vi.fn(async () => {});
+		const session = stubSession({ refreshMCPTools });
+
+		const result = await applyRpcMcpAdd(
+			session,
+			"acme:tools",
+			{ transport: "stdio", command: "acme-mcp", args: ["--serve"] },
+			"project",
+		);
+
+		// Wire shape: { added: true, server } with the new C1 fields projected.
+		expect(result.added).toBe(true);
+		expect(result.server).toMatchObject({
+			name: "acme:tools",
+			transport: "stdio",
+			status: "disconnected",
+			toolCount: 0,
+			enabled: true,
+			authed: false,
+			scope: "project",
+			command: "acme-mcp",
+			authState: "none",
+		});
+		// The reload finish ran (no manager in tests → refresh with empty tools).
+		expect(refreshMCPTools).toHaveBeenCalledWith([]);
+		// The config file holds the raw entry (validateServerName allows ":").
+		const written = JSON.parse(fs.readFileSync(projectPath, "utf-8"));
+		expect(written.mcpServers["acme:tools"]).toMatchObject({ type: "stdio", command: "acme-mcp", args: ["--serve"] });
+	});
+
+	it("rejects duplicate adds (envelope-level failure, no error channel on the shape)", async () => {
+		spyMcpConfigPaths();
+		const session = stubSession();
+		const config = { transport: "stdio", command: "acme-mcp" } as const;
+		await applyRpcMcpAdd(session, "acme", config);
+		await expect(applyRpcMcpAdd(session, "acme", config)).rejects.toThrow(/already exists/);
+	});
+});
+
+describe("buildRpcMcpServersResult C1 fields", () => {
+	it("projects scope/command/url/authState from config + manager state", async () => {
+		const { userPath, projectPath } = spyMcpConfigPaths();
+		writeMcpConfig(userPath, {
+			remote: { type: "http", url: "https://mcp.example.com/sse", headers: { Authorization: "Bearer x" } },
+			needsAuth: {
+				type: "http",
+				url: "https://mcp.example.com/oauth",
+				auth: { type: "oauth", credentialId: "mcp_oauth:profile:default:https://mcp.example.com/oauth" },
+			},
+		});
+		writeMcpConfig(projectPath, {
+			local: { type: "stdio", command: "local-mcp" },
+		});
+
+		const { servers } = await buildRpcMcpServersResult(stubSession());
+		const byName = new Map(servers.map(server => [server.name, server]));
+
+		expect(byName.get("remote")).toMatchObject({
+			scope: "user",
+			transport: "http",
+			url: "https://mcp.example.com/sse",
+			authed: true,
+			authState: "authorized",
+		});
+		expect(byName.get("needsAuth")).toMatchObject({ scope: "user", authState: "required", authed: false });
+		expect(byName.get("local")).toMatchObject({ scope: "project", command: "local-mcp", authState: "none" });
+	});
+});
+
+describe("applyRpcMarketplaceAction", () => {
+	it("rejects a bare-name source for add", async () => {
+		const result = await applyRpcMarketplaceAction(stubSession(), { action: "add", source: "just-a-name" });
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain("Unrecognized source format");
+	});
+
+	it("requires a source for add", async () => {
+		const result = await applyRpcMarketplaceAction(stubSession(), { action: "add" });
+		expect(result).toEqual({ ok: false, error: "Missing `source` for marketplace add." });
+	});
+
+	it("list_available forwards catalog metadata to the wire", async () => {
+		spyMarketplacePaths();
+		const fixtureDir = path.join(tmpRoot, "fixture-marketplace");
+		fs.mkdirSync(path.join(fixtureDir, "plugins", "rich-plugin", ".claude-plugin"), { recursive: true });
+		fs.mkdirSync(path.join(fixtureDir, "plugins", "bare-plugin"), { recursive: true });
+		fs.mkdirSync(path.join(fixtureDir, ".claude-plugin"), { recursive: true });
+		fs.writeFileSync(
+			path.join(fixtureDir, ".claude-plugin", "marketplace.json"),
+			JSON.stringify({
+				name: "test-marketplace",
+				owner: { name: "Test Author" },
+				plugins: [
+					{
+						name: "rich-plugin",
+						source: "./plugins/rich-plugin",
+						description: "Full metadata",
+						version: "1.2.3",
+						author: { name: "Alice", email: "alice@example.com" },
+						homepage: "https://example.com/rich",
+						repository: "https://github.com/example/rich",
+						license: "MIT",
+						category: "productivity",
+						tags: ["search", "web"],
+						displayName: "Rich Plugin",
+						strict: false,
+						skills: ["./skills/search"],
+						lspServers: { clangd: { command: "clangd" } },
+					},
+					{ name: "bare-plugin", source: "./plugins/bare-plugin" },
+					{
+						name: "remote-plugin",
+						source: { source: "url", url: "https://github.com/example/remote.git", sha: "abc123" },
+					},
+				],
+			}),
+		);
+
+		const added = await applyRpcMarketplaceAction(stubSession(), { action: "add", source: fixtureDir });
+		expect(added).toEqual({ ok: true });
+
+		const result = await applyRpcMarketplaceAction(stubSession(), {
+			action: "list_available",
+			marketplace: "test-marketplace",
+		});
+		expect(result.ok).toBe(true);
+		const rich = result.plugins?.find(plugin => plugin.name === "rich-plugin");
+		expect(rich).toMatchObject({
+			name: "rich-plugin",
+			description: "Full metadata",
+			version: "1.2.3",
+			author: "Alice",
+			license: "MIT",
+			repository: "https://github.com/example/rich",
+			homepage: "https://example.com/rich",
+			category: "productivity",
+			tags: ["search", "web"],
+			installed: false,
+			displayName: "Rich Plugin",
+			source: "./plugins/rich-plugin",
+			components: { skills: ["./skills/search"], lspServers: { clangd: { command: "clangd" } } },
+		});
+		// Negative contract: a metadata-free catalog entry must not leak partial fields.
+		const bare = result.plugins?.find(plugin => plugin.name === "bare-plugin");
+		expect(bare).toEqual({ name: "bare-plugin", installed: false, source: "./plugins/bare-plugin" });
+		// The GUI locates a plugin's repository and logo from a typed source, so it must arrive intact.
+		const remote = result.plugins?.find(plugin => plugin.name === "remote-plugin");
+		expect(remote?.source).toEqual({ source: "url", url: "https://github.com/example/remote.git", sha: "abc123" });
+	});
+
+	it("reports activation: executable vs resource-only installs and toggles", async () => {
+		spyMarketplacePaths();
+		const fixtureDir = path.join(tmpRoot, "fixture-marketplace");
+		for (const name of ["exe-plugin", "cmd-plugin", "feature-plugin"]) {
+			fs.mkdirSync(path.join(fixtureDir, "plugins", name), { recursive: true });
+		}
+		fs.mkdirSync(path.join(fixtureDir, ".claude-plugin"), { recursive: true });
+		fs.writeFileSync(
+			path.join(fixtureDir, "plugins", "exe-plugin", "package.json"),
+			JSON.stringify({ name: "exe-plugin", version: "1.0.0", omp: { extensions: ["ext.ts"] } }),
+		);
+		fs.writeFileSync(
+			path.join(fixtureDir, "plugins", "cmd-plugin", "package.json"),
+			JSON.stringify({ name: "cmd-plugin", version: "1.0.0", omp: { commands: ["cmd.md"] } }),
+		);
+		fs.writeFileSync(
+			path.join(fixtureDir, "plugins", "feature-plugin", "package.json"),
+			JSON.stringify({
+				name: "feature-plugin",
+				version: "1.0.0",
+				omp: { features: { ext: { extensions: ["a.ts"], default: false } } },
+			}),
+		);
+		fs.writeFileSync(
+			path.join(fixtureDir, ".claude-plugin", "marketplace.json"),
+			JSON.stringify({
+				name: "test-marketplace",
+				owner: { name: "Test Author" },
+				plugins: [
+					{ name: "exe-plugin", source: "./plugins/exe-plugin" },
+					{ name: "cmd-plugin", source: "./plugins/cmd-plugin" },
+					{ name: "feature-plugin", source: "./plugins/feature-plugin" },
+				],
+			}),
+		);
+
+		const session = stubSession();
+		expect(await applyRpcMarketplaceAction(session, { action: "add", source: fixtureDir })).toEqual({ ok: true });
+		expect(
+			await applyRpcMarketplaceAction(session, {
+				action: "install",
+				plugin: "exe-plugin",
+				marketplace: "test-marketplace",
+			}),
+		).toEqual({ ok: true, activation: "restart-required" });
+		expect(
+			await applyRpcMarketplaceAction(session, {
+				action: "install",
+				plugin: "cmd-plugin",
+				marketplace: "test-marketplace",
+			}),
+		).toEqual({ ok: true, activation: "live" });
+		// Feature-scoped executables that default off install live.
+		expect(
+			await applyRpcMarketplaceAction(session, {
+				action: "install",
+				plugin: "feature-plugin",
+				marketplace: "test-marketplace",
+			}),
+		).toEqual({ ok: true, activation: "live" });
+		// Enabling the feature flips the verdict to restart-required.
+		expect(await applyRpcSetPluginFeatures(session, "feature-plugin@test-marketplace", ["ext"])).toEqual({
+			ok: true,
+			activation: "restart-required",
+		});
+		// Removing a loaded executable feature also needs a restart to unload it.
+		expect(await applyRpcSetPluginFeatures(session, "feature-plugin@test-marketplace", [])).toEqual({
+			ok: true,
+			activation: "restart-required",
+		});
+		// Disabling an executable plugin still needs a restart (to unload).
+		expect(await applyRpcPluginEnabled(session, "exe-plugin@test-marketplace", false)).toEqual({
+			id: "exe-plugin@test-marketplace",
+			enabled: false,
+			channel: "marketplace",
+			activation: "restart-required",
+		});
+		expect(await applyRpcPluginEnabled(session, "exe-plugin@test-marketplace", true)).toEqual({
+			id: "exe-plugin@test-marketplace",
+			enabled: true,
+			channel: "marketplace",
+			activation: "restart-required",
+		});
+		expect(
+			await applyRpcMarketplaceAction(session, {
+				action: "uninstall",
+				plugin: "exe-plugin",
+				marketplace: "test-marketplace",
+			}),
+		).toEqual({ ok: true, activation: "restart-required" });
+	});
+});
+
+// ── Plugin detail & settings ────────────────────────────────────────────────
+
+const PLUGIN_NAME = "test-plugin";
+
+function writePluginFixture(): void {
+	const pluginsDir = path.join(tmpRoot, "plugins");
+	const nodeModules = path.join(pluginsDir, "node_modules");
+	fs.mkdirSync(path.join(nodeModules, PLUGIN_NAME), { recursive: true });
+	fs.writeFileSync(
+		path.join(pluginsDir, "package.json"),
+		JSON.stringify({ dependencies: { [PLUGIN_NAME]: "1.0.0" } }),
+	);
+	fs.writeFileSync(
+		path.join(nodeModules, PLUGIN_NAME, "package.json"),
+		JSON.stringify({
+			name: PLUGIN_NAME,
+			version: "1.0.0",
+			omp: {
+				features: {
+					alpha: { description: "Alpha feature", default: true },
+					beta: { default: false },
+				},
+				settings: {
+					threshold: { type: "number", min: 0, max: 10, description: "Max threshold" },
+					apiToken: { type: "string", secret: true, default: "manifest-secret" },
+					passwordHint: { type: "string" },
+				},
+			},
+		}),
+	);
+	fs.writeFileSync(
+		path.join(pluginsDir, "omp-plugins.lock.json"),
+		JSON.stringify({
+			plugins: { [PLUGIN_NAME]: { version: "1.0.0", enabled: true, enabledFeatures: ["alpha"] } },
+			settings: { [PLUGIN_NAME]: { threshold: 5, apiToken: "schema-secret", passwordHint: "name-secret" } },
+		}),
+	);
+	vi.spyOn(piUtils, "getPluginsDir").mockReturnValue(pluginsDir);
+	vi.spyOn(piUtils, "getPluginsNodeModules").mockReturnValue(nodeModules);
+	vi.spyOn(piUtils, "getPluginsPackageJson").mockReturnValue(path.join(pluginsDir, "package.json"));
+	vi.spyOn(piUtils, "getPluginsLockfile").mockReturnValue(path.join(pluginsDir, "omp-plugins.lock.json"));
+	vi.spyOn(piUtils, "getProjectPluginOverridesPath").mockReturnValue(path.join(tmpRoot, "plugin-overrides.json"));
+}
+
+describe("buildRpcPluginDetail", () => {
+	it("composes manifest features and settings without exposing secret values", async () => {
+		writePluginFixture();
+		const detail = await buildRpcPluginDetail(stubSession(), PLUGIN_NAME);
+		expect(detail).toEqual({
+			id: PLUGIN_NAME,
+			enabled: true,
+			features: [
+				{ id: "alpha", description: "Alpha feature", enabled: true },
+				{ id: "beta", enabled: false },
+			],
+			settingsSchema: {
+				threshold: { type: "number", min: 0, max: 10, description: "Max threshold" },
+				apiToken: { type: "string", secret: true },
+				passwordHint: { type: "string" },
+			},
+			values: { threshold: 5 },
+			configuredKeys: ["threshold", "apiToken", "passwordHint"],
+		});
+		expect(JSON.stringify(detail)).not.toContain("schema-secret");
+		expect(JSON.stringify(detail)).not.toContain("manifest-secret");
+		expect(JSON.stringify(detail)).not.toContain("name-secret");
+	});
+
+	it("loads marketplace runtime packages by id and persists their feature selection", async () => {
+		writePluginFixture();
+		const marketPath = path.join(tmpRoot, "market-plugin");
+		fs.mkdirSync(marketPath, { recursive: true });
+		fs.writeFileSync(
+			path.join(marketPath, "package.json"),
+			JSON.stringify({
+				name: "market-plugin",
+				version: "2.0.0",
+				omp: { features: { alpha: { default: true }, beta: { default: false } } },
+			}),
+		);
+		vi.spyOn(MarketplaceManager.prototype, "listInstalledPlugins").mockResolvedValue([
+			{
+				id: "market-plugin@catalog",
+				scope: "user",
+				entries: [
+					{
+						scope: "user",
+						installPath: marketPath,
+						version: "2.0.0",
+						installedAt: "2026-08-06T00:00:00.000Z",
+						lastUpdated: "2026-08-06T00:00:00.000Z",
+						enabled: true,
+					},
+				],
+			},
+		]);
+
+		const initial = await buildRpcPluginDetail(stubSession(), "market-plugin@catalog");
+		expect(initial).toMatchObject({
+			id: "market-plugin",
+			enabled: true,
+			features: [
+				{ id: "alpha", enabled: true },
+				{ id: "beta", enabled: false },
+			],
+		});
+		expect(await applyRpcSetPluginFeatures(stubSession(), "market-plugin@catalog", ["beta"])).toEqual({
+			ok: true,
+			activation: "live",
+		});
+		const lock = JSON.parse(fs.readFileSync(path.join(tmpRoot, "plugins", "omp-plugins.lock.json"), "utf-8"));
+		expect(lock.plugins["market-plugin"].enabledFeatures).toEqual(["beta"]);
+	});
+
+	it("throws for unknown plugins (envelope-level failure)", async () => {
+		writePluginFixture();
+		await expect(buildRpcPluginDetail(stubSession(), "ghost")).rejects.toThrow('Plugin "ghost" not found.');
+	});
+});
+
+describe("applyRpcSetPluginSetting", () => {
+	it("surfaces schema validation feedback in the error field", async () => {
+		writePluginFixture();
+		const result = await applyRpcSetPluginSetting(stubSession(), PLUGIN_NAME, "threshold", 99);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain("Must be <= 10");
+	});
+
+	it("rejects keys outside the declared schema", async () => {
+		writePluginFixture();
+		const result = await applyRpcSetPluginSetting(stubSession(), PLUGIN_NAME, "nope", 1);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('Unknown setting "nope"');
+	});
+
+	it("persists valid values through PluginManager (never touches the lockfile directly)", async () => {
+		writePluginFixture();
+		expect(await applyRpcSetPluginSetting(stubSession(), PLUGIN_NAME, "threshold", 7)).toEqual({ ok: true });
+		const lock = JSON.parse(fs.readFileSync(path.join(tmpRoot, "plugins", "omp-plugins.lock.json"), "utf-8"));
+		expect(lock.settings[PLUGIN_NAME].threshold).toBe(7);
+	});
+
+	it("deletes values through PluginManager", async () => {
+		writePluginFixture();
+		expect(await applyRpcDeletePluginSetting(stubSession(), PLUGIN_NAME, "threshold")).toEqual({ ok: true });
+		const detail = await buildRpcPluginDetail(stubSession(), PLUGIN_NAME);
+		expect(detail.values).toEqual({});
+		expect(detail.configuredKeys).toEqual(["apiToken", "passwordHint"]);
+	});
+});
+
+describe("background dispatch (dispatchRpcInputFrame)", () => {
+	const makeDeps = (handleCommand: RpcInputFrameDeps["handleCommand"]) => {
+		const outputs: object[] = [];
+		const deps: RpcInputFrameDeps = {
+			handleCommand,
+			output: obj => {
+				outputs.push(obj);
+			},
+			errorResponse: (id, command, message) => ({
+				id,
+				type: "response",
+				command,
+				success: false,
+				error: message,
+			}),
+			pendingExtensionRequests: new Map<string, PendingExtensionRequest>(),
+			onHostToolResult: () => {},
+			onHostToolUpdate: () => {},
+			onHostUriResult: () => {},
+		};
+		return { deps, outputs };
+	};
+
+	it("mcp_reauth runs in the background so mcp_reauth_cancel can overtake it", async () => {
+		const { promise: reauthPending, resolve: resolveReauth } = Promise.withResolvers<RpcResponse>();
+		const handleCommand = async (command: RpcCommand): Promise<RpcResponse> => {
+			if (command.type === "mcp_reauth") return await reauthPending;
+			if (command.type === "mcp_reauth_cancel") {
+				resolveReauth({
+					id: "r1",
+					type: "response",
+					command: "mcp_reauth",
+					success: true,
+					data: { ok: false, error: "cancelled" },
+				});
+				return {
+					id: command.id,
+					type: "response",
+					command: "mcp_reauth_cancel",
+					success: true,
+					data: { cancelled: true },
+				};
+			}
+			throw new Error(`unexpected command type: ${command.type}`);
+		};
+		const { deps, outputs } = makeDeps(handleCommand);
+
+		// Background-dispatched: returns undefined without awaiting the login.
+		expect(dispatchRpcInputFrame({ id: "r1", type: "mcp_reauth", name: "srv" }, deps)).toBeUndefined();
+		// The cancel frame overtakes the in-flight reauth and settles it.
+		await dispatchRpcInputFrame({ id: "c1", type: "mcp_reauth_cancel", name: "srv" }, deps);
+		await new Promise<void>(resolve => setImmediate(resolve));
+
+		const commands = outputs.map(frame => (frame as { command?: string }).command);
+		expect(commands).toEqual(["mcp_reauth_cancel", "mcp_reauth"]);
+	});
+
+	it("mcp_test runs in the background", () => {
+		const { promise: gate } = Promise.withResolvers<RpcResponse>();
+		const { deps } = makeDeps(async () => await gate);
+		expect(dispatchRpcInputFrame({ id: "t1", type: "mcp_test", name: "srv" }, deps)).toBeUndefined();
+	});
+});
+
+describe("buildRpcGuiThemes", () => {
+	function writeGuiThemeFixture(enabled: boolean): void {
+		const pluginsDir = path.join(tmpRoot, "plugins");
+		const nodeModules = path.join(pluginsDir, "node_modules", "theme-plugin");
+		fs.mkdirSync(nodeModules, { recursive: true });
+		fs.writeFileSync(
+			path.join(pluginsDir, "package.json"),
+			JSON.stringify({ dependencies: { "theme-plugin": "1.0.0" } }),
+		);
+		fs.writeFileSync(
+			path.join(nodeModules, "package.json"),
+			JSON.stringify({
+				name: "theme-plugin",
+				version: "1.0.0",
+				omp: { gui: { theme: "./theme.json" } },
+			}),
+		);
+		fs.writeFileSync(
+			path.join(nodeModules, "theme.json"),
+			JSON.stringify({ thinkingBg: "#112233", accent: "oklch(0.7 0.1 200)", broken: 42 }),
+		);
+		vi.spyOn(piUtils, "getPluginsDir").mockReturnValue(pluginsDir);
+		vi.spyOn(piUtils, "getPluginsNodeModules").mockReturnValue(path.join(pluginsDir, "node_modules"));
+		vi.spyOn(piUtils, "getPluginsPackageJson").mockReturnValue(path.join(pluginsDir, "package.json"));
+		vi.spyOn(piUtils, "getPluginsLockfile").mockReturnValue(path.join(pluginsDir, "omp-plugins.lock.json"));
+		fs.writeFileSync(
+			path.join(pluginsDir, "omp-plugins.lock.json"),
+			JSON.stringify({ plugins: { "theme-plugin": { version: "1.0.0", enabled, enabledFeatures: null } } }),
+		);
+		vi.spyOn(piUtils, "getProjectPluginOverridesPath").mockReturnValue(path.join(tmpRoot, "plugin-overrides.json"));
+	}
+
+	it("collects string token values from an enabled plugin's gui.theme asset", async () => {
+		writeGuiThemeFixture(true);
+		const result = await buildRpcGuiThemes(stubSession());
+		// Non-string values are dropped; the wire carries a flat string map.
+		expect(result.themes).toEqual([
+			{ id: "theme-plugin", tokens: { thinkingBg: "#112233", accent: "oklch(0.7 0.1 200)" } },
+		]);
+	});
+
+	it("skips disabled plugins entirely", async () => {
+		writeGuiThemeFixture(false);
+		const result = await buildRpcGuiThemes(stubSession());
+		expect(result.themes).toEqual([]);
+	});
+
+	it("skips malformed theme paths without failing the listing", async () => {
+		writeGuiThemeFixture(true);
+		const packagePath = path.join(tmpRoot, "plugins", "node_modules", "theme-plugin", "package.json");
+		fs.writeFileSync(
+			packagePath,
+			JSON.stringify({ name: "theme-plugin", version: "1.0.0", omp: { gui: { theme: 42 } } }),
+		);
+		expect(await buildRpcGuiThemes(stubSession())).toEqual({ themes: [] });
+	});
+
+	it("honors project-level plugin disables", async () => {
+		writeGuiThemeFixture(true);
+		fs.mkdirSync(path.join(tmpRoot, ".omp"), { recursive: true });
+		fs.writeFileSync(
+			path.join(tmpRoot, ".omp", "plugin-overrides.json"),
+			JSON.stringify({ disabled: ["theme-plugin"] }),
+		);
+		expect(await buildRpcGuiThemes(stubSession())).toEqual({ themes: [] });
+	});
+});

@@ -11,14 +11,14 @@ import agentFrontmatterTemplate from "../prompts/agents/frontmatter.md" with { t
 import doomaniaCriativoMd from "../prompts/agents/doomania-criativo.md" with { type: "text" };
 import doomaniaCriticoMd from "../prompts/agents/doomania-critico.md" with { type: "text" };
 import doomaniaPermissivoMd from "../prompts/agents/doomania-permissivo.md" with { type: "text" };
-import librarianMd from "../prompts/agents/librarian.md" with { type: "text" };
 import reviewerMd from "../prompts/agents/reviewer.md" with { type: "text" };
 import scoutMd from "../prompts/agents/scout.md" with { type: "text" };
 import securityReviewerMd from "../prompts/agents/security-reviewer.md" with { type: "text" };
 import taskMd from "../prompts/agents/task.md" with { type: "text" };
-import { AUTO_THINKING } from "../thinking";
+import { AUTO_THINKING } from "@oh-my-pi/pi-tui/thinking";
 
-import type { AgentDefinition, AgentSource } from "./types";
+import type { AgentSource } from "@oh-my-pi/pi-tui/tools/task";
+import type { AgentDefinition } from "./types";
 
 interface AgentFrontmatter {
 	name: string;
@@ -48,7 +48,6 @@ const EMBEDDED_AGENT_DEFS: EmbeddedAgentDef[] = [
 	{ fileName: "scout.md", template: scoutMd },
 	{ fileName: "reviewer.md", template: reviewerMd },
 	{ fileName: "security-reviewer.md", template: securityReviewerMd },
-	{ fileName: "librarian.md", template: librarianMd },
 	{ fileName: "doomania-critico.md", template: doomaniaCriticoMd },
 	{ fileName: "doomania-permissivo.md", template: doomaniaPermissivoMd },
 	{ fileName: "doomania-criativo.md", template: doomaniaCriativoMd },

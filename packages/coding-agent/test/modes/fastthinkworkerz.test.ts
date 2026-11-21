@@ -4,7 +4,7 @@ import {
 	FASTTHINKWORKERZ_NOTICE,
 	highlightFastthinkworkerz,
 } from "@oh-my-pi/pi-coding-agent/modes/fastthinkworkerz";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
 
 beforeAll(() => {
 	initTheme();

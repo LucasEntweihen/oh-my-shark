@@ -12,7 +12,8 @@ import {
 	type CockpitSidebarMode,
 	getDeepSeaCockpit,
 } from "../tui/deep-sea-command";
-import type { SettingPath } from "../config/settings-schema";
+import { lookup as lookupSetting } from "../config/registry";
+import type { Settings } from "../config/settings";
 import { commandConsumed, parseSubcommand } from "./helpers/parse";
 import type {
 	ParsedSlashCommand,
@@ -71,6 +72,18 @@ export function formatCockpitHelp(): string {
 	].join("\n");
 }
 
+function persistSettingSafe(settings: Settings | undefined, id: string, value: unknown): void {
+	if (!settings || typeof settings.writeValue !== "function") return;
+	const setting = lookupSetting(id);
+	if (!setting) return;
+	try {
+		setting.assertWritable(value);
+		setting.set(settings, value as never);
+	} catch {
+		// Non-blocking: ignore invalid setting persistence while keeping live cockpit updated
+	}
+}
+
 export async function handleCockpitCommand(
 	parsed: ParsedSlashCommand,
 	runtime: SlashCommandRuntime,
@@ -105,21 +118,21 @@ export async function handleCockpitCommand(
 	switch (action) {
 		case "compact": {
 			cockpit.setDensity("compact");
-			runtime.settings?.set?.("cockpit.density" as SettingPath, "compact");
+			persistSettingSafe(runtime.settings, "cockpit.density", "compact");
 			const rendered = cockpit.render(100).join("\n");
 			await runtime.output(`✅ Densidade do Cockpit alterada para Compact:\n\n${rendered}`);
 			return commandConsumed();
 		}
 		case "standard": {
 			cockpit.setDensity("standard");
-			runtime.settings?.set?.("cockpit.density" as SettingPath, "standard");
+			persistSettingSafe(runtime.settings, "cockpit.density", "standard");
 			const rendered = cockpit.render(100).join("\n");
 			await runtime.output(`✅ Densidade do Cockpit alterada para Standard:\n\n${rendered}`);
 			return commandConsumed();
 		}
 		case "advanced": {
 			cockpit.setDensity("advanced");
-			runtime.settings?.set?.("cockpit.density" as SettingPath, "advanced");
+			persistSettingSafe(runtime.settings, "cockpit.density", "advanced");
 			const rendered = cockpit.render(100).join("\n");
 			await runtime.output(`✅ Densidade do Cockpit alterada para Advanced:\n\n${rendered}`);
 			return commandConsumed();
@@ -128,7 +141,7 @@ export async function handleCockpitCommand(
 			const mode = (sub.rest || "").trim().toLowerCase();
 			if (mode === "auto" || mode === "compact" || mode === "standard" || mode === "advanced") {
 				cockpit.setDensity(mode as CockpitDensityMode);
-				runtime.settings?.set?.("cockpit.density" as SettingPath, mode);
+				persistSettingSafe(runtime.settings, "cockpit.density", mode);
 				const rendered = cockpit.render(100).join("\n");
 				await runtime.output(`✅ Densidade do Cockpit configurada para ${mode.toUpperCase()}:\n\n${rendered}`);
 			} else {
@@ -141,7 +154,7 @@ export async function handleCockpitCommand(
 			const mode = (sub.rest || "").trim().toLowerCase();
 			if (mode === "auto" || mode === "visible" || mode === "collapsed" || mode === "hidden") {
 				cockpit.setSidebar(mode as CockpitSidebarMode);
-				runtime.settings?.set?.("cockpit.sidebar" as SettingPath, mode);
+				persistSettingSafe(runtime.settings, "cockpit.sidebar", mode);
 				await runtime.output(`✅ Modo da barra lateral configurado para ${mode.toUpperCase()} com sucesso!`);
 			} else {
 				const current = cockpit.getConfig().sidebar;
@@ -152,7 +165,7 @@ export async function handleCockpitCommand(
 		case "layout": {
 			const mode = (sub.rest || "").trim().toLowerCase();
 			if (mode === "cockpit" || mode === "compact" || mode === "classic" || mode === "default") {
-				runtime.settings?.set?.("tui.layout" as SettingPath, mode);
+				persistSettingSafe(runtime.settings, "tui.layout", mode);
 				await runtime.output(`✅ Layout padrão do terminal TUI configurado para: ${mode.toUpperCase()}`);
 			} else {
 				await runtime.output(`ℹ️ Layouts disponíveis: cockpit (padrão), compact, classic, default.\nUso: /cockpit layout <mode>`);
@@ -170,12 +183,7 @@ export async function handleCockpitCommand(
 				else if (!Number.isNaN(Number(rawVal))) parsedVal = Number(rawVal);
 
 				cockpit.setConfig({ [key]: parsedVal });
-				const settingKey = `cockpit.${key}` as SettingPath;
-				try {
-					runtime.settings?.set?.(settingKey, parsedVal as unknown as never);
-				} catch {
-					// Ignore invalid setting path
-				}
+				persistSettingSafe(runtime.settings, `cockpit.${key}`, parsedVal);
 				await runtime.output(`✅ Configuração do Cockpit atualizada: ${key} = ${String(parsedVal)}`);
 			} else {
 				const cfg = cockpit.getConfig();
@@ -199,18 +207,8 @@ export async function handleCockpitCommand(
 		}
 		case "reset": {
 			cockpit.setConfig(DEFAULT_COCKPIT_CONFIG);
-			try {
-				runtime.settings?.set?.("cockpit.density" as SettingPath, DEFAULT_COCKPIT_CONFIG.density);
-				runtime.settings?.set?.("cockpit.sidebar" as SettingPath, DEFAULT_COCKPIT_CONFIG.sidebar);
-				runtime.settings?.set?.("cockpit.eventStreamLines" as SettingPath, DEFAULT_COCKPIT_CONFIG.eventStreamLines);
-				runtime.settings?.set?.("cockpit.showTips" as SettingPath, DEFAULT_COCKPIT_CONFIG.showTips);
-				runtime.settings?.set?.("cockpit.showMemoryGraph" as SettingPath, DEFAULT_COCKPIT_CONFIG.showMemoryGraph);
-				runtime.settings?.set?.("cockpit.showRecentFiles" as SettingPath, DEFAULT_COCKPIT_CONFIG.showRecentFiles);
-				runtime.settings?.set?.("cockpit.showProgress" as SettingPath, DEFAULT_COCKPIT_CONFIG.showProgress);
-				runtime.settings?.set?.("cockpit.showShortcuts" as SettingPath, DEFAULT_COCKPIT_CONFIG.showShortcuts);
-				runtime.settings?.set?.("cockpit.autoHeight" as SettingPath, DEFAULT_COCKPIT_CONFIG.autoHeight);
-			} catch {
-				// Non-blocking
+			for (const [key, value] of Object.entries(DEFAULT_COCKPIT_CONFIG)) {
+				persistSettingSafe(runtime.settings, `cockpit.${key}`, value);
 			}
 			await runtime.output("🔄 Configurações do Deep Sea Cockpit restauradas para os padrões com sucesso!");
 			return commandConsumed();

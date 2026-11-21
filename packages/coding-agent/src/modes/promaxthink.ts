@@ -1,7 +1,6 @@
+import { createGradientHighlighter, type KeywordHighlighter } from "@oh-my-pi/pi-tui/prompt/gradient-highlight";
+import { keywordInProse } from "@oh-my-pi/pi-tui/prompt/markdown-prose";
 import promaxthinkNotice from "../prompts/system/promaxthink-notice.md" with { type: "text" };
-import { createGradientHighlighter, type KeywordHighlighter } from "./gradient-highlight";
-import { magicKeywordRegex } from "./magic-keyword-boundary";
-import { keywordInProse } from "./markdown-prose";
 
 /**
  * "promaxthink" keyword support, mirroring ultrathink's affordance with a
@@ -18,7 +17,10 @@ import { keywordInProse } from "./markdown-prose";
  */
 
 // Detection: lowercase keyword flanked by prose punctuation, whitespace, or a string edge.
-const PROMAXTHINK_WORD = magicKeywordRegex("promaxthink");
+const PROMAXTHINK_HIGHLIGHT =
+	/(?<![\p{L}\p{N}_./\\-])(?<!::)promaxthink(?![\p{L}\p{N}_/\\-])(?!\.[\p{L}\p{N}_-])(?!\()/gu;
+const PROMAXTHINK_WORD =
+	/(?<![\p{L}\p{N}_./\\-])(?<!::)promaxthink(?![\p{L}\p{N}_/\\-])(?!\.[\p{L}\p{N}_-])(?!\()/u;
 
 /** Hidden system notice appended after a user message that mentions "promaxthink". */
 export const PROMAXTHINK_NOTICE: string = promaxthinkNotice.trim();
@@ -39,8 +41,8 @@ export function containsPromaxthink(text: string): boolean {
  * ultrathink's full red→violet rainbow sweep.
  */
 export const highlightPromaxthink: KeywordHighlighter = createGradientHighlighter({
-	probe: /promaxthink/,
-	highlight: magicKeywordRegex("promaxthink", "g"),
+	probe: "promaxthink",
+	highlight: PROMAXTHINK_HIGHLIGHT,
 	stops: 14,
-	hue: t => (330 + t * 50) % 360,
+	hue: (t: number) => (330 + t * 50) % 360,
 });

@@ -1,76 +1,233 @@
-import { highlightLearnerProj } from "./learner-proj";
-import { containsDeepseaneuron, highlightDeepseaneuron } from "./deepseaneuron";
-import { containsDoomania, highlightDoomania } from "./doomania";
-import { containsFastthinkworkerz, highlightFastthinkworkerz } from "./fastthinkworkerz";
-import { containsOrchestrate, highlightOrchestrate } from "./orchestrate";
-import { containsPromaxthink, highlightPromaxthink } from "./promaxthink";
-import { containsUltrathink, highlightUltrathink } from "./ultrathink";
-import { containsVibecoding, highlightVibecoding } from "./vibecoding";
-import { containsWorkflow, highlightWorkflow } from "./workflow";
-import { containsXlr8, highlightXlr8 } from "./xlr8";
+import { prompt } from "@oh-my-pi/pi-utils";
+import chillaxNotice from "../prompts/system/chillax-notice.md" with { type: "text" };
+import deepseaneuronNotice from "../prompts/system/deepseaneuron-notice.md" with { type: "text" };
+import fastthinkworkerzNotice from "../prompts/system/fastthinkworkerz-notice.md" with { type: "text" };
+import jevifyNotice from "../prompts/system/jevify-notice.md" with { type: "text" };
+import learnerProjPrompt from "../prompts/system/learner-proj-prompt.md" with { type: "text" };
+import orchestrateNotice from "../prompts/system/orchestrate-notice.md" with { type: "text" };
+import promaxthinkNotice from "../prompts/system/promaxthink-notice.md" with { type: "text" };
+import ultrathinkNotice from "../prompts/system/ultrathink-notice.md" with { type: "text" };
+import workflowNotice from "../prompts/system/workflow-notice.md" with { type: "text" };
+import xlr8Notice from "../prompts/system/xlr8-notice.md" with { type: "text" };
 
 /**
- * Gradient-highlight every magic keyword ("ultrathink", "orchestrate",
- * "workflowz", "promaxthink", "vibecoding") that appears as standalone prose, skipping any
- * occurrence inside a code block, inline code span, or XML/HTML section. Each
- * highlighter paints its own keyword with its own gradient, so chaining is
- * order-independent — the earlier passes only inject zero-width SGR escapes
- * (no backticks or angle brackets), which never confuse the later passes'
- * markdown masking.
+ * Magic keywords: standalone lowercase prose words in a user prompt that
+ * append a hidden, user-attributed notice for that turn and glow in the TUI.
  *
- * `resetTo` is the SGR foreground sequence restored after each painted keyword;
- * pass the surrounding text color when decorating already-colored content (e.g.
- * a themed message bubble) so the gradient does not bleed into the rest of the
- * line. Defaults to a plain foreground reset for default-colored editor text.
- *
- * `phase` ∈ [0, 1) cyclically rotates each gradient — the editor passes a
- * `Date.now()`-derived value to animate a Claude-Code-style shimmer while a
- * keyword is on screen and the prompt is focused; sent message bubbles omit it
- * to keep the static gradient.
+ * This table is the single source of truth. Every downstream surface derives
+ * from it: the `magicKeywords.<id>` settings (`modes/settings.ts`), the notice
+ * injection and `<id>-notice` message types (agent-session, queued-messages),
+ * and the editor/bubble gradients (`setMagicKeywords` in pi-tui). Adding a
+ * keyword means one row here plus its notice template under `prompts/system/`.
  */
-export function highlightMagicKeywords(text: string, resetTo?: string, phase?: number): string {
-	const step1 = highlightUltrathink(text, resetTo, phase);
-	const step2 = highlightOrchestrate(step1, resetTo, phase);
-	const step3 = highlightWorkflow(step2, resetTo, phase);
-	const step4 = highlightPromaxthink(step3, resetTo, phase);
-	const step5 = highlightDoomania(step4, resetTo, phase);
-	const step6 = highlightDeepseaneuron(step5, resetTo, phase);
-	const step7 = highlightFastthinkworkerz(step6, resetTo, phase);
-	const step8 = highlightXlr8(step7, resetTo, phase);
-	const step9 = highlightLearnerProj(step8, resetTo, phase);
-	return highlightVibecoding(step9, resetTo, phase);
+
+/** Session facts a keyword notice may render against. */
+export interface MagicKeywordContext {
+	/** Enabled tool names for the turn. */
+	tools: readonly string[];
+	/** `task.batch`: whether `task` accepts a `tasks[]` array. */
+	taskBatch: boolean;
+	/** Whether the `scout` agent can be dispatched. */
+	scoutAvailable: boolean;
+	/** `eval.tools.enabled`: whether `@tool`-defined kernel tools exist. */
+	evalTools: boolean;
+	/** `eval.py`: whether the Python eval backend is enabled. */
+	py: boolean;
+	/** `eval.js`: whether the JS eval backend is enabled. */
+	js: boolean;
+	/** `eval.workpool.freshAgents`: whether workpools spawn a new agent per item instead of reusing workers. */
+	freshAgents: boolean;
+	/** `task.perCallModel` admits `model` on eval `agent()`/`workpool()` (`eval` or `on`). */
+	perCallModel: boolean;
 }
 
-/**
- * Cheap test for "does this text contain any magic keyword as standalone prose?".
- * Short-circuits on a substring probe before paying for the markdown-aware
- * prose check, so the common "no keyword in buffer" path is just three
- * `String#indexOf`s. Used by the live editor to gate the shimmer timer.
- */
-export function hasMagicKeyword(text: string): boolean {
-	if (
-		!text.includes("ultrathink") &&
-		!text.includes("orchestrate") &&
-		!text.includes("workflowz") &&
-		!text.includes("promaxthink") &&
-		!text.includes("doomania") &&
-		!text.includes("deepseaneuron") &&
-		!text.includes("fastthinkworkerz") &&
-		!text.includes("xlr8") &&
-		!text.includes("vibe") &&
-		!text.includes("vibecoding")
-	) {
-		return false;
-	}
-	return (
-		containsUltrathink(text) ||
-		containsOrchestrate(text) ||
-		containsWorkflow(text) ||
-		containsPromaxthink(text) ||
-		containsDoomania(text) ||
-		containsDeepseaneuron(text) ||
-		containsFastthinkworkerz(text) ||
-		containsXlr8(text) ||
-		containsVibecoding(text)
-	);
+/** One magic keyword: trigger word, gradient, settings copy, and the notice it injects. */
+export interface MagicKeyword {
+	/** Settings key suffix (`magicKeywords.<id>`) and notice message type prefix (`<id>-notice`). */
+	id: string;
+	/** Exact lowercase trigger, matched only as standalone prose. */
+	word: string;
+	/** Editor/bubble gradient as an HSL hue sweep `[from, to]` in degrees; `to` may exceed 360 to wrap. */
+	hue: readonly [number, number];
+	/** HSL lightness sweep `[from, to]` in percent painted alongside `hue`; omitted keeps the default lightness. */
+	lightness?: readonly [number, number];
+	/** Settings panel label. */
+	label: string;
+	/** Settings panel description. */
+	description: string;
+	/** Tools that must all be enabled for the notice to apply; the notice is skipped otherwise. */
+	requires: readonly string[];
+	/** Render the hidden notice queued ahead of the user message. */
+	notice: (context: MagicKeywordContext) => string;
 }
+
+/** Hidden notice for "ultrathink": careful multi-step reasoning. */
+export const ULTRATHINK_NOTICE: string = ultrathinkNotice.trim();
+
+/** Hidden notice for "chillax": brief reasoning, direct path. */
+export const CHILLAX_NOTICE: string = chillaxNotice.trim();
+
+/** Hidden notice for "jevify": bulk classification through the eval kernel's `judge()`. */
+export const JEVIFY_NOTICE: string = jevifyNotice.trim();
+
+/** Hidden notice for "promaxthink": maximum reasoning + adversarial self-verification. */
+export const PROMAXTHINK_NOTICE: string = promaxthinkNotice.trim();
+
+/** Hidden notice for "deepseaneuron": token density and efficiency optimization. */
+export const DEEPSEANEURON_NOTICE: string = deepseaneuronNotice.trim();
+
+/** Hidden notice for "fastthinkworkerz": radical execution acceleration and low latency. */
+export const FASTTHINKWORKERZ_NOTICE: string = fastthinkworkerzNotice.trim();
+
+/** Hidden notice for "xlr8": hyperspeed acceleration with optional autonomous solo mode. */
+export const XLR8_NOTICE: string = xlr8Notice.trim();
+
+/** Hidden notice for "learner-proj": deep pedagogical codebase exploration. */
+export const LEARNER_PROJ_NOTICE: string = learnerProjPrompt.trim();
+
+/** Hidden notice for "orchestrate", naming only the tools the session actually exposes. */
+export function renderOrchestrateNotice({ tools }: Pick<MagicKeywordContext, "tools">): string {
+	return prompt.render(orchestrateNotice, { tools }).trim();
+}
+
+/** Hidden notice for "workflowz", shaped by the active task/eval capabilities. */
+export function renderWorkflowNotice({
+	taskBatch,
+	scoutAvailable,
+	evalTools,
+	py,
+	js,
+	freshAgents,
+	perCallModel,
+}: Pick<
+	MagicKeywordContext,
+	"taskBatch" | "scoutAvailable" | "evalTools" | "py" | "js" | "freshAgents" | "perCallModel"
+>): string {
+	return prompt
+		.render(workflowNotice, { taskBatch, scoutAvailable, evalTools, py, js, freshAgents, perCallModel })
+		.trim();
+}
+
+export const MAGIC_KEYWORDS = [
+	{
+		id: "ultrathink",
+		word: "ultrathink",
+		hue: [0, 330],
+		label: "Ultrathink Keyword",
+		description: "Let standalone ultrathink request maximum automatic thinking and append its hidden notice",
+		requires: [],
+		notice: () => ULTRATHINK_NOTICE,
+	},
+	{
+		id: "chillax",
+		word: "chillax",
+		// Cyan darkening into deep blue.
+		hue: [180, 235],
+		lightness: [62, 45],
+		label: "Chillax Keyword",
+		description:
+			"Let standalone chillax drop thinking to the model's lowest effort (models with per-message effort, even mid-turn) and append its hidden notice",
+		requires: [],
+		notice: () => CHILLAX_NOTICE,
+	},
+	{
+		id: "orchestrate",
+		word: "orchestrate",
+		hue: [150, 280],
+		label: "Orchestrate Keyword",
+		description: "Let standalone orchestrate append its hidden multi-agent orchestration notice",
+		// The contract is entirely about `task` subagent dispatch.
+		requires: ["task"],
+		notice: renderOrchestrateNotice,
+	},
+	{
+		id: "workflow",
+		word: "workflowz",
+		hue: [30, 150],
+		label: "Workflow Keyword",
+		description: "Let standalone workflowz append its hidden eval workflow notice",
+		requires: ["task", "eval"],
+		notice: renderWorkflowNotice,
+	},
+	{
+		id: "jevify",
+		word: "jevify",
+		hue: [300, 420],
+		label: "Jevify Keyword",
+		description: "Let standalone jevify append its hidden bulk-judge classification notice",
+		// The contract is entirely about the eval kernel's `judge()` helper.
+		requires: ["eval"],
+		notice: () => JEVIFY_NOTICE,
+	},
+	{
+		id: "promaxthink",
+		word: "promaxthink",
+		hue: [330, 380],
+		label: "ProMaxThink Keyword",
+		description: "Request maximum reasoning depth plus adversarial self-verification",
+		requires: [],
+		notice: () => PROMAXTHINK_NOTICE,
+	},
+	{
+		id: "deepseaneuron",
+		word: "deepseaneuron",
+		hue: [190, 280],
+		label: "DeepSeaNeuron Keyword",
+		description: "Maximize token signal density without degrading engineering rigor",
+		requires: [],
+		notice: () => DEEPSEANEURON_NOTICE,
+	},
+	{
+		id: "fastthinkworkerz",
+		word: "fastthinkworkerz",
+		hue: [45, 65],
+		label: "FastThinkWorkerz Keyword",
+		description: "Prioritize low-latency direct execution for straightforward tasks",
+		requires: [],
+		notice: () => FASTTHINKWORKERZ_NOTICE,
+	},
+	{
+		id: "xlr8",
+		word: "xlr8",
+		hue: [150, 220],
+		label: "XLR8 Acceleration Keyword",
+		description: "Hyperspeed acceleration with optional --basic solo mode",
+		requires: [],
+		notice: () => XLR8_NOTICE,
+	},
+	{
+		id: "doomania",
+		word: "doomania",
+		hue: [105, 160],
+		label: "Doomania Keyword",
+		description: "Highlight standalone doomania critical/permissive/creative directive",
+		requires: [],
+		notice: () =>
+			"<system-notice>Doomania multi-perspective mode active: evaluate critically, explore creatively, and deliver pragmatically.</system-notice>",
+	},
+	{
+		id: "vibecoding",
+		word: "vibecoding",
+		hue: [38, 275],
+		label: "VibeCoding Keyword",
+		description: "Activate Vibe Coding toolkit wave planning and quality gates",
+		requires: [],
+		notice: () =>
+			"<system-notice>Vibe Coding Toolkit active: enforce strict wave disjointness, small modular files (<=350 lines), and verified quality gates.</system-notice>",
+	},
+	{
+		id: "learnerProj",
+		word: "learner-proj",
+		hue: [180, 225],
+		label: "Learner Project Keyword",
+		description: "Pedagogical deep codebase walkthrough mode",
+		requires: [],
+		notice: () => LEARNER_PROJ_NOTICE,
+	},
+] as const satisfies readonly MagicKeyword[];
+
+/** Settings key suffix of a registered keyword. */
+export type MagicKeywordId = (typeof MAGIC_KEYWORDS)[number]["id"];
+
+/** Hidden custom-message type carrying a keyword's notice. */
+export type MagicKeywordNoticeType = `${MagicKeywordId}-notice`;

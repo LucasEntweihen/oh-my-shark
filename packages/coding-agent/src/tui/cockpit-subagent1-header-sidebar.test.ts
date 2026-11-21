@@ -4,7 +4,6 @@ import {
 	type LspStatusItem,
 	type SessionHistoryItem,
 	stripAnsi,
-	visibleWidth,
 } from "./deep-sea-command";
 
 describe("Subagent 1: Header & Sidebar Engine", () => {

@@ -1,6 +1,6 @@
+import { createGradientHighlighter, type KeywordHighlighter } from "@oh-my-pi/pi-tui/prompt/gradient-highlight";
+import { keywordInProse } from "@oh-my-pi/pi-tui/prompt/markdown-prose";
 import deepseaneuronNotice from "../prompts/system/deepseaneuron-notice.md" with { type: "text" };
-import { createGradientHighlighter, type KeywordHighlighter } from "./gradient-highlight";
-import { keywordInProse } from "./markdown-prose";
 
 /**
  * "deepseaneuron" keyword support for dynamic token optimization & rationalization.
@@ -11,7 +11,7 @@ import { keywordInProse } from "./markdown-prose";
  * model to maximize token efficiency without degrading result quality.
  */
 
-const DEEPSEANEURON_PROBE = /deepseaneuron/;
+const DEEPSEANEURON_PROBE = "deepseaneuron";
 const DEEPSEANEURON_HIGHLIGHT =
 	/(?<![\p{L}\p{N}_./\\-])(?<!::)(?:[/|\\])?deepseaneuron(?![\p{L}\p{N}_/\\-])(?!\.[\p{L}\p{N}_-])(?!\()/gu;
 const DEEPSEANEURON_WORD =
@@ -32,7 +32,7 @@ export const highlightDeepseaneuron: KeywordHighlighter = createGradientHighligh
 	probe: DEEPSEANEURON_PROBE,
 	highlight: DEEPSEANEURON_HIGHLIGHT,
 	stops: 14,
-	hue: t => 190 + t * 90,
+	hue: (t: number) => 190 + t * 90,
 	saturation: 90,
-	lightness: 60,
+	lightness: () => 60,
 });

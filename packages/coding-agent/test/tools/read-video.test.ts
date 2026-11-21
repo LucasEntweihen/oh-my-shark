@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
+import { createMockModel } from "@oh-my-pi/pi-ai/providers/mock";
 import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import type { ToolSession } from "@oh-my-pi/pi-coding-agent/tools";
 import { ReadTool } from "@oh-my-pi/pi-coding-agent/tools/read";
@@ -14,15 +15,17 @@ import { $which, removeWithRetries } from "@oh-my-pi/pi-utils";
 
 const hasFfmpeg = Boolean($which("ffmpeg") && $which("ffprobe"));
 
-function makeSession(testDir: string, inspectImageActive = false): ToolSession {
+function makeSession(testDir: string, textOnlyModel = false): ToolSession {
 	const sessionFile = path.join(testDir, "session.jsonl");
+	const model = createMockModel({ id: textOnlyModel ? "text-only" : "vision" });
+	if (!textOnlyModel) model.input.push("image");
 	return {
 		cwd: testDir,
 		hasUI: false,
 		getSessionFile: () => sessionFile,
 		getArtifactsDir: () => sessionFile.slice(0, -6),
 		getSessionSpawns: () => null,
-		isToolActive: (name: string) => inspectImageActive && name === "inspect_image",
+		getActiveModel: () => model,
 		settings: Settings.isolated({ "images.autoResize": false }),
 	} as unknown as ToolSession;
 }
@@ -165,12 +168,68 @@ describe.skipIf(!hasFfmpeg)("read video", () => {
 		expect(String(error?.message ?? error)).toContain(":<frame>");
 	});
 
-	it("returns metadata without pixels when inspect_image is active", async () => {
+	it("resolves timestamp selectors through unique workspace suffixes", async () => {
+		const nestedDir = path.join(testDir, "assets");
+		await fs.mkdir(nestedDir, { recursive: true });
+		await fs.copyFile(clipPath, path.join(nestedDir, "nested-clip.mp4"));
+		const tool = new ReadTool(makeSession(testDir));
+
+		const result = await tool.execute("call", { path: "nested-clip.mp4:2s" });
+
+		const text = textOf(result);
+		expect(text).toContain("Video frame");
+		expect(text).toContain("via suffix match");
+		expect(result.content.find(c => c.type === "image")).toBeDefined();
+	});
+
+	it("returns metadata without pixels for text-only models", async () => {
 		const tool = new ReadTool(makeSession(testDir, true));
 
 		const result = await tool.execute("call", { path: clipPath });
 
 		expect(textOf(result)).toContain("320x240");
 		expect(result.content.find(c => c.type === "image")).toBeUndefined();
+	});
+
+	it("rejects image questions for videos", async () => {
+		const tool = new ReadTool(makeSession(testDir));
+
+		await expect(tool.execute("call", { path: `${clipPath}?q=Describe this video` })).rejects.toThrow(
+			"The ?q= selector only supports images",
+		);
+	});
+});
+
+// Routing errors surface before any ffmpeg/ffprobe call, so these run everywhere.
+describe("read video target routing", () => {
+	let testDir: string;
+
+	beforeEach(async () => {
+		testDir = await fs.mkdtemp(path.join(os.tmpdir(), "read-video-routing-"));
+	});
+
+	afterEach(async () => {
+		await removeWithRetries(testDir);
+	});
+
+	it("names the video path, not a colon-mangled one, when a timestamp target is missing", async () => {
+		const tool = new ReadTool(makeSession(testDir));
+
+		const error = await tool.execute("call", { path: "missing.mp4:01:23" }).catch(e => e);
+		const message = String(error?.message ?? error);
+		expect(message).toContain("missing.mp4");
+		expect(message).not.toContain("missing.mp4:01");
+	});
+
+	it("names the video path, not a colon-mangled one, when a timestamp target is not a video", async () => {
+		const nestedDir = path.join(testDir, "assets");
+		await fs.mkdir(nestedDir, { recursive: true });
+		await fs.writeFile(path.join(nestedDir, "nested-clip.mp4"), "not a video");
+		const tool = new ReadTool(makeSession(testDir));
+
+		const error = await tool.execute("call", { path: "nested-clip.mp4:2s" }).catch(e => e);
+		const message = String(error?.message ?? error);
+		expect(message).not.toContain(":2s");
+		expect(message).toMatch(/ffprobe|nested-clip\.mp4/);
 	});
 });

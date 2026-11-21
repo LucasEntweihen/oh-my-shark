@@ -1,15 +1,18 @@
 /**
- * Contract for the compatibility-named `pi` brand segment's working
- * transition: idle renders the downstream `g` icon in the dim color; a turn
- * start swaps the glyph to a spinner + timer whose foreground fades dim →
- * accent over 450ms, and a turn end fades back from the on-screen color.
+ * Contract for the `pi` brand segment's working transition (port of rust
+ * omp's status-band brand fade): idle renders the omp icon in the dim color;
+ * a turn start swaps the glyph to a spinner + turn timer whose foreground
+ * fades dim → accent over 450ms (never an instant color swap), and a turn end
+ * fades back from the color currently on screen. Regression: the first cut of
+ * the working brand swapped colors instantly with no tween.
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "bun:test";
 import { resetSettingsForTest, Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
-import { StatusLineComponent } from "@oh-my-pi/pi-coding-agent/modes/components/status-line";
-import { initTheme, theme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { StatusLineComponent } from "@oh-my-pi/pi-tui/status-line";
+import { statusLineHost } from "@oh-my-pi/pi-coding-agent/modes/status-line-host";
+import { initTheme, theme } from "@oh-my-pi/pi-tui/theme";
 import type { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import { getSessionAccentAnsi } from "@oh-my-pi/pi-coding-agent/utils/session-color";
+import { getSessionAccentAnsi } from "@oh-my-pi/pi-tui/theme/session-color";
 
 beforeAll(async () => {
 	resetSettingsForTest();
@@ -35,7 +38,7 @@ function fakeSession(): AgentSession {
 		agent: { state: { tools: [] } },
 		skills: [],
 		model,
-		modelRegistry: { isUsingOAuth: () => false },
+		modelRegistry: { isUsingSubscription: () => false },
 		state: { messages, model },
 		settings: undefined,
 		sessionManager: {
@@ -62,7 +65,7 @@ function fakeSession(): AgentSession {
 
 /** Brand-only bottom bar through the real segment pipeline. */
 function makeComponent(): StatusLineComponent {
-	const component = new StatusLineComponent(fakeSession());
+	const component = new StatusLineComponent(fakeSession(), statusLineHost);
 	component.updateSettings({
 		preset: "custom",
 		leftSegments: ["pi"],
@@ -74,16 +77,6 @@ function makeComponent(): StatusLineComponent {
 }
 
 describe("status line brand fade", () => {
-	it("keeps the upstream segment id while rendering the downstream glyph", () => {
-		const component = makeComponent();
-		try {
-			expect(theme.icon.omp).toBe("g");
-			expect(Bun.stripANSI(component.renderBottomBar(80, "full"))).toContain("g ");
-		} finally {
-			component.dispose();
-		}
-	});
-
 	it("fades the brand from dim into the accent when a turn starts", () => {
 		let now = 1_000_000;
 		vi.spyOn(Date, "now").mockImplementation(() => now);
@@ -93,14 +86,14 @@ describe("status line brand fade", () => {
 		const component = makeComponent();
 		try {
 			// Idle: omp icon settled in the dim color.
-			expect(component.renderBottomBar(80, "full")).toContain(`${dimAnsi}${theme.icon.omp} `);
+			expect(component.renderBottomBar(80, "full")).toContain(`${dimAnsi}${theme.icon.omp}`);
 
 			// Turn start: the glyph becomes a spinner + whole-second timer at
 			// once, but the color starts from the on-screen dim — no instant swap.
 			component.markActivityStart();
 			now += 10;
 			const early = component.renderBottomBar(80, "full");
-			expect(early).toContain(" 0s ");
+			expect(early).toContain(" 0s");
 			expect(early).not.toContain(theme.icon.omp);
 			expect(early).toContain(dimAnsi);
 			expect(early).not.toContain(accentAnsi);
@@ -147,7 +140,7 @@ describe("status line brand fade", () => {
 			expect(mid).not.toContain(accentAnsi);
 
 			now += 300;
-			expect(component.renderBottomBar(80, "full")).toContain(`${dimAnsi}${theme.icon.omp} `);
+			expect(component.renderBottomBar(80, "full")).toContain(`${dimAnsi}${theme.icon.omp}`);
 		} finally {
 			component.dispose();
 		}

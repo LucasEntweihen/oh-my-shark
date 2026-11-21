@@ -639,15 +639,16 @@ export class ClaudeMessagesProxy {
 		if (rest.length > 0) {
 			clientTls.unshift(rest);
 		}
-		const upstreamTls = this.#track(
-			tls.connect({
-				host: target.host,
-				port: target.port,
-				servername: net.isIP(target.host) ? undefined : target.host,
-				rejectUnauthorized: this.#upstreamTlsRejectUnauthorized,
-				ALPNProtocols: ["http/1.1"],
-			}),
-		);
+		const upstreamTlsSocket: tls.TLSSocket = tls.connect({
+			host: target.host,
+			port: target.port,
+			servername: net.isIP(target.host) ? undefined : target.host,
+			rejectUnauthorized: this.#upstreamTlsRejectUnauthorized,
+			ALPNProtocols: ["http/1.1"],
+		});
+		// Annotate: `tls.connect` infers `any` under some @types/node versions,
+		// which would leave the "data" listener parameter untyped below.
+		const upstreamTls = this.#track(upstreamTlsSocket);
 		const requestParser = new HttpMessageParser("request");
 		const responseParser = new HttpMessageParser("response");
 		const responseQueue: Array<PendingCapturedRequest | null> = [];
@@ -670,7 +671,7 @@ export class ClaudeMessagesProxy {
 				responseQueue.push({ target: target.display, request: toCapturedRequest(message) });
 			}
 		});
-		upstreamTls.on("data", chunk => {
+		upstreamTls.on("data", (chunk: Buffer | Uint8Array) => {
 			const data = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
 			clientTls.write(data);
 			flushResponses(responseParser.push(data));

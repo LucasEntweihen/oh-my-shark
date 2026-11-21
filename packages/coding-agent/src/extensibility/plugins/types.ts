@@ -46,6 +46,12 @@ export interface PluginManifest {
 
 	/** Settings schema for plugin configuration */
 	settings?: Record<string, PluginSettingSchema>;
+
+	/** GUI-contributed assets. Currently only declarative theme tokens. */
+	gui?: {
+		/** Path (relative to the plugin root) to a JSON map of GUI theme token values. */
+		theme?: string;
+	};
 }
 
 // =============================================================================
@@ -119,7 +125,7 @@ export interface InstalledPlugin {
 }
 
 // =============================================================================
-// Runtime Config Types (persisted through the runtime lock file)
+// Runtime Config Types (stored in omp-plugins.lock.json)
 // =============================================================================
 
 /**
@@ -135,7 +141,7 @@ export interface PluginRuntimeState {
 }
 
 /**
- * Runtime configuration persisted through the runtime lock file.
+ * Runtime configuration persisted to omp-plugins.lock.json.
  * Tracks plugin states and settings across sessions.
  */
 export interface PluginRuntimeConfig {
@@ -186,6 +192,12 @@ export interface InstallOptions {
 	force?: boolean;
 	/** Preview changes without applying */
 	dryRun?: boolean;
+	/**
+	 * Runtime state to keep instead of the fresh-install default (enabled, default
+	 * features). Used by upgrades so the lock file is written once, inside the
+	 * install's rollback scope. Features no longer offered by the new version drop out.
+	 */
+	preserveState?: Pick<PluginRuntimeState, "enabled" | "enabledFeatures">;
 }
 
 export interface DoctorOptions {

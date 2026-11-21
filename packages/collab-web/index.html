@@ -4,18 +4,21 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="light dark" />
-		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf7fc" />
+		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f3" />
 		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B0F19" />
 
 		<title>Oh My Shark · Collab & Bible Strong Avatar Studio</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;700&display=swap"
+			rel="stylesheet"
+		/>
 		<meta
 			name="description"
 			content="Guest client for omp collab sessions: watch a live coding-agent session — streaming transcript, tool calls, subagents — and prompt the host agent from any browser. End-to-end encrypted; the room key never leaves the URL fragment."
 		/>
-		<meta name="author" content="can1357" />
+		<meta name="author" content="Stencil Labs" />
 		<link rel="canonical" href="https://my.omp.sh/" />
 		<meta name="robots" content="index, follow, max-image-preview:large" />
 
@@ -64,17 +67,25 @@
 				"applicationCategory": "DeveloperApplication",
 				"operatingSystem": "Any",
 				"description": "Browser guest client for omp collab live sessions: streaming transcript, tool calls, subagent panel, and a composer that prompts the host agent. End-to-end encrypted.",
-				"isPartOf": { "@type": "WebSite", "name": "omp", "url": "https://omp.sh/" }
+				"isPartOf": { "@type": "WebSite", "name": "omp", "url": "https://omp.sh/" },
+				"publisher": {
+					"@type": "Organization",
+					"@id": "https://stencil.so/#organization",
+					"name": "Stencil",
+					"legalName": "Stencil Labs, Inc.",
+					"alternateName": "Stencil Labs",
+					"url": "https://stencil.so/"
+				}
 			}
 		</script>
 
-		<!-- Analytics. data-exclude-hash keeps the E2E room key (URL fragment) out of analytics. -->
-		<!-- Three.js + OrbitControls para o visualizador 3D -->
+		<!-- Three.js + OrbitControls for the 3D Shark visualizer -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 		<!-- Analytics. data-exclude-hash keeps the E2E room key (URL fragment) out of analytics. -->
 		<script defer src="https://um.can.ac/script.js" data-website-id="28ab5a7d-3ca4-4c85-9da5-666fa731cb92" data-exclude-hash="true"></script>
+	</head>
 	<body>
 		<div id="root"></div>
 		<script>(function(){try{var s=localStorage.getItem("omp-collab-theme");var sys=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";var t=(s==="light"||s==="dark")?s:sys;document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){}})();</script>

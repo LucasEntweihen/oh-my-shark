@@ -5,9 +5,9 @@ const INT16_MAX = 32_767;
 const INT16_MIN = -32_768;
 
 /**
- * Assemble a mono PCM16 WAV byte buffer from Float32 PCM samples (the shape
- * transformers.js `RawAudio` emits: normalized [-1, 1] amplitudes plus a sample
- * rate). No external encoder is involved — we write a canonical 44-byte RIFF/
+ * Assemble a mono PCM16 WAV byte buffer from Float32 PCM samples (normalized
+ * [-1, 1] amplitudes, as the local TTS worker emits them) at `sampleRate`.
+ * No external encoder is involved — we write a canonical 44-byte RIFF/
  * WAVE header followed by little-endian signed 16-bit samples. Samples are
  * clamped before quantization so out-of-range float values do not wrap.
  */
@@ -53,6 +53,126 @@ export function encodeWav(samples: Float32Array, sampleRate: number): Uint8Array
 	return new Uint8Array(buffer);
 }
 
+/** Mono PCM decoded from a WAV file. */
+export interface DecodedWav {
+	pcm: Float32Array;
+	sampleRate: number;
+}
+
+const FLOAT_FORMAT = 3;
+const EXTENSIBLE_FORMAT = 0xfffe;
+
+/**
+ * Decode a RIFF/WAVE byte buffer (8/16/24/32-bit PCM, or 32-bit float) into
+ * mono Float32 samples in [-1, 1], averaging the channels. Cloud speech
+ * providers answer a `wav` request with such a file.
+ *
+ * @throws when the buffer is not a WAVE file in one of those sample formats.
+ */
+export function decodeWav(bytes: Uint8Array): DecodedWav {
+	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+	if (bytes.length < 12 || readAscii(view, 0) !== "RIFF" || readAscii(view, 8) !== "WAVE") {
+		throw new Error("Not a WAVE file");
+	}
+	let format: { tag: number; channels: number; sampleRate: number; bits: number } | undefined;
+	let offset = 12;
+	while (offset + 8 <= bytes.length) {
+		const id = readAscii(view, offset);
+		const size = view.getUint32(offset + 4, true);
+		const body = offset + 8;
+		// A streamed file may declare more data than it holds.
+		const end = Math.min(bytes.length, body + size);
+		if (id === "fmt " && end - body >= 16) {
+			let tag = view.getUint16(body, true);
+			if (tag === EXTENSIBLE_FORMAT && end - body >= 26) tag = view.getUint16(body + 24, true);
+			format = {
+				tag,
+				channels: view.getUint16(body + 2, true),
+				sampleRate: view.getUint32(body + 4, true),
+				bits: view.getUint16(body + 14, true),
+			};
+		} else if (id === "data") {
+			if (!format) throw new Error("WAVE data precedes its format");
+			const { tag, channels, sampleRate, bits } = format;
+			const width = bits / 8;
+			const read = wavSampleReader(view, tag, bits);
+			if (!read || channels === 0) throw new Error(`Unsupported WAVE sample format (tag ${tag}, ${bits}-bit)`);
+			const frames = Math.floor((end - body) / (width * channels));
+			const pcm = new Float32Array(frames);
+			for (let frame = 0; frame < frames; frame += 1) {
+				let sum = 0;
+				for (let channel = 0; channel < channels; channel += 1) {
+					sum += read(body + (frame * channels + channel) * width);
+				}
+				pcm[frame] = sum / channels;
+			}
+			return { pcm, sampleRate };
+		}
+		offset = end + (size % 2);
+	}
+	throw new Error("WAVE file has no audio data");
+}
+
+/** Reader of one little-endian sample at a byte offset, normalized to [-1, 1]. */
+function wavSampleReader(view: DataView, tag: number, bits: number): ((offset: number) => number) | undefined {
+	if (tag === FLOAT_FORMAT) return bits === 32 ? offset => view.getFloat32(offset, true) : undefined;
+	if (tag !== PCM16_FORMAT) return undefined;
+	switch (bits) {
+		case 8:
+			// 8-bit PCM is unsigned.
+			return offset => (view.getUint8(offset) - 128) / 128;
+		case 16:
+			return offset => view.getInt16(offset, true) / 32_768;
+		case 24:
+			return offset => ((view.getInt8(offset + 2) << 16) | view.getUint16(offset, true)) / 8_388_608;
+		case 32:
+			return offset => view.getInt32(offset, true) / 2_147_483_648;
+		default:
+			return undefined;
+	}
+}
+
+function readAscii(view: DataView, offset: number): string {
+	return String.fromCharCode(
+		view.getUint8(offset),
+		view.getUint8(offset + 1),
+		view.getUint8(offset + 2),
+		view.getUint8(offset + 3),
+	);
+}
+
 function writeAscii(view: DataView, offset: number, text: string): void {
 	for (let i = 0; i < text.length; i += 1) view.setUint8(offset + i, text.charCodeAt(i));
+}
+
+/**
+ * Parse a canonical PCM WAV byte buffer back into Float32 samples (the inverse
+ * of {@link encodeWav}, used by the RPC voice transport). Only the subset the
+ * transport emits is accepted: RIFF/WAVE with a fixed 44-byte header, PCM
+ * (format 1), mono, 16-bit samples. Throws on any deviation so callers can
+ * surface a wire-format error instead of transcribing garbage.
+ */
+export function decodeVoiceWav(bytes: Uint8Array): { samples: Float32Array; sampleRate: number } {
+	if (bytes.length < WAV_HEADER_BYTES) throw new Error("WAV buffer too short for a 44-byte header");
+	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+	if (readAscii(view, 0) !== "RIFF" || readAscii(view, 8) !== "WAVE") throw new Error("Not a RIFF/WAVE buffer");
+	if (readAscii(view, 12) !== "fmt " || readAscii(view, 36) !== "data")
+		throw new Error("WAV buffer is not in canonical fmt+data layout");
+	const format = view.getUint16(20, true);
+	const channels = view.getUint16(22, true);
+	const sampleRate = view.getUint32(24, true);
+	const bitsPerSample = view.getUint16(34, true);
+	if (format !== PCM16_FORMAT) throw new Error(`Unsupported WAV encoding: format ${format} (only PCM is accepted)`);
+	if (channels !== 1) throw new Error(`Unsupported WAV channel count: ${channels} (only mono is accepted)`);
+	if (bitsPerSample !== BITS_PER_SAMPLE)
+		throw new Error(`Unsupported WAV bit depth: ${bitsPerSample} (only 16-bit PCM is accepted)`);
+	const dataBytes = Math.min(view.getUint32(40, true), bytes.length - WAV_HEADER_BYTES);
+	const sampleCount = Math.floor(dataBytes / (BITS_PER_SAMPLE / 8));
+	const samples = new Float32Array(sampleCount);
+	let offset = WAV_HEADER_BYTES;
+	for (let i = 0; i < sampleCount; i += 1) {
+		samples[i] = view.getInt16(offset, true) / -INT16_MIN;
+		offset += 2;
+	}
+	return { samples, sampleRate };
 }

@@ -17,7 +17,8 @@ const corrected = `export function canReadRecord(actor, record) {
 }\n`;
 
 function evaluate(directory) {
-  const result = spawnSync(process.execPath, [evaluator, directory], {
+  const runtime = process.versions.bun ? "node" : process.execPath;
+  const result = spawnSync(runtime, [evaluator, directory], {
     encoding: "utf8", timeout: 10_000,
   });
   assert.ifError(result.error);

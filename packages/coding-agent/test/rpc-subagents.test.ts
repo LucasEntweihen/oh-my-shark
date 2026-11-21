@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, spyOn, test } from "bun:test";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
@@ -12,8 +12,9 @@ import {
 } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mode";
 import { RpcSubagentRegistry, readRpcSubagentTranscript } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-subagents";
 import type { RpcSubagentFrame } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-types";
+import { AgentRegistry } from "@oh-my-pi/pi-coding-agent/registry/agent-registry";
+import { type AgentProgress } from "@oh-my-pi/pi-tui/tools/task";
 import {
-	type AgentProgress,
 	type SubagentEventPayload,
 	type SubagentLifecyclePayload,
 	type SubagentProgressPayload,
@@ -71,15 +72,29 @@ function createRegistryWithSnapshot(): RpcSubagentRegistry {
 type SessionChangeStubOptions = {
 	newSession?: boolean;
 	switchSession?: boolean;
-	branch?: { selectedText: string; selectedImages: ImageContent[]; cancelled: boolean };
+	fork?: boolean;
+	branch?: {
+		selectedText: string;
+		selectedImages: ImageContent[];
+		cancelled: boolean;
+	};
+	isStreaming?: boolean;
+	isCompacting?: boolean;
 };
 
 function createSessionChangeSession(options: SessionChangeStubOptions): RpcSessionChangeSession {
 	return {
+		isStreaming: options.isStreaming ?? false,
+		isCompacting: options.isCompacting ?? false,
 		newSession: async (_options?: unknown) => options.newSession ?? true,
 		switchSession: async (_sessionPath: string) => options.switchSession ?? true,
 		branch: async (_entryId: string) =>
-			options.branch ?? { selectedText: "branched text", selectedImages: [], cancelled: false },
+			options.branch ?? {
+				selectedText: "branched text",
+				selectedImages: [],
+				cancelled: false,
+			},
+		fork: async (_entryId?: string) => options.fork ?? true,
 	};
 }
 
@@ -174,8 +189,23 @@ describe("RPC subagent registry", () => {
 	});
 
 	test("clears stale snapshots when the active RPC session changes", () => {
+		AgentRegistry.resetGlobalForTests();
 		const eventBus = new EventBus();
 		const registry = new RpcSubagentRegistry(eventBus, () => {});
+		AgentRegistry.global().register({
+			id: "SubagentA",
+			displayName: "SubagentA",
+			kind: "sub",
+			session: null,
+			status: "idle",
+		});
+		AgentRegistry.global().register({
+			id: "RegistryOnly",
+			displayName: "RegistryOnly",
+			kind: "advisor",
+			session: null,
+			status: "parked",
+		});
 		eventBus.emit(TASK_SUBAGENT_LIFECYCLE_CHANNEL, {
 			id: "SubagentA",
 			index: 0,
@@ -185,13 +215,24 @@ describe("RPC subagent registry", () => {
 			sessionFile: "/tmp/subagent.jsonl",
 		} satisfies SubagentLifecyclePayload);
 
-		expect(registry.getSubagents()).toHaveLength(1);
+		expect(registry.getSubagents()).toHaveLength(2);
 		registry.clear();
 
 		expect(registry.getSubagents()).toHaveLength(0);
+		// A real lifecycle in the new session may reuse the stable id and must
+		// become visible again instead of remaining permanently filtered.
+		eventBus.emit(TASK_SUBAGENT_LIFECYCLE_CHANNEL, {
+			id: "SubagentA",
+			index: 0,
+			agent: "task",
+			agentSource: "bundled",
+			status: "started",
+			sessionFile: "/tmp/new-subagent.jsonl",
+		} satisfies SubagentLifecyclePayload);
+		expect(registry.getSubagents()).toMatchObject([{ id: "SubagentA", sessionFile: "/tmp/new-subagent.jsonl" }]);
 		registry.dispose();
+		AgentRegistry.resetGlobalForTests();
 	});
-
 	test("clears stale snapshots after successful RPC session changes", async () => {
 		const cases: Array<{
 			command: RpcSessionChangeCommand;
@@ -204,6 +245,11 @@ describe("RPC subagent registry", () => {
 				expected: { type: "new_session", data: { cancelled: false } },
 			},
 			{
+				command: { type: "drop_session" },
+				session: createSessionChangeSession({ newSession: true }),
+				expected: { type: "drop_session", data: { cancelled: false } },
+			},
+			{
 				command: { type: "switch_session", sessionPath: "/tmp/next.jsonl" },
 				session: createSessionChangeSession({ switchSession: true }),
 				expected: { type: "switch_session", data: { cancelled: false } },
@@ -211,9 +257,21 @@ describe("RPC subagent registry", () => {
 			{
 				command: { type: "branch", entryId: "entry-1" },
 				session: createSessionChangeSession({
-					branch: { selectedText: "Branch text", selectedImages: [], cancelled: false },
+					branch: {
+						selectedText: "Branch text",
+						selectedImages: [],
+						cancelled: false,
+					},
 				}),
-				expected: { type: "branch", data: { text: "Branch text", cancelled: false } },
+				expected: {
+					type: "branch",
+					data: { text: "Branch text", cancelled: false },
+				},
+			},
+			{
+				command: { type: "fork", entryId: "entry-1" },
+				session: createSessionChangeSession({ fork: true }),
+				expected: { type: "fork", data: { cancelled: false } },
 			},
 		];
 
@@ -245,14 +303,26 @@ describe("RPC subagent registry", () => {
 				expected: { type: "new_session", data: { cancelled: true } },
 			},
 			{
+				command: { type: "drop_session" },
+				session: createSessionChangeSession({ newSession: false }),
+				expected: { type: "drop_session", data: { cancelled: true } },
+			},
+			{
 				command: { type: "switch_session", sessionPath: "/tmp/next.jsonl" },
 				session: createSessionChangeSession({ switchSession: false }),
 				expected: { type: "switch_session", data: { cancelled: true } },
 			},
 			{
 				command: { type: "branch", entryId: "entry-1" },
-				session: createSessionChangeSession({ branch: { selectedText: "", selectedImages: [], cancelled: true } }),
+				session: createSessionChangeSession({
+					branch: { selectedText: "", selectedImages: [], cancelled: true },
+				}),
 				expected: { type: "branch", data: { text: "", cancelled: true } },
+			},
+			{
+				command: { type: "fork" },
+				session: createSessionChangeSession({ fork: false }),
+				expected: { type: "fork", data: { cancelled: true } },
 			},
 		];
 
@@ -270,7 +340,32 @@ describe("RPC subagent registry", () => {
 		}
 	});
 
-	test("prunes terminal lifecycle snapshots while retaining transcript selectors", () => {
+	test("drop_session passes the destructive new-session option", async () => {
+		let receivedOptions: unknown;
+		const session: RpcSessionChangeSession = {
+			...createSessionChangeSession({ newSession: true }),
+			newSession: async options => {
+				receivedOptions = options;
+				return true;
+			},
+		};
+
+		expect(await handleRpcSessionChange(session, { type: "drop_session" })).toEqual({
+			type: "drop_session",
+			data: { cancelled: false },
+		});
+		expect(receivedOptions).toEqual({ drop: true });
+	});
+
+	test("drop_session refuses to delete while the session is compacting", async () => {
+		const session = createSessionChangeSession({ isCompacting: true });
+
+		await expect(handleRpcSessionChange(session, { type: "drop_session" })).rejects.toThrow(
+			"Cannot delete a session while it is running",
+		);
+	});
+
+	test("retains terminal snapshots with last-known labels while retaining transcript selectors", () => {
 		const eventBus = new EventBus();
 		const registry = new RpcSubagentRegistry(eventBus, () => {});
 		const sessionFile = "/tmp/subagent.jsonl";
@@ -282,6 +377,17 @@ describe("RPC subagent registry", () => {
 			status: "started",
 			sessionFile,
 		} satisfies SubagentLifecyclePayload);
+		eventBus.emit(TASK_SUBAGENT_PROGRESS_CHANNEL, {
+			index: 0,
+			agent: "task",
+			agentSource: "bundled",
+			// The wire's task is the full rendered prompt template for task-tool
+			// spawns; assignment carries the raw task text.
+			task: "<rendered template>…Implement work…</rendered template>",
+			assignment: "Implement work",
+			sessionFile,
+			progress: createProgress({ durationMs: 19_800 }),
+		} satisfies SubagentProgressPayload);
 
 		expect(registry.getSubagents()).toHaveLength(1);
 		eventBus.emit(TASK_SUBAGENT_LIFECYCLE_CHANNEL, {
@@ -293,10 +399,145 @@ describe("RPC subagent registry", () => {
 			sessionFile,
 		} satisfies SubagentLifecyclePayload);
 
-		expect(registry.getSubagents()).toHaveLength(0);
+		// Terminal rows stay discoverable with their last-known labels and final
+		// progress — the GUI keeps showing the finished card (elapsed from
+		// durationMs) instead of a blank rediscovered row.
+		expect(registry.getSubagents()).toMatchObject([
+			{
+				id: "SubagentA",
+				status: "completed",
+				task: "<rendered template>…Implement work…</rendered template>",
+				assignment: "Implement work",
+				progress: { durationMs: 19_800 },
+			},
+		]);
 		expect(registry.resolveSessionFile({ subagentId: "SubagentA" })).toBe(sessionFile);
 		expect(registry.resolveSessionFile({ sessionFile })).toBe(sessionFile);
 		registry.dispose();
+	});
+
+	test("lists agents in spawn order across task calls, and a revived agent keeps its place", () => {
+		const eventBus = new EventBus();
+		const registry = new RpcSubagentRegistry(eventBus, () => {});
+		const lifecycle = (id: string, index: number, callId: string, status: "started" | "completed") =>
+			eventBus.emit(TASK_SUBAGENT_LIFECYCLE_CHANNEL, {
+				id,
+				index,
+				agent: "task",
+				agentSource: "bundled",
+				status,
+				parentToolCallId: callId,
+			} satisfies SubagentLifecyclePayload);
+		const now = spyOn(Date, "now");
+		try {
+			now.mockReturnValue(1_000);
+			lifecycle("Zed", 0, "call-1", "started");
+			lifecycle("Yew", 1, "call-1", "started");
+			now.mockReturnValue(2_000);
+			lifecycle("Amy", 0, "call-2", "started");
+			lifecycle("Zed", 0, "call-1", "completed");
+			now.mockReturnValue(3_000);
+			lifecycle("Zed", 0, "call-1", "started");
+		} finally {
+			now.mockRestore();
+		}
+
+		expect(registry.getSubagents().map(row => [row.id, row.spawnedAt])).toEqual([
+			["Zed", 1_000],
+			["Yew", 1_000],
+			["Amy", 2_000],
+		]);
+		registry.dispose();
+	});
+
+	test("an idle registry ref never resurrects a finished agent; parked refs stay revivable", () => {
+		AgentRegistry.resetGlobalForTests();
+		try {
+			const eventBus = new EventBus();
+			const registry = new RpcSubagentRegistry(eventBus, () => {});
+			const sessionFile = "/tmp/subagent.jsonl";
+			eventBus.emit(TASK_SUBAGENT_LIFECYCLE_CHANNEL, {
+				id: "SubagentA",
+				index: 0,
+				agent: "task",
+				agentSource: "bundled",
+				status: "started",
+				sessionFile,
+			} satisfies SubagentLifecyclePayload);
+			eventBus.emit(TASK_SUBAGENT_PROGRESS_CHANNEL, {
+				index: 0,
+				agent: "task",
+				agentSource: "bundled",
+				task: "Do work",
+				assignment: "Implement work",
+				sessionFile,
+				progress: createProgress({ durationMs: 19_800 }),
+			} satisfies SubagentProgressPayload);
+			eventBus.emit(TASK_SUBAGENT_LIFECYCLE_CHANNEL, {
+				id: "SubagentA",
+				index: 0,
+				agent: "task",
+				agentSource: "bundled",
+				status: "completed",
+				sessionFile,
+			} satisfies SubagentLifecyclePayload);
+
+			// Finished agents stay registered as idle refs (agent-registry
+			// retention model): the ref merge must not flip the card back live.
+			const agents = AgentRegistry.global();
+			const ref = agents.register({
+				id: "SubagentA",
+				displayName: "SubagentA",
+				kind: "sub",
+				session: null,
+				status: "idle",
+			});
+			expect(registry.getSubagents()).toMatchObject([
+				{
+					id: "SubagentA",
+					status: "completed",
+					assignment: "Implement work",
+					progress: { durationMs: 19_800 },
+				},
+			]);
+
+			// A resumable ref status (abort → park) legitimately takes over the card.
+			agents.setStatus("SubagentA", "parked", ref);
+			expect(registry.getSubagents()).toMatchObject([
+				{
+					id: "SubagentA",
+					status: "parked",
+					assignment: "Implement work",
+					progress: { durationMs: 19_800 },
+				},
+			]);
+
+			// Once the ref goes away the terminal snapshot remains.
+			agents.unregister("SubagentA", ref);
+			expect(registry.getSubagents()).toMatchObject([{ id: "SubagentA", status: "completed" }]);
+			registry.dispose();
+		} finally {
+			AgentRegistry.resetGlobalForTests();
+		}
+	});
+
+	test("marks a claimed-running registry ref without an attached turn as stale", () => {
+		AgentRegistry.resetGlobalForTests();
+		try {
+			const registry = new RpcSubagentRegistry(new EventBus(), () => {});
+			AgentRegistry.global().register({
+				id: "Zombie",
+				displayName: "Zombie",
+				kind: "sub",
+				session: null,
+				status: "running",
+			});
+
+			expect(registry.getSubagents()).toMatchObject([{ id: "Zombie", status: "running", live: false }]);
+			registry.dispose();
+		} finally {
+			AgentRegistry.resetGlobalForTests();
+		}
 	});
 
 	test("gates raw subagent events behind the events subscription level", () => {
@@ -315,8 +556,20 @@ describe("RPC subagent registry", () => {
 		eventBus.emit(TASK_SUBAGENT_EVENT_CHANNEL, eventPayload);
 
 		expect(frames).toHaveLength(1);
-		expect(frames[0]).toEqual({ type: "subagent_event", payload: eventPayload });
+		expect(frames[0]).toEqual({
+			type: "subagent_event",
+			payload: eventPayload,
+		});
+		registry.setSubscriptionLevel("progress");
+		eventBus.emit(TASK_SUBAGENT_EVENT_CHANNEL, eventPayload);
+		expect(frames).toHaveLength(1);
+		registry.setSubscriptionLevel("events");
+		eventBus.emit(TASK_SUBAGENT_EVENT_CHANNEL, eventPayload);
+		expect(frames).toHaveLength(2);
 		registry.dispose();
+		registry.setSubscriptionLevel("events");
+		eventBus.emit(TASK_SUBAGENT_EVENT_CHANNEL, eventPayload);
+		expect(frames).toHaveLength(2);
 	});
 });
 
@@ -418,6 +671,7 @@ function handle(frame) {
 		write({ type: "subagent_progress", payload: { index: 0, agent: "task", agentSource: "bundled", task: "Do work", assignment: "Implement work", sessionFile: "/tmp/subagent.jsonl", progress } });
 		write({ type: "subagent_event", payload: { id: "SubagentA", event: { type: "agent_start" } } });
 		write({ type: "agent_end", messages: [] });
+		write({ type: "prompt_result", id: frame.id, agentInvoked: true, status: "completed" });
 	}
 }
 `,
@@ -434,7 +688,8 @@ function handle(frame) {
 		client.onSessionEvent(event => sessionEventTypes.push(event.type));
 
 		await client.start();
-		await expect(client.setSubagentSubscription("events")).resolves.toBe("events");
+		// Plain await, not `.resolves`: on Windows Bun's in-place promise wait never services the child pipe.
+		expect(await client.setSubagentSubscription("events")).toBe("events");
 		await client.promptAndWait("Trigger subagent frames");
 		expect(await client.getSubagents()).toHaveLength(1);
 		expect(await client.getSubagentMessages({ sessionFile: "/tmp/subagent.jsonl" })).toMatchObject({

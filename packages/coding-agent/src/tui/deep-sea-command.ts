@@ -11,10 +11,11 @@
  * - 100% Pure TypeScript string & ANSI calculation for complete cross-platform portability.
  */
 import { truncateToWidth } from "@oh-my-pi/pi-tui";
-import { REST_FRAME, SHARK_LOGO, SHARK_WIDTH } from "../modes/components/shark-logo";
+import { REST_FRAME } from "../modes/components/shark-logo";
 import type { ChangesSummary, FileChangeDiff } from "../edit/transactional-engine";
+import type { OrchestratorRun } from "../orchestrator/types";
+import { lookup as lookupSetting } from "../config/registry";
 import { settings } from "../config/settings";
-import type { SettingPath } from "../config/settings-schema";
 
 export type CockpitDensity = "compact" | "standard" | "advanced";
 export type CockpitDensityMode = "auto" | "compact" | "standard" | "advanced";
@@ -44,9 +45,11 @@ export const DEFAULT_COCKPIT_CONFIG: CockpitConfig = {
 	autoHeight: true,
 };
 
-function getSettingSafe<T>(key: SettingPath, fallback: T): T {
+function getSettingSafe<T>(key: string, fallback: T): T {
 	try {
-		const val = settings.get(key);
+		const setting = lookupSetting(key);
+		if (!setting) return fallback;
+		const val = setting.get(settings);
 		return val !== undefined ? (val as unknown as T) : fallback;
 	} catch {
 		return fallback;
@@ -448,6 +451,10 @@ export class DeepSeaCockpit {
 		this.totalChecks = total;
 	}
 
+	public getChecksSummary(): { passed: number; total: number } {
+		return { passed: this.passedChecks, total: this.totalChecks };
+	}
+
 	public recordCheck(name: string, passed: boolean): void {
 		this.totalChecks++;
 		if (passed) {
@@ -589,6 +596,102 @@ export class DeepSeaCockpit {
 			} catch {
 				// Fallback
 			}
+		}
+	}
+
+	public syncFromOrchestrator(run: OrchestratorRun | null): void {
+		if (!run) {
+			this.mission = {
+				id: "idle",
+				title: "No active orchestrator mission",
+				phase: "Idle",
+				progressPercent: 0,
+				status: "active",
+			};
+			this.activitySteps = [{ label: "Awaiting /orchestrator plan", status: "pending" }];
+			this.agentStatus = "Idle";
+			this.completedSteps = 0;
+			this.totalSteps = 0;
+			return;
+		}
+
+		const workers = Object.values(run.workers);
+		const completedWorkers = workers.filter((w) => w.status === "completed").length;
+		const totalWorkers = workers.length;
+		const progressPercent =
+			run.phase === "COMMITTED"
+				? 100
+				: totalWorkers > 0
+					? Math.round((completedWorkers / totalWorkers) * 100)
+					: 0;
+
+		const activeWorker = workers.find(
+			(w) => w.status === "running" || w.status === "steered" || w.status === "verifying" || w.status === "repaired",
+		);
+		const missionStatus: ActiveMissionInfo["status"] =
+			run.phase === "COMMITTED"
+				? "completed"
+				: run.phase === "ABORTED" || run.phase === "BLOCKED"
+					? "failed"
+					: "active";
+
+		const waveNum = Math.min(run.currentWaveIndex + 1, Math.max(1, run.waves.length));
+		this.mission = {
+			id: run.id,
+			title: run.goal,
+			phase: `Wave ${waveNum}/${Math.max(1, run.waves.length)} · ${run.phase}`,
+			progressPercent,
+			activeSubtask: activeWorker ? `@${activeWorker.role}: ${activeWorker.title}` : undefined,
+			startTime: run.createdAt,
+			endTime: missionStatus === "active" ? undefined : run.updatedAt,
+			status: missionStatus,
+		};
+
+		if (run.waves.length > 1) {
+			this.activitySteps = run.waves.map((wave) => ({
+				label: `Wave #${wave.index} (${wave.workerIds.length}w · ${wave.status})`,
+				status:
+					wave.status === "completed"
+						? "completed"
+						: wave.status === "running" || wave.status === "verifying"
+							? "active"
+							: "pending",
+			}));
+		} else {
+			this.activitySteps = workers.map((w) => ({
+				label: `@${w.role}: ${w.title}`,
+				status:
+					w.status === "completed"
+						? "completed"
+						: w.status === "running" || w.status === "steered" || w.status === "verifying" || w.status === "repaired"
+							? "active"
+							: "pending",
+			}));
+		}
+
+		this.completedSteps = completedWorkers;
+		this.totalSteps = Math.max(1, totalWorkers);
+		this.agentStatus = `${run.phase} (${completedWorkers}/${totalWorkers})`;
+
+		const verifications = run.waves
+			.map((w) => w.verification)
+			.filter((v): v is NonNullable<typeof v> => v !== undefined);
+		if (verifications.length > 0) {
+			let passed = 0;
+			let total = 0;
+			for (const v of verifications) {
+				if (v.tddProofs.length > 0) {
+					for (const p of v.tddProofs) {
+						passed += p.passedCount;
+						total += p.totalCount;
+					}
+				} else {
+					total += 1;
+					if (v.passed) passed += 1;
+				}
+			}
+			this.passedChecks = passed;
+			this.totalChecks = total;
 		}
 	}
 

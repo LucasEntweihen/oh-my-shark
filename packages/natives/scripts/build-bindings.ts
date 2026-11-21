@@ -15,6 +15,7 @@ import { createRequire } from "node:module";
 import * as path from "node:path";
 import { $ } from "bun";
 import { detectHostAvx2Support, resolveLocalHostAddon } from "../../../scripts/host-detect";
+import { stampNativeVersion } from "../../../scripts/stamp-native-version";
 import { generateEnumExports } from "./gen-enums";
 
 // pcre2-sys prefers a system libpcre2 when pkg-config finds one. Keep the
@@ -22,7 +23,7 @@ import { generateEnumExports } from "./gen-enums";
 process.env.PCRE2_SYS_STATIC ??= "1";
 
 // Windows: cc-rs and rustc auto-locate cl.exe/link.exe through the VS
-// registry, but the cmake crate (audiopus_sys' bundled opus) needs cmake —
+// registry, but the cmake crate (opusic-sys' bundled Opus) needs cmake —
 // and its Ninja generator needs ninja — on PATH. VS Build Tools ships both
 // without exposing them, so outside a vcvars prompt the build dies on
 // "cmake not found". Resolve the VS install via vswhere and append its
@@ -55,14 +56,23 @@ if (process.platform === "win32" && (!Bun.which("cmake") || !Bun.which("ninja"))
 }
 
 const repoRoot = path.join(import.meta.dir, "../../..");
-const rustDir = path.join(repoRoot, "crates/pi-natives");
+const rustDir = path.join(repoRoot, "crates/natives");
 const nativeDir = path.join(import.meta.dir, "../native");
 const packageJsonPath = path.join(import.meta.dir, "../package.json");
 
+// PI_NATIVE_VARIANT (the loader's own override) forces the x64 ISA variant —
+// e.g. building the baseline addon from an AVX2 CI host, or the modern addon
+// under Rosetta where sysctl reports no AVX2.
+const variantOverride = Bun.env.PI_NATIVE_VARIANT?.trim();
 const localAddon = resolveLocalHostAddon({
 	platform: process.platform,
 	arch: process.arch,
-	avx2: detectHostAvx2Support(),
+	avx2:
+		variantOverride === "modern"
+			? true
+			: variantOverride === "baseline"
+				? false
+				: detectHostAvx2Support(),
 });
 const effectiveVariant = localAddon.x64Variant;
 const variantSuffix = effectiveVariant ? `-${effectiveVariant}` : "";
@@ -177,7 +187,7 @@ async function installGeneratedBindings(outputDir: string): Promise<void> {
 const canonicalAddonFilename = localAddon.filename;
 const canonicalAddonPath = path.join(nativeDir, canonicalAddonFilename);
 
-console.log(`Building pi-natives bindings for ${process.platform}-${process.arch}${variantSuffix} (local)…`);
+console.log(`Building omp-natives bindings for ${process.platform}-${process.arch}${variantSuffix} (local)…`);
 
 await fs.mkdir(nativeDir, { recursive: true });
 await cleanupStaleTemps(nativeDir);
@@ -256,6 +266,10 @@ try {
 	}
 
 	const builtAddonPath = await resolveBuiltAddonPath(buildOutputDir, canonicalAddonFilename);
+	// Stamp the release version post-link, before the addon becomes visible
+	// under its canonical name, so a version bump never recompiles the crate.
+	const { version } = (await Bun.file(packageJsonPath).json()) as { version: string };
+	await stampNativeVersion(builtAddonPath, version);
 	if (builtAddonPath !== canonicalAddonPath) {
 		console.log(`Normalizing native addon filename: ${path.basename(builtAddonPath)} → ${canonicalAddonFilename}`);
 		await installBinary(builtAddonPath, canonicalAddonPath);

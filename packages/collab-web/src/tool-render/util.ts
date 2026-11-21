@@ -77,7 +77,6 @@ export function normalizeWs(s: string): string {
 }
 
 export function replaceTabs(s: string): string {
-	if (s.indexOf("\t") === -1) return s;
 	return s.replace(/\t/g, "   ");
 }
 

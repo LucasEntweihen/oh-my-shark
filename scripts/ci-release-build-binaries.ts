@@ -25,7 +25,6 @@ if (
 ) {
 	throw new Error("@huggingface/transformers package manifest has no string version");
 }
-const transformersVersion = transformersManifest.version;
 // Worker threads re-enter the binary's single CLI host entry.
 const isDryRun = process.argv.includes("--dry-run");
 const targets: BinaryTarget[] = [
@@ -138,7 +137,6 @@ async function buildBinary(target: BinaryTarget): Promise<void> {
 		repoRoot,
 		entrypoint,
 		outfile: path.join(repoRoot, target.outfile),
-		transformersVersion,
 		native: target,
 		...(isHostWin64 ? { executablePath: process.execPath } : { target: target.target }),
 		minifyIdentifiers: true,
@@ -153,11 +151,11 @@ async function buildBinary(target: BinaryTarget): Promise<void> {
 async function generateBundle(): Promise<void> {
 	if (isDryRun) {
 		console.log("DRY RUN bun run gen:stats");
-		console.log("DRY RUN bun --cwd=packages/collab-web run gen:tool-views");
+		console.log("DRY RUN bun --cwd=packages/collab-web run gen:export-viewer");
 		return;
 	}
 	await runCommand(["bun", "run", "gen:stats"], repoRoot);
-	await runCommand(["bun", "--cwd=packages/collab-web", "run", "gen:tool-views"], repoRoot);
+	await runCommand(["bun", "--cwd=packages/collab-web", "run", "gen:export-viewer"], repoRoot);
 }
 
 async function resetArtifacts(): Promise<void> {

@@ -2,9 +2,12 @@ import { afterEach, describe, expect, test } from "bun:test";
 import * as vm from "node:vm";
 import { type Document, Element, parseHTML } from "@oh-my-pi/pi-utils/dom";
 import { Marked } from "@oh-my-pi/pi-utils/marked";
+import type { SessionEntry } from "../src/session/session-entries";
+import type { SubSession } from "../src/session/sub-sessions";
 
-const [templateHtml, templateJs] = await Promise.all([
-	Bun.file(new URL("../src/export/html/template.html", import.meta.url)).text(),
+const [templateHtml, shellHtml, templateJs] = await Promise.all([
+	Bun.file(new URL("../src/export/html/template.html.txt", import.meta.url)).text(),
+	Bun.file(new URL("../src/export/html/shell.html", import.meta.url)).text(),
 	Bun.file(new URL("../src/export/html/template.js", import.meta.url)).text(),
 ]);
 const originalScrollIntoView = Object.getOwnPropertyDescriptor(Element.prototype, "scrollIntoView");
@@ -35,8 +38,8 @@ interface RenderedSession {
 	lastScrolledId: () => string | null;
 }
 
-function renderSession(entries: unknown[], leafId: string): RenderedSession {
-	const { document, window } = parseHTML(templateHtml);
+function renderSession(entries: unknown[], leafId: string, subSessions?: Record<string, SubSession>): RenderedSession {
+	const { document, window } = parseHTML(templateHtml.replace("</body>", `${shellHtml}</body>`));
 	let lastScrolledId: string | null = null;
 	Object.defineProperty(Element.prototype, "scrollIntoView", {
 		value(this: Element) {
@@ -57,6 +60,7 @@ function renderSession(entries: unknown[], leafId: string): RenderedSession {
 			},
 			entries,
 			leafId,
+			subSessions,
 		}),
 	).toBase64();
 	Object.defineProperty(window, "location", {
@@ -64,7 +68,11 @@ function renderSession(entries: unknown[], leafId: string): RenderedSession {
 		configurable: true,
 	});
 	Object.defineProperty(window, "matchMedia", {
-		value: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
+		value: () => ({
+			matches: false,
+			addEventListener() {},
+			removeEventListener() {},
+		}),
 		configurable: true,
 	});
 	const themeSelect = document.getElementById("theme-select");
@@ -82,7 +90,7 @@ function renderSession(entries: unknown[], leafId: string): RenderedSession {
 	const context = vm.createContext({
 		window,
 		document,
-		marked: new Marked(),
+		ompMarkdown: { Marked },
 		hljs: {
 			getLanguage: () => false,
 			highlight: () => ({ value: "" }),
@@ -193,17 +201,145 @@ function renderedSidebarOrder({ document }: RenderedSession): string[] {
 }
 
 describe("HTML export assistant content ordering", () => {
+	test("renders Python execution output and retains legacy JavaScript execution navigation", () => {
+		const rendered = renderSession(
+			[
+				{
+					type: "message",
+					id: "python",
+					parentId: null,
+					timestamp: "2026-01-01T00:00:01.000Z",
+					message: {
+						role: "pythonExecution",
+						code: "print('<result>')",
+						output: "<result>",
+						exitCode: 0,
+						timestamp: 1,
+					},
+				},
+				{
+					type: "message",
+					id: "legacy",
+					parentId: "python",
+					timestamp: "2026-01-01T00:00:02.000Z",
+					message: {
+						role: "jsExecution",
+						code: "throw Error('legacy')",
+						output: "legacy failure",
+						exitCode: 1,
+						timestamp: 2,
+					},
+				},
+				{
+					type: "message",
+					id: "answer",
+					parentId: "legacy",
+					timestamp: "2026-01-01T00:00:03.000Z",
+					message: {
+						role: "assistant",
+						content: [{ type: "text", text: "done" }],
+						stopReason: "stop",
+						timestamp: 3,
+					},
+				},
+			],
+			"answer",
+		);
+		expect(rendered.document.querySelector(".tool-execution.success .tool-output")?.textContent).toContain(
+			"<result>",
+		);
+		expect(rendered.document.querySelector(".tool-output result")).toBeNull();
+		expect(rendered.document.querySelector(".tool-execution.error")?.textContent).toContain("(exit 1)");
+		expect(renderedSidebarOrder(rendered)).toEqual([
+			"[python]: print('<result>')",
+			"[js]: throw Error('legacy')",
+			"assistant: done",
+		]);
+	});
+
+	test("switches nested transcripts without leaking entries or cached cards with the same IDs", () => {
+		const transcript = (text: string): SessionEntry[] => [
+			{
+				type: "message",
+				id: "shared-entry",
+				parentId: null,
+				timestamp: "2026-01-01T00:00:01.000Z",
+				message: { role: "user", content: text, timestamp: 1 },
+			},
+			{
+				type: "message",
+				id: "answer",
+				parentId: "shared-entry",
+				timestamp: "2026-01-01T00:00:02.000Z",
+				message: {
+					role: "assistant",
+					content: [{ type: "text", text: `${text} response` }],
+					model: "test-model",
+					provider: "test",
+					api: "openai-completions",
+					timestamp: 2,
+					stopReason: "stop",
+					usage: {
+						input: 1,
+						output: 1,
+						cacheRead: 0,
+						cacheWrite: 0,
+						totalTokens: 2,
+						cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+					},
+				},
+			},
+		];
+		const sub = (key: string, parent: string | null): SubSession => ({
+			agentId: key.split("/").at(-1)!,
+			parent,
+			header: null,
+			entries: transcript(key),
+			leafId: "answer",
+			aborted: false,
+			malformedRecords: 0,
+		});
+		const rendered = renderSession(transcript("Main"), "answer", {
+			Alpha: sub("Alpha", null),
+			"Alpha/Child": sub("Alpha/Child", "Alpha"),
+		});
+		for (const [key, text] of [
+			["Alpha", "Alpha"],
+			["Alpha/Child", "Alpha/Child"],
+			["", "Main"],
+		]) {
+			rendered.document.querySelector(`.session-link[data-session="${key}"]`)!.click();
+			expect(rendered.document.querySelector("#messages .assistant-text")?.textContent?.trim()).toBe(
+				`${text} response`,
+			);
+			expect(renderedSidebarOrder(rendered)).toEqual([`user: ${text}`, `assistant: ${text} response`]);
+			expect(
+				rendered.document.querySelector('.session-link[aria-current="page"]')?.getAttribute("data-session"),
+			).toBe(key);
+			rendered.document.querySelectorAll("#tree-container .tree-node")[0]!.click();
+			expect(rendered.lastScrolledId()).toBe("entry-shared-entry");
+		}
+	});
+
 	test("preserves interleaved text, tool calls, thinking, images, and the terminal stop reason", () => {
 		const rendered = renderAssistant(
 			[
 				{ type: "text", text: "before-read" },
-				{ type: "toolCall", id: "tool-1", name: "read", arguments: { path: "README.md" } },
+				{
+					type: "toolCall",
+					id: "tool-1",
+					name: "read",
+					arguments: { path: "README.md" },
+				},
 				{ type: "text", text: "between-tools" },
 				{
 					type: "toolCall",
 					id: "tool-2",
 					name: "task",
-					arguments: { agent: "ExploreCompletion", prompt: "Inspect completion handling" },
+					arguments: {
+						agent: "ExploreCompletion",
+						prompt: "Inspect completion handling",
+					},
 				},
 				{ type: "thinking", thinking: "thinking-after-task" },
 				{ type: "image", mimeType: "image/png", data: "aa" },
@@ -227,26 +363,43 @@ describe("HTML export assistant content ordering", () => {
 	test("keeps the text-tool-text-tool-text ordering invariant", () => {
 		const rendered = renderAssistant([
 			{ type: "text", text: "first" },
-			{ type: "toolCall", id: "tool-1", name: "read", arguments: { path: "one.ts" } },
+			{
+				type: "toolCall",
+				id: "tool-1",
+				name: "read",
+				arguments: { path: "one.ts" },
+			},
 			{ type: "text", text: "middle" },
-			{ type: "toolCall", id: "tool-2", name: "grep", arguments: { pattern: "needle" } },
+			{
+				type: "toolCall",
+				id: "tool-2",
+				name: "grep",
+				arguments: { pattern: "needle" },
+			},
 			{ type: "text", text: "last" },
 		]);
 
 		expect(renderedBlockOrder(rendered)).toEqual(["first", "read", "middle", "grep", "last"]);
 	});
-
 	test("projects interleaved assistant blocks into pi-style sidebar timeline rows", () => {
 		const rendered = renderAssistant(
 			[
 				{ type: "text", text: "before-read" },
-				{ type: "toolCall", id: "tool-1", name: "read", arguments: { path: "README.md" } },
+				{
+					type: "toolCall",
+					id: "tool-1",
+					name: "read",
+					arguments: { path: "README.md" },
+				},
 				{ type: "text", text: "between-tools" },
 				{
 					type: "toolCall",
 					id: "tool-2",
 					name: "task",
-					arguments: { agent: "ExploreCompletion", prompt: "Inspect completion handling" },
+					arguments: {
+						agent: "ExploreCompletion",
+						prompt: "Inspect completion handling",
+					},
 				},
 				{ type: "thinking", thinking: "thinking-after-task" },
 				{ type: "image", mimeType: "image/png", data: "aa" },
@@ -290,7 +443,12 @@ describe("HTML export assistant content ordering", () => {
 		const rendered = renderAssistant(
 			[
 				{ type: "text", text: "first\nline" },
-				{ type: "toolCall", id: "tool-1", name: "read", arguments: { path: "one.ts" } },
+				{
+					type: "toolCall",
+					id: "tool-1",
+					name: "read",
+					arguments: { path: "one.ts" },
+				},
 				{ type: "text", text: "after" },
 			],
 			"stop",
@@ -304,7 +462,12 @@ describe("HTML export assistant content ordering", () => {
 		const rendered = renderAssistant(
 			[
 				{ type: "text", text: "before-tool" },
-				{ type: "toolCall", id: "tool-1", name: "read", arguments: { path: "one.ts" } },
+				{
+					type: "toolCall",
+					id: "tool-1",
+					name: "read",
+					arguments: { path: "one.ts" },
+				},
 			],
 			"stop",
 			true,
@@ -322,7 +485,12 @@ describe("HTML export assistant content ordering", () => {
 	test("keeps a pending tool call in the projected sidebar without a tool result", () => {
 		const rendered = renderAssistant([
 			{ type: "text", text: "before-tool" },
-			{ type: "toolCall", id: "tool-1", name: "read", arguments: { path: "pending.ts" } },
+			{
+				type: "toolCall",
+				id: "tool-1",
+				name: "read",
+				arguments: { path: "pending.ts" },
+			},
 			{ type: "text", text: "after-tool" },
 		]);
 
@@ -342,7 +510,12 @@ describe("HTML export assistant content ordering", () => {
 		const rendered = renderAssistant(
 			[
 				{ type: "text", text: "before-tool" },
-				{ type: "toolCall", id: "tool-1", name: "read", arguments: { path: "hidden.ts" } },
+				{
+					type: "toolCall",
+					id: "tool-1",
+					name: "read",
+					arguments: { path: "hidden.ts" },
+				},
 				{ type: "text", text: "after-tool" },
 			],
 			"stop",
@@ -361,10 +534,20 @@ describe("HTML export assistant content ordering", () => {
 		const rendered = renderAssistant(
 			[
 				{ type: "text", text: "before-read" },
-				{ type: "toolCall", id: "tool-1", name: "read", arguments: { path: "one.ts" } },
+				{
+					type: "toolCall",
+					id: "tool-1",
+					name: "read",
+					arguments: { path: "one.ts" },
+				},
 				{ type: "text", text: "after-read" },
-				{ type: "toolCall", id: "tool-2", name: "hub", arguments: { op: "jobs" } },
-				{ type: "text", text: "after-hub" },
+				{
+					type: "toolCall",
+					id: "tool-2",
+					name: "custom_tool",
+					arguments: { op: "jobs" },
+				},
+				{ type: "text", text: "after-custom" },
 			],
 			"stop",
 			true,
@@ -377,8 +560,8 @@ describe("HTML export assistant content ordering", () => {
 			"assistant: before-read",
 			"[read: one.ts]",
 			"assistant: after-read",
-			'[hub: {"op":"jobs"}]',
-			"assistant: after-hub",
+			'[custom_tool: {"op":"jobs"}]',
+			"assistant: after-custom",
 		]);
 		expect(
 			Array.from(rendered.document.querySelectorAll("#tree-container .tree-node")).map(row =>

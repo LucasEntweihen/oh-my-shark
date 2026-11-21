@@ -115,7 +115,7 @@ export async function writeAtomic(filePath: string, content: string): Promise<vo
 
 	try {
 		await fs.rename(tmpPath, filePath);
-	} catch (error: unknown) {
+	} catch {
 		// Windows EBUSY / locks resilience: rename-to-old fallback
 		const oldPath = `${filePath}.old.${Date.now()}`;
 		try {

@@ -5,7 +5,7 @@ import {
 	isXlr8BasicMode,
 	XLR8_NOTICE,
 } from "@oh-my-pi/pi-coding-agent/modes/xlr8";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
 
 beforeAll(() => {
 	initTheme();

@@ -23,7 +23,7 @@ import {
 import Update from "@oh-my-pi/pi-coding-agent/commands/update";
 import { removeWithRetries } from "@oh-my-pi/pi-utils";
 import type { CliConfig } from "@oh-my-pi/pi-utils/cli";
-import { getThemeByName, setThemeInstance } from "../src/modes/theme/theme";
+import { getThemeByName, setThemeInstance } from "@oh-my-pi/pi-tui/theme";
 
 const tempDirs: string[] = [];
 
@@ -47,7 +47,7 @@ const TEST_CONFIG: CliConfig = {
 describe("update command plugin dispatch", () => {
 	it("routes -l to plugin upgrade instead of the app updater", async () => {
 		const pluginSpy = spyOn(pluginCli, "runPluginCommand").mockResolvedValue(undefined);
-		const updateSpy = spyOn(updateCli, "runUpdateCommand").mockResolvedValue(undefined);
+		const updateSpy = spyOn(updateCli, "runUpdateCommand").mockResolvedValue({ kind: "current" });
 
 		const command = new Update(["-l"], TEST_CONFIG);
 		await command.run();
@@ -58,7 +58,7 @@ describe("update command plugin dispatch", () => {
 
 	it("keeps normal update flags on the app updater path", async () => {
 		const pluginSpy = spyOn(pluginCli, "runPluginCommand").mockResolvedValue(undefined);
-		const updateSpy = spyOn(updateCli, "runUpdateCommand").mockResolvedValue(undefined);
+		const updateSpy = spyOn(updateCli, "runUpdateCommand").mockResolvedValue({ kind: "current" });
 
 		const command = new Update(["--check", "--force"], TEST_CONFIG);
 		await command.run();
@@ -153,13 +153,12 @@ describe("parseProductTag", () => {
 });
 
 describe("getLatestRelease fork resolution", () => {
-	const METADATA_URL = "https://api.github.com/repos/LucasEntweihen/oh-my-shark/releases";
+	const METADATA_URL = "https://api.github.com/repos/LucasEntweihen/oh-my-shark/releases/latest";
 
 	function releaseFetch(payload: Record<string, unknown> | unknown[], seen: string[]) {
 		return async (input: string | URL | Request): Promise<Response> => {
 			seen.push(String(input));
-			const body = Array.isArray(payload) ? payload : [payload];
-			return Response.json(body);
+			return Response.json(payload);
 		};
 	}
 
@@ -191,7 +190,7 @@ describe("getLatestRelease fork resolution", () => {
 		const fetchImpl = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
 			seen.push(String(input));
 			authHeaders.push(new Headers(init?.headers).get("Authorization"));
-			return Response.json([{ tag_name: "ohms-v0.0.3", draft: false, prerelease: false }]);
+			return Response.json({ tag_name: "ohms-v0.0.3", draft: false, prerelease: false });
 		};
 
 		await getLatestRelease({ fetchImpl, githubToken: "test-token" });
@@ -203,17 +202,17 @@ describe("getLatestRelease fork resolution", () => {
 	it("rejects tags that are not ohms-v<semver> releases", async () => {
 		const seen: string[] = [];
 		await expect(
-			getLatestRelease({ fetchImpl: releaseFetch([{ tag_name: "v18.1.8", draft: false, prerelease: false }], seen) }),
-		).rejects.toThrow("No stable ohms-v<semver> release found");
+			getLatestRelease({ fetchImpl: releaseFetch({ tag_name: "v18.1.8", draft: false, prerelease: false }, seen) }),
+		).rejects.toThrow("is not an ohms-v<semver> release");
 	});
 
 	it("refuses a prerelease on the stable channel", async () => {
 		const seen: string[] = [];
 		await expect(
 			getLatestRelease({
-				fetchImpl: releaseFetch([{ tag_name: "ohms-v0.0.4", draft: false, prerelease: true }], seen),
+				fetchImpl: releaseFetch({ tag_name: "ohms-v0.0.4", draft: false, prerelease: true }, seen),
 			}),
-		).rejects.toThrow("No stable ohms-v<semver> release found");
+		).rejects.toThrow("prerelease");
 	});
 
 	it("reports that no canary channel exists without any network request", async () => {
@@ -879,7 +878,7 @@ describe("update-cli script-shim takeover", () => {
 					fetchImpl: makeFetch(exe),
 					githubToken: "test-token",
 				}),
-			).rejects.toThrow(/still reports 0\.0\.0 \(expected 0\.0\.3\); restored previous ohms launcher/);
+			).rejects.toThrow(/still reports 0\.0\.0 \(expected 0\.0\.3\); restored previous (?:omsk|ohms) launcher/);
 
 			expect(await Bun.file(path.join(dir, "ohms.exe")).exists()).toBe(false);
 			for (const name in shims) {
@@ -979,7 +978,7 @@ describe("update-cli concurrent binary updates", () => {
 		const loadedTheme = await getThemeByName("dark");
 		if (!loadedTheme) throw new Error("theme unavailable");
 		setThemeInstance(loadedTheme);
-		vi.spyOn(console, "log").mockImplementation(() => {});
+		vi.spyOn(console, "log").mockImplementation(() => { });
 		const dir = await makeTempDir();
 		const targetPath = path.join(dir, "omp");
 		await Bun.write(targetPath, "old binary");

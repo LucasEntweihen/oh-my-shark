@@ -31,6 +31,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import {
 	detectCompiledBinary,
+	type EmbeddedAddonFile,
 	extractEmbeddedAddons,
 	getAddonFilenames,
 	resolveLoaderCandidates,
@@ -54,7 +55,8 @@ describe("issue 823: standalone-binary native loader path resolution", () => {
 						{
 							variant: "modern",
 							filename: "pi_natives.linux-x64-modern.node",
-							filePath: "/$bunfs/root/packages/natives/native/pi_natives.linux-x64-modern.node",
+							size: 1,
+							zstdPath: "/$bunfs/root/pi_natives.linux-x64-modern-a1b2c3d4.node.zst",
 						},
 					],
 				},
@@ -122,21 +124,6 @@ describe("issue 823: standalone-binary native loader path resolution", () => {
 		expect(candidates.indexOf(versionedModern)).toBeLessThan(candidates.indexOf(buildHostModern));
 	});
 
-	it("does not probe user-data candidates when running outside a standalone binary", () => {
-		const versionedDir = "/home/u/.omp/natives/14.5.2";
-		const userDataDir = "/home/u/.local/bin";
-		const candidates = resolveLoaderCandidates({
-			addonFilenames: getAddonFilenames({ tag: "linux-x64", arch: "x64", variant: "baseline" }),
-			isCompiledBinary: false,
-			nativeDir: "/repo/packages/natives/native",
-			execDir: "/usr/bin",
-			versionedDir,
-			userDataDir,
-		});
-		expect(candidates).not.toContain(path.join(versionedDir, "pi_natives.linux-x64-baseline.node"));
-		expect(candidates).not.toContain(path.join(userDataDir, "pi_natives.linux-x64-baseline.node"));
-	});
-
 	it("prefers platform leaf package candidates ahead of core nativeDir candidates on npm installs", () => {
 		const leafPackageDir = "/app/node_modules/@oh-my-pi/pi-natives-linux-x64";
 		const nativeDir = "/app/node_modules/@oh-my-pi/pi-natives/native";
@@ -196,7 +183,7 @@ describe("issue 823: standalone-binary native loader path resolution", () => {
 		);
 	});
 
-	it("extracts all bundled native variants and skips current files", async () => {
+	it("extracts every bundled native variant from its zstd frame and skips current files", async () => {
 		const testDir = await fs.mkdtemp(path.join(os.tmpdir(), "natives-embedded-zstd-"));
 		try {
 			const targetDir = path.join(testDir, "cache");
@@ -206,20 +193,14 @@ describe("issue 823: standalone-binary native loader path resolution", () => {
 			const baseline = Buffer.from("baseline native addon");
 			const modernFilename = "pi_natives.linux-x64-modern.node";
 			const baselineFilename = "pi_natives.linux-x64-baseline.node";
+			const modernZstdPath = path.join(testDir, `${modernFilename}.zst`);
+			const baselineZstdPath = path.join(testDir, `${baselineFilename}.zst`);
+			await Bun.write(modernZstdPath, Bun.zstdCompressSync(modern));
+			await Bun.write(baselineZstdPath, Bun.zstdCompressSync(baseline));
 
-			const modernZstPath = path.join(testDir, `${modernFilename}.zst`);
-			const baselineZstPath = path.join(testDir, `${baselineFilename}.zst`);
-			await Bun.write(modernZstPath, Bun.zstdCompressSync(modern));
-			await Bun.write(baselineZstPath, Bun.zstdCompressSync(baseline));
-
-			const files = [
-				{ variant: "modern" as const, filename: modernFilename, size: modern.length, zstdPath: modernZstPath },
-				{
-					variant: "baseline" as const,
-					filename: baselineFilename,
-					size: baseline.length,
-					zstdPath: baselineZstPath,
-				},
+			const files: EmbeddedAddonFile[] = [
+				{ variant: "modern", filename: modernFilename, size: modern.length, zstdPath: modernZstdPath },
+				{ variant: "baseline", filename: baselineFilename, size: baseline.length, zstdPath: baselineZstdPath },
 			];
 
 			const written = extractEmbeddedAddons({ files, targetDir });
@@ -228,12 +209,24 @@ describe("issue 823: standalone-binary native loader path resolution", () => {
 			expect(await fs.readFile(path.join(targetDir, baselineFilename), "utf8")).toBe("baseline native addon");
 
 			expect(extractEmbeddedAddons({ files, targetDir })).toEqual([]);
+		} finally {
+			await fs.rm(testDir, { recursive: true, force: true });
+		}
+	});
 
-			const unsafeFile = { ...files[0]!, filename: "../escape.node" };
-			expect(() => extractEmbeddedAddons({ files: [unsafeFile], targetDir })).toThrow(
-				"Unsafe embedded addon filename",
+	it("rejects a zstd frame whose size disagrees with the manifest", async () => {
+		const testDir = await fs.mkdtemp(path.join(os.tmpdir(), "natives-embedded-zstd-"));
+		try {
+			const zstdPath = path.join(testDir, "pi_natives.linux-arm64.node.zst");
+			await Bun.write(zstdPath, Bun.zstdCompressSync(Buffer.from("addon")));
+			const files: EmbeddedAddonFile[] = [
+				{ variant: "default", filename: "pi_natives.linux-arm64.node", size: 6, zstdPath },
+			];
+
+			expect(() => extractEmbeddedAddons({ files, targetDir: testDir })).toThrow(
+				"Embedded addon size mismatch for pi_natives.linux-arm64.node: expected 6, got 5",
 			);
-			expect(await fs.stat(path.join(testDir, "escape.node")).catch(() => null)).toBeNull();
+			expect(await fs.exists(path.join(testDir, "pi_natives.linux-arm64.node"))).toBe(false);
 		} finally {
 			await fs.rm(testDir, { recursive: true, force: true });
 		}

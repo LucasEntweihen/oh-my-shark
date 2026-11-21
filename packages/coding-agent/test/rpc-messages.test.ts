@@ -1,7 +1,13 @@
 import { describe, expect, it } from "bun:test";
 import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
 import { encodeRpcFrame, MAX_RPC_FRAME_BYTES } from "../src/modes/rpc/rpc-frame";
-import { pageRpcMessages, type RpcMessageSnapshot } from "../src/modes/rpc/rpc-messages";
+import {
+	attachRpcMessageEntryIds,
+	attachRpcTranscriptEntryIds,
+	pageRpcMessages,
+	type RpcMessageSnapshot,
+} from "../src/modes/rpc/rpc-messages";
+import type { SessionEntry } from "../src/session/session-entries";
 
 function message(index: number, bytes = 32 * 1024): AgentMessage {
 	return { role: "user", content: `${index}:${"x".repeat(bytes)}`, timestamp: index };
@@ -14,6 +20,59 @@ const snapshot: RpcMessageSnapshot = {
 };
 
 describe("RPC message pagination", () => {
+	it("exposes persisted tree ids for cloned and display-rewritten messages", () => {
+		const user = message(1, 8);
+		const assistant = {
+			role: "assistant",
+			content: [{ type: "text", text: "answer" }],
+			provider: "openai",
+			model: "gpt-test",
+			timestamp: 2,
+			stopReason: "stop",
+		} as AgentMessage;
+		const branch = [
+			{ type: "message", id: "user-entry", parentId: null, timestamp: "2026-01-01", message: user },
+			{
+				type: "message",
+				id: "assistant-entry",
+				parentId: "user-entry",
+				timestamp: "2026-01-01",
+				message: assistant,
+			},
+		] as SessionEntry[];
+		const displayAssistant = {
+			...assistant,
+			content: [{ type: "text", text: "deobfuscated answer" }],
+		} as AgentMessage;
+
+		expect(attachRpcMessageEntryIds([structuredClone(user), displayAssistant], branch)).toMatchObject([
+			{ role: "user", entryId: "user-entry" },
+			{ role: "assistant", entryId: "assistant-entry" },
+		]);
+	});
+
+	it("exposes persisted ids for tool results and exact transcript projections", () => {
+		const toolResult = {
+			role: "toolResult",
+			toolCallId: "call-1",
+			toolName: "read",
+			content: [{ type: "text", text: "done" }],
+			isError: false,
+			timestamp: 3,
+		} as AgentMessage;
+		const branch = [
+			{ type: "message", id: "tool-entry", parentId: null, timestamp: "2026-01-01", message: toolResult },
+		] as SessionEntry[];
+
+		expect(attachRpcMessageEntryIds([toolResult], branch)).toMatchObject([{ entryId: "tool-entry" }]);
+		expect(attachRpcMessageEntryIds([toolResult], [], () => "settled-entry")).toMatchObject([
+			{ entryId: "settled-entry" },
+		]);
+		expect(attachRpcTranscriptEntryIds(structuredClone([toolResult]), ["tool-entry"])).toMatchObject([
+			{ entryId: "tool-entry" },
+		]);
+	});
+
 	it("reconstructs a large history from v1-safe pages without loss or overlap", () => {
 		const messages = Array.from({ length: snapshot.messageCount }, (_, index) => message(index));
 		const reconstructed: AgentMessage[] = [];

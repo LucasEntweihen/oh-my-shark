@@ -1,9 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import {
-	DeepSeaCockpit,
-	stripAnsi,
-	visibleWidth,
-} from "./deep-sea-command";
+import { DeepSeaCockpit, stripAnsi } from "./deep-sea-command";
 
 describe("Subagent 2: Cards & Density Engine", () => {
 	it("TDD 2.1: should render Top Title Bar with task ID and active density highlighted", () => {

@@ -21,15 +21,19 @@ import * as os from "node:os";
 import * as path from "node:path";
 import type { AgentMessage, AgentState } from "@oh-my-pi/pi-agent-core";
 import type { AssistantMessage, ImageContent, TextContent } from "@oh-my-pi/pi-ai";
+import { dropToolCallReasoningDetail } from "@oh-my-pi/pi-ai/providers/openai-completions";
+import { dropReasoningDetailsEnvelopes } from "@oh-my-pi/pi-ai/utils/reasoning-source";
 import { $which, logger } from "@oh-my-pi/pi-utils";
 import { DEFAULT_SHARE_URL } from "@oh-my-pi/pi-wire";
 import { $ } from "bun";
 import { obfuscateToolArguments } from "../secrets/message-transform";
 import type { SecretObfuscator } from "../secrets/obfuscator";
+import { SecretValueSet } from "../secrets/placeholder";
 import { type SessionEntry, type SessionHeader, TITLE_CHANGE_ENTRY_TYPE } from "../session/session-entries";
 import type { SessionManager } from "../session/session-manager";
-import type { OutputMeta } from "../tools/output-meta";
-import { buildSessionData, type SessionData, type SubSession } from "./html";
+import type { OutputMeta } from "@oh-my-pi/pi-tui/tools/output-meta";
+import type { SubSession } from "../session/sub-sessions";
+import { buildSessionData, type SessionData } from "./html";
 
 export { DEFAULT_SHARE_URL };
 
@@ -62,6 +66,8 @@ export interface ShareSessionOptions {
 	 * authenticated `gh`) and falls back to the server.
 	 */
 	store?: ShareStore;
+	/** A confirmed GUI preview must not silently upload to a different store. */
+	confirmedPreview?: boolean;
 	/** Agent state for system prompt + tool descriptions in the snapshot. */
 	state?: AgentState;
 	/**
@@ -104,8 +110,8 @@ export function buildShareSnapshot(sm: SessionManager, options?: ShareSessionOpt
  * extension `details`/`data`, `mode_change.data`, structured output schemas)
  * are dropped so they cannot leak.
  */
-function collectShareRegexSecretValues(o: SecretObfuscator, data: SessionData): Set<string> {
-	const values = new Set<string>();
+function collectShareRegexSecretValues(o: SecretObfuscator, data: SessionData): SecretValueSet {
+	const values = new SecretValueSet();
 	const add = (value: string | undefined): void => {
 		if (value === undefined) return;
 		for (const secretValue of o.collectRegexSecretValuesForObfuscation(value)) {
@@ -136,6 +142,7 @@ function collectShareRegexSecretValues(o: SecretObfuscator, data: SessionData): 
 	const addOutputMeta = (meta: OutputMeta | undefined): void => {
 		if (!meta) return;
 		add(meta.source?.value);
+		add(meta.minimized?.filter);
 		if (!meta.diagnostics) return;
 		add(meta.diagnostics.summary);
 		for (const message of meta.diagnostics.messages) add(message);
@@ -205,7 +212,7 @@ function collectShareRegexSecretValues(o: SecretObfuscator, data: SessionData): 
 				addContent(entry.content);
 				return;
 			case "session_init":
-				add(entry.systemPrompt);
+				for (const block of [entry.systemPrompt].flat()) add(block);
 				add(entry.task);
 				return;
 			case "label":
@@ -255,6 +262,10 @@ function redactShareHeader(
 }
 
 function redactSessionDataForShare(o: SecretObfuscator, data: SessionData): SessionData {
+	return o.batch(() => redactSessionDataBatch(o, data));
+}
+
+function redactSessionDataBatch(o: SecretObfuscator, data: SessionData): SessionData {
 	const sharedRegexSecretValues = collectShareRegexSecretValues(o, data);
 	return {
 		...data,
@@ -321,9 +332,14 @@ function redactShareEntry(
 		case "session_init":
 			return {
 				...entry,
-				systemPrompt: o.obfuscate(entry.systemPrompt, sharedRegexSecretValues),
+				systemPrompt:
+					typeof entry.systemPrompt === "string"
+						? o.obfuscate(entry.systemPrompt, sharedRegexSecretValues)
+						: entry.systemPrompt.map(block => o.obfuscate(block, sharedRegexSecretValues)),
 				task: o.obfuscate(entry.task, sharedRegexSecretValues),
 				outputSchema: undefined,
+				// Revival-only state; its item ids can carry user text.
+				workPoolYieldItems: undefined,
 			};
 		case "label":
 			return {
@@ -356,7 +372,7 @@ function redactShareContent(
 	);
 }
 
-/** Redact freeform strings in tool output metadata (source path/URL, diagnostics); numeric truncation info is preserved. */
+/** Redact freeform strings in tool output metadata (source path/URL, diagnostics, minimizer filter); numeric truncation info is preserved. */
 function redactShareOutputMeta(
 	o: SecretObfuscator,
 	meta: OutputMeta | undefined,
@@ -374,6 +390,9 @@ function redactShareOutputMeta(
 					messages: meta.diagnostics.messages.map(message => o.obfuscate(message, sharedRegexSecretValues)),
 				}
 			: meta.diagnostics,
+		minimized: meta.minimized
+			? { ...meta.minimized, filter: o.obfuscate(meta.minimized.filter, sharedRegexSecretValues) }
+			: meta.minimized,
 	};
 }
 
@@ -406,8 +425,10 @@ function redactShareMessage(
 		case "assistant":
 			// Drop opaque provider-replay state (encrypted reasoning / native history) the viewer
 			// never reads and we cannot redact field-by-field: `providerPayload`, any
-			// `redactedThinking` blocks, and native Anthropic server-tool blocks
-			// (`server_tool_use` input / `web_search_tool_result` encrypted_content).
+			// `redactedThinking` blocks, native Anthropic server-tool blocks
+			// (`server_tool_use` input / `web_search_tool_result` encrypted_content),
+			// chat-completions `reasoning_details` envelopes, which hold the raw reasoning text,
+			// and the encrypted entries tool calls keep from them.
 			return {
 				...message,
 				providerPayload: undefined,
@@ -415,28 +436,35 @@ function redactShareMessage(
 					message.errorMessage === undefined
 						? undefined
 						: o.obfuscate(message.errorMessage, sharedRegexSecretValues),
-				content: message.content.flatMap((block): AssistantMessage["content"] => {
-					if (block.type === "redactedThinking" || block.type === "anthropicServerTool") return [];
-					if (block.type === "text") return [{ ...block, text: o.obfuscate(block.text, sharedRegexSecretValues) }];
-					if (block.type === "thinking") {
-						return [{ ...block, thinking: o.obfuscate(block.thinking, sharedRegexSecretValues) }];
-					}
-					if (block.type === "toolCall") {
-						return [
-							{
-								...block,
-								arguments: obfuscateToolArguments(o, block.arguments, sharedRegexSecretValues),
-								intent:
-									block.intent === undefined ? undefined : o.obfuscate(block.intent, sharedRegexSecretValues),
-								rawBlock:
-									block.rawBlock === undefined
-										? undefined
-										: o.obfuscate(block.rawBlock, sharedRegexSecretValues),
-							},
-						];
-					}
-					return [block];
-				}),
+				content: dropReasoningDetailsEnvelopes(
+					message.content.flatMap((block): AssistantMessage["content"] => {
+						if (block.type === "redactedThinking" || block.type === "anthropicServerTool") return [];
+						if (block.type === "text") {
+							return [{ ...block, text: o.obfuscate(block.text, sharedRegexSecretValues) }];
+						}
+						if (block.type === "thinking") {
+							return [{ ...block, thinking: o.obfuscate(block.thinking, sharedRegexSecretValues) }];
+						}
+						if (block.type === "toolCall") {
+							return [
+								{
+									...block,
+									arguments: obfuscateToolArguments(o, block.arguments, sharedRegexSecretValues),
+									thoughtSignature: dropToolCallReasoningDetail(block.thoughtSignature),
+									intent:
+										block.intent === undefined
+											? undefined
+											: o.obfuscate(block.intent, sharedRegexSecretValues),
+									rawBlock:
+										block.rawBlock === undefined
+											? undefined
+											: o.obfuscate(block.rawBlock, sharedRegexSecretValues),
+								},
+							];
+						}
+						return [block];
+					}),
+				),
 			};
 		case "bashExecution":
 			return {
@@ -484,7 +512,13 @@ function redactShareMessage(
 
 /** Share the session; uploads to the share server unless `options.store` is `"gist"`. */
 export async function shareSession(sm: SessionManager, options?: ShareSessionOptions): Promise<ShareSessionResult> {
-	const data = buildShareSnapshot(sm, options);
+	return shareSnapshot(buildShareSnapshot(sm, options), options);
+}
+
+/** Upload a previously inspected snapshot through the same redaction/sealing pipeline. */
+export async function shareSnapshot(data: SessionData, options?: ShareSessionOptions): Promise<ShareSessionResult> {
+	// Detach before the first await: live entries may keep streaming during sealing.
+	data = structuredClone(data);
 	const keyBytes = new Uint8Array(SHARE_KEY_BYTES);
 	crypto.getRandomValues(keyBytes);
 	const key = await crypto.subtle.importKey("raw", keyBytes, "AES-GCM", false, ["encrypt"]);
@@ -503,6 +537,8 @@ export async function shareSession(sm: SessionManager, options?: ShareSessionOpt
 				sealedBytes: forGist.sealed.byteLength,
 			};
 		}
+		if (options?.confirmedPreview)
+			throw new Error("GitHub gist upload failed. No upload was sent to the share server.");
 		// gh unusable or gist creation failed — fall back to the share server.
 		return shareViaServer(key, data, base, keyText, forGist);
 	}
@@ -521,31 +557,38 @@ interface SealedSession {
 	truncated: boolean;
 }
 
-/** Seal `data`, trimming content until the sealed blob fits `maxBytes`. Exported for tests. */
-export async function sealToFit(key: CryptoKey, data: SessionData, maxBytes: number): Promise<SealedSession> {
-	let sealed = await sealSessionData(key, data);
-	if (sealed.byteLength <= maxBytes) return { sealed, truncated: false };
+/** Fit the exact preview before confirmation. AES-GCM adds a 16-byte tag and our 12-byte IV. */
+export function fitShareSnapshot(
+	data: SessionData,
+	store: ShareStore = "blob",
+): { data: SessionData; truncated: boolean } {
+	return fitSessionData(data, store === "gist" ? GIST_MAX_SEALED_BYTES : SERVER_MAX_SEALED_BYTES);
+}
 
-	// Work on a deep copy; the caller may re-fit the original at another budget.
+function fitSessionData(data: SessionData, maxBytes: number): { data: SessionData; truncated: boolean } {
+	const sealedSize = (value: SessionData) =>
+		Bun.gzipSync(new TextEncoder().encode(JSON.stringify(value))).byteLength + IV_LENGTH + 16;
+	if (sealedSize(data) <= maxBytes) return { data, truncated: false };
 	const working = structuredClone(data);
 	stripImagePayloads(working);
-	sealed = await sealSessionData(key, working);
-	if (sealed.byteLength <= maxBytes) return { sealed, truncated: true };
-
+	if (sealedSize(working) <= maxBytes) return { data: working, truncated: true };
 	for (const cap of TEXT_CAPS) {
 		capLongStrings(working, cap);
-		sealed = await sealSessionData(key, working);
-		if (sealed.byteLength <= maxBytes) return { sealed, truncated: true };
+		if (sealedSize(working) <= maxBytes) return { data: working, truncated: true };
 	}
-
-	// Last resort: drop oldest entries (orphaned children render as roots).
 	while (working.entries.length > 4) {
 		working.entries = working.entries.slice(Math.ceil(working.entries.length / 2));
-		sealed = await sealSessionData(key, working);
-		if (sealed.byteLength <= maxBytes) return { sealed, truncated: true };
+		if (sealedSize(working) <= maxBytes) return { data: working, truncated: true };
 	}
+	throw new Error(
+		`Session too large to share: ${sealedSize(working)} bytes sealed exceeds the ${maxBytes} byte limit`,
+	);
+}
 
-	throw new Error(`Session too large to share: ${sealed.byteLength} bytes sealed exceeds the ${maxBytes} byte limit`);
+/** Seal the same fitted data used by the local preview. Exported for tests. */
+export async function sealToFit(key: CryptoKey, data: SessionData, maxBytes: number): Promise<SealedSession> {
+	const fitted = fitSessionData(data, maxBytes);
+	return { sealed: await sealSessionData(key, fitted.data), truncated: fitted.truncated };
 }
 
 /** `[12B IV][AES-256-GCM(gzip(JSON))]` — decrypted and gunzipped by share-loader.js. */

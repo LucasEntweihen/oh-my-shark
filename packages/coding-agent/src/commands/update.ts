@@ -2,6 +2,8 @@
  * Check for and install updates.
  */
 
+import chalk from "@oh-my-pi/pi-utils/chalk";
+import { APP_NAME } from "@oh-my-pi/pi-utils/dirs";
 import { Command, Flags } from "@oh-my-pi/pi-utils/cli";
 import { updateHelp as commandHelp } from "../cli/command-help";
 import { CliUsageError } from "../cli/usage-error";
@@ -16,12 +18,7 @@ export default class Update extends Command {
 		stable: Flags.boolean({ description: "Switch back to the stable channel", default: false }),
 	};
 
-	static examples = [
-		"omsk update",
-		"omsk update --check",
-		"omsk update --canary",
-		"# If GitHub rate-limits release metadata, set GITHUB_TOKEN or GH_TOKEN\n  GITHUB_TOKEN=... omsk update",
-	];
+	static examples = [`${APP_NAME} update`, `${APP_NAME} update --check`, `${APP_NAME} update --canary`];
 
 	async run(): Promise<void> {
 		const { flags } = await this.parse(Update);
@@ -31,14 +28,19 @@ export default class Update extends Command {
 		if (flags.canary && flags.stable) throw new CliUsageError("--canary and --stable are mutually exclusive");
 		if (flags.plugins) {
 			const { runPluginCommand } = await import("../cli/plugin-cli");
-			await runPluginCommand({ action: "upgrade", args: [], flags: {} });
+			await runPluginCommand({ action: "upgrade", args: [], flags: flags.check ? { dryRun: true } : {} });
 		} else {
-			const { runUpdateCommand } = await import("../cli/update-cli");
-			await runUpdateCommand({
-				force: flags.force,
-				check: flags.check,
-				channel: flags.canary ? "canary" : flags.stable ? "stable" : undefined,
-			});
+			try {
+				const { runUpdateCommand } = await import("../cli/update-cli");
+				await runUpdateCommand({
+					force: flags.force,
+					check: flags.check,
+					channel: flags.canary ? "canary" : flags.stable ? "stable" : undefined,
+				});
+			} catch (err) {
+				console.error(chalk.red(err instanceof Error ? err.message : String(err)));
+				process.exit(1);
+			}
 		}
 	}
 }

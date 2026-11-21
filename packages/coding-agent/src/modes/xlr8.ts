@@ -1,6 +1,6 @@
+import { createGradientHighlighter, type KeywordHighlighter } from "@oh-my-pi/pi-tui/prompt/gradient-highlight";
+import { keywordInProse } from "@oh-my-pi/pi-tui/prompt/markdown-prose";
 import xlr8Notice from "../prompts/system/xlr8-notice.md" with { type: "text" };
-import { createGradientHighlighter, type KeywordHighlighter } from "./gradient-highlight";
-import { keywordInProse } from "./markdown-prose";
 
 /**
  * "xlr8" and "/xlr8" keyword and command support for hyperspeed acceleration.
@@ -11,7 +11,7 @@ import { keywordInProse } from "./markdown-prose";
  * the thought flow, and supports disconnecting from all agents to operate in basic mode.
  */
 
-const XLR8_PROBE = /xlr8/;
+const XLR8_PROBE = "xlr8";
 const XLR8_HIGHLIGHT =
 	/(?<![\p{L}\p{N}_./\\-])(?<!::)(?:[/|\\])?xlr8(?![\p{L}\p{N}_/\\-])(?!\.[\p{L}\p{N}_-])(?!\()/gu;
 const XLR8_WORD =
@@ -37,5 +37,7 @@ export const highlightXlr8: KeywordHighlighter = createGradientHighlighter({
 	probe: XLR8_PROBE,
 	highlight: XLR8_HIGHLIGHT,
 	stops: 16,
-	colors: ["#9E9E9E", "#2196F3", "#00E676", "#FFFFFF"],
+	hue: (t: number) => 150 + t * 70,
+	saturation: 70,
+	lightness: (t: number) => 62 + t * 25,
 });

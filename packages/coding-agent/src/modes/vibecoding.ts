@@ -1,5 +1,5 @@
-import { createGradientHighlighter, type KeywordHighlighter } from "./gradient-highlight";
-import { keywordInProse } from "./markdown-prose";
+import { createGradientHighlighter, type KeywordHighlighter } from "@oh-my-pi/pi-tui/prompt/gradient-highlight";
+import { keywordInProse } from "@oh-my-pi/pi-tui/prompt/markdown-prose";
 
 /**
  * "vibe", "/vibe", "vibecoding", and "/vibecoding" keyword support.
@@ -8,7 +8,7 @@ import { keywordInProse } from "./markdown-prose";
  * paints it with a vibrant sunset amber→violet gradient ({@link highlightVibecoding}).
  */
 
-const VIBE_PROBE = /vibe/;
+const VIBE_PROBE = "vibe";
 // Match standalone /vibe, \vibe, vibe, vibecoding, or /vibecoding with proper word boundaries
 const VIBE_HIGHLIGHT =
 	/(?<![\p{L}\p{N}_./\\-])(?<!::)(?:[/|\\])?(?:vibecoding|vibe)(?![\p{L}\p{N}_/\\-])(?!\.[\p{L}\p{N}_-])(?!\()/gu;
@@ -27,7 +27,7 @@ export const highlightVibecoding: KeywordHighlighter = createGradientHighlighter
 	probe: VIBE_PROBE,
 	highlight: VIBE_HIGHLIGHT,
 	stops: 14,
-	hue: t => 38 + t * 237,
+	hue: (t: number) => 38 + t * 237,
 	saturation: 92,
-	lightness: 60,
+	lightness: () => 60,
 });

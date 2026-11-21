@@ -2,7 +2,24 @@ telemetry = false
 
 [install]
 minimumReleaseAge = 259200 # 3 days in seconds
-minimumReleaseAgeExcludes = ["@types/bun", "bun-types", "kitty-vt-wasm", "@stencil-hq/vibemon"]
+minimumReleaseAgeExcludes = [
+  "@types/bun",
+  "bun-types",
+  "kitty-vt-wasm",
+  "@stencil-hq/vibemon",
+  "@oh-my-pi/pi-coding-agent",
+  "@oh-my-pi/pi-ai",
+  "@oh-my-pi/pi-agent-core",
+  "@oh-my-pi/pi-tui",
+  "@oh-my-pi/pi-utils",
+  "@oh-my-pi/pi-natives",
+  "@oh-my-pi/pi-catalog",
+  "@oh-my-pi/pi-mnemopi",
+  "@oh-my-pi/pi-wire",
+  "@oh-my-pi/omptype",
+  "@oh-my-pi/omp-stats",
+  "@oh-my-pi/snapcompact",
+]
 linker = "hoisted"
 exact = true
 saveTextLockfile = true

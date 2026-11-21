@@ -1,7 +1,19 @@
 import { describe, expect, it, vi } from "bun:test";
+import * as path from "node:path";
+import { isRecord, readJsonl, TempDir } from "@oh-my-pi/pi-utils";
+import type {
+	ExtensionAskDialogQuestion,
+	ExtensionUIDialogOptions,
+} from "@oh-my-pi/pi-coding-agent/extensibility/extensions";
+import { MAX_RPC_FRAME_BYTES } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-frame";
 import {
 	type PendingExtensionRequest,
+	reportDroppedPrompt,
+	type RpcExtensionUIResponse,
+	requestRpcAskDialog,
 	requestRpcDialog,
+	requestRpcFormDialog,
+	requestRpcInput,
 	requestRpcSelect,
 } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-mode";
 
@@ -14,13 +26,411 @@ function requireRequest(frame: object | undefined): { id: string } {
 	return { id };
 }
 
-function resolveSelection(pendingRequests: Map<string, PendingExtensionRequest>, id: string, value: string): void {
+function respond(pendingRequests: Map<string, PendingExtensionRequest>, id: string, payload: object): void {
 	const request = pendingRequests.get(id);
 	if (!request) throw new Error(`Expected pending RPC dialog request ${id}`);
-	request.resolve({ type: "extension_ui_response", id, value });
+	request.resolve({ type: "extension_ui_response", id, ...payload } as RpcExtensionUIResponse);
 }
 
+async function startStartupDialogFixture(temp: TempDir): Promise<Bun.Subprocess<"pipe", "pipe", "pipe">> {
+	const extensionPath = temp.join("startup.mjs");
+	await Bun.write(
+		extensionPath,
+		`
+export default function(pi) {
+  globalThis.fetch = async () => { throw new Error("Offline startup fixture refuses network"); };
+  pi.on("session_start", async (_event, ctx) => {
+    try {
+      if (await ctx.ui.confirm("Startup confirmation", "Continue initialization?")) {
+        const name = await ctx.ui.input("Startup name");
+        await pi.setSessionName(name);
+      }
+    } catch (error) {
+      // Even a fresh dialog after disconnect must fail rather than pausing
+      // the extension's timeout forever.
+      await ctx.ui.select("Disconnected startup", ["Retry"]);
+      throw error;
+    }
+  });
+}
+`,
+	);
+	return Bun.spawn(
+		[
+			process.execPath,
+			path.join(import.meta.dir, "..", "src", "cli.ts"),
+			"--trusted-extension",
+			extensionPath,
+			"--mode",
+			"rpc",
+			"--provider",
+			"anthropic",
+			"--model",
+			"claude-sonnet-4-5",
+		],
+		{
+			cwd: temp.path(),
+			env: {
+				PATH: Bun.env.PATH,
+				HOME: temp.join("home"),
+				PI_CODING_AGENT_DIR: temp.join("agent"),
+				XDG_CONFIG_HOME: temp.join("config"),
+				XDG_DATA_HOME: temp.join("data"),
+				XDG_CACHE_HOME: temp.join("cache"),
+				CI: "true",
+				PI_NO_TITLE: "1",
+			},
+			stdin: "pipe",
+			stdout: "pipe",
+			stderr: "pipe",
+			timeout: 20_000,
+		},
+	);
+}
+
+const dbQuestion: ExtensionAskDialogQuestion = {
+	id: "db",
+	question: "Which database?",
+	options: [{ label: "Postgres" }, { label: "SQLite", description: "Embedded" }],
+	recommended: 1,
+};
+const featuresQuestion: ExtensionAskDialogQuestion = {
+	id: "features",
+	question: "Which features?",
+	options: [{ label: "Auth" }, { label: "Billing" }, { label: "Search" }],
+	multi: true,
+};
+
+/**
+ * Scripted model: a user message ending in ask arguments as JSON becomes an ask call (omp may prepend
+ * context to the first user message); a tool result ends the turn.
+ */
+const scriptedAskProvider = `
+import { createAssistantMessageEventStream } from "@oh-my-pi/pi-ai";
+
+export default function (pi) {
+	pi.registerProvider("scripted", {
+		baseUrl: "http://127.0.0.1:9/v1",
+		apiKey: "scripted-key",
+		api: "scripted-ask",
+		models: [{
+			id: "ask",
+			name: "Scripted ask",
+			reasoning: false,
+			input: ["text"],
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+			contextWindow: 32768,
+			maxTokens: 1024,
+		}],
+		streamSimple: (model, context) => {
+			const stream = createAssistantMessageEventStream();
+			const last = context.messages.findLast(entry => entry.role === "user" || entry.role === "toolResult");
+			const text = last?.role === "user" ? last.content.map(part => part.text ?? "").join("") : "";
+			const argsAt = text.indexOf('{"html"');
+			const message = {
+				role: "assistant",
+				api: model.api,
+				provider: model.provider,
+				model: model.id,
+				usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } },
+				timestamp: Date.now(),
+				content: [{ type: "text", text: "done" }],
+				stopReason: "stop",
+			};
+			stream.push({ type: "start", partial: message });
+			if (argsAt >= 0) {
+				const toolCall = { type: "toolCall", id: "ask-" + context.messages.length, name: "ask", arguments: JSON.parse(text.slice(argsAt)) };
+				message.content = [toolCall];
+				message.stopReason = "toolUse";
+				stream.push({ type: "toolcall_start", contentIndex: 0, partial: message });
+				stream.push({ type: "toolcall_end", contentIndex: 0, toolCall, partial: message });
+			}
+			stream.push({ type: "done", reason: message.stopReason, message });
+			return stream;
+		},
+	});
+}
+`;
+
 describe("RPC extension UI", () => {
+	it("answers startup dialogs before ready and gates queued commands and negotiation until initialization completes", async () => {
+		await using temp = await TempDir.create("@rpc-startup-ui-");
+		const child = await startStartupDialogFixture(temp);
+		const stderr = new Response(child.stderr).text();
+		const send = async (frame: object) => {
+			child.stdin.write(`${JSON.stringify(frame)}\n`);
+			await child.stdin.flush();
+		};
+		const observed: string[] = [];
+		let state: unknown;
+		try {
+			// Both arrive before session_start finishes; negotiation must not change
+			// the framing advertised by ready or let ordinary commands race init.
+			await send({ type: "negotiate_protocol", protocolVersion: 2, id: "negotiate" });
+			await send({ type: "get_state", id: "early-state" });
+			for await (const frame of readJsonl<unknown>(child.stdout)) {
+				if (!isRecord(frame)) continue;
+				if (frame.type === "extension_ui_request" && frame.method === "confirm") {
+					observed.push("confirm");
+					await send({ type: "extension_ui_response", id: frame.id, confirmed: true });
+				} else if (frame.type === "extension_ui_request" && frame.method === "input") {
+					observed.push("input");
+					await send({ type: "extension_ui_response", id: frame.id, value: "initialized-by-host" });
+				} else if (frame.type === "ready") {
+					observed.push("ready");
+					expect(frame.protocolVersion).toBe(1);
+				} else if (frame.type === "response" && frame.id === "negotiate") {
+					observed.push("negotiate");
+					expect(frame).toMatchObject({ success: true, data: { protocolVersion: 2 } });
+				} else if (frame.type === "response" && frame.id === "early-state") {
+					observed.push("state");
+					state = frame;
+					child.stdin.end();
+				}
+			}
+			expect(await child.exited).toBe(0);
+			expect(observed).toEqual(["confirm", "input", "ready", "negotiate", "state"]);
+			expect(state).toMatchObject({ success: true, data: { sessionName: "initialized-by-host" } });
+		} finally {
+			child.kill();
+			await child.exited;
+			await stderr;
+		}
+	}, 30_000);
+
+	it("settles active and subsequent startup dialogs when stdin disconnects instead of wedging initialization", async () => {
+		await using temp = await TempDir.create("@rpc-startup-disconnect-");
+		const child = await startStartupDialogFixture(temp);
+		const stderr = new Response(child.stderr).text();
+		let disconnected = false;
+		let extensionError: unknown;
+		try {
+			for await (const frame of readJsonl<unknown>(child.stdout)) {
+				if (!isRecord(frame)) continue;
+				if (frame.type === "extension_ui_request" && frame.method === "confirm") {
+					disconnected = true;
+					child.stdin.end();
+				} else if (frame.type === "extension_error") {
+					extensionError = frame;
+				}
+			}
+			expect(disconnected).toBe(true);
+			expect(await child.exited).toBe(0);
+			expect(extensionError).toMatchObject({
+				event: "session_start",
+				error: expect.stringContaining("RPC client disconnected"),
+			});
+		} finally {
+			child.kill();
+			await child.exited;
+			await stderr;
+		}
+	}, 30_000);
+
+	it("returns a dropped prompt and its images to the host editor", () => {
+		const output = vi.fn<(frame: object) => void>();
+
+		reportDroppedPrompt(output, {
+			text: "keep my exact prompt",
+			images: [{ type: "image", data: "cG5n", mimeType: "image/png" }],
+		});
+
+		expect(output).toHaveBeenCalledWith({
+			type: "extension_ui_request",
+			id: expect.any(String),
+			method: "set_editor_text",
+			text: "keep my exact prompt",
+			images: [{ type: "image", data: "cG5n", mimeType: "image/png" }],
+			prepend: true,
+		});
+	});
+
+	it("keeps extension dialogs headless while tool selections round-trip", async () => {
+		await using temp = await TempDir.create("@rpc-headless-tool-ui-");
+		const fixturePath = temp.join("runtime.ts");
+		const sourceDir = path.resolve(import.meta.dir, "../src");
+		await Bun.write(
+			fixturePath,
+			`
+import { createAgentSession, Settings } from ${JSON.stringify(path.join(sourceDir, "sdk.ts"))};
+import { runRpcMode } from ${JSON.stringify(path.join(sourceDir, "modes/rpc/rpc-mode.ts"))};
+globalThis.fetch = async () => { throw new Error("Offline UI fixture refuses network"); };
+let extensionState;
+const { session } = await createAgentSession({
+  cwd: process.cwd(),
+  toolNames: [],
+  enableMCP: false,
+  enableLsp: false,
+  disableExtensionDiscovery: true,
+  settings: Settings.isolated({ "compaction.enabled": false }),
+  extensions: [pi => {
+    pi.on("session_start", async (_event, ctx) => {
+      const confirmed = await ctx.ui.confirm("Extension confirm", "Must not reach the host");
+      ctx.ui.notify("Extension notification");
+      extensionState = { hasUI: ctx.hasUI, confirmed };
+    });
+  }],
+});
+await runRpcMode(session, {
+  headless: true,
+  setToolUIContext(ui, hasUI) {
+    void ui.select("Tool choice", ["Keep", "Deploy"]).then(selected => {
+      ui.notify(JSON.stringify({ toolHasUI: hasUI, selected, extension: extensionState }));
+    });
+  },
+});
+`,
+		);
+		const child = Bun.spawn([process.execPath, fixturePath], {
+			cwd: temp.path(),
+			env: {
+				PATH: Bun.env.PATH,
+				HOME: temp.join("home"),
+				PI_CODING_AGENT_DIR: temp.join("agent"),
+				XDG_CONFIG_HOME: temp.join("config"),
+				XDG_DATA_HOME: temp.join("data"),
+				XDG_CACHE_HOME: temp.join("cache"),
+				CI: "true",
+				PI_NO_TITLE: "1",
+			},
+			stdin: "pipe",
+			stdout: "pipe",
+			stderr: "pipe",
+			timeout: 20_000,
+		});
+		const stderr = new Response(child.stderr).text();
+		const requests: Record<string, unknown>[] = [];
+		let result: unknown;
+		try {
+			for await (const frame of readJsonl<unknown>(child.stdout)) {
+				if (!isRecord(frame) || frame.type !== "extension_ui_request") continue;
+				requests.push(frame);
+				if (frame.method === "select") {
+					child.stdin.write(
+						`${JSON.stringify({ type: "extension_ui_response", id: frame.id, value: "Deploy" })}\n`,
+					);
+					await child.stdin.flush();
+				} else if (frame.method === "notify") {
+					if (typeof frame.message === "string") result = JSON.parse(frame.message);
+					break;
+				} else {
+					throw new Error(`Unexpected extension UI: ${JSON.stringify(frame)}`);
+				}
+			}
+		} finally {
+			child.stdin.end();
+			await child.exited;
+		}
+		expect(result, await stderr).toEqual({
+			toolHasUI: true,
+			selected: "Deploy",
+			extension: { hasUI: false, confirmed: false },
+		});
+		expect(requests.map(frame => frame.method)).toEqual(["select", "notify"]);
+		expect(requests[0]).toMatchObject({ title: "Tool choice", options: ["Keep", "Deploy"] });
+	}, 30_000);
+
+	/** Spawns an RPC runtime whose extension awaits a form in `session_start` and has a `/probe` command. */
+	async function spawnStartupDialogRuntime(temp: TempDir) {
+		const fixturePath = temp.join("runtime.ts");
+		const sourceDir = path.resolve(import.meta.dir, "../src");
+		await Bun.write(
+			fixturePath,
+			`
+import { createAgentSession, Settings } from ${JSON.stringify(path.join(sourceDir, "sdk.ts"))};
+import { runRpcMode } from ${JSON.stringify(path.join(sourceDir, "modes/rpc/rpc-mode.ts"))};
+globalThis.fetch = async () => { throw new Error("Offline UI fixture refuses network"); };
+const { session } = await createAgentSession({
+  cwd: process.cwd(),
+  toolNames: [],
+  enableMCP: false,
+  enableLsp: false,
+  disableExtensionDiscovery: true,
+  settings: Settings.isolated({ "compaction.enabled": false }),
+  extensions: [pi => {
+    pi.registerCommand("probe", {
+      // A command's context is built per call, so it sees whether set_ask_dialog took effect.
+      handler: async (_args, ctx) => ctx.ui.notify("askDialog:" + typeof ctx.ui.askDialog),
+    });
+    pi.on("session_start", async (_event, ctx) => {
+      ctx.ui.notify(JSON.stringify((await ctx.ui.formDialog("<form><input name='trust'></form>"))?.data));
+    });
+  }],
+});
+await runRpcMode(session);
+`,
+		);
+		return Bun.spawn([process.execPath, fixturePath], {
+			cwd: temp.path(),
+			env: {
+				PATH: Bun.env.PATH,
+				HOME: temp.join("home"),
+				PI_CODING_AGENT_DIR: temp.join("agent"),
+				XDG_CONFIG_HOME: temp.join("config"),
+				XDG_DATA_HOME: temp.join("data"),
+				XDG_CACHE_HOME: temp.join("cache"),
+				CI: "true",
+				PI_NO_TITLE: "1",
+			},
+			stdin: "pipe",
+			stdout: "pipe",
+			stderr: "pipe",
+			timeout: 20_000,
+		});
+	}
+
+	it("answers a dialog session_start awaits, running commands sent meanwhile only after startup, in order", async () => {
+		await using temp = await TempDir.create("@rpc-startup-dialog-");
+		const child = await spawnStartupDialogRuntime(temp);
+		const stderr = new Response(child.stderr).text();
+		const seen: string[] = [];
+		let formId: unknown;
+		for await (const frame of readJsonl<unknown>(child.stdout)) {
+			if (!isRecord(frame)) continue;
+			if (frame.type === "extension_ui_request" && frame.method === "form") {
+				formId = frame.id;
+				// Held until startup finishes; a premature response would precede the form's notify.
+				// set_ask_dialog is served during startup and takes effect independently of forms.
+				for (const id of ["s1", "s2"]) child.stdin.write(`${JSON.stringify({ id, type: "get_state" })}\n`);
+				child.stdin.write(`${JSON.stringify({ id: "p", type: "prompt", message: "/probe" })}\n`);
+				child.stdin.write(`${JSON.stringify({ id: "s3", type: "get_state" })}\n`);
+				child.stdin.write(`${JSON.stringify({ id: "ask", type: "set_ask_dialog", enabled: true })}\n`);
+				await child.stdin.flush();
+			} else if (frame.type === "response" && frame.id === "ask") {
+				seen.push("ask");
+				child.stdin.write(
+					`${JSON.stringify({ type: "extension_ui_response", id: formId, data: { trust: "yes" } })}\n`,
+				);
+				await child.stdin.flush();
+			} else if (frame.type === "extension_ui_request" && frame.method === "notify") {
+				seen.push(String(frame.message));
+			} else if (frame.type === "response" && typeof frame.id === "string" && /^(s\d|p)$/.test(frame.id)) {
+				seen.push(`${frame.id}:${frame.success}`);
+				// Drain stdout to its end: closing the reader early would break the child's output pipe.
+				if (frame.id === "s3") child.stdin.end();
+			}
+		}
+		await child.exited;
+		// The probe's own frames race the later state responses; every other frame's order is fixed.
+		expect(
+			seen.filter(entry => entry !== "p:true" && entry !== "askDialog:function"),
+			await stderr,
+		).toEqual(["ask", '{"trust":"yes"}', "s1:true", "s2:true", "s3:true"]);
+		expect(seen).toContain("askDialog:function");
+	}, 30_000);
+
+	it("rejects a dialog session_start awaits when stdin closes, so the process still exits", async () => {
+		await using temp = await TempDir.create("@rpc-startup-dialog-eof-");
+		const child = await spawnStartupDialogRuntime(temp);
+		const stderr = new Response(child.stderr).text();
+		// Read to the end of stdout: closing it early would fail the child's output, not exercise the EOF.
+		for await (const frame of readJsonl<unknown>(child.stdout)) {
+			if (isRecord(frame) && frame.type === "extension_ui_request" && frame.method === "form") child.stdin.end();
+		}
+		const exitCode = await child.exited;
+		expect({ exitCode, signal: child.signalCode }, await stderr).toEqual({ exitCode: 0, signal: null });
+	}, 30_000);
+
 	it("keeps the label-only wire shape for bare options", async () => {
 		const pendingRequests = new Map<string, PendingExtensionRequest>();
 		const output = vi.fn<(frame: object) => void>();
@@ -36,7 +446,7 @@ describe("RPC extension UI", () => {
 			timeout: undefined,
 		});
 
-		resolveSelection(pendingRequests, request.id, "Keep");
+		respond(pendingRequests, request.id, { value: "Keep" });
 		expect(await result).toBe("Keep");
 	});
 
@@ -60,8 +470,37 @@ describe("RPC extension UI", () => {
 			timeout: undefined,
 		});
 
-		resolveSelection(pendingRequests, request.id, "Deploy");
+		respond(pendingRequests, request.id, { value: "Deploy" });
 		expect(await result).toBe("Deploy");
+	});
+
+	it("carries checkbox state so hosts can show which options are already checked", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const checkedIndices = [0, 1];
+		const result = requestRpcSelect(
+			pendingRequests,
+			output,
+			"(2 selected) Choose enabled jobs",
+			["pytest", "go-quality", "lint", "Other (type your own)", "Done selecting"],
+			{ initialIndex: 2, selectionMarker: "checkbox", checkedIndices, markableCount: 4 },
+		);
+		const request = requireRequest(output.mock.calls[0]?.[0]);
+
+		expect(JSON.parse(JSON.stringify(output.mock.calls[0]?.[0]))).toEqual({
+			type: "extension_ui_request",
+			id: request.id,
+			method: "select",
+			title: "(2 selected) Choose enabled jobs",
+			options: ["pytest", "go-quality", "lint", "Other (type your own)", "Done selecting"],
+			initialIndex: 2,
+			selectionMarker: "checkbox",
+			checkedIndices: [0, 1],
+			markableCount: 4,
+		});
+
+		respond(pendingRequests, request.id, { value: "lint" });
+		expect(await result).toBe("lint");
 	});
 
 	it("cancels the remote dialog when its signal aborts", async () => {
@@ -98,5 +537,1171 @@ describe("RPC extension UI", () => {
 			targetId: request.id,
 		});
 		expect(pendingRequests.size).toBe(0);
+	});
+
+	it("emits secret in extension_ui_request when dialogOptions.secret is provided", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+
+		// 1. undefined secret: omitted from wire payload
+		const unmaskedResult = requestRpcInput(pendingRequests, output, "Username", "e.g. alice");
+		const unmaskedRequest = output.mock.calls[0]?.[0];
+		expect(unmaskedRequest).toMatchObject({
+			type: "extension_ui_request",
+			method: "input",
+			title: "Username",
+			placeholder: "e.g. alice",
+		});
+		expect(unmaskedRequest).not.toHaveProperty("secret");
+		respond(pendingRequests, requireRequest(unmaskedRequest).id, { value: "alice" });
+		await unmaskedResult;
+
+		// 2. secret: true: included in wire payload as secret: true
+		const maskedResult = requestRpcInput(pendingRequests, output, "API Key", undefined, { secret: true });
+		const maskedRequest = output.mock.calls[1]?.[0];
+		expect(maskedRequest).toMatchObject({
+			type: "extension_ui_request",
+			method: "input",
+			title: "API Key",
+			secret: true,
+		});
+		respond(pendingRequests, requireRequest(maskedRequest).id, { value: "secret-token" });
+		await maskedResult;
+
+		// 3. secret: false: explicitly passed as secret: false
+		const explicitUnmaskedResult = requestRpcInput(pendingRequests, output, "Public Note", undefined, {
+			secret: false,
+		});
+		const explicitUnmaskedRequest = output.mock.calls[2]?.[0];
+		expect(explicitUnmaskedRequest).toMatchObject({
+			type: "extension_ui_request",
+			method: "input",
+			title: "Public Note",
+			secret: false,
+		});
+		respond(pendingRequests, requireRequest(explicitUnmaskedRequest).id, { value: "hello" });
+		await explicitUnmaskedResult;
+	});
+
+	it("rejects secret login input, completes ordinary OAuth input, and logs the stored account out", async () => {
+		await using temp = await TempDir.create("@rpc-login-");
+		const extensionPath = temp.join("login.mjs");
+		await Bun.write(
+			extensionPath,
+			`
+export default function(pi) {
+  globalThis.fetch = async () => { throw new Error("Offline login fixture refuses network"); };
+  // rpc-alias is a second login for rpc-ordinary's credentials, like openai-codex-device.
+  for (const [id, secret, storeCredentialsAs] of [["rpc-secret", true], ["rpc-ordinary", false], ["rpc-alias", false, "rpc-ordinary"]]) {
+    pi.registerProvider(id, {
+      baseUrl: "http://127.0.0.1:9/v1",
+      api: "openai-completions",
+      models: [{
+        id: "fixture",
+        name: "Offline fixture",
+        reasoning: false,
+        input: ["text"],
+        contextWindow: 4096,
+        maxTokens: 512,
+        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
+      }],
+      oauth: {
+        name: id,
+        storeCredentialsAs,
+        login: async callbacks => {
+          callbacks.onAuth({ url: "https://example.invalid/authorize" });
+          return callbacks.onPrompt({ message: id, ...(secret ? { secret: true } : {}) });
+        }
+      }
+    });
+  }
+}
+`,
+		);
+		const child = Bun.spawn(
+			[
+				process.execPath,
+				path.join(import.meta.dir, "..", "src", "cli.ts"),
+				"--trusted-extension",
+				extensionPath,
+				"--mode",
+				"rpc",
+				"--provider",
+				"anthropic",
+				"--model",
+				"claude-sonnet-4-5",
+			],
+			{
+				cwd: temp.path(),
+				env: {
+					PATH: Bun.env.PATH,
+					HOME: temp.join("home"),
+					PI_CODING_AGENT_DIR: temp.join("agent"),
+					XDG_CONFIG_HOME: temp.join("config"),
+					XDG_DATA_HOME: temp.join("data"),
+					XDG_CACHE_HOME: temp.join("cache"),
+					CI: "true",
+					PI_NO_TITLE: "1",
+				},
+				stdin: "pipe",
+				stdout: "pipe",
+				stderr: "pipe",
+				timeout: 20_000,
+			},
+		);
+		const stdout = new Response(child.stdout).body;
+		if (!stdout) throw new Error("RPC login fixture did not expose stdout");
+		const stderr = new Response(child.stderr).text();
+		const inputTitles: string[] = [];
+		let secretResponse: unknown;
+		let ordinaryResponse: unknown;
+		let loggedInProvidersResponse: unknown;
+		let noProviderResponse: unknown;
+		let accountsResponse: unknown;
+		let logoutResponse: unknown;
+		let staleLogoutResponse: unknown;
+		let providersResponse: unknown;
+		let loggedOutCredentialId: unknown;
+		const send = async (frame: object) => {
+			child.stdin.write(`${JSON.stringify(frame)}\n`);
+			await child.stdin.flush();
+		};
+
+		try {
+			await send({ type: "login", providerId: "rpc-secret", id: "secret" });
+			for await (const frame of readJsonl<unknown>(stdout)) {
+				if (!isRecord(frame)) continue;
+				if (frame.type === "extension_ui_request" && frame.method === "input") {
+					if (typeof frame.id !== "string" || typeof frame.title !== "string") {
+						throw new Error("RPC input request did not carry string id and title");
+					}
+					inputTitles.push(frame.title);
+					await send({ type: "extension_ui_response", id: frame.id, value: crypto.randomUUID() });
+				} else if (frame.type === "response" && frame.id === "secret") {
+					secretResponse = frame;
+					await send({ type: "login", providerId: "rpc-ordinary", id: "ordinary" });
+				} else if (frame.type === "response" && frame.id === "ordinary") {
+					ordinaryResponse = frame;
+					await send({ type: "get_login_providers", id: "loggedIn" });
+				} else if (frame.type === "response" && frame.id === "loggedIn") {
+					loggedInProvidersResponse = frame;
+					await send({ type: "get_logout_accounts", providerId: "rpc-alias", id: "accounts" });
+				} else if (frame.type === "response" && frame.id === "accounts") {
+					accountsResponse = frame;
+					const accounts = isRecord(frame.data) && Array.isArray(frame.data.accounts) ? frame.data.accounts : [];
+					loggedOutCredentialId = isRecord(accounts[0]) ? accounts[0].credentialId : undefined;
+					await send({
+						type: "logout",
+						providerId: "rpc-alias",
+						credentialId: loggedOutCredentialId,
+						id: "logout",
+					});
+				} else if (frame.type === "response" && frame.id === "logout") {
+					logoutResponse = frame;
+					await send({
+						type: "logout",
+						providerId: "rpc-ordinary",
+						credentialId: loggedOutCredentialId,
+						id: "stale",
+					});
+				} else if (frame.type === "response" && frame.id === "stale") {
+					staleLogoutResponse = frame;
+					// Without a provider the credential store would list every provider's accounts.
+					await send({ type: "get_logout_accounts", id: "noProvider" });
+				} else if (frame.type === "response" && frame.id === "noProvider") {
+					noProviderResponse = frame;
+					await send({ type: "get_login_providers", id: "providers" });
+				} else if (frame.type === "response" && frame.id === "providers") {
+					providersResponse = frame;
+					break;
+				}
+			}
+		} finally {
+			child.stdin.end();
+			child.kill();
+			await child.exited;
+		}
+
+		if (!providersResponse) throw new Error(`RPC login fixture did not finish: ${await stderr}`);
+		await stderr;
+		expect(secretResponse).toMatchObject({
+			type: "response",
+			command: "login",
+			success: false,
+			error: expect.stringContaining("requires secret input"),
+		});
+		expect(inputTitles).toEqual(["rpc-ordinary"]);
+		expect(ordinaryResponse).toMatchObject({ type: "response", command: "login", success: true });
+		expect(loggedInProvidersResponse).toMatchObject({
+			data: {
+				providers: expect.arrayContaining([
+					expect.objectContaining({ id: "rpc-ordinary", authenticated: true }),
+					// The alias stores under rpc-ordinary, so it is authenticated by the same credential.
+					expect.objectContaining({ id: "rpc-alias", authenticated: true }),
+				]),
+			},
+		});
+		expect(accountsResponse).toMatchObject({
+			success: true,
+			data: { accounts: [expect.objectContaining({ provider: "rpc-ordinary", active: true })] },
+		});
+		expect(logoutResponse).toEqual({ id: "logout", type: "response", command: "logout", success: true, data: {} });
+		expect(staleLogoutResponse).toMatchObject({
+			command: "logout",
+			success: false,
+			error: expect.stringContaining("is not stored for rpc-ordinary"),
+		});
+		expect(noProviderResponse).toMatchObject({ command: "get_logout_accounts", success: false });
+		expect(providersResponse).toMatchObject({
+			success: true,
+			data: {
+				providers: expect.arrayContaining([
+					expect.objectContaining({ id: "rpc-secret", authenticated: false }),
+					expect.objectContaining({ id: "rpc-ordinary", authenticated: false }),
+					expect.objectContaining({ id: "rpc-alias", authenticated: false }),
+				]),
+			},
+		});
+	}, 30_000);
+
+	it("cancels a login when the host dismisses its authorization URL", async () => {
+		await using temp = await TempDir.create("@rpc-login-cancel-");
+		await using fixture = await startLoginFixture(
+			temp,
+			`
+export default function(pi) {
+  globalThis.fetch = async () => { throw new Error("Offline login fixture refuses network"); };
+  const logins = {
+    // Paste-code flows ask for the code while the browser step is still pending.
+    "rpc-paste": async callbacks => {
+      callbacks.onAuth({ url: "https://example.invalid/authorize" });
+      return callbacks.onPrompt({ message: "Paste the authorization code" });
+    },
+    // Loopback flows wait on their callback server until the login signal stops them.
+    "rpc-wait": callbacks => new Promise((_resolve, reject) => {
+      callbacks.onAuth({ url: "https://example.invalid/authorize" });
+      callbacks.signal?.addEventListener("abort", () => reject(new Error("callback server stopped")), { once: true });
+    }),
+  };
+  for (const [id, login] of Object.entries(logins)) {
+    pi.registerProvider(id, {
+      baseUrl: "http://127.0.0.1:9/v1",
+      api: "openai-completions",
+      models: [{
+        id: "fixture",
+        name: "Offline fixture",
+        reasoning: false,
+        input: ["text"],
+        contextWindow: 4096,
+        maxTokens: 512,
+        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
+      }],
+      oauth: { name: id, login }
+    });
+  }
+}
+`,
+		);
+		const { login, idOf } = fixture;
+
+		// Done acknowledges the URL; it must not cancel the login.
+		const acknowledged = await login("rpc-paste", request =>
+			request.method === "open_url" ? { value: "done" } : request.method === "input" ? { value: "code" } : undefined,
+		);
+		expect(acknowledged.response).toMatchObject({ command: "login", success: true });
+		expect(acknowledged.requests.some(request => request.method === "cancel")).toBe(false);
+
+		// A host that never answers the URL gets its dialog closed when the login ends.
+		const unanswered = await login("rpc-paste", request =>
+			request.method === "input" ? { value: "code" } : undefined,
+		);
+		expect(unanswered.response).toMatchObject({ command: "login", success: true });
+		expect(unanswered.requests).toContainEqual(
+			expect.objectContaining({ method: "cancel", targetId: idOf(unanswered.requests, "open_url") }),
+		);
+
+		// The paste-code prompt closes with the login instead of waiting out its timeout.
+		const pasteCancelled = await login("rpc-paste", request =>
+			request.method === "open_url" ? { cancelled: true } : undefined,
+		);
+		expect(pasteCancelled.response).toMatchObject({
+			command: "login",
+			success: false,
+			error: "Login cancelled",
+			code: "login_cancelled",
+		});
+		expect(pasteCancelled.requests).toContainEqual(
+			expect.objectContaining({ method: "cancel", targetId: idOf(pasteCancelled.requests, "input") }),
+		);
+
+		// A provider waiting on its callback is stopped through the login signal.
+		const waitCancelled = await login("rpc-wait", request =>
+			request.method === "open_url" ? { cancelled: true } : undefined,
+		);
+		expect(waitCancelled.response).toMatchObject({ command: "login", success: false, code: "login_cancelled" });
+
+		// Dismissing the paste-code prompt is the same cancel; a prompt that timed out is a failure.
+		const promptCancelled = await login("rpc-paste", request =>
+			request.method === "input" ? { cancelled: true } : undefined,
+		);
+		expect(promptCancelled.response).toMatchObject({ command: "login", success: false, code: "login_cancelled" });
+		const promptTimedOut = await login("rpc-paste", request =>
+			request.method === "input" ? { cancelled: true, timedOut: true } : undefined,
+		);
+		expect(promptTimedOut.response).toMatchObject({ command: "login", success: false });
+		expect(promptTimedOut.response).not.toHaveProperty("code");
+	}, 30_000);
+
+	it("names the authorization URL on a login prompt asked after it, so a host can show both", async () => {
+		await using temp = await TempDir.create("@rpc-login-key-");
+		await using fixture = await startLoginFixture(
+			temp,
+			`
+export default function(pi) {
+  globalThis.fetch = async () => { throw new Error("Offline login fixture refuses network"); };
+  pi.registerProvider("rpc-key", {
+    baseUrl: "http://127.0.0.1:9/v1",
+    api: "openai-completions",
+    models: [{
+      id: "fixture",
+      name: "Offline fixture",
+      reasoning: false,
+      input: ["text"],
+      contextWindow: 4096,
+      maxTokens: 512,
+      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
+    }],
+    oauth: {
+      name: "rpc-key",
+      login: async callbacks => {
+        await callbacks.onPrompt({ message: "Region" });
+        callbacks.onAuth({ url: "https://example.invalid/keys" });
+        return callbacks.onPrompt({ message: "Paste your key", placeholder: "sk-...", allowEmpty: true });
+      }
+    }
+  });
+}
+`,
+		);
+		const { login, idOf } = fixture;
+
+		// The host leaves the URL dialog up, as a GUI does while the user fetches the key.
+		const { response, requests } = await login("rpc-key", request =>
+			request.method === "input" ? { value: "answer" } : undefined,
+		);
+
+		expect(response).toMatchObject({ command: "login", success: true });
+		const [before, after] = requests.filter(request => request.method === "input");
+		expect(before).toMatchObject({ title: "Region" });
+		// Nothing is on screen yet for a prompt before the URL to join.
+		expect(before).not.toHaveProperty("loginPromptFor");
+		expect(before).not.toHaveProperty("allowEmpty");
+		expect(after).toMatchObject({
+			title: "Paste your key",
+			placeholder: "sk-...",
+			loginPromptFor: idOf(requests, "open_url"),
+			allowEmpty: true,
+		});
+		// Pasted-code hosts close this field when a browser signs in; a key has no browser to wait for.
+		expect(after).not.toHaveProperty("authCodeFor");
+	}, 30_000);
+
+	it("shows Anthropic's paste-code prompt with its URL dialog and closes both when the browser signs in", async () => {
+		await using temp = await TempDir.create("@rpc-login-paste-");
+		// Offline token endpoint: it accepts the codes this test hands out and
+		// refuses every other request (identity and model discovery fail quietly).
+		await using fixture = await startLoginFixture(
+			temp,
+			`
+export default function() {
+  globalThis.fetch = async (input, init) => {
+    const url = input instanceof Request ? input.url : String(input);
+    if (url.startsWith("https://api.anthropic.com/v1/oauth/token")) {
+      const { code } = JSON.parse(String(init?.body));
+      if (code === "browser-code" || code === "pasted-code") {
+        return Response.json({ access_token: "at-" + code, refresh_token: "rt", expires_in: 3600 });
+      }
+      return new Response("bad code", { status: 400 });
+    }
+    throw new Error("Offline login fixture refuses network");
+  };
+}
+`,
+		);
+		const { login, idOf } = fixture;
+		const authorizeParams = (requests: Record<string, unknown>[]) =>
+			new URL(String(requests.find(request => request.method === "open_url")?.url)).searchParams;
+
+		// The browser reaches the callback first: the unanswered paste prompt and URL dialog close.
+		const browser: Promise<Response>[] = [];
+		const viaBrowser = await login("anthropic", request => {
+			if (request.method !== "open_url") return undefined;
+			const params = new URL(String(request.url)).searchParams;
+			const callback = new URL(params.get("redirect_uri") ?? "");
+			callback.searchParams.set("code", "browser-code");
+			callback.searchParams.set("state", params.get("state") ?? "");
+			browser.push(fetch(callback));
+			return undefined;
+		});
+		await Promise.all(browser);
+		expect(viaBrowser.response).toMatchObject({ command: "login", success: true });
+		const urlId = idOf(viaBrowser.requests, "open_url");
+		const promptId = idOf(viaBrowser.requests, "input");
+		expect(viaBrowser.requests).toContainEqual(expect.objectContaining({ method: "input", authCodeFor: urlId }));
+		expect(viaBrowser.requests).toContainEqual(expect.objectContaining({ method: "cancel", targetId: promptId }));
+		expect(viaBrowser.requests).toContainEqual(expect.objectContaining({ method: "cancel", targetId: urlId }));
+
+		// Pasting the code completes the sign-in the same way.
+		let state = "";
+		const viaPaste = await login("anthropic", request => {
+			if (request.method === "open_url") state = authorizeParams([request]).get("state") ?? "";
+			return request.method === "input" ? { value: `pasted-code#${state}` } : undefined;
+		});
+		expect(viaPaste.response).toMatchObject({ command: "login", success: true });
+	}, 30_000);
+
+	it("routes a provider's login-warning acceptance to the host before any auth URL (#19523)", async () => {
+		await using temp = await TempDir.create("@rpc-login-warning-");
+		const child = Bun.spawn(
+			[
+				process.execPath,
+				path.join(import.meta.dir, "..", "src", "cli.ts"),
+				"--mode",
+				"rpc",
+				"--provider",
+				"anthropic",
+				"--model",
+				"claude-sonnet-4-5",
+			],
+			{
+				cwd: temp.path(),
+				env: {
+					PATH: Bun.env.PATH,
+					HOME: temp.join("home"),
+					PI_CODING_AGENT_DIR: temp.join("agent"),
+					XDG_CONFIG_HOME: temp.join("config"),
+					XDG_DATA_HOME: temp.join("data"),
+					XDG_CACHE_HOME: temp.join("cache"),
+					CI: "true",
+					PI_NO_TITLE: "1",
+				},
+				stdin: "pipe",
+				stdout: "pipe",
+				stderr: "pipe",
+				timeout: 20_000,
+			},
+		);
+		const stdout = new Response(child.stdout).body;
+		if (!stdout) throw new Error("RPC login fixture did not expose stdout");
+		const stderr = new Response(child.stderr).text();
+		const send = async (frame: object) => {
+			child.stdin.write(`${JSON.stringify(frame)}\n`);
+			await child.stdin.flush();
+		};
+		const inputTitles: string[] = [];
+		let loginResponse: unknown;
+		try {
+			// antigravity-cli declares `login-warning`; declining it must cancel before any login work starts.
+			await send({ type: "login", providerId: "antigravity-cli", id: "login" });
+			for await (const frame of readJsonl<unknown>(stdout)) {
+				if (!isRecord(frame)) continue;
+				if (frame.type === "extension_ui_request" && frame.method === "input") {
+					if (typeof frame.id !== "string" || typeof frame.title !== "string") {
+						throw new Error("RPC input request did not carry string id and title");
+					}
+					inputTitles.push(frame.title);
+					await send({ type: "extension_ui_response", id: frame.id, value: "no" });
+				} else if (frame.type === "response" && frame.id === "login") {
+					loginResponse = frame;
+					break;
+				}
+			}
+		} finally {
+			child.stdin.end();
+			child.kill();
+			await child.exited;
+		}
+
+		if (!loginResponse) throw new Error(`RPC login fixture did not finish: ${await stderr}`);
+		await stderr;
+		expect(inputTitles).toEqual([expect.stringContaining("use at your own risk")]);
+		expect(loginResponse).toMatchObject({
+			type: "response",
+			command: "login",
+			success: false,
+			error: "Login cancelled",
+		});
+	}, 30_000);
+});
+
+/**
+ * Starts omp in RPC mode with `extensionSource` loaded as a trusted extension.
+ * `login` runs one login, answering each UI request with `answer`'s payload,
+ * and returns the requests it emitted with the final response.
+ */
+async function startLoginFixture(temp: TempDir, extensionSource: string) {
+	const extensionPath = temp.join("login.mjs");
+	await Bun.write(extensionPath, extensionSource);
+	const child = Bun.spawn(
+		[
+			process.execPath,
+			path.join(import.meta.dir, "..", "src", "cli.ts"),
+			"--trusted-extension",
+			extensionPath,
+			"--mode",
+			"rpc",
+			"--provider",
+			"anthropic",
+			"--model",
+			"claude-sonnet-4-5",
+		],
+		{
+			cwd: temp.path(),
+			env: {
+				PATH: Bun.env.PATH,
+				HOME: temp.join("home"),
+				PI_CODING_AGENT_DIR: temp.join("agent"),
+				XDG_CONFIG_HOME: temp.join("config"),
+				XDG_DATA_HOME: temp.join("data"),
+				XDG_CACHE_HOME: temp.join("cache"),
+				CI: "true",
+				PI_NO_TITLE: "1",
+			},
+			stdin: "pipe",
+			stdout: "pipe",
+			stderr: "pipe",
+			timeout: 20_000,
+		},
+	);
+	const stdout = new Response(child.stdout).body;
+	if (!stdout) throw new Error("RPC login fixture did not expose stdout");
+	const stderr = new Response(child.stderr).text();
+	const frames = readJsonl<unknown>(stdout)[Symbol.asyncIterator]();
+	const send = async (frame: object) => {
+		child.stdin.write(`${JSON.stringify(frame)}\n`);
+		await child.stdin.flush();
+	};
+	const login = async (providerId: string, answer: (request: Record<string, unknown>) => object | undefined) => {
+		const id = crypto.randomUUID();
+		await send({ type: "login", providerId, id });
+		const requests: Record<string, unknown>[] = [];
+		while (true) {
+			const next = await frames.next();
+			if (next.done) throw new Error(`RPC login fixture exited during ${providerId}: ${await stderr}`);
+			const frame = next.value;
+			if (!isRecord(frame)) continue;
+			if (frame.type === "response" && frame.id === id) return { requests, response: frame };
+			if (frame.type !== "extension_ui_request") continue;
+			requests.push(frame);
+			const payload = answer(frame);
+			if (payload) await send({ type: "extension_ui_response", id: frame.id, ...payload });
+		}
+	};
+	const idOf = (requests: Record<string, unknown>[], method: string) =>
+		requests.find(request => request.method === method)?.id;
+	return {
+		login,
+		idOf,
+		async [Symbol.asyncDispose]() {
+			child.stdin.end();
+			child.kill();
+			await child.exited;
+		},
+	};
+}
+
+const DEPLOY_FORM = `<form>
+  <p>Which target?</p>
+  <label><input type="radio" name="target" value="prod" checked> Production</label>
+  <label><input type="radio" name="target" value="canary"> Canary</label>
+  <label><input type="radio" name="target" value="legacy" disabled> Legacy</label>
+  <p>Which checks?</p>
+  <label><input type="checkbox" name="checks" value="lint"> Lint</label>
+  <label><input type="checkbox" name="checks" value="smoke"> Smoke</label>
+  <label><input type="checkbox" name="checks" value="e2e" disabled> End-to-end</label>
+  <label>Replicas <input type="number" name="replicas" value="2" min="1"></label>
+  <label>Owner <input type="text" name="owner"></label>
+  <input type="hidden" name="release" value="r7">
+</form>`;
+
+/** The protocol v1 limit `RpcFrameEncoder.maxIntactFrameBytes` reports. */
+const FRAME_LIMIT = MAX_RPC_FRAME_BYTES - 1;
+
+describe("RPC form dialog", () => {
+	it("sends the form in one frame and returns the submitted data checked against it", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, DEPLOY_FORM, { timeout: 60_000 });
+		const request = requireRequest(output.mock.calls[0]?.[0]);
+
+		expect(output).toHaveBeenCalledWith({
+			type: "extension_ui_request",
+			id: request.id,
+			method: "form",
+			html: DEPLOY_FORM,
+			timeout: 60_000,
+		});
+
+		// Free text stands in as "Other", numbers arrive as text, and hidden inputs keep the form's value.
+		respond(pendingRequests, request.id, {
+			data: { target: "staging", checks: ["smoke", "Rollback"], replicas: "3", owner: "ops", release: "tampered" },
+		});
+		expect(await result).toEqual({
+			data: { release: "r7", target: "staging", checks: ["smoke", "Rollback"], replicas: 3, owner: "ops" },
+		});
+	});
+
+	it.each([
+		["no data object", { data: ["prod"] }, "must carry a data object"],
+		["a field the form lacks", { data: { target: "prod", region: "eu" } }, 'unknown field "region"'],
+		["a string for a checkbox group", { data: { checks: "lint" } }, "must carry an array of strings"],
+		["an array for a radio group", { data: { target: ["prod"] } }, "must carry one string, not an array"],
+		["an option checked twice", { data: { checks: ["lint", "lint"] } }, 'unexpected value "lint"'],
+		[
+			"two free-text answers in one group",
+			{ data: { checks: ["Rollback", "Canary bake"] } },
+			'unexpected value "Canary bake"',
+		],
+		["a number below the input's min", { data: { replicas: 0 } }, 'Form field "replicas": '],
+		["a disabled radio option", { data: { target: "legacy" } }, 'disabled option "legacy"'],
+		["a disabled checkbox option", { data: { checks: ["lint", "e2e"] } }, 'disabled option "e2e"'],
+		["a number for a text input", { data: { owner: 7 } }, 'Form field "owner" must carry a string'],
+	])("rejects %s", async (_case, response, message) => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, DEPLOY_FORM);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, response);
+
+		await expect(result).rejects.toThrow(message);
+		expect(pendingRequests.size).toBe(0);
+	});
+
+	it("gives an omitted checkbox group an empty array", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, DEPLOY_FORM);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { target: "prod", replicas: 2 } });
+
+		expect(await result).toEqual({ data: { release: "r7", target: "prod", checks: [], replicas: 2, owner: "" } });
+	});
+
+	it("accepts an echoed hidden fallback for an unchecked same-name checkbox", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <input type="hidden" name="enabled" value="off">
+  <label><input type="checkbox" name="enabled" value="on"> Enabled</label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { enabled: "off" } });
+
+		expect(await result).toEqual({ data: { enabled: "off" } });
+	});
+
+	it("drops a hidden value echoed inside a checkbox group's array instead of taking it as Other", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <input type="hidden" name="checks" value="none">
+  <label><input type="checkbox" name="checks" value="lint"> Lint</label>
+  <label><input type="checkbox" name="checks" value="smoke"> Smoke</label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		// Browser-style form data: the hidden value rides along with the checked boxes.
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { checks: ["none", "lint"] } });
+
+		expect(await result).toEqual({ data: { checks: ["lint"] } });
+	});
+
+	it("keeps a selection that matches both a same-name hidden value and an enabled option", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <input type="hidden" name="tier" value="basic">
+  <label>Tier <select name="tier" required><option value="">Pick one</option><option value="basic">Basic</option><option value="pro">Pro</option></select></label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { tier: "basic" } });
+
+		expect(await result).toEqual({ data: { tier: "basic" } });
+	});
+
+	it("keeps an Other answer that matches a same-name hidden value", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <input type="hidden" name="tier" value="custom">
+  <label><input type="radio" name="tier" value="basic" required> Basic</label>
+  <label><input type="radio" name="tier" value="pro"> Pro</label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { tier: "custom" } });
+
+		expect(await result).toEqual({ data: { tier: "custom" } });
+	});
+
+	it("rejects a hidden fallback for an unchecked required checkbox", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <input type="hidden" name="enabled" value="off">
+  <label><input type="checkbox" name="enabled" value="on" required> Enabled</label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { enabled: "off" } });
+
+		await expect(result).rejects.toThrow("Required");
+		expect(pendingRequests.size).toBe(0);
+	});
+
+	it("fails a form too large for one frame without sending a truncated copy", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form><img src="data:image/png;base64,${"A".repeat(FRAME_LIMIT)}"><input type="text" name="owner" required></form>`;
+
+		await expect(requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html)).rejects.toThrow("too large");
+		expect(output).not.toHaveBeenCalled();
+		expect(pendingRequests.size).toBe(0);
+	});
+
+	it("checks a shared name against every field that carries it", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <label>Name <input type="text" name="name" required></label>
+  <label>Nickname <input type="text" name="name"></label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		// The optional second field must not hide the required first one.
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: {} });
+
+		await expect(result).rejects.toThrow("Required");
+	});
+
+	it("gives a shared name's entry to the field whose shape carries it", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <label><input type="radio" name="pick" value="a"> A</label>
+  <label><input type="radio" name="pick" value="b"> B</label>
+  <label><input type="checkbox" name="pick" value="x"> X</label>
+  <label><input type="checkbox" name="pick" value="y"> Y</label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		// The array fits only the checkbox group; the radio group beside it counts as unanswered.
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { pick: ["x"] } });
+
+		expect(await result).toEqual({ data: { pick: ["x"] } });
+	});
+
+	it("rejects a shared name's entry that no field of that name carries", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <label><input type="radio" name="pick" value="a"> A</label>
+  <label><input type="radio" name="pick" value="b"> B</label>
+  <label>Pick <input type="number" name="pick"></label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { pick: ["a"] } });
+
+		await expect(result).rejects.toThrow('Form field "pick" must carry');
+		expect(pendingRequests.size).toBe(0);
+	});
+
+	it("treats an omitted field named like an Object.prototype member as absent", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <label>Constructor <input type="text" name="constructor"></label>
+  <label>Target <input type="text" name="target"></label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { target: "prod" } });
+
+		expect(await result).toEqual({ data: { constructor: "", target: "prod" } });
+	});
+
+	it("accepts a value whose enabled option follows a disabled duplicate", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <label><input type="radio" name="tier" value="basic" disabled> Basic (sold out)</label>
+  <label><input type="radio" name="tier" value="basic"> Basic</label>
+  <label><input type="radio" name="tier" value="pro"> Pro</label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { data: { tier: "basic" } });
+
+		expect(await result).toEqual({ data: { tier: "basic" } });
+	});
+
+	it("keeps a control named __proto__ as an ordinary key of the data", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const html = `<form>
+  <label>Proto <input type="text" name="__proto__"></label>
+  <label>Target <input type="text" name="target"></label>
+</form>`;
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, {
+			data: JSON.parse('{"__proto__":"x","target":"prod"}'),
+		});
+
+		// The model reads the data as JSON, so the key must survive serialization.
+		expect(JSON.stringify((await result)?.data)).toBe('{"__proto__":"x","target":"prod"}');
+	});
+
+	it.each([
+		["omp's timer fires", 5, undefined],
+		["the host reports its own timeout", undefined, { cancelled: true, timedOut: true }],
+	])("submits the form's defaults when %s", async (_case, timeout, response) => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const onTimeout = vi.fn();
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, DEPLOY_FORM, { timeout, onTimeout });
+		if (response) respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, response);
+
+		expect(await result).toEqual({
+			data: { release: "r7", target: "prod", checks: [], replicas: 2, owner: "" },
+			timedOut: true,
+		});
+		expect(onTimeout).toHaveBeenCalledTimes(1);
+	});
+
+	it("resolves a plain host cancel as a cancelled form", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, DEPLOY_FORM);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { cancelled: true });
+
+		expect(await result).toBeUndefined();
+	});
+});
+
+describe("RPC ask dialog", () => {
+	it("sends every question in one ask frame and returns the validated answers", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const result = requestRpcAskDialog(pendingRequests, output, [dbQuestion, featuresQuestion]);
+		const request = requireRequest(output.mock.calls[0]?.[0]);
+
+		expect(output).toHaveBeenCalledTimes(1);
+		expect(output).toHaveBeenCalledWith({
+			type: "extension_ui_request",
+			id: request.id,
+			method: "ask",
+			questions: [dbQuestion, featuresQuestion],
+			timeout: undefined,
+		});
+
+		respond(pendingRequests, request.id, {
+			answers: [
+				{ id: "db", selectedOptions: ["Postgres"], customInput: "   " },
+				{ id: "features", selectedOptions: ["Search", "Auth"], customInput: "  Export  " },
+			],
+		});
+		expect(await result).toEqual({
+			kind: "submit",
+			results: [
+				{
+					id: "db",
+					question: "Which database?",
+					options: ["Postgres", "SQLite"],
+					multi: false,
+					selectedOptions: ["Postgres"],
+					customInput: undefined,
+				},
+				{
+					id: "features",
+					question: "Which features?",
+					options: ["Auth", "Billing", "Search"],
+					multi: true,
+					selectedOptions: ["Search", "Auth"],
+					customInput: "Export",
+				},
+			],
+		});
+	});
+
+	const validDb = { id: "db", selectedOptions: ["Postgres"] };
+	const validFeatures = { id: "features", selectedOptions: ["Auth"] };
+	it.each([
+		["too few answers", [validDb]],
+		["answers out of question order", [validFeatures, validDb]],
+		["an unknown option label", [{ id: "db", selectedOptions: ["MySQL"] }, validFeatures]],
+		["a duplicated option", [validDb, { id: "features", selectedOptions: ["Auth", "Auth"] }]],
+		["two options on a single-select", [{ id: "db", selectedOptions: ["Postgres", "SQLite"] }, validFeatures]],
+		[
+			"an option plus custom input on a single-select",
+			[{ id: "db", selectedOptions: ["Postgres"], customInput: "DuckDB" }, validFeatures],
+		],
+	])("rejects %s", async (_case, answers) => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const result = requestRpcAskDialog(pendingRequests, output, [dbQuestion, featuresQuestion]);
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { answers });
+
+		await expect(result).rejects.toThrow(Error);
+		expect(pendingRequests.size).toBe(0);
+	});
+
+	it.each([
+		["omp's timer fires", 5, undefined],
+		["the host reports its own timeout", undefined, { cancelled: true, timedOut: true }],
+	])("answers every question with its recommended option when %s", async (_case, timeout, response) => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const onTimeout = vi.fn();
+		const result = requestRpcAskDialog(pendingRequests, output, [dbQuestion, featuresQuestion], {
+			timeout,
+			onTimeout,
+		});
+		if (response) respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, response);
+
+		expect(await result).toEqual({
+			kind: "submit",
+			results: [
+				{
+					id: "db",
+					question: "Which database?",
+					options: ["Postgres", "SQLite"],
+					multi: false,
+					selectedOptions: ["SQLite"],
+					customInput: undefined,
+					timedOut: true,
+				},
+				{
+					id: "features",
+					question: "Which features?",
+					options: ["Auth", "Billing", "Search"],
+					multi: true,
+					selectedOptions: ["Auth"],
+					customInput: undefined,
+					timedOut: true,
+				},
+			],
+		});
+		expect(onTimeout).toHaveBeenCalledTimes(1);
+		// omp settled the dialog; only its own timer must tell the host to close it.
+		const request = requireRequest(output.mock.calls[0]?.[0]);
+		const cancels = output.mock.calls
+			.map(([frame]) => frame)
+			.filter(frame => "method" in frame && frame.method === "cancel");
+		expect(cancels).toEqual(
+			timeout === undefined ? [] : [expect.objectContaining({ method: "cancel", targetId: request.id })],
+		);
+	});
+
+	it("resolves a plain host cancel as a cancelled dialog", async () => {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const onTimeout = vi.fn();
+		const result = requestRpcAskDialog(pendingRequests, output, [dbQuestion], { onTimeout });
+
+		respond(pendingRequests, requireRequest(output.mock.calls[0]?.[0]).id, { cancelled: true });
+
+		expect(await result).toBeUndefined();
+		expect(onTimeout).not.toHaveBeenCalled();
+	});
+
+	it("submits the ask tool's whole form without opt-in, independently of extension ask dialogs", async () => {
+		await using temp = await TempDir.create("@rpc-ask-dialog-");
+		const extensionPath = temp.join("scripted-ask.ts");
+		await Bun.write(extensionPath, scriptedAskProvider);
+		const child = Bun.spawn(
+			[
+				process.execPath,
+				path.join(import.meta.dir, "..", "src", "cli.ts"),
+				"--trusted-extension",
+				extensionPath,
+				"--mode",
+				"rpc-ui",
+				"--no-session",
+			],
+			{
+				cwd: temp.path(),
+				env: {
+					PATH: Bun.env.PATH,
+					HOME: temp.join("home"),
+					PI_CODING_AGENT_DIR: temp.join("agent"),
+					XDG_CONFIG_HOME: temp.join("config"),
+					XDG_DATA_HOME: temp.join("data"),
+					XDG_CACHE_HOME: temp.join("cache"),
+					CI: "true",
+					PI_NO_TITLE: "1",
+				},
+				stdin: "pipe",
+				stdout: "pipe",
+				stderr: "pipe",
+				timeout: 30_000,
+			},
+		);
+		const stdout = new Response(child.stdout).body;
+		if (!stdout) throw new Error("RPC ask fixture did not expose stdout");
+		const stderr = new Response(child.stderr).text();
+		const send = async (frame: object) => {
+			child.stdin.write(`${JSON.stringify(frame)}\n`);
+			await child.stdin.flush();
+		};
+		const selectRequests: Record<string, unknown>[] = [];
+		const askRequests: Record<string, unknown>[] = [];
+		const formRequests: Record<string, unknown>[] = [];
+		const toolResults: unknown[] = [];
+		let optInResponse: unknown;
+		let finished = false;
+		const html =
+			'<form><p>Which database?</p><label><input type="radio" name="db" value="pg"> Postgres</label><label><input type="radio" name="db" value="sqlite" checked> SQLite</label></form>';
+		const form = JSON.stringify({ html });
+
+		try {
+			// The provider exists only once the extension loads, so select it over RPC.
+			await send({ type: "set_model", id: "model", provider: "scripted", modelId: "ask" });
+			for await (const frame of readJsonl<unknown>(stdout)) {
+				if (!isRecord(frame)) continue;
+				if (frame.type === "response" && frame.id === "model") {
+					if (frame.success !== true) throw new Error(`Scripted model unavailable: ${JSON.stringify(frame)}`);
+					await send({ type: "prompt", id: "default-form", message: form });
+				} else if (frame.type === "extension_ui_request" && frame.method === "select") {
+					selectRequests.push(frame);
+					await send({ type: "extension_ui_response", id: frame.id, value: "Postgres" });
+				} else if (frame.type === "extension_ui_request" && frame.method === "ask") {
+					askRequests.push(frame);
+					await send({ type: "extension_ui_response", id: frame.id, cancelled: true });
+				} else if (frame.type === "extension_ui_request" && frame.method === "form") {
+					formRequests.push(frame);
+					await send({ type: "extension_ui_response", id: frame.id, ...(Array.isArray(frame.sections) ? { formData: { db: "sqlite" } } : { data: { db: "pg" } }) });
+				} else if (frame.type === "tool_execution_end" && frame.toolName === "ask") {
+					toolResults.push(frame.result);
+				} else if (frame.type === "prompt_result" && frame.id === "default-form") {
+					await send({ type: "set_ask_dialog", id: "opt-in", enabled: true });
+				} else if (frame.type === "response" && frame.id === "opt-in") {
+					optInResponse = frame;
+					await send({ type: "prompt", id: "dialog", message: form });
+				} else if (frame.type === "prompt_result" && frame.id === "dialog") {
+					await send({ type: "set_ask_dialog", id: "opt-in-form", enabled: true, form: true });
+				} else if (frame.type === "response" && frame.id === "opt-in-form") {
+					await send({ type: "prompt", id: "whole-form", message: form });
+				} else if (frame.type === "prompt_result" && frame.id === "whole-form") {
+					finished = true;
+					break;
+				}
+			}
+		} finally {
+			child.stdin.end();
+			child.kill();
+			await child.exited;
+		}
+
+		if (!finished) throw new Error(`RPC ask fixture did not finish: ${await stderr}`);
+		await stderr;
+		expect(selectRequests).toEqual([]);
+		expect(optInResponse).toEqual({
+			id: "opt-in",
+			type: "response",
+			command: "set_ask_dialog",
+			success: true,
+			data: { enabled: true },
+		});
+		expect(askRequests).toEqual([]);
+		expect(formRequests).toEqual([
+			expect.objectContaining({ method: "form", html }),
+			expect.objectContaining({ method: "form", html }),
+			expect.objectContaining({ method: "form", sections: expect.any(Array) }),
+		]);
+		const answered = expect.objectContaining({
+			details: { answers: [{ name: "db", question: "Which database?", answer: "Postgres" }] },
+		});
+		expect(formRequests[2]).not.toHaveProperty("html");
+		expect(toolResults).toEqual([
+			answered,
+			answered,
+			expect.objectContaining({
+				details: { answers: [{ name: "db", question: "Which database?", answer: "SQLite" }] },
+			}),
+		]);
+	}, 60_000);
+});
+
+describe("RPC form dialog", () => {
+	const html = `<form>
+		<input type="hidden" name="source" value="wizard">
+		<fieldset><legend>Deploy</legend>
+			<p>Which target?</p>
+			<label><input type="radio" name="target" value="prod"> Production</label>
+			<label><input type="radio" name="target" value="stage" checked> Staging</label>
+			<img src="data:image/png;base64,AAAA" alt="Topology diagram">
+			<label>Replicas <input type="number" name="replicas" value="2"></label>
+			<label><input type="checkbox" name="regions" value="a"> East</label>
+			<label><input type="checkbox" name="regions" value="b"> West</label>
+			<select name="tier"><option value="free">Free</option><option value="pro">Pro</option></select>
+		</fieldset>
+	</form>`;
+
+	function openForm(options?: ExtensionUIDialogOptions) {
+		const pendingRequests = new Map<string, PendingExtensionRequest>();
+		const output = vi.fn<(frame: object) => void>();
+		const result = requestRpcFormDialog(pendingRequests, output, FRAME_LIMIT, html, options, true);
+		const frame = output.mock.calls[0]?.[0] as Record<string, unknown>;
+		return { pendingRequests, output, result, frame, id: requireRequest(frame).id };
+	}
+
+	it("sends the parsed form once with pictures reduced to their alt text", async () => {
+		const { frame, result, pendingRequests, id } = openForm();
+		expect(frame).toMatchObject({ method: "form" });
+		const serialized = JSON.stringify(frame);
+		expect(serialized).toContain("Topology diagram");
+		expect(serialized).not.toContain("base64");
+		expect(serialized).not.toContain("wizard");
+		respond(pendingRequests, id, { cancelled: true });
+		await result;
+	});
+
+	it("turns answers into typed form data, keeping hidden inputs and free text", async () => {
+		const { pendingRequests, id, result } = openForm();
+		respond(pendingRequests, id, {
+			formData: { target: "Somewhere else", replicas: "5", regions: ["b", "Central"], tier: "pro" },
+		});
+		expect(await result).toEqual({
+			data: { source: "wizard", target: "Somewhere else", replicas: 5, regions: ["b", "Central"], tier: "pro" },
+		});
+	});
+
+	it("rejects a value the field does not offer", async () => {
+		const { pendingRequests, id, result } = openForm();
+		respond(pendingRequests, id, { formData: { tier: "enterprise" } });
+		await expect(result).rejects.toThrow('"tier" carries unexpected value');
+	});
+
+	it("submits the form's defaults when the host reports its deadline", async () => {
+		const onTimeout = vi.fn();
+		const { pendingRequests, id, result } = openForm({ onTimeout });
+		respond(pendingRequests, id, { cancelled: true, timedOut: true });
+		expect(await result).toEqual({
+			data: { source: "wizard", target: "stage", replicas: 2, regions: [], tier: "free" },
+			timedOut: true,
+		});
+		expect(onTimeout).toHaveBeenCalledTimes(1);
+	});
+
+	it("treats a plain host cancel as a cancelled form", async () => {
+		const { pendingRequests, id, result } = openForm();
+		respond(pendingRequests, id, { cancelled: true });
+		expect(await result).toBeUndefined();
 	});
 });

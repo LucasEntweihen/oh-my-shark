@@ -18,14 +18,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import {
-	getAgentDir,
-	getProjectAgentDir,
-	isEnoent,
-	logger,
-	MAIN_CONFIG_FILENAMES,
-	tryParseJson,
-} from "@oh-my-pi/pi-utils";
+import { getAgentDir, isEnoent, logger, MAIN_CONFIG_FILENAMES, tryParseJson } from "@oh-my-pi/pi-utils";
 import { YAML } from "bun";
 import { readDirEntries, readFile } from "../capability/fs";
 import type { ExtensionRootMode, LoadContext } from "../capability/types";
@@ -166,7 +159,7 @@ interface ScopeDirs {
 
 function scopeDirs(ctx: LoadContext): ScopeDirs {
 	return {
-		project: getProjectAgentDir(ctx.cwd),
+		project: path.join(ctx.cwd, ".omp"),
 		user: getAgentDir(),
 	};
 }
@@ -183,8 +176,8 @@ async function readSettingsExtensions(settingsPath: string): Promise<string[] | 
 	return readExtensionsArray(parsed?.extensions);
 }
 
-/** Project native config filenames; matches the settings loader's canonical-then-fallback selection. */
-const PROJECT_CONFIG_FILENAMES = MAIN_CONFIG_FILENAMES;
+/** Project native config filename; matches the single `.omp/config.yml` the settings loader reads. */
+const PROJECT_CONFIG_FILENAMES = ["config.yml"] as const;
 
 interface YamlExtensions {
 	exists: boolean;
@@ -349,8 +342,8 @@ export async function listOmpExtensionRoots(ctx: LoadContext): Promise<OmpExtens
 /**
  * Enumerate every enabled npm/link plugin's package directory so its conventional
  * `skills/`, `hooks/`, `tools/`, `commands/`, `rules/`, `prompts/`, and
- * `.mcp.json` are wired into discovery — mirrors how `getAllPluginExtensionPaths`
- * already feeds the extension factory loader.
+ * `.mcp.json` are wired into discovery — mirrors how `listPackageExtensionModules`
+ * already feeds plugin entries to the extension factory loader.
  *
  * Marketplace installs also create runtime symlinks for enable-state persistence,
  * but their resources are discovered through the `claude-plugins` provider.

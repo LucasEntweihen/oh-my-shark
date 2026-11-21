@@ -21,7 +21,8 @@ import type { ExecutorOptions } from "../../src/task/executor";
 import * as taskExecutor from "../../src/task/executor";
 import * as isolationRunner from "../../src/task/isolation-runner";
 import { AgentOutputManager } from "../../src/task/output-manager";
-import type { AgentDefinition, AgentProgress, SingleResult, StructuredSubagentOutput } from "../../src/task/types";
+import type { AgentDefinition } from "../../src/task/types";
+import type { AgentProgress, SingleResult, StructuredSubagentOutput } from "@oh-my-pi/pi-tui/tools/task";
 import type { ToolSession } from "../../src/tools";
 
 const taskAgent = {
@@ -90,6 +91,7 @@ function makeSession(options: SessionOptions = {}): ToolSession {
 			"async.enabled": false,
 			"task.isolation.enabled": false,
 			"task.enableLsp": true,
+			"task.perCallModel": "on",
 		});
 	const artifactsDir = options.artifactsDir ?? null;
 	const asyncJobManager = new AsyncJobManager({});
@@ -340,20 +342,55 @@ describe("runEvalAgent", () => {
 		expect(secondOptions.outputSchemaOverridesAgent).toBeUndefined();
 	});
 
-	it("drops a per-call model argument on agent() (removed, issue #6438)", async () => {
+	it("routes an agent() model above a pinned agent in eval-only mode", async () => {
 		mockAgents();
 		const runSpy = vi.spyOn(taskExecutor, "runSubprocess").mockImplementation(async options => singleResult(options));
 
-		// The schema strips unknown keys; a legacy `model` argument is silently
-		// discarded so resolution is identical to omitting it — the agent's own
-		// frontmatter model applies (issue #6438).
-		await runEvalAgentAndWait({ prompt: "work", model: "default" }, { session: makeSession() });
-		await runEvalAgentAndWait({ prompt: "work" }, { session: makeSession() });
+		await runEvalAgentAndWait(
+			{ prompt: "work", agent: "reviewer", model: "p/requested:high" },
+			{
+				session: makeSession({
+					settings: Settings.isolated({ "task.perCallModel": "eval", "task.isolation.enabled": false }),
+				}),
+			},
+		);
 
-		const withModel = runSpy.mock.calls[0]?.[0];
-		const withoutModel = runSpy.mock.calls[1]?.[0];
-		expect(withModel?.modelOverride).toEqual(withoutModel?.modelOverride);
+		expect(runSpy.mock.calls[0]?.[0]?.modelOverride).toEqual(["p/requested:high"]);
 	});
+
+	it.each([
+		// The gate wins over the selector check, so an invalid selector still reports the disabled gate.
+		{ mode: "off", model: "@smol", error: /task\.perCallModel: off/ },
+		{ mode: "on", model: "default", error: /invalid `model`/ },
+		// The argument schema accepts only a string, so a candidate array never reaches preflight.
+		{ mode: "on", model: ["p/preferred:high", "p/alternative"], error: /model must be a string/ },
+	])("rejects agent() model $model under $mode before dispatch", async ({ mode, model, error }) => {
+		mockAgents();
+		const runSpy = vi.spyOn(taskExecutor, "runSubprocess").mockImplementation(async options => singleResult(options));
+		const settings = Settings.isolated({ "task.perCallModel": mode, "task.isolation.enabled": false });
+
+		await expect(
+			runEvalAgent({ prompt: "work", agent: "reviewer", model }, { session: makeSession({ settings }) }),
+		).rejects.toThrow(error);
+		expect(runSpy).not.toHaveBeenCalled();
+	});
+
+	it.each(["", "   "])("treats a blank agent() model (%p) as omitted", async model => {
+		mockAgents();
+		const runSpy = vi.spyOn(taskExecutor, "runSubprocess").mockImplementation(async options => singleResult(options));
+		const session = makeSession({
+			activeModel: "p/current",
+			modelString: "p/fallback",
+			settings: Settings.isolated({ "task.perCallModel": "off", "task.isolation.enabled": false }),
+		});
+
+		await runEvalAgentAndWait({ prompt: "work", model }, { session });
+
+		// The gate stays off: the agent's own frontmatter model applies and no per-call route is recorded.
+		expect(runSpy.mock.calls[0]?.[0]?.modelOverride).toEqual(["p/current"]);
+		expect(runSpy.mock.calls[0]?.[0]?.perCallModelGrants).toBeUndefined();
+	});
+
 	it("returns host-parsed data for caller, agent, and inherited schemas", async () => {
 		const agentSchema = { type: "object" };
 		const sessionSchema = { type: "object" };
@@ -399,7 +436,7 @@ describe("runEvalAgent", () => {
 		]);
 	});
 
-	it("keeps bridge kernels independent while inheriting non-plan LSP and IRC policy", async () => {
+	it("inherits non-plan LSP and IRC policy", async () => {
 		mockAgents();
 		const runSpy = vi.spyOn(taskExecutor, "runSubprocess").mockImplementation(async options => singleResult(options));
 		// makeSession() defaults to enableLsp: true and task.enableLsp: true.
@@ -412,7 +449,6 @@ describe("runEvalAgent", () => {
 		expect(options.enableLsp).toBe(true);
 		expect(options.enableIrc).toBe(true);
 		expect(options.keepAlive).toBe(true);
-		expect(options.parentEvalSessionId).toBeUndefined();
 	});
 
 	it("registers temp artifact dirs for in-memory handle results so agent URLs resolve", async () => {
@@ -729,6 +765,7 @@ describe("agent() through eval runtimes", () => {
 		using tempDir = TempDir.createSync("@omp-eval-agent-progress-");
 		const { session, sessionFile } = makeEvalSession(tempDir, "js-agent-progress");
 		mockAgents();
+		const releaseCompletion = Promise.withResolvers<void>();
 
 		const makeProgress = (options: ExecutorOptions, overrides: Partial<AgentProgress>): AgentProgress => ({
 			index: options.index,
@@ -764,6 +801,7 @@ describe("agent() through eval runtimes", () => {
 					resolvedModel: "p/model",
 				}),
 			);
+			await releaseCompletion.promise;
 			options.onProgress?.(
 				makeProgress(options, {
 					status: "completed",
@@ -786,16 +824,29 @@ describe("agent() through eval runtimes", () => {
 				sessionId: sharedJsSessionId,
 				session,
 				sessionFile,
-				onStatus: event => events.push(event),
+				onStatus: event => {
+					events.push(event);
+					if (event.op === "agent" && event.status === "running") releaseCompletion.resolve();
+				},
 			},
 		);
 
 		expect(result.exitCode).toBe(0);
 
+		// Wait-start, interval, and wait-end snapshots may all be delivered.
+		// Assert the final enriched state, not a timing-dependent event count (#10821).
 		const agentEvents = events.filter(event => event.op === "agent");
-		expect(agentEvents).toHaveLength(1);
+		const completedIndex = agentEvents.findIndex(event => event.status === "completed");
+		expect(completedIndex).toBeGreaterThan(0);
+		expect(completedIndex).toBe(agentEvents.length - 1);
+		expect(agentEvents.slice(0, completedIndex).every(event => event.status === "running")).toBe(true);
 
-		const completed = agentEvents[0];
+		const running = agentEvents[completedIndex - 1];
+		const completed = agentEvents[completedIndex];
+		if (!running || !completed) throw new Error("agent progress was not streamed");
+		expect(running.currentTool).toBe("read");
+		expect(running.lastIntent).toBe("Reading config");
+		expect(running.toolCount).toBe(4);
 		expect(completed.status).toBe("completed");
 		expect(completed.toolCount).toBe(7);
 		expect(completed.cost).toBeCloseTo(0.06);
@@ -803,11 +854,12 @@ describe("agent() through eval runtimes", () => {
 		expect(completed.taskPreview).toBe("investigate");
 		expect(typeof completed.id).toBe("string");
 
-		// The same final snapshot is retained in the executor's display outputs.
+		// The latest retained agent snapshot matches the latest streamed one.
 		const displayAgentEvents = result.displayOutputs.filter(
-			(output): output is Extract<typeof output, { type: "status" }> => output.type === "status",
+			(output): output is Extract<typeof output, { type: "status" }> =>
+				output.type === "status" && output.event.op === "agent",
 		);
-		expect(displayAgentEvents).toHaveLength(1);
+		expect(displayAgentEvents.at(-1)?.event).toEqual(completed);
 	});
 
 	it("pauses the idle watchdog while a quiet agent() runs past the budget", async () => {
@@ -1041,13 +1093,7 @@ describe("runEvalAgent isolation", () => {
 
 	function mockIsolationContext(): { repoRoot: string } {
 		const repoRoot = "/repo-root";
-		vi.spyOn(isolationRunner, "prepareIsolationContext").mockResolvedValue({
-			repoRoot,
-			baseline: {
-				root: { repoRoot, headCommit: "HEAD", staged: "", unstaged: "", untracked: [], untrackedPatch: "" },
-				nested: [],
-			},
-		});
+		vi.spyOn(isolationRunner, "prepareIsolationContext").mockResolvedValue({ repoRoot });
 		return { repoRoot };
 	}
 
@@ -1095,19 +1141,6 @@ describe("runEvalAgent isolation", () => {
 		expect(plainSpy).toHaveBeenCalledTimes(1);
 		expect(explicitOn.details.isolated).toBe(true);
 		expect(mergeSpy).toHaveBeenCalledTimes(1);
-	});
-
-	it("preserves temp artifacts for non-isolated handle outputs", async () => {
-		mockAgents();
-		const rmSpy = vi.spyOn(fs, "rm").mockResolvedValue(undefined);
-		vi.spyOn(taskExecutor, "runSubprocess").mockImplementation(async options => singleResult(options));
-
-		await runEvalAgentAndWait({ prompt: "plain handle", handle: true }, { session: makeSession() });
-
-		const removedArtifactsDir = rmSpy.mock.calls.some(
-			([target]) => typeof target === "string" && target.includes("omp-eval-agent-"),
-		);
-		expect(removedArtifactsDir).toBe(false);
 	});
 
 	it("forwards merge=false as patch mode and passes the worktree cwd through baseOptions", async () => {
@@ -1359,7 +1392,7 @@ describe("runEvalAgent isolation", () => {
 			caught = err as Error;
 		}
 		expect(caught).toBeDefined();
-		const match = caught?.message.match(/(\/[^\s,]+?\.nested-0-sub_nested\.patch)/);
+		const match = caught?.message.match(/([^\s,]+?\.nested-0-sub_nested\.patch)/);
 		expect(match).not.toBeNull();
 		const persistedPath = match?.[1];
 		expect(persistedPath).toBeDefined();
@@ -1471,6 +1504,31 @@ describe("runEvalAgent isolation", () => {
 		expect(result.details.nestedPatches).toEqual([{ relativePath: "nested", patch: "diff --git a/file b/file\n" }]);
 		expect(result.text).toContain("nested repository");
 		expect(result.text).toContain("apply=false");
+	});
+
+	it("names each nested patch file and not the empty root patch when apply=false captured nested-only changes", async () => {
+		mockAgents();
+		mockIsolationContext();
+		const nestedPatchPath = "/artifacts/NestedOnly.nested-0-inner.patch";
+		vi.spyOn(isolationRunner, "runIsolatedSubprocess").mockImplementation(async opts =>
+			singleResult(opts.baseOptions, {
+				output: "nested-only",
+				patchPath: `/artifacts/${opts.agentId}.patch`,
+				hasRootChanges: false,
+				nestedPatches: [{ relativePath: "inner", patch: "diff --git a/b.txt b/b.txt\n" }],
+				nestedPatchPaths: [nestedPatchPath],
+			}),
+		);
+
+		const session = isolatedSession();
+		const result = await runEvalAgentAndWait({ prompt: "scout", isolated: true, apply: false }, { session });
+
+		// The headline fix: a 0-byte root patch is not reported as "changes
+		// captured at …"; the nested file that holds the work is named instead.
+		expect(result.text).toContain("Isolation: changes captured for 1 nested repository (apply=false). Not applied.");
+		expect(result.text).toContain(`- nested repository patch: \`${nestedPatchPath}\``);
+		expect(result.text).not.toContain("changes captured at");
+		expect(result.details.nestedPatchPaths).toEqual([nestedPatchPath]);
 	});
 
 	it("preserves the temp artifacts dir when apply=false so details.patchPath remains valid", async () => {

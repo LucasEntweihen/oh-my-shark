@@ -212,6 +212,8 @@ function expiry(node: KdlNodeView): CompiledCredentialExpiry {
 				if (!from) malformed(node);
 				result.fromPath = from;
 			}
+			const fallback = propInt(node, "fallback-ms");
+			if (fallback !== undefined) result.fallbackMs = fallback;
 			return result;
 		}
 		case "jwt": {
@@ -286,8 +288,14 @@ function scopes(node: KdlNodeView): { scopes: string[]; separator: string } {
 function validation(node: KdlNodeView): CompiledAuthValidation {
 	const kind = singleString(node);
 	const optional = propBool(node, "optional");
+	const trustForbidden = propBool(node, "trust-forbidden");
+	if (trustForbidden && !optional) malformed(node);
 	const label = propString(node, "label");
-	const common = { ...(label !== undefined ? { label } : {}), ...(optional ? { optional } : {}) };
+	const common = {
+		...(label !== undefined ? { label } : {}),
+		...(optional ? { optional } : {}),
+		...(trustForbidden ? { trustForbidden } : {}),
+	};
 	switch (kind) {
 		case "chat-completions": {
 			leaf(node, [
@@ -298,6 +306,7 @@ function validation(node: KdlNodeView): CompiledAuthValidation {
 				"max-tokens-field",
 				"max-tokens",
 				"optional",
+				"trust-forbidden",
 			]);
 			const result: CompiledAuthValidation = {
 				kind,
@@ -317,13 +326,32 @@ function validation(node: KdlNodeView): CompiledAuthValidation {
 			return result;
 		}
 		case "anthropic-messages":
-			leaf(node, ["base-url", "model", "label", "optional"]);
+			leaf(node, ["base-url", "model", "label", "optional", "trust-forbidden"]);
 			return { kind, ...common, baseUrl: requiredProp(node, "base-url"), model: requiredProp(node, "model") };
 		case "models-endpoint": {
-			leaf(node, ["url", "base-url-env", "headers-hook", "label", "optional"]);
+			leaf(node, [
+				"url",
+				"base-url-env",
+				"base-url-path",
+				"base-url-append",
+				"headers-hook",
+				"label",
+				"optional",
+				"trust-forbidden",
+			]);
 			const result: CompiledAuthValidation = { kind, ...common, url: requiredProp(node, "url") };
 			const baseUrlEnv = propString(node, "base-url-env");
 			if (baseUrlEnv !== undefined) result.baseUrlEnv = baseUrlEnv;
+			const baseUrlPath = propString(node, "base-url-path");
+			if (baseUrlPath !== undefined) {
+				if (baseUrlEnv === undefined || !baseUrlPath.startsWith("/")) malformed(node);
+				result.baseUrlPath = baseUrlPath;
+			}
+			const baseUrlAppend = propString(node, "base-url-append");
+			if (baseUrlAppend !== undefined) {
+				if (baseUrlEnv === undefined || !baseUrlAppend.startsWith("/")) malformed(node);
+				result.baseUrlAppend = baseUrlAppend;
+			}
 			if (propString(node, "headers-hook") !== undefined) result.headersHook = hookName(node, "headers-hook");
 			return result;
 		}
@@ -385,6 +413,7 @@ function callback(node: KdlNodeView): CompiledCallback {
 		"redirect-uri-env",
 		"port-fallback",
 		"manual-only",
+		"native-scheme",
 	]);
 	if (node.args.length > 0 || node.children) malformed(node);
 	const port = propInt(node, "port");
@@ -395,6 +424,7 @@ function callback(node: KdlNodeView): CompiledCallback {
 		hostname: propString(node, "hostname") ?? "localhost",
 		portFallback: propBool(node, "port-fallback") ?? true,
 		manualOnly: propBool(node, "manual-only") ?? false,
+		nativeScheme: propBool(node, "native-scheme") ?? false,
 	};
 	const redirectUri = propString(node, "redirect-uri");
 	const redirectUriEnv = propString(node, "redirect-uri-env");
@@ -433,6 +463,12 @@ function oauthCodeLogin(node: KdlNodeView): CompiledOAuthCodeLogin {
 				break;
 			case "client-secret":
 				login.clientSecret = authValue(child);
+				break;
+			case "base-url":
+				login.baseUrl = authValue(child);
+				break;
+			case "auth-url":
+				login.authUrl = authValue(child);
 				break;
 			case "authorize-url":
 				login.authorizeUrl = authValue(child);
@@ -693,11 +729,41 @@ function provider(node: KdlNodeView): CompiledAuthProvider {
 			case "allows-missing-api-key":
 				result.allowsMissingApiKey = singleBool(child);
 				break;
+			case "org-scoped-identity":
+				result.orgScopedIdentity = singleBool(child);
+				break;
+			case "login-subscription":
+				result.loginSubscription = singleBool(child);
+				break;
+			case "oauth-token-env": {
+				leaf(child, []);
+				const vars = positionalStrings(child);
+				if (vars.length === 0 || vars.some(v => !v)) malformed(child);
+				result.oauthTokenEnv = vars;
+				break;
+			}
+			case "native-auth-api": {
+				leaf(child, []);
+				const apis = positionalStrings(child);
+				if (apis.length === 0 || apis.some(api => !api)) malformed(child);
+				result.nativeAuthApis = apis;
+				break;
+			}
 			case "available":
 				result.available = singleBool(child);
 				break;
 			case "show-in-login-list":
 				result.showInLoginList = singleBool(child);
+				break;
+			case "disabled":
+				leaf(child, []);
+				result.disabled = singleString(child);
+				if (!result.disabled.trim()) malformed(child);
+				break;
+			case "login-warning":
+				leaf(child, []);
+				result.loginWarning = singleString(child);
+				if (!result.loginWarning.trim()) malformed(child);
 				break;
 			case "store-as":
 				leaf(child, []);

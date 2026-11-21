@@ -1,24 +1,25 @@
 import { beforeAll, describe, expect, it } from "bun:test";
-import { BUILTIN_COMPOSER_SHAPES, SETTINGS_SCHEMA } from "../config/settings-schema";
-import { WelcomeComponent } from "../modes/components/welcome";
-import { SHARK_LOGO } from "../modes/components/shark-logo";
-import { initTheme } from "../modes/theme/theme";
-import { DeepSeaCockpit, stripAnsi } from "./deep-sea-command";
 import { BUILTIN_EDITOR_BORDER_STYLES } from "@oh-my-pi/pi-tui";
+import { BUILTIN_COMPOSER_SHAPES } from "@oh-my-pi/pi-tui/overlays/composer-shape-registry";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
+import "../config/all-settings";
+import { lookup as lookupSetting } from "../config/registry";
+import { SHARK_LOGO } from "../modes/components/shark-logo";
+import { DeepSeaCockpit, stripAnsi } from "./deep-sea-command";
 
 describe("TUI Cockpit Layout as Standard Configuration", () => {
 	beforeAll(async () => {
 		await initTheme(false);
 	});
 
-	it("should have tui.layout defined in settings schema with default, cockpit, and compact", () => {
-		const setting = SETTINGS_SCHEMA["tui.layout"];
+	it("should have tui.layout defined in settings registry with default, cockpit, and compact", () => {
+		const setting = lookupSetting("tui.layout");
 		expect(setting).toBeDefined();
-		expect(setting.type).toBe("enum");
-		expect(setting.default).toBe("cockpit");
-		expect(setting.values).toContain("default");
-		expect(setting.values).toContain("cockpit");
-		expect(setting.values).toContain("compact");
+		expect(setting?.type).toBe("enum");
+		expect(setting?.default).toBe("cockpit");
+		expect(setting?.enumValues).toContain("default");
+		expect(setting?.enumValues).toContain("cockpit");
+		expect(setting?.enumValues).toContain("compact");
 	});
 
 	it("should have cockpit registered as a built-in composer shape option", () => {
@@ -31,7 +32,7 @@ describe("TUI Cockpit Layout as Standard Configuration", () => {
 
 	it("should render authentic SHARK_LOGO in DeepSeaCockpit sidebar and full cockpit", () => {
 		const cockpit = new DeepSeaCockpit({
-			version: "0.0.50",
+			version: "0.0.52",
 			modelName: "gemini-2.5-pro",
 			providerName: "Google",
 		});
@@ -56,88 +57,53 @@ describe("TUI Cockpit Layout as Standard Configuration", () => {
 		expect(fullText).toContain("Mission");
 	});
 
-	it("should render Deep Sea Cockpit with authentic shark when WelcomeComponent has layoutMode=cockpit", () => {
-		const welcome = new WelcomeComponent(
-			"0.0.50",
-			"gemini-2.5-pro",
-			"Google",
-			[{ name: "test-session", timeAgo: "1h ago" }],
-			[{ name: "tsserver", status: "ready", fileTypes: ["ts"] }],
-			"cockpit",
-		);
+	it("should support dynamic density switching on DeepSeaCockpit", () => {
+		const cockpit = new DeepSeaCockpit({
+			version: "0.0.52",
+			modelName: "gemini-2.5-pro",
+			providerName: "Google",
+		});
 
-		expect(welcome.getLayoutMode()).toBe("cockpit");
+		cockpit.setDensity("compact");
+		expect(cockpit.getDensity()).toBe("compact");
+		const compactText = stripAnsi(cockpit.render(100).join("\n"));
+		expect(compactText).toContain("OMSK");
 
-		const rendered = welcome.render(120);
-		expect(rendered.length).toBeGreaterThanOrEqual(15);
+		cockpit.setDensity("standard");
+		expect(cockpit.getDensity()).toBe("standard");
 
-		const renderedText = stripAnsi(rendered.join("\n"));
-		expect(renderedText).toContain("Deep Sea Cockpit");
-		expect(renderedText).toContain(";;t");
-		expect(renderedText).toContain("OMSK");
-		expect(renderedText).toContain("Mission");
+		cockpit.setDensity("advanced");
+		expect(cockpit.getDensity()).toBe("advanced");
+		const advancedText = stripAnsi(cockpit.render(120).join("\n"));
+		expect(advancedText).toContain("Deep Sea Cockpit");
 	});
 
-	it("should allow dynamic switching of layoutMode on WelcomeComponent", () => {
-		const welcome = new WelcomeComponent(
-			"0.0.50",
-			"gemini-2.5-pro",
-			"Google",
-			[],
-			[],
-			"default",
-		);
-
-		expect(welcome.getLayoutMode()).toBe("default");
-		const defaultText = stripAnsi(welcome.render(100).join("\n"));
-		expect(defaultText).toContain("Welcome back!");
-
-		welcome.setLayoutMode("compact");
-		expect(welcome.getLayoutMode()).toBe("compact");
-		const compactText = stripAnsi(welcome.render(100).join("\n"));
-		expect(compactText).toContain("COCKPIT");
-
-		welcome.setLayoutMode("cockpit");
-		expect(welcome.getLayoutMode()).toBe("cockpit");
-		const cockpitText = stripAnsi(welcome.render(120).join("\n"));
-		expect(cockpitText).toContain("Deep Sea Cockpit");
-		expect(cockpitText).toContain(";;t");
-	});
-
-	it("should have all cockpit.* settings properly defined in settings schema", () => {
-		const density = SETTINGS_SCHEMA["cockpit.density"];
+	it("should have all cockpit.* settings properly defined in settings registry", () => {
+		const density = lookupSetting("cockpit.density");
 		expect(density).toBeDefined();
-		expect(density.type).toBe("enum");
-		expect(density.default).toBe("auto");
-		expect(density.values).toContain("auto");
-		expect(density.values).toContain("advanced");
+		expect(density?.type).toBe("enum");
+		expect(density?.default).toBe("auto");
+		expect(density?.enumValues).toContain("auto");
+		expect(density?.enumValues).toContain("advanced");
 
-		const sidebar = SETTINGS_SCHEMA["cockpit.sidebar"];
+		const sidebar = lookupSetting("cockpit.sidebar");
 		expect(sidebar).toBeDefined();
-		expect(sidebar.type).toBe("enum");
-		expect(sidebar.default).toBe("auto");
-		expect(sidebar.values).toContain("hidden");
-		expect(sidebar.values).toContain("visible");
+		expect(sidebar?.type).toBe("enum");
+		expect(sidebar?.default).toBe("auto");
+		expect(sidebar?.enumValues).toContain("hidden");
+		expect(sidebar?.enumValues).toContain("visible");
 
-		const stream = SETTINGS_SCHEMA["cockpit.eventStreamLines"];
+		const stream = lookupSetting("cockpit.eventStreamLines");
 		expect(stream).toBeDefined();
-		expect(stream.type).toBe("number");
-		expect(stream.default).toBe(4);
+		expect(stream?.type).toBe("number");
+		expect(stream?.default).toBe(4);
 
-		expect(SETTINGS_SCHEMA["cockpit.showTips"]).toBeDefined();
-		expect(SETTINGS_SCHEMA["cockpit.showMemoryGraph"]).toBeDefined();
-		expect(SETTINGS_SCHEMA["cockpit.showRecentFiles"]).toBeDefined();
-		expect(SETTINGS_SCHEMA["cockpit.showProgress"]).toBeDefined();
-		expect(SETTINGS_SCHEMA["cockpit.showShortcuts"]).toBeDefined();
-		expect(SETTINGS_SCHEMA["cockpit.autoHeight"]).toBeDefined();
-	});
-
-	it("should default WelcomeComponent layoutMode to cockpit when omitted", () => {
-		const welcome = new WelcomeComponent("0.0.50", "gemini-2.5-pro", "Google");
-		expect(welcome.getLayoutMode()).toBe("cockpit");
-		const rendered = stripAnsi(welcome.render(120).join("\n"));
-		expect(rendered).toContain("Deep Sea Cockpit");
-		expect(rendered).toContain(";;t");
+		expect(lookupSetting("cockpit.showTips")).toBeDefined();
+		expect(lookupSetting("cockpit.showMemoryGraph")).toBeDefined();
+		expect(lookupSetting("cockpit.showRecentFiles")).toBeDefined();
+		expect(lookupSetting("cockpit.showProgress")).toBeDefined();
+		expect(lookupSetting("cockpit.showShortcuts")).toBeDefined();
+		expect(lookupSetting("cockpit.autoHeight")).toBeDefined();
 	});
 
 	it("should adapt responsively across multiple width breakpoints without crashing", () => {

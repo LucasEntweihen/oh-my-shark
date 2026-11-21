@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "bun:test";
 import { containsDoomania, highlightDoomania } from "@oh-my-pi/pi-coding-agent/modes/doomania";
-import { initTheme } from "@oh-my-pi/pi-coding-agent/modes/theme/theme";
+import { initTheme } from "@oh-my-pi/pi-tui/theme";
 
 beforeAll(() => {
 	initTheme();

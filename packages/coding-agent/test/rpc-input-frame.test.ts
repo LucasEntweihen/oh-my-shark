@@ -1,4 +1,9 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
+import { Agent } from "@oh-my-pi/pi-agent-core";
+import { createMockModel } from "@oh-my-pi/pi-ai/providers/mock";
+import { getBundledModel } from "@oh-my-pi/pi-catalog/models";
+import { ModelRegistry } from "@oh-my-pi/pi-coding-agent/config/model-registry";
+import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
 import { RpcHostToolBridge } from "@oh-my-pi/pi-coding-agent/modes/rpc/host-tools";
 import {
 	dispatchRpcInputFrame,
@@ -15,6 +20,10 @@ import type {
 	RpcHostToolCancelRequest,
 	RpcResponse,
 } from "@oh-my-pi/pi-coding-agent/modes/rpc/rpc-types";
+import { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
+import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
+import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
+import * as imageLoading from "@oh-my-pi/pi-coding-agent/utils/image-loading";
 
 type OutputFrame = RpcResponse | object;
 
@@ -164,6 +173,35 @@ describe("dispatchRpcInputFrame", () => {
 		expect(started).toEqual(["abort_retry", "set_auto_retry"]);
 	});
 
+	test("slow speech synthesis does not block an unrelated prompt", async () => {
+		const synth = Promise.withResolvers<RpcResponse>();
+		const { deps, outputs } = makeDeps(async command => {
+			if (command.type === "synthesize_speech") return await synth.promise;
+			if (command.type === "prompt") {
+				return { id: command.id, type: "response", command: "prompt", success: true };
+			}
+			throw new Error(`unexpected: ${command.type}`);
+		});
+
+		const synthAwait = dispatchRpcInputFrame({ id: "tts-1", type: "synthesize_speech", text: "hello" }, deps);
+		expect(synthAwait).toBeUndefined();
+		// `prompt` is backgrounded at dispatch: its response is held until
+		// admission, so the frame itself never returns a promise to await.
+		const promptAwait = dispatchRpcInputFrame({ id: "p1", type: "prompt", message: "continue" }, deps);
+		expect(promptAwait).toBeUndefined();
+		await flushMicrotasks();
+		expect(outputs.map(frame => (frame as RpcResponse).command)).toEqual(["prompt"]);
+
+		synth.resolve({
+			id: "tts-1",
+			type: "response",
+			command: "synthesize_speech",
+			success: true,
+			data: { audioBase64: "", mimeType: "audio/wav" },
+		});
+		await flushMicrotasks();
+		expect(outputs.map(frame => (frame as RpcResponse).command)).toEqual(["prompt", "synthesize_speech"]);
+	});
 	test("bash handler errors surface as an error response on the background frame", async () => {
 		const handleCommand = async (command: RpcCommand): Promise<RpcResponse> => {
 			if (command.type === "bash") throw new Error("kaboom");
@@ -231,20 +269,20 @@ describe("dispatchRpcInputFrame", () => {
 describe("RpcInputDispatcher", () => {
 	test("control frames resolve extension UI requests while an ordinary command is active", async () => {
 		const { deps, outputs } = makeDeps(async command => {
-			if (command.type !== "prompt") throw new Error(`unexpected command type: ${command.type}`);
+			if (command.type !== "get_state") throw new Error(`unexpected command type: ${command.type}`);
 			const response = await requestExtensionInput(depsRef, "ui-active", "Continue?");
 			return {
 				id: command.id,
 				type: "response",
-				command: "prompt",
+				command: "get_state",
 				success: true,
 				data: { agentInvoked: "value" in response && response.value === "continue" },
-			};
+			} as unknown as RpcResponse;
 		});
 		const depsRef = deps;
 		const dispatcher = new RpcInputDispatcher({ deps });
 
-		dispatcher.dispatch({ id: "prompt-1", type: "prompt", message: "ask extension" });
+		dispatcher.dispatch({ id: "cmd-1", type: "get_state" });
 		await flushMicrotasks();
 
 		expect(outputs).toEqual([
@@ -267,9 +305,9 @@ describe("RpcInputDispatcher", () => {
 				message: "Continue?",
 			},
 			{
-				id: "prompt-1",
+				id: "cmd-1",
 				type: "response",
-				command: "prompt",
+				command: "get_state",
 				success: true,
 				data: { agentInvoked: true },
 			},
@@ -321,13 +359,23 @@ describe("RpcInputDispatcher", () => {
 						followUpMode: "all",
 						interruptMode: "immediate",
 						sessionId: "session-1",
+						cwd: "/tmp",
+						autoRetryEnabled: false,
+						planModeEnabled: false,
+						agentsPaused: false,
 						autoCompactionEnabled: false,
 						fastModeEnabled: false,
 						fastModeActive: false,
+						slowModeSupported: false,
+						slowModeEnabled: false,
 						tokensPerSecond: null,
 						messageCount: 0,
 						queuedMessageCount: 0,
+						hasPendingAsyncWork: false,
+						isSettled: true,
+						queuedMessages: { steering: [], followUp: [], liveSteered: 0 },
 						todoPhases: [],
+						goal: null,
 					},
 				};
 			}
@@ -349,6 +397,187 @@ describe("RpcInputDispatcher", () => {
 		expect((outputs[0] as RpcResponse).id).toBe("first");
 		expect((outputs[1] as RpcResponse).id).toBe("second");
 		expect((outputs[1] as RpcResponse).command).toBe("get_state");
+	});
+
+	test("a long manual compact starts in order but does not hold later commands", async () => {
+		const releaseFirst = Promise.withResolvers<void>();
+		const releaseCompact = Promise.withResolvers<void>();
+		const started: string[] = [];
+		const { deps, outputs } = makeDeps(async command => {
+			started.push(command.type);
+			if (command.type === "abort_retry") await releaseFirst.promise;
+			if (command.type === "compact") await releaseCompact.promise;
+			return { id: command.id, type: "response", command: command.type, success: true } as RpcResponse;
+		});
+		const dispatcher = new RpcInputDispatcher({ deps });
+
+		dispatcher.dispatch({ id: "first", type: "abort_retry" });
+		dispatcher.dispatch({ id: "compact", type: "compact" });
+		dispatcher.dispatch({ id: "abort", type: "abort" });
+		await flushMicrotasks();
+		// Still behind the earlier ordinary command.
+		expect(started).toEqual(["abort_retry"]);
+
+		releaseFirst.resolve();
+		await flushMicrotasks();
+		// The abort that cancels a compaction must not wait for it to finish.
+		expect(started).toEqual(["abort_retry", "compact", "abort"]);
+		expect(outputs.map(frame => (frame as RpcResponse).id)).toEqual(["first", "abort"]);
+
+		releaseCompact.resolve();
+		await dispatcher.drain();
+		expect(outputs.map(frame => (frame as RpcResponse).id)).toEqual(["first", "abort", "compact"]);
+	});
+
+	test("plan approval leaves the serial tail only when it compacts", async () => {
+		const release = Promise.withResolvers<void>();
+		const started: string[] = [];
+		const { deps } = makeDeps(async command => {
+			started.push(command.id ?? command.type);
+			if (command.type === "plan_approval") await release.promise;
+			return { id: command.id, type: "response", command: command.type, success: true } as RpcResponse;
+		});
+		const dispatcher = new RpcInputDispatcher({ deps });
+
+		dispatcher.dispatch({ id: "compact-plan", type: "plan_approval", approved: true, option: "compact" });
+		dispatcher.dispatch({ id: "state-1", type: "get_state" });
+		dispatcher.dispatch({ id: "fresh-plan", type: "plan_approval", approved: true, option: "execute" });
+		dispatcher.dispatch({ id: "state-2", type: "get_state" });
+		await flushMicrotasks();
+		// A fresh-session approval still holds later commands; a compacting one does not.
+		expect(started).toEqual(["compact-plan", "state-1", "fresh-plan"]);
+
+		release.resolve();
+		await dispatcher.drain();
+		expect(started).toEqual(["compact-plan", "state-1", "fresh-plan", "state-2"]);
+	});
+
+	test("a steer_subagent waiting for the subagent to accept does not block a later abort", async () => {
+		const accepted = Promise.withResolvers<void>();
+		const started: string[] = [];
+		const { deps, outputs } = makeDeps(async command => {
+			started.push(command.type);
+			if (command.type === "steer_subagent") {
+				await accepted.promise;
+				return { id: command.id, type: "response", command: "steer_subagent", success: true };
+			}
+			if (command.type === "abort") return { id: command.id, type: "response", command: "abort", success: true };
+			throw new Error(`unexpected command type: ${command.type}`);
+		});
+		const dispatcher = new RpcInputDispatcher({ deps });
+
+		dispatcher.dispatch({ id: "steer", type: "steer_subagent", subagentId: "SubagentA", message: "go" });
+		dispatcher.dispatch({ id: "abort", type: "abort" });
+		await flushMicrotasks();
+
+		expect(started).toEqual(["steer_subagent", "abort"]);
+		expect(outputs.map(frame => (frame as RpcResponse).id)).toEqual(["abort"]);
+
+		accepted.resolve();
+		await flushMicrotasks();
+		expect(outputs.map(frame => (frame as RpcResponse).id)).toEqual(["abort", "steer"]);
+	});
+
+	test("a pending handoff leaves the RPC queue available for abort", async () => {
+		const settled = Promise.withResolvers<void>();
+		const { deps, outputs } = makeDeps(async command => {
+			switch (command.type) {
+				case "handoff":
+					await settled.promise;
+					return { id: command.id, type: "response", command: "handoff", success: true, data: {} };
+				case "abort":
+					return { id: command.id, type: "response", command: "abort", success: true };
+				default:
+					throw new Error(`unexpected command: ${command.type}`);
+			}
+		});
+		const dispatcher = new RpcInputDispatcher({ deps });
+
+		dispatcher.dispatch({ id: "summary", type: "handoff" });
+		dispatcher.dispatch({ id: "cancel", type: "abort" });
+		try {
+			await flushMicrotasks();
+			expect(outputs).toEqual([expect.objectContaining({ id: "cancel", command: "abort", success: true })]);
+		} finally {
+			settled.resolve();
+		}
+		await flushMicrotasks();
+		expect(outputs[1]).toMatchObject({ id: "summary", command: "handoff", success: true });
+	});
+
+	test("a pending predict_word does not hold back later commands", async () => {
+		const releasePrediction = Promise.withResolvers<void>();
+		const { deps, outputs } = makeDeps(async command => {
+			if (command.type === "predict_word") {
+				await releasePrediction.promise;
+				return { id: command.id, type: "response", command: "predict_word", success: true, data: { suffix: "er" } };
+			}
+			if (command.type === "abort_retry") {
+				return { id: command.id, type: "response", command: "abort_retry", success: true };
+			}
+			throw new Error(`unexpected command type: ${command.type}`);
+		});
+		const dispatcher = new RpcInputDispatcher({ deps });
+
+		dispatcher.dispatch({ id: "predict", type: "predict_word", text: "The weath", cursor: 9 });
+		dispatcher.dispatch({ id: "after", type: "abort_retry" });
+		await dispatcher.drain();
+		expect(outputs.map(frame => (frame as RpcResponse).id)).toEqual(["after"]);
+
+		releasePrediction.resolve();
+		await flushMicrotasks();
+		expect(outputs.map(frame => (frame as RpcResponse).id)).toEqual(["after", "predict"]);
+	});
+
+	test("a prompt waits for an earlier session change without blocking a later abort", async () => {
+		const reset = Promise.withResolvers<void>();
+		const admission = Promise.withResolvers<void>();
+		let currentSession = "old";
+		let promptedSession: string | undefined;
+		let background: Promise<void> | undefined;
+		const { deps, outputs } = makeDeps(async command => {
+			if (command.type === "new_session") {
+				await reset.promise;
+				currentSession = "new";
+				return {
+					id: command.id,
+					type: "response",
+					command: "new_session",
+					success: true,
+					data: { cancelled: false },
+				};
+			}
+			if (command.type === "prompt") {
+				promptedSession = currentSession;
+				await admission.promise;
+				return { id: command.id, type: "response", command: "prompt", success: true };
+			}
+			if (command.type === "abort") {
+				return { id: command.id, type: "response", command: "abort", success: true };
+			}
+			throw new Error(`unexpected command type: ${command.type}`);
+		});
+		deps.trackBackgroundTask = task => {
+			background = task;
+		};
+		const dispatcher = new RpcInputDispatcher({ deps });
+		try {
+			dispatcher.dispatch({ id: "reset", type: "new_session" });
+			dispatcher.dispatch({ id: "prompt", type: "prompt", message: "use the new session" });
+			dispatcher.dispatch({ id: "abort", type: "abort" });
+			await flushMicrotasks();
+			expect(promptedSession).toBeUndefined();
+			reset.resolve();
+			await dispatcher.drain();
+			expect(promptedSession).toBe("new");
+			expect(outputs.map(frame => (frame as RpcResponse).id)).toEqual(["reset", "abort"]);
+		} finally {
+			reset.resolve();
+			admission.resolve();
+			await dispatcher.drain();
+			await background;
+		}
+		expect(outputs.map(frame => (frame as RpcResponse).id)).toEqual(["reset", "abort", "prompt"]);
 	});
 
 	test("serial command rejection emits an error response and does not poison the queue", async () => {
@@ -404,23 +633,22 @@ describe("RpcInputDispatcher", () => {
 		]);
 		const started: string[] = [];
 		const { deps, outputs } = makeDeps(async command => {
-			if (command.type !== "prompt") throw new Error(`unexpected command type: ${command.type}`);
+			if (command.type !== "get_state") throw new Error(`unexpected command type: ${command.type}`);
 			started.push(command.id ?? "");
 			await tool.execute(`toolu_${command.id}`, {});
 			return {
 				id: command.id,
 				type: "response",
-				command: "prompt",
+				command: "get_state",
 				success: true,
 				data: { agentInvoked: true },
-			};
+			} as unknown as RpcResponse;
 		});
 		const dispatcher = new RpcInputDispatcher({ deps });
 
-		dispatcher.dispatch({ id: "active", type: "prompt", message: "active host tool" });
-		dispatcher.dispatch({ id: "queued", type: "prompt", message: "queued host tool" });
+		dispatcher.dispatch({ id: "active", type: "get_state" });
+		dispatcher.dispatch({ id: "queued", type: "get_state" });
 		await flushMicrotasks();
-
 		expect(started).toEqual(["active"]);
 		expect(hostToolFrames).toHaveLength(1);
 		expect(hostToolFrames[0]).toMatchObject({
@@ -439,14 +667,14 @@ describe("RpcInputDispatcher", () => {
 			{
 				id: "active",
 				type: "response",
-				command: "prompt",
+				command: "get_state",
 				success: false,
 				error: disconnectMessage,
 			},
 			{
 				id: "queued",
 				type: "response",
-				command: "prompt",
+				command: "get_state",
 				success: false,
 				error: disconnectMessage,
 			},
@@ -459,26 +687,25 @@ describe("RpcInputDispatcher", () => {
 		const started: string[] = [];
 		const { deps, outputs } = makeDeps(
 			async command => {
-				if (command.type !== "prompt") throw new Error(`unexpected command type: ${command.type}`);
+				if (command.type !== "get_state") throw new Error(`unexpected command type: ${command.type}`);
 				started.push(command.id ?? "");
-				await requestExtensionInput(depsRef, `${command.id}-dialog`, command.message);
+				await requestExtensionInput(depsRef, `${command.id}-dialog`, `${command.id} dialog`);
 				return {
 					id: command.id,
 					type: "response",
-					command: "prompt",
+					command: "get_state",
 					success: true,
 					data: { agentInvoked: true },
-				};
+				} as unknown as RpcResponse;
 			},
 			{ pendingExtensionRequests },
 		);
 		const depsRef = deps;
 		const dispatcher = new RpcInputDispatcher({ deps });
 
-		dispatcher.dispatch({ id: "active", type: "prompt", message: "active dialog" });
-		dispatcher.dispatch({ id: "queued", type: "prompt", message: "queued dialog" });
+		dispatcher.dispatch({ id: "active", type: "get_state" });
+		dispatcher.dispatch({ id: "queued", type: "get_state" });
 		await flushMicrotasks();
-
 		expect(started).toEqual(["active"]);
 		expect(outputs).toEqual([
 			{
@@ -503,7 +730,7 @@ describe("RpcInputDispatcher", () => {
 			{
 				id: "active",
 				type: "response",
-				command: "prompt",
+				command: "get_state",
 				success: false,
 				error: disconnectMessage,
 			},
@@ -516,11 +743,92 @@ describe("RpcInputDispatcher", () => {
 			{
 				id: "queued",
 				type: "response",
-				command: "prompt",
+				command: "get_state",
 				success: false,
 				error: disconnectMessage,
 			},
 		]);
+	});
+
+	test("a prompt blocked on admission does not hold up abort (RPC queue must keep flowing during vision preprocessing)", async () => {
+		const authStorage = await AuthStorage.create(":memory:");
+		authStorage.keys.setRuntime("anthropic", "test-key");
+		const modelRegistry = new ModelRegistry(authStorage);
+		const sessionManager = SessionManager.inMemory();
+		const model = getBundledModel("anthropic", "claude-sonnet-4-5");
+		if (!model) throw new Error("Expected claude-sonnet-4-5 model to exist");
+		const mock = createMockModel({ responses: [{ content: ["should not run before release"] }] });
+		const agent = new Agent({
+			getApiKey: () => "test-key",
+			initialState: { model, systemPrompt: ["Test"], tools: [] },
+			streamFn: mock.stream,
+		});
+		const session = new AgentSession({
+			agent,
+			sessionManager,
+			settings: Settings.isolated({ "compaction.enabled": false, "todo.enabled": false }),
+			modelRegistry,
+		});
+
+		try {
+			// Real vision/preprocessing seam already used elsewhere (see
+			// agent-session-aside-delivery.test.ts): gate normalizeModelContextImages
+			// so admission spans real (simulated) wall-clock time, exactly like a slow
+			// vision-model description call for a text-only model.
+			const normalizeStarted = Promise.withResolvers<void>();
+			const releaseNormalize = Promise.withResolvers<void>();
+			const normalizeSpy = spyOn(imageLoading, "normalizeModelContextImages").mockImplementation(async images => {
+				normalizeStarted.resolve();
+				await releaseNormalize.promise;
+				return images;
+			});
+
+			let trackedPromptTask: Promise<void> | undefined;
+			const handleCommand: RpcInputFrameDeps["handleCommand"] = async command => {
+				if (command.type === "prompt") {
+					// Mirrors the real RPC "prompt" handler: the response is held until
+					// the message is admitted (or settles without ever being admitted).
+					const admitted = Promise.withResolvers<void>();
+					const settled = session.prompt(command.message, { onPromptAdmitted: admitted.resolve }).catch(() => {});
+					await Promise.race([admitted.promise, settled]);
+					return { id: command.id, type: "response", command: "prompt", success: true };
+				}
+				if (command.type === "abort") {
+					await session.abort({ reason: "user-interrupt" });
+					return { id: command.id, type: "response", command: "abort", success: true };
+				}
+				throw new Error(`unexpected command type: ${command.type}`);
+			};
+			const { deps, outputs } = makeDeps(handleCommand);
+			deps.trackBackgroundTask = task => {
+				trackedPromptTask = task;
+			};
+			const dispatcher = new RpcInputDispatcher({ deps });
+
+			dispatcher.dispatch({ id: "p1", type: "prompt", message: "go while normalizing" });
+			await normalizeStarted.promise;
+			expect(trackedPromptTask).toBeInstanceOf(Promise);
+			expect(outputs).toHaveLength(0);
+
+			dispatcher.dispatch({ id: "a1", type: "abort" });
+			// Bounded poll (not a fixed-duration guess): before the fix, `prompt`
+			// serializes through the same tail chain as `abort`, so `abort` never
+			// starts while normalization is gated — this loop would exhaust without
+			// `outputs` ever gaining the abort response.
+			for (let i = 0; i < 50 && outputs.length === 0; i++) {
+				await flushMicrotasks();
+			}
+			expect(outputs).toEqual([{ id: "a1", type: "response", command: "abort", success: true }]);
+
+			releaseNormalize.resolve();
+			await trackedPromptTask;
+			expect(outputs).toContainEqual({ id: "p1", type: "response", command: "prompt", success: true });
+
+			normalizeSpy.mockRestore();
+		} finally {
+			await session.dispose();
+			authStorage.close();
+		}
 	});
 });
 

@@ -1,5 +1,5 @@
-import { createGradientHighlighter, type KeywordHighlighter } from "./gradient-highlight";
-import { keywordInProse } from "./markdown-prose";
+import { createGradientHighlighter, type KeywordHighlighter } from "@oh-my-pi/pi-tui/prompt/gradient-highlight";
+import { keywordInProse } from "@oh-my-pi/pi-tui/prompt/markdown-prose";
 
 /**
  * "doomania" and "/doomania" keyword support.
@@ -8,7 +8,7 @@ import { keywordInProse } from "./markdown-prose";
  * paints it with a green-family gradient ({@link highlightDoomania}).
  */
 
-const DOOMANIA_PROBE = /doomania/;
+const DOOMANIA_PROBE = "doomania";
 // Match standalone /doomania, \doomania, or doomania with proper word boundaries
 const DOOMANIA_HIGHLIGHT =
 	/(?<![\p{L}\p{N}_./\\-])(?<!::)(?:[/|\\])?doomania(?![\p{L}\p{N}_/\\-])(?!\.[\p{L}\p{N}_-])(?!\()/gu;
@@ -27,7 +27,7 @@ export const highlightDoomania: KeywordHighlighter = createGradientHighlighter({
 	probe: DOOMANIA_PROBE,
 	highlight: DOOMANIA_HIGHLIGHT,
 	stops: 14,
-	hue: t => 105 + t * 55,
+	hue: (t: number) => 105 + t * 55,
 	saturation: 90,
-	lightness: 60,
+	lightness: () => 60,
 });

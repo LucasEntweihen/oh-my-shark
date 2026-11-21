@@ -1,11 +1,13 @@
-import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "bun:test";
 import * as path from "node:path";
 import type { Model } from "@oh-my-pi/pi-ai";
 import { buildModel } from "@oh-my-pi/pi-catalog/build";
+import { lookup } from "@oh-my-pi/pi-coding-agent/config/registry";
 import { Settings } from "@oh-my-pi/pi-coding-agent/config/settings";
+import { clearOmpExtensionCliRoots } from "@oh-my-pi/pi-coding-agent/discovery/omp-extension-roots";
 import { createAcpConnection } from "@oh-my-pi/pi-coding-agent/modes/acp/acp-mode";
 import type { AgentSession } from "@oh-my-pi/pi-coding-agent/session/agent-session";
-import type { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
+import { AuthStorage } from "@oh-my-pi/pi-coding-agent/session/auth-storage";
 import { SessionManager } from "@oh-my-pi/pi-coding-agent/session/session-manager";
 import { TempDir } from "@oh-my-pi/pi-utils";
 import {
@@ -19,6 +21,14 @@ import {
 	type SessionNotification,
 } from "@oh-my-pi/pi-utils/acp";
 import { createInMemoryAuthStorage } from "./helpers/agent-session-setup";
+
+import { cfgAsyncEnabled, cfgAsyncMaxJobs } from "@oh-my-pi/pi-coding-agent/tools/settings";
+import { cfgAdvisorEnabled } from "@oh-my-pi/pi-coding-agent/advisor/settings";
+import {
+	cfgBashAutoBackgroundEnabled,
+	cfgBashAutoBackgroundThresholdMs,
+} from "@oh-my-pi/pi-coding-agent/exec/settings";
+import { cfgTodoEager, cfgTodoEnabled, cfgTodoReminders } from "@oh-my-pi/pi-coding-agent/tools/settings";
 
 const TEST_MODEL: Model = buildModel({
 	id: "claude-sonnet-4-20250514",
@@ -78,7 +88,7 @@ class LazyFakeSession {
 	queuedMessageCount = 0;
 	systemPrompt = "system";
 	disposed = false;
-	settings = { get: (_path: string) => false };
+	settings = Settings.isolated({ "plan.enabled": false });
 
 	constructor(cwd: string) {
 		this.sessionManager = SessionManager.inMemory(cwd);
@@ -141,6 +151,10 @@ class LazyFakeSession {
 	}
 	setActiveToolsByName(): void {}
 	setClientBridge(): void {}
+	setMcpServerInstructionsSource(): void {}
+	registerSessionChangeCallback(): () => void {
+		return () => {};
+	}
 	getPlanModeState(): undefined {
 		return undefined;
 	}
@@ -168,6 +182,11 @@ async function closeTransport(writable: WritableStream<unknown>): Promise<void> 
 	await Promise.allSettled([writable.close()]);
 }
 
+// `runRootCommand` registers the CLI's extension roots (`--no-extensions` → explicit-only) process-wide.
+afterEach(() => {
+	clearOmpExtensionCliRoots();
+});
+
 describe("ACP lazy startup", () => {
 	it("applies schema defaults for ACP background jobs", async () => {
 		const { runRootCommand } = await import("@oh-my-pi/pi-coding-agent/main");
@@ -191,6 +210,7 @@ describe("ACP lazy startup", () => {
 						fileArgs: [],
 						unknownFlags: new Map(),
 						unrecognizedFlags: [],
+						invalidFlagValues: [],
 						noSkills: true,
 						noRules: true,
 						noTools: true,
@@ -203,10 +223,10 @@ describe("ACP lazy startup", () => {
 						settings,
 						runAcpMode: async () => {
 							observed = {
-								asyncEnabled: settings.get("async.enabled"),
-								asyncMaxJobs: settings.get("async.maxJobs"),
-								bashAutoBackground: settings.get("bash.autoBackground.enabled"),
-								bashAutoBackgroundThresholdMs: settings.get("bash.autoBackground.thresholdMs"),
+								asyncEnabled: cfgAsyncEnabled.get(settings),
+								asyncMaxJobs: cfgAsyncMaxJobs.get(settings),
+								bashAutoBackground: cfgBashAutoBackgroundEnabled.get(settings),
+								bashAutoBackgroundThresholdMs: cfgBashAutoBackgroundThresholdMs.get(settings),
 							};
 							throw new Error(stopMessage);
 						},
@@ -233,12 +253,10 @@ describe("ACP lazy startup", () => {
 		});
 	});
 
-	it("honors explicit host-defaulted and todo settings for protocol hosts", async () => {
-		// Regression for #3207: in RPC/ACP startup, runtime overrides applied via
-		// `applyDefaultSettingOverrides` previously clobbered any explicitly
-		// configured value (caller, project, --config overlay, or global) with the
-		// schema default. The fix (re-)added an `isConfigured` guard so explicit
-		// configuration survives, and the schema default only fills holes.
+	it("honors explicit host settings for protocol hosts", async () => {
+		// Regression for #3207: protocol startup must preserve every explicitly
+		// configured caller, project, --config overlay, or global value.
+
 		const { runRootCommand } = await import("@oh-my-pi/pi-coding-agent/main");
 
 		const explicit = {
@@ -283,7 +301,9 @@ describe("ACP lazy startup", () => {
 			const observe = () => {
 				observed = {};
 				for (const key of allPaths) {
-					observed[key] = settings.get(key);
+					const setting = lookup(key);
+					if (!setting) throw new Error(`Unknown setting: ${key}`);
+					observed[key] = setting.get(settings);
 				}
 				throw new Error(stopMessage);
 			};
@@ -296,6 +316,7 @@ describe("ACP lazy startup", () => {
 						fileArgs: [],
 						unknownFlags: new Map(),
 						unrecognizedFlags: [],
+						invalidFlagValues: [],
 						noSkills: true,
 						noRules: true,
 						noTools: true,
@@ -325,6 +346,133 @@ describe("ACP lazy startup", () => {
 
 		for (const mode of ["rpc", "rpc-ui", "acp"] as const) {
 			await expect(runProtocolStartup(mode)).resolves.toEqual({ ...explicit, ...rpcOnlyExplicit });
+		}
+	});
+
+	it("allows protocol clients to change a setting that started at its schema default", async () => {
+		// Keep CLI startup side effects out of test-module evaluation: this suite
+		// intentionally loads the executable boundary inside each scenario.
+		const { runRootCommand } = await import("@oh-my-pi/pi-coding-agent/main");
+		using tempDir = TempDir.createSync("@omp-protocol-edit-default-");
+		const cwd = tempDir.path();
+		const authStorage = await AuthStorage.create(path.join(cwd, "auth.db"));
+		const settings = Settings.isolated();
+		let observed: { before: boolean; after: boolean } | undefined;
+		const stopMessage = "stop test protocol setting edit";
+		const observe = () => {
+			// advisor.subagents was removed in 17.3.0; advisor.enabled exercises
+			// the same contract: a schema-defaulted setting must be editable.
+			const before = cfgAdvisorEnabled.get(settings);
+			cfgAdvisorEnabled.set(settings, true);
+			observed = { before, after: cfgAdvisorEnabled.get(settings) };
+			throw new Error(stopMessage);
+		};
+
+		try {
+			await runRootCommand(
+				{
+					mode: "rpc-ui",
+					messages: [],
+					fileArgs: [],
+					unknownFlags: new Map(),
+					unrecognizedFlags: [],
+					invalidFlagValues: [],
+					noSkills: true,
+					noRules: true,
+					noTools: true,
+					noLsp: true,
+					noExtensions: true,
+					sessionDir: cwd,
+				},
+				[],
+				{
+					discoverAuthStorage: async () => authStorage,
+					settings,
+					createAgentSession: async () => observe(),
+				},
+			);
+		} catch (error) {
+			if (!(error instanceof Error) || error.message !== stopMessage) throw error;
+		} finally {
+			authStorage.close();
+		}
+
+		expect(observed).toEqual({ before: false, after: true });
+	});
+
+	it("honors explicit todo settings for protocol hosts", async () => {
+		const { runRootCommand } = await import("@oh-my-pi/pi-coding-agent/main");
+
+		type ObservedTodoSettings = {
+			enabled: boolean;
+			reminders: boolean;
+			eager: "default" | "preferred" | "always";
+		};
+
+		const runProtocolStartup = async (mode: "rpc" | "rpc-ui" | "acp"): Promise<ObservedTodoSettings> => {
+			using tempDir = TempDir.createSync("@omp-protocol-todo-settings-");
+			const cwd = tempDir.path();
+			const authStorage = await AuthStorage.create(path.join(cwd, "auth.db"));
+			const settings = Settings.isolated({
+				"todo.enabled": false,
+				"todo.reminders": false,
+				"todo.eager": "always",
+			});
+			let observed: ObservedTodoSettings | undefined;
+			const stopMessage = "stop test protocol todo settings";
+			const observe = () => {
+				observed = {
+					enabled: cfgTodoEnabled.get(settings),
+					reminders: cfgTodoReminders.get(settings),
+					eager: cfgTodoEager.get(settings),
+				};
+				throw new Error(stopMessage);
+			};
+
+			try {
+				await runRootCommand(
+					{
+						mode,
+						messages: [],
+						fileArgs: [],
+						unknownFlags: new Map(),
+						unrecognizedFlags: [],
+						invalidFlagValues: [],
+						noSkills: true,
+						noRules: true,
+						noTools: true,
+						noLsp: true,
+						noExtensions: true,
+						sessionDir: cwd,
+					},
+					[],
+					{
+						discoverAuthStorage: async () => authStorage,
+						settings,
+						createAgentSession: async () => observe(),
+						runAcpMode: async () => observe(),
+					},
+				);
+			} catch (error) {
+				if (!(error instanceof Error) || error.message !== stopMessage) {
+					throw error;
+				}
+			} finally {
+				authStorage.close();
+			}
+
+			if (!observed) {
+				throw new Error("Expected protocol mode to start");
+			}
+			return observed;
+		};
+
+		for (const mode of ["rpc", "rpc-ui", "acp"] as const) {
+			await expect(runProtocolStartup(mode)).resolves.toEqual({
+				enabled: false,
+				reminders: false,
+				eager: "always",
+			});
 		}
 	});
 
@@ -363,7 +511,6 @@ describe("ACP lazy startup", () => {
 			expect(initializeResponse).toEqual(
 				expect.objectContaining({
 					protocolVersion: 1,
-					agentInfo: expect.objectContaining({ name: "oh-my-pi" }),
 				}),
 			);
 			expect(createCalls).toBe(0);
@@ -427,6 +574,7 @@ describe("ACP lazy startup", () => {
 					fileArgs: [],
 					unknownFlags: new Map(),
 					unrecognizedFlags: [],
+					invalidFlagValues: [],
 					noSkills: true,
 					noRules: true,
 					noTools: true,

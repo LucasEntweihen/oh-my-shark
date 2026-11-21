@@ -29,7 +29,7 @@ function setNoPty(value: string | undefined): void {
 }
 
 function interactiveContext() {
-	return { hasUI: true, ui: {} };
+	return { hasUI: true, ui: { supportsCustom: true } };
 }
 
 describe("bash PTY selection", () => {
@@ -57,8 +57,17 @@ describe("bash PTY selection", () => {
 		expect(canUseInteractiveBashPty(true, interactiveContext())).toBe(false);
 	});
 
-	it("disables interactive PTY when pty is false", () => {
-		setPlatform("win32");
-		expect(canUseInteractiveBashPty(false, interactiveContext())).toBe(false);
+	it("does not pick the PTY overlay for a UI host that cannot render it", () => {
+		setNoPty(undefined);
+
+		// RPC and ACP report hasUI but leave supportsCustom unset.
+		expect(canUseInteractiveBashPty(true, { hasUI: true, ui: {} })).toBe(false);
+	});
+
+	it("picks an opted-in host terminal even under the PI_NO_PTY that rpc-ui mode sets", () => {
+		setNoPty("1");
+
+		expect(canUseInteractiveBashPty(true, { hasUI: true, ui: { interactiveTerminal: {} } })).toBe(true);
+		expect(canUseInteractiveBashPty(false, { hasUI: true, ui: { interactiveTerminal: {} } })).toBe(false);
 	});
 });

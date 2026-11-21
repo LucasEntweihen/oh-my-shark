@@ -2,14 +2,14 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AgentDrawer } from "./components/agents/AgentDrawer";
 import { AgentsPanel } from "./components/agents/AgentsPanel";
+import { BibleStrongDictionaryView } from "./components/bible/BibleStrongDictionaryView";
+import { SharkViewer } from "./components/shark/SharkViewer";
 import { Banners } from "./components/shell/Banners";
 import { Composer } from "./components/shell/Composer";
 import { ConnectScreen } from "./components/shell/ConnectScreen";
 import { HeaderBar } from "./components/shell/HeaderBar";
-import { SharkViewer } from "./components/shark/SharkViewer";
 import { Toasts } from "./components/shell/Toasts";
 import { Transcript } from "./components/transcript/Transcript";
-import { BibleStrongDictionaryView } from "./components/bible/BibleStrongDictionaryView";
 import { GuestClient } from "./lib/client";
 import { useGuestSnapshot } from "./lib/use-guest";
 import type { ToolRenderHost } from "./tool-render";
@@ -155,12 +155,9 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 
 	const title = snap.header?.title ?? snap.state?.sessionName ?? "session";
 	useEffect(() => {
-		document.title = `${title} · omp collab`;
+		document.title = `${title} · Oh My Shark collab`;
 	}, [title]);
 
-	const drawerAgent = selectedId != null ? snap.agents.find(a => a.id === selectedId) : undefined;
-
-	// Extrai texto da última mensagem de streaming ou entrada do transcript para TTS
 	const lastText = useMemo(() => {
 		if (snap.stream && "content" in snap.stream && Array.isArray(snap.stream.content)) {
 			return snap.stream.content
@@ -182,27 +179,38 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 		}
 		return undefined;
 	}, [snap.stream, snap.entries]);
+
+	const drawerAgent = selectedId != null ? snap.agents.find(a => a.id === selectedId) : undefined;
+	const toggleRail = useCallback(() => setRailOpen(open => !open), []);
+	const toggleShark = useCallback(() => setSharkOpen(open => !open), []);
+	const toggleTts = useCallback(() => setTtsEnabled(enabled => !enabled), []);
+	const closeDrawer = useCallback(() => setSelectedId(null), []);
+
 	return (
 		<div className="sh-app">
+			<div className="sh-ambient" />
 			<HeaderBar
-				snapshot={snap}
+				header={snap.header}
+				state={snap.state}
+				phase={snap.phase}
+				readOnly={snap.readOnly}
 				subCount={subCount}
 				railOpen={railOpen}
 				sharkOpen={sharkOpen}
 				ttsEnabled={ttsEnabled}
 				agencyMode={agencyMode}
 				onSelectAgencyMode={setAgencyMode}
-				onToggleRail={() => setRailOpen(open => !open)}
-				onToggleShark={() => setSharkOpen(open => !open)}
-				onToggleTts={() => setTtsEnabled(enabled => !enabled)}
+				onToggleRail={toggleRail}
+				onToggleShark={toggleShark}
+				onToggleTts={toggleTts}
 				onLeave={onLeave}
 			/>
 			<main className="sh-main">
-				<section className="sh-content" data-rail={railOpen ? "true" : "false"}>
+				<section className="sh-panel" data-rail={railOpen ? "true" : "false"}>
 					{agencyMode === "bible" ? (
 						<BibleStrongDictionaryView />
 					) : (
-						<div className="sh-transcript" style={{ maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
+						<div className="sh-transcript">
 							<Transcript
 								entries={snap.entries}
 								stream={snap.stream}
@@ -214,6 +222,14 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 							/>
 						</div>
 					)}
+					<Composer
+						client={client}
+						phase={snap.phase}
+						readOnly={snap.readOnly}
+						uiRequest={snap.uiRequest}
+						working={snap.working}
+						queuedMessageCount={snap.state?.queuedMessageCount ?? 0}
+					/>
 				</section>
 				{sharkOpen && (
 					<div
@@ -224,10 +240,9 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 							display: "flex",
 							flexDirection: "column",
 							borderLeft: "1px solid var(--border, #2A3245)",
-							background: "var(--bg-shark-skin, #1A2235)",
+							background: "var(--bg-raised, #1A2235)",
 						}}
 					>
-						{/* Toggle entre Bible Strong Avatar e Shark 3D Biometrics */}
 						<div
 							style={{
 								display: "flex",
@@ -249,7 +264,7 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 										fontWeight: 600,
 										background:
 											avatarViewMode === "bible-avatar" ? "var(--neon-cyan, #00F0FF)" : "transparent",
-										color: avatarViewMode === "bible-avatar" ? "#070B14" : "var(--text-muted, #94A3B8)",
+										color: avatarViewMode === "bible-avatar" ? "#070B14" : "var(--fg-muted, #94A3B8)",
 										border: "none",
 										cursor: "pointer",
 									}}
@@ -266,7 +281,7 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 										fontWeight: 600,
 										background:
 											avatarViewMode === "shark-3d" ? "var(--abyssal-purple, #8A2BE2)" : "transparent",
-										color: avatarViewMode === "shark-3d" ? "#FFFFFF" : "var(--text-muted, #94A3B8)",
+										color: avatarViewMode === "shark-3d" ? "#FFFFFF" : "var(--fg-muted, #94A3B8)",
 										border: "none",
 										cursor: "pointer",
 									}}
@@ -274,7 +289,7 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 									Shark 3D
 								</button>
 							</div>
-							<span style={{ fontSize: "0.7rem", color: "var(--text-muted, #94A3B8)" }}>HUD v2.0</span>
+							<span style={{ fontSize: "0.7rem", color: "var(--fg-muted, #94A3B8)" }}>HUD v2.0</span>
 						</div>
 
 						<div style={{ flex: 1, overflow: "hidden" }}>
@@ -297,21 +312,27 @@ function Session({ client, onLeave, onRejoin }: SessionProps): ReactNode {
 					</>
 				)}
 			</main>
-			<Composer client={client} snapshot={snap} />
 			{drawerAgent && (
 				<>
-					<div className="ag-drawer-backdrop" onClick={() => setSelectedId(null)} />
+					<div className="ag-drawer-backdrop" onClick={closeDrawer} />
 					<AgentDrawer
 						agent={drawerAgent}
 						progress={snap.progress.get(drawerAgent.id)}
+						lifecycle={snap.lifecycle.get(drawerAgent.id)}
 						client={client}
 						readOnly={snap.readOnly}
 						host={toolHost}
-						onClose={() => setSelectedId(null)}
+						onClose={closeDrawer}
 					/>
 				</>
 			)}
-			<Banners phase={snap.phase} endedReason={snap.endedReason} onRejoin={onRejoin} onNewLink={onLeave} />
+			<Banners
+				phase={snap.phase}
+				endedReason={snap.endedReason}
+				loading={snap.loading}
+				onRejoin={onRejoin}
+				onNewLink={onLeave}
+			/>
 			<Toasts notices={snap.notices} />
 		</div>
 	);

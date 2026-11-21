@@ -1,6 +1,6 @@
 import type { AvailableCommand } from "@oh-my-pi/pi-utils/acp";
 import type { EffectiveExtensionRoots } from "../capability/types";
-import type { SkillsSettings } from "../config/settings";
+import type { SkillsSettings } from "../extensibility/settings";
 import type { LoadedCustomCommand } from "../extensibility/custom-commands";
 import type { ExtensionRunner } from "../extensibility/extensions";
 import { getSkillSlashCommandName, type Skill } from "../extensibility/skills";
@@ -17,6 +17,12 @@ export interface InternalAvailableSlashCommand {
 	input?: { hint: string };
 	subcommands?: Array<{ name: string; description?: string; usage?: string }>;
 	source: AvailableSlashCommandSource;
+	/** Whether the command consumes text after its name (drives post-space completion). */
+	allowArgs?: boolean;
+	/** Whether dynamic candidates exist via get_command_arg_completions. */
+	hasDynamicArgCompletion?: boolean;
+	/** False for builtins that require a native TUI/GUI surface. */
+	textModeExecutable?: boolean;
 }
 
 export interface AvailableCommandsSession {
@@ -34,6 +40,7 @@ export async function buildAvailableSlashCommands(
 	session: AvailableCommandsSession,
 	loadFileCommands: (cwd: string) => Promise<FileSlashCommand[]> = cwd =>
 		loadSlashCommands({ cwd, extensionRoots: session.effectiveExtensionRoots }),
+	options: { includeTuiOnlyBuiltins?: boolean } = {},
 ): Promise<InternalAvailableSlashCommand[]> {
 	const commands: InternalAvailableSlashCommand[] = [];
 	const seenNames = new Set<string>();
@@ -44,7 +51,7 @@ export async function buildAvailableSlashCommands(
 	};
 
 	for (const command of BUILTIN_SLASH_COMMANDS_INTERNAL) {
-		if (!command.handle) continue;
+		if (!command.handle && options.includeTuiOnlyBuiltins !== true) continue;
 		const hint = command.acpInputHint ?? command.inlineHint;
 		appendCommand({
 			name: command.name,
@@ -53,7 +60,17 @@ export async function buildAvailableSlashCommands(
 			input: hint ? { hint } : undefined,
 			subcommands: command.subcommands,
 			source: "builtin",
+			allowArgs: command.allowArgs === true,
+			textModeExecutable: command.handle !== undefined,
+			// Dynamic candidates beyond static subcommands: MCP server names,
+			// /move directories (served by get_command_arg_completions).
+			hasDynamicArgCompletion: command.name === "mcp" || command.name === "move",
 		});
+		// ACP dispatch resolves builtin aliases before `session.prompt()` sees the
+		// input, so a custom/file command sharing an alias would be advertised but
+		// never run. Reserve aliases here too; TUI-only builtins are skipped above,
+		// so their aliases stay available.
+		for (const alias of command.aliases ?? []) seenNames.add(alias);
 	}
 
 	if (session.skillsSettings?.enableSkillCommands) {
@@ -93,16 +110,23 @@ export async function buildAvailableSlashCommands(
 	const fileCommands = await loadFileCommands(session.sessionManager.getCwd());
 	session.setSlashCommands(fileCommands);
 	for (const command of fileCommands) {
-		appendCommand({ name: command.name, description: command.description, source: "file" });
+		appendCommand({
+			name: command.name,
+			description: command.description,
+			input: command.argumentHint ? { hint: command.argumentHint } : undefined,
+			source: "file",
+		});
 	}
 
 	return commands;
 }
 
 export function toAcpAvailableCommands(commands: readonly InternalAvailableSlashCommand[]): AvailableCommand[] {
-	return commands.map(command => ({
-		name: command.name,
-		description: command.description ?? "",
-		input: command.input,
-	}));
+	return commands
+		.filter(command => command.textModeExecutable !== false)
+		.map(command => ({
+			name: command.name,
+			description: command.description ?? "",
+			input: command.input,
+		}));
 }

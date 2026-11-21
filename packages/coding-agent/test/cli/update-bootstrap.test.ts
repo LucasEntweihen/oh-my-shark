@@ -31,7 +31,7 @@ it("keeps verified update logic independent of native-backed utility barrels", (
 });
 
 it("dispatches the standard update command without loading native-backed modules", async () => {
-	const updateSpy = spyOn(updateCli, "runUpdateCommand").mockResolvedValue(undefined);
+	const updateSpy = spyOn(updateCli, "runUpdateCommand").mockResolvedValue({ kind: "current" });
 	const command = new Update(["--check"], TEST_CONFIG);
 	await command.run();
 	expect(updateSpy).toHaveBeenCalledWith({ force: false, check: true, channel: undefined });
