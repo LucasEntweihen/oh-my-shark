@@ -8,8 +8,8 @@ import {
 	getProjectRoot,
 } from "../config/paths";
 import { type DatabaseStats, getSharedDatabase, OmskSharedDatabase } from "../database";
-import { getSharedKnowledge, type KnowledgeExportSnapshot, OmskSharedKnowledge } from "../knowledge";
-import { getSharedProviders, OmskSharedProviders, type ProviderSummary } from "../providers";
+import { getSharedKnowledge, OmskSharedKnowledge } from "../knowledge";
+import { OmskSharedProviders } from "../providers";
 import { type OmskServerInstance, startOmskHubServer } from "../server";
 
 export interface OmskHubStatus {

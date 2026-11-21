@@ -47,18 +47,24 @@ describe("Subagent 1 TDD: CLI Purity & Zero-GUI Invariants", () => {
 		});
 		expect(proc.exitCode).toBe(0);
 		const stdout = proc.stdout.toString().trim();
-		expect(stdout).toMatch(/^omsk[\/\s]\d+\.\d+\.\d+/);
+		expect(stdout).toMatch(/^omsk[/\s]\d+\.\d+\.\d+/);
 	});
 
-	it("verifies apps/desktop provides clean Tauri 2 OmskEngine adapter and pt-BR locale with zero CLI pollution", () => {
-		const desktopDir = path.resolve("apps/desktop");
-		expect(fs.existsSync(desktopDir)).toBe(true);
-		expect(fs.existsSync(path.join(desktopDir, "src-tauri", "src", "engine", "omsk.rs"))).toBe(true);
-		expect(fs.existsSync(path.join(desktopDir, "src", "i18n", "pt.ts"))).toBe(true);
+	it("verifies packages/gui provides isolated Desktop GUI sidecar integration and pt-BR locale with zero CLI pollution", () => {
+		const pkg = JSON.parse(fs.readFileSync(path.resolve("package.json"), "utf-8")) as {
+			workspaces?: { packages?: string[] };
+		};
+		expect(pkg.workspaces?.packages).toContain("!packages/gui");
 
-		const omskRs = fs.readFileSync(path.join(desktopDir, "src-tauri", "src", "engine", "omsk.rs"), "utf-8");
-		expect(omskRs).toContain('id: "omsk"');
-		expect(omskRs).toContain('home_dir_name: ".omsk"');
-		expect(omskRs).toContain('cmd.arg("rpc-ui")');
+		const guiDir = path.resolve("packages/gui");
+		expect(fs.existsSync(guiDir)).toBe(true);
+		expect(fs.existsSync(path.join(guiDir, "src", "main", "sidecar.ts"))).toBe(true);
+		expect(fs.existsSync(path.join(guiDir, "src", "main", "agent-paths.ts"))).toBe(true);
+		expect(fs.existsSync(path.join(guiDir, "src", "renderer", "locales", "pt.ts"))).toBe(true);
+
+		const sidecarTs = fs.readFileSync(path.join(guiDir, "src", "main", "sidecar.ts"), "utf-8");
+		const agentPathsTs = fs.readFileSync(path.join(guiDir, "src", "main", "agent-paths.ts"), "utf-8");
+		expect(agentPathsTs).toContain(".omsk");
+		expect(sidecarTs).toContain('"rpc-ui"');
 	});
 });

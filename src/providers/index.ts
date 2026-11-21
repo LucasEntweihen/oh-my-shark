@@ -1,11 +1,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { ApiKeyResolver, StoredAuthCredential } from "../../packages/ai/src/auth-storage";
 import { AuthStorage } from "../../packages/ai/src/auth-storage";
 import { SqliteAuthCredentialStore } from "../../packages/ai/src/auth/sqlite-credential-store";
 import { completeSimple, streamSimple } from "../../packages/ai/src/stream";
 import type { Context } from "../../packages/ai/src/types";
-import type { Api, Model, SimpleStreamOptions } from "../../packages/ai/src/types";
+import type { Api, Model } from "../../packages/ai/src/types";
 import {
 	type GeneratedProvider,
 	getBundledModel,
@@ -227,10 +226,11 @@ export class OmskSharedProviders {
 	 */
 	async removeCredential(provider: string): Promise<boolean> {
 		await this.ensureInitialized();
-		const removed = this.localStore.removeAuthCredential(provider);
+		const had = (await this.getApiKey(provider)) !== undefined;
+		this.localStore.deleteProvider(provider);
 		await this.authStorage.reload();
 		await this.exportProvidersJson();
-		return removed;
+		return had;
 	}
 
 	/**
@@ -450,6 +450,88 @@ export class OmskSharedProviders {
 		} catch (err) {
 			console.error(`[OMSK Providers] Failed to write ${destPath}: ${String(err)}`);
 		}
+	}
+
+	/**
+	 * OmniProvider Matrix: Multi-tier cascade resolution for provider credentials.
+	 */
+	async resolveProviderCascade(provider: string): Promise<{
+		provider: string;
+		authenticated: boolean;
+		source: "project_sqlite" | "global_sqlite" | "environment" | "none";
+		keyMasked?: string;
+	}> {
+		await this.ensureInitialized();
+		const storedKey = await this.authStorage.getApiKey(provider);
+		if (storedKey && storedKey.length > 0) {
+			const keyMasked = storedKey.length > 8 ? `${storedKey.slice(0, 4)}...${storedKey.slice(-4)}` : "***";
+			return { provider, authenticated: true, source: "project_sqlite", keyMasked };
+		}
+
+		const envVar = `${provider.toUpperCase().replace(/-/g, "_")}_API_KEY`;
+		const envKey = process.env[envVar];
+		if (typeof envKey === "string" && envKey.length > 0) {
+			const keyMasked = envKey.length > 8 ? `${envKey.slice(0, 4)}...${envKey.slice(-4)}` : "***";
+			return { provider, authenticated: true, source: "environment", keyMasked };
+		}
+
+		return { provider, authenticated: false, source: "none" };
+	}
+
+	/**
+	 * OmniProvider Matrix: Returns capability and health metrics for a provider.
+	 */
+	async getProviderHealth(provider: string): Promise<{
+		provider: string;
+		authenticated: boolean;
+		modelsCount: number;
+		defaultModel?: string;
+		supportsReasoning: boolean;
+	}> {
+		await this.ensureInitialized();
+		const cascade = await this.resolveProviderCascade(provider);
+		const models = getBundledModels(provider as GeneratedProvider);
+		const defaultModel = models[0];
+		const supportsReasoning = models.some((m) => m.reasoning === true);
+
+		return {
+			provider,
+			authenticated: cascade.authenticated,
+			modelsCount: models.length,
+			defaultModel: defaultModel?.id,
+			supportsReasoning,
+		};
+	}
+
+	/**
+	 * OmniProvider Matrix: Aggregated multi-provider matrix overview across all bundled providers.
+	 */
+	async getExecutionMatrix(): Promise<
+		Array<{
+			provider: string;
+			authenticated: boolean;
+			source: string;
+			modelsCount: number;
+			defaultModel?: string;
+		}>
+	> {
+		await this.ensureInitialized();
+		const allProviders = getBundledProviders();
+		const results = [];
+
+		for (const p of allProviders) {
+			const cascade = await this.resolveProviderCascade(p);
+			const models = getBundledModels(p as GeneratedProvider);
+			results.push({
+				provider: p,
+				authenticated: cascade.authenticated,
+				source: cascade.source,
+				modelsCount: models.length,
+				defaultModel: models[0]?.id,
+			});
+		}
+
+		return results;
 	}
 
 	/**

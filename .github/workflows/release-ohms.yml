@@ -1,11 +1,12 @@
 name: OhMyShark Release
 
-# OhMyShark binary release. Published assets include both current `ohms-*` names
-# and legacy `omsk-*` aliases so installations from 0.0.18 can self-update:
+# OhMyShark binary & Native Desktop GUI release. Published assets include both
+# current `ohms-*` names and legacy `omsk-*` aliases so installations from 0.0.18
+# can self-update:
 #   ohms-/omsk-darwin-x64, ...-arm64, linux-x64, linux-arm64,
 #   ohms-/omsk-windows-x64.exe, ...-arm64.exe, install.sh, install.ps1,
 #   ohmyshark.config.yml, ohmyshark.models.yml, SHA256SUMS.txt, LICENSE,
-#   THIRD-PARTY-NOTICES.txt.
+#   THIRD-PARTY-NOTICES.txt, plus OhMyShark Native Desktop GUI installers/portables.
 #
 # All actions are pinned to full commit SHAs. Build jobs run with the workflow
 # default `contents: read`; only the publish job (protected environment
@@ -23,7 +24,7 @@ name: OhMyShark Release
         description: "Existing omsk-v* or ohms-v* tag to build and publish"
         required: true
         type: string
-        default: "omsk-v0.0.34"
+        default: "omsk-v0.1.0"
 
 permissions:
   contents: read
@@ -136,11 +137,95 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+  # Builds OhMyShark Native Desktop GUI packages with the bundled OMSK sidecar.
+  build-gui:
+    name: "Build OhMyShark GUI (${{ matrix.target_id }})"
+    needs: verify-tag
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target_id: win32-x64
+            os: windows-2022
+            native_tags: win32-x64
+            sidecar: resources/omsk.exe
+            build_sidecar: bun --cwd=packages/gui run build:omsk:win
+            package_cmd: bun --cwd=packages/gui run electron-builder --config electron-builder.win.yml --win --x64 --publish never
+          - target_id: linux-x64
+            os: ubuntu-24.04
+            native_tags: linux-x64
+            sidecar: resources/omsk
+            build_sidecar: bun --cwd=packages/gui run build:omsk
+            package_cmd: bun --cwd=packages/gui run electron-builder --linux --publish never
+          - target_id: darwin-arm64
+            os: macos-14
+            native_tags: darwin-arm64
+            sidecar: resources/omsk
+            build_sidecar: bun --cwd=packages/gui run build:omsk
+            package_cmd: bun --cwd=packages/gui run electron-builder --mac --arm64 --publish never
+          - target_id: darwin-x64
+            os: macos-15-intel
+            native_tags: darwin-x64
+            sidecar: resources/omsk.x64
+            build_sidecar: bun --cwd=packages/gui run build:omsk:x64
+            package_cmd: bun --cwd=packages/gui run electron-builder --config electron-builder.x64.yml --mac --x64 --publish never
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: "1.4"
+      - name: Install root and GUI dependencies
+        run: |
+          bun install --frozen-lockfile
+          bun install --cwd packages/gui
+      - name: Stage locked native addon
+        run: bun scripts/ohms-fetch-natives.ts --tag ${{ matrix.native_tags }}
+      - name: Build GUI renderer and main bundle
+        run: bun --cwd=packages/gui run build
+      - name: Compile bundled OMSK sidecar
+        run: ${{ matrix.build_sidecar }}
+      - name: Smoke test bundled OMSK sidecar (POSIX)
+        if: runner.os != 'Windows'
+        run: |
+          set -euo pipefail
+          "./packages/gui/${{ matrix.sidecar }}" --version
+          "./packages/gui/${{ matrix.sidecar }}" --smoke-test
+          bun packages/gui/scripts/smoke-sidecar.mjs "packages/gui/${{ matrix.sidecar }}"
+      - name: Smoke test bundled OMSK sidecar (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = "./packages/gui/${{ matrix.sidecar }}"
+          & $exe --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $exe --smoke-test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          bun packages/gui/scripts/smoke-sidecar.mjs $exe
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Package Native Desktop GUI
+        env:
+          NODE_OPTIONS: "--experimental-require-module"
+        run: ${{ matrix.package_cmd }}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ohms-gui-${{ matrix.target_id }}
+          path: |
+            packages/gui/dist/*.exe
+            packages/gui/dist/*.AppImage
+            packages/gui/dist/*.deb
+            packages/gui/dist/*.dmg
+            packages/gui/dist/*.zip
+          if-no-files-found: error
+          retention-days: 1
+
   # Single publishing job: only this job holds write privileges, gated on the
   # `ohms-release` environment.
   publish:
     name: Publish OhMyShark release
-    needs: [verify-tag, build]
+    needs: [verify-tag, build, build-gui]
     runs-on: ubuntu-24.04
     environment: ohms-release
     permissions:
@@ -159,6 +244,11 @@ jobs:
           pattern: ohms-binary-*
           path: staging/binaries
           merge-multiple: true
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: ohms-gui-*
+          path: staging/gui
+          merge-multiple: true
       - name: Assemble release assets
         run: |
           set -euo pipefail
@@ -170,6 +260,9 @@ jobs:
             legacy="${binary/ohms-/omsk-}"
             cp "$binary" "$legacy"
           done
+          if [ -d staging/gui ]; then
+            find staging/gui -maxdepth 2 -type f \( -name '*.exe' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.dmg' -o -name '*.zip' \) -exec cp {} staging/out/ \;
+          fi
           cp scripts/install.sh scripts/install.ps1 staging/out/
           cp packaging/ohmyshark.config.yml packaging/ohmyshark.models.yml staging/out/
           cp LICENSE THIRD-PARTY-NOTICES.txt staging/out/
@@ -189,7 +282,7 @@ jobs:
         run: |
           set -euo pipefail
           cd staging/out
-          sha256sum ohms-* omsk-* install.sh install.ps1 ohmyshark.config.yml ohmyshark.models.yml LICENSE THIRD-PARTY-NOTICES.txt > SHA256SUMS.txt
+          sha256sum ohms-* omsk-* OhMyShark-* *.AppImage *.deb *.dmg *.zip install.sh install.ps1 ohmyshark.config.yml ohmyshark.models.yml LICENSE THIRD-PARTY-NOTICES.txt > SHA256SUMS.txt 2>/dev/null || sha256sum * > SHA256SUMS.txt
           cat SHA256SUMS.txt
       - name: Create GitHub Release
         env:
@@ -200,18 +293,14 @@ jobs:
           set -euo pipefail
           NOTES="$(mktemp)"
           cat > "$NOTES" <<EOF
-          OhMyShark v${VERSION} — standalone CLI release.
+          OhMyShark v${VERSION} — Standalone CLI + Native Desktop GUI release.
 
-          - Six binaries built for Linux x64/arm64, macOS x64/arm64, and Windows x64/arm64.
-          - Each binary passes its target runner's \`--version\` and \`--smoke-test\` checks.
-          - Current \`ohms-*\` assets and backward-compatible \`omsk-*\` aliases are published.
-          - Includes the PowerShell/POSIX installers, OhMyShark config and model presets,
-            license notices, \`SHA256SUMS.txt\`, and build-provenance attestations.
-          - This workflow publishes standalone CLI binaries, not a desktop GUI application.
-          - macOS binaries are ad-hoc signed, not notarized; Windows binaries are unsigned.
-            Verify the checksum file and attestation before running downloaded files.
-          - Install: see README or https://ohmyshark.vercel.app
+          - Built on Oh My Pi (OMP) 19.0.1 core + GUI-RPC bridge, preserving all 5 OMSK architectural pillars, Deep Sea Cockpit, Mente em Teia, Transactional Edit Engine, and magic modes.
+          - Includes the Antigravity / Claude Code-grade Shark Orchestrator Engine, TUI \`/orchestrator\` board, and 20 live RPC endpoints.
+          - Ships OhMyShark Native Desktop GUI (Electron + React 19) with Orchestrator Studio, Shark Command Center, OmskModesBar, Shark Ocean / Deep Abyss themes, and native \`pt-BR\` localization.
+          - Six standalone CLI binaries for Linux x64/arm64, macOS x64/arm64, and Windows x64/arm64 (\`ohms-*\` + \`omsk-*\` aliases), plus installers, configs, \`SHA256SUMS.txt\`, and build-provenance attestations.
 
+          Install: see README or https://ohmyshark.vercel.app
           Source: https://github.com/LucasEntweihen/oh-my-shark/tree/${TAG}
           EOF
           if gh release view "$TAG" >/dev/null 2>&1; then

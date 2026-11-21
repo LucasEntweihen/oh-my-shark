@@ -1,3 +1,30 @@
+# OhMyShark v0.1.0 — OMP 19.0.1, Shark Orchestrator & Native Desktop GUI
+
+Primeira release minor do OhMyShark: o núcleo foi atualizado para o **Oh My Pi 19.0.1** (com a ponte GUI-RPC), preservando 100% dos pilares do OMSK, e o projeto agora traz um **Orchestrator** estilo Antigravity / Claude Code e uma **GUI nativa de desktop**.
+
+## Novidades
+
+### 1. Núcleo OMP 19.0.1 + GUI-RPC
+- Atualização completa de `packages/*` e `crates/*` para o OMP 19.0.1 (MCP compartilhado no daemon, ovnfs, jobs/pty, ask forms, chillax/jevify).
+- Protocolo RPC expandido (settings, providers, model roles, skills, agents, MCP, queue, subagents, worktrees, PR, terminal).
+- Addons nativos `pi_natives` 19.0.1 travados por SHA-512 em `packaging/native-inputs.lock.json`.
+- Preservados: `@ohms/kernel`, `@ohms/project-intelligence`, `@ohms/capability-registry`, `@ohms/execution-engine`, `@ohms/terminal-layout`, Vibe Toolkit, Deep Sea Cockpit, Mente em Teia, Transactional Edit Engine, Root Hub e todos os modos (`promaxthink`, `xlr8`, `doomania`, `deepseaneuron`, `fastthinkworkerz`, `vibecoding`, `learner-proj`).
+
+### 2. Shark Orchestrator (TUI + RPC)
+- `SharkOrchestratorEngine`: plano em DAG, waves paralelas com posse disjunta de arquivos, gate de aprovação, FSM transacional, checkpoints atômicos com rollback por wave, self-repair limitado, TDD enforcer e verificação independente.
+- Comando `/orchestrator` (aliases `/orch`, `/swarm`, `/team`) com board TUI responsivo e sincronização com o Deep Sea Cockpit.
+- 20 endpoints RPC (`orchestrator_*` e `shark_*`) + eventos `orchestrator_event` / `shark_event`.
+
+### 3. OhMyShark Native Desktop GUI (`packages/gui`)
+- Electron + React 19 com sidecar OMSK embutido (não precisa instalar Bun/Node).
+- **Orchestrator Studio**, **Shark Command Center** (Cockpit/Kernel, Impact Analysis, Capabilities, Checkpoints & Rollback, Mente em Teia), **OmskModesBar** e temas **Shark Ocean / Deep Abyss**.
+- Localização completa em **Português (pt-BR)**; deep links `omsk://`, `ohms://` e `omp://`; `omsk desktop` abre a GUI instalada.
+
+### 4. Release
+- Binários CLI otimizados (bytecode + addons nativos embutidos) para Windows x64/arm64, Linux x64/arm64 e macOS x64/arm64 (`ohms-*` e aliases `omsk-*`).
+- Instaladores da GUI (Windows Setup/Portable; Linux AppImage/DEB e macOS DMG/ZIP via CI), `SHA256SUMS.txt` e attestations.
+
+---
 # OhMyShark v0.0.51 â€” Autonomous Software Engineering Environment & Superiority Architecture
 
 Esta release eleva o OhMyShark de um agente de terminal tradicional para uma **plataforma completa de engenharia de software autÃ´noma**, integrando inteligÃªncia de projeto profunda, verificaÃ§Ã£o independente com provas observÃ¡veis, autocorreÃ§Ã£o controlada e sistema de benchmarking contÃ­nuo.

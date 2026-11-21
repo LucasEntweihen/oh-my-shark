@@ -82,7 +82,7 @@ export class OmskSharedKnowledge {
 		if (metadata && Object.keys(metadata).length > 0) {
 			const existing = this.store.getNode(decisionId);
 			if (existing) {
-				const mergedMeta = { ...(existing.metadata ?? {}), ...metadata };
+				const mergedMeta = { ...existing.metadata, ...metadata };
 				this.store.upsertNode({
 					...existing,
 					metadata: mergedMeta,
@@ -105,7 +105,7 @@ export class OmskSharedKnowledge {
 	): string {
 		const now = Date.now();
 		const id = `fact_${now}_${Math.random().toString(36).slice(2, 8)}`;
-		const meta = { category, ...(metadata ?? {}) };
+		const meta = { category, ...metadata };
 		this.store.upsertNode({
 			id,
 			kind: "evidence",

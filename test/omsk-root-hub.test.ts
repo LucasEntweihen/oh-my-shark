@@ -3,14 +3,10 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import {
-	getSharedDatabase,
-	getSharedKnowledge,
-	getSharedProviders,
 	OmskRootHub,
 	OmskSharedDatabase,
 	OmskSharedKnowledge,
 	OmskSharedProviders,
-	startOmskHubServer,
 } from "../index";
 
 describe("OMSK Root Ecosystem & Shared Architecture", () => {

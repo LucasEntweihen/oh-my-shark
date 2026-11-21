@@ -61,3 +61,13 @@ declare module "*.generated.js" {
 	export default content;
 }
 
+declare module "*/LICENSE" {
+	const content: string;
+	export default content;
+}
+
+declare module "axe-core/axe.min.js" {
+	const content: string;
+	export default content;
+}
+
