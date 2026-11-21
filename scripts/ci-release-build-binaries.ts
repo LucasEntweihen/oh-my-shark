@@ -139,7 +139,7 @@ async function buildBinary(target: BinaryTarget): Promise<void> {
 		outfile: path.join(repoRoot, target.outfile),
 		native: target,
 		...(isHostWin64 ? { executablePath: process.execPath } : { target: target.target }),
-		minifyIdentifiers: true,
+		minifyIdentifiers: false,
 		skipBuiltinCodesign: shouldAdhocSignDarwinBinary(target),
 	});
 	// Bun 1.3.12 emits a truncated Mach-O signature on darwin builds.

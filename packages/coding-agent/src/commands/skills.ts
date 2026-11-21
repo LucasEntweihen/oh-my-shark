@@ -4,7 +4,7 @@
 import { Args, Command, Flags } from "@oh-my-pi/pi-utils/cli";
 import { skillsHelp as commandHelp } from "../cli/command-help";
 import { type SkillsAction, type SkillsCommandArgs, runSkillsCommand } from "../cli/skills-cli";
-import { initTheme } from "../modes/theme/theme";
+import { initThemeSync as initTheme } from "@oh-my-pi/pi-tui/theme";
 
 const ACTIONS: SkillsAction[] = [
 	"search",
