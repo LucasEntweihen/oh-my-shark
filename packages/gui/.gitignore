@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# An older renderer config wrote its entry here. It is a build output, not a source
+# file; the Pages site lives in site/.
+/index.html
+
+# Build output
+out/
+dist/
+
+# Bundled agent sidecar binaries (build with `bun run build:omp`; >100MB, not committed)
+resources/omp
+resources/omp.*
+
+# Logs & OS cruft
+*.log
+.DS_Store
+tmp/
+
+# electron-builder trial/override configs
+electron-builder.trial.yml
+dev-app-update.yml
+
+# Desktop functional audit artifacts
+playwright-report/
+test-results/

@@ -1,0 +1,371 @@
+#!/usr/bin/env bun
+/**
+ * Build the GUI's bundled (built-in) OMSK sidecar binary.
+ *
+ * Produces a self-contained `resources/omsk` (or `resources/omsk.exe` on Windows)
+ * executable from the OhMyShark monorepo's coding-agent source via
+ * compileCodingAgent (Bun.build --compile). The native addon archive is embedded
+ * as an asset, so the binary needs no external omsk, no node_modules, and no bun
+ * runtime — the GUI spawns it as its dedicated sidecar. The packaged GUI NEVER
+ * falls back to a system-installed sidecar (src/main/index.ts resolveBundledOmp).
+ *
+ * REQUIRES the OMSK monorepo: this file resolves `../../coding-agent` and
+ * `../../natives` relative to packages/gui, so the GUI sits at
+ * `packages/gui/` inside the monorepo checkout. The compile-binary import is
+ * dynamic precisely so this prerequisite failure prints setup instructions
+ * instead of a bare module-not-found.
+ *
+ * What it does:
+ *   1. Verifies the monorepo neighbors exist (fails with setup instructions).
+ *   2. Ensures the native addon (.node) for the TARGET arch is staged in
+ *      packages/natives/native/ — downloads the published leaf package
+ *      (@oh-my-pi/pi-natives-<tag>@<version>) on a cache miss, and replaces
+ *      stale addons whose version sentinel doesn't match the package version.
+ *   3. Generates the stats dashboard archive, optional collab views, native addon,
+ *      and MuPDF WASM assets required by a self-contained compiled binary.
+ *   4. Compiles the coding-agent entrypoint into a single executable.
+ *   5. Restores temporary generated assets and addon staging, so the monorepo
+ *      tree is left in its normal development state.
+ *
+ * Usage (from packages/gui):
+ *   bun run build:omsk                                       # host arch → resources/omsk(.exe)
+ *   bun run build:omsk:x64                                   # Intel cross-build → resources/omsk.x64
+ *   bun scripts/build-bundled-omp.ts --target bun-darwin-x64 --out custom/path
+ *   bun scripts/build-bundled-omp.ts --target bun-windows-x64-baseline # → resources/omsk.exe
+ */
+import { existsSync } from "node:fs";
+import * as fs from "node:fs/promises";
+import { createRequire } from "node:module";
+import * as path from "node:path";
+
+const guiRoot = path.join(import.meta.dir, "..");
+const repoRoot = path.join(guiRoot, "..", "..");
+const codingAgentDir = path.join(repoRoot, "packages", "coding-agent");
+const statsDir = path.join(repoRoot, "packages", "stats");
+const collabWebDir = path.join(repoRoot, "packages", "collab-web");
+const nativesDir = path.join(repoRoot, "packages", "natives");
+const nativesNativeDir = path.join(nativesDir, "native");
+const compileBinaryModulePath = path.join(codingAgentDir, "scripts", "compile-binary.ts");
+
+// ---------------------------------------------------------------------------
+// Prerequisite — actionable failure, not a module-resolution stack trace
+// ---------------------------------------------------------------------------
+
+if (!existsSync(compileBinaryModulePath) || !existsSync(path.join(nativesDir, "scripts", "embed-native.ts"))) {
+	console.error(
+		[
+			"",
+			"  build:omsk cannot find the OhMyShark monorepo next to this checkout.",
+			"",
+			"  This script compiles the GUI's bundled agent sidecar from monorepo source,",
+			"  so packages/gui/ must sit inside an OhMyShark monorepo clone:",
+			"",
+			"    git clone https://github.com/LucasEntweihen/oh-my-shark.git",
+			"    cd oh-my-shark && bun install",
+			"    bun --cwd=packages/gui install",
+			"",
+			"  To package WITHOUT the monorepo, copy a prebuilt sidecar into resources/omsk",
+			"  (resources/omsk.exe on Windows, resources/omsk.x64 for Intel macOS) and skip this script.",
+			"",
+		].join("\n"),
+	);
+	process.exit(1);
+}
+
+const monorepoPackage = (await Bun.file(path.join(repoRoot, "package.json")).json()) as { packageManager: string };
+const bunRequirement = monorepoPackage.packageManager.replace(/^bun@/, "");
+if (!Bun.semver.satisfies(Bun.version, bunRequirement)) {
+	throw new Error(`Building the bundled agent requires Bun ${bunRequirement}; running ${Bun.version}.`);
+}
+
+await runPackageScript(guiRoot, "check:protocol");
+
+// Runtime-selected module: only resolvable inside the monorepo layout proven
+// above, so a static import would crash standalone clones before the guidance.
+const { compileCodingAgent } = await import(compileBinaryModulePath);
+
+// ---------------------------------------------------------------------------
+// Target arch → sidecar output + native addon provisioning
+// ---------------------------------------------------------------------------
+
+const args = process.argv.slice(2);
+const argValue = (flag: string): string | undefined => {
+	const i = args.indexOf(flag);
+	return i >= 0 ? args[i + 1] : undefined;
+};
+
+interface SidecarTarget {
+	/** Bun --compile target (undefined = host). */
+	readonly target?: Bun.Build.CompileTarget;
+	/** pi-natives platform tag, e.g. darwin-arm64. */
+	readonly platformTag: string;
+	/** Default output path under packages/gui/resources/. */
+	readonly out: string;
+	/** Addon filenames the embed step looks for, in preference order. */
+	readonly addonFilenames: readonly string[];
+}
+
+function addonFilenamesFor(platformTag: string): readonly string[] {
+	return platformTag.endsWith("-x64")
+		? [`pi_natives.${platformTag}-modern.node`, `pi_natives.${platformTag}-baseline.node`]
+		: [`pi_natives.${platformTag}.node`];
+}
+
+function sidecarOutName(osName: string, arch: string): string {
+	if (osName === "win32" || osName === "windows") return "omsk.exe";
+	return arch === "x64" ? `omsk.${arch}` : "omsk";
+}
+
+function resolveTarget(): SidecarTarget {
+	const targetFlag = argValue("--target");
+	if (!targetFlag) {
+		const platformTag = `${process.platform}-${process.arch}`;
+		return {
+			platformTag,
+			out: path.join(guiRoot, "resources", process.platform === "win32" ? "omsk.exe" : "omsk"),
+			addonFilenames: addonFilenamesFor(platformTag),
+		};
+	}
+	const match = /^bun-(darwin|linux|win32|windows)-(arm64|x64)(?:-.*)?$/.exec(targetFlag);
+	if (!match) {
+		throw new Error(
+			`Unsupported --target '${targetFlag}'. Expected bun-<os>-<arch> (e.g. bun-windows-x64-baseline).`,
+		);
+	}
+	const osName = match[1] === "windows" ? "win32" : match[1]!;
+	const arch = match[2]!;
+	const platformTag = `${osName}-${arch}`;
+	const bunTarget = targetFlag.replace("bun-win32-", "bun-windows-") as Bun.Build.CompileTarget;
+	return {
+		target: bunTarget,
+		platformTag,
+		out: path.join(guiRoot, "resources", sidecarOutName(osName, arch)),
+		addonFilenames: addonFilenamesFor(platformTag),
+	};
+}
+
+// ---------------------------------------------------------------------------
+// Native addon provisioning (embed step needs the .node file staged locally)
+// ---------------------------------------------------------------------------
+
+const nativesPkg = (await Bun.file(path.join(nativesDir, "package.json")).json()) as { version: string };
+
+/** Filenames we staged that did NOT exist before — removed after the build so the monorepo tree stays clean. */
+const addedByUs: string[] = [];
+/** Pre-existing files we overwrote with the matching-version addon — restored after the build. */
+const replacedByUs: Record<string, Uint8Array> = {};
+
+/** The loader's own release-identity checks (post-link stamp, plus the pre-stamp export sentinel). */
+const versionSentinel = createRequire(import.meta.url)(path.join(nativesNativeDir, "version-sentinel.js")) as {
+	containsVersionStamp(bytes: Uint8Array, version: string): boolean;
+	containsLegacyVersionSentinel(bytes: Uint8Array, version: string): boolean;
+};
+
+/**
+ * The loader rejects a .node whose release identity doesn't match the package
+ * version, so a stale addon from an older release must be replaced rather than
+ * reused. Uses the loader's own helpers so a stamp-format change can't drift.
+ */
+async function addonMatchesVersion(filePath: string): Promise<boolean> {
+	const bytes = await Bun.file(filePath).bytes();
+	return (
+		versionSentinel.containsVersionStamp(bytes, nativesPkg.version) ||
+		versionSentinel.containsLegacyVersionSentinel(bytes, nativesPkg.version)
+	);
+}
+
+async function stageNativeAddon(target: SidecarTarget): Promise<void> {
+	for (const filename of target.addonFilenames) {
+		const local = path.join(nativesNativeDir, filename);
+		if ((await Bun.file(local).exists()) && (await addonMatchesVersion(local))) return;
+	}
+	// Stale or missing: snapshot any pre-existing files so they can be restored,
+	// then fall through to provisioning the matching version.
+	for (const filename of target.addonFilenames) {
+		const local = path.join(nativesNativeDir, filename);
+		if (await Bun.file(local).exists()) {
+			replacedByUs[filename] = Buffer.from(await Bun.file(local).arrayBuffer());
+			console.log(`[build:omp] replacing stale addon ${filename} (version sentinel ≠ ${nativesPkg.version})`);
+		}
+	}
+	const leafPackage = `@oh-my-pi/pi-natives-${target.platformTag}`;
+	console.log(`[build:omp] staging ${leafPackage}@${nativesPkg.version} (target ${target.platformTag})`);
+	const cacheDir = path.join(process.env.TMPDIR ?? "/tmp", `omp-natives-${target.platformTag}-${nativesPkg.version}`);
+	const installDir = path.join(cacheDir, "node_modules", "@oh-my-pi", `pi-natives-${target.platformTag}`);
+	if (!(await Bun.file(path.join(installDir, "package.json")).exists())) {
+		await fs.mkdir(cacheDir, { recursive: true });
+		await Bun.write(
+			path.join(cacheDir, "package.json"),
+			JSON.stringify({ name: "omp-natives-cache", private: true }),
+		);
+		// Pin the official registry: bun's platform-specific leaf packages do not
+		// materialize from every mirror, and an empty install here would silently
+		// produce a sidecar with no native addon. Cross-arch staging must also
+		// simulate the target platform or bun skips the foreign-cpu tarball.
+		const [targetOs, targetCpu] = target.platformTag.split("-");
+		const proc = Bun.spawn(
+			[
+				process.execPath,
+				"add",
+				"--no-cache",
+				"--registry=https://registry.npmjs.org",
+				`--os=${targetOs}`,
+				`--cpu=${targetCpu}`,
+				`${leafPackage}@${nativesPkg.version}`,
+			],
+			{ cwd: cacheDir, stdout: "inherit", stderr: "inherit" },
+		);
+		const exit = await proc.exited;
+		if (exit !== 0) {
+			throw new Error(
+				[
+					`Failed to download ${leafPackage}@${nativesPkg.version} (exit ${exit}).`,
+					"Either publish/avail that natives version, or build the addon from source:",
+					"  bun --cwd=packages/natives run build   # requires the Rust toolchain",
+					`then re-run this script (expects ${target.addonFilenames.join(" / ")} in packages/natives/native/).`,
+				].join("\n"),
+			);
+		}
+	}
+	let stagedCount = 0;
+	for (const filename of target.addonFilenames) {
+		const src = path.join(installDir, filename);
+		if (await Bun.file(src).exists()) {
+			if (!(filename in replacedByUs)) addedByUs.push(filename);
+			await Bun.write(path.join(nativesNativeDir, filename), Bun.file(src));
+			stagedCount++;
+		}
+	}
+	if (stagedCount === 0) {
+		throw new Error(
+			`${leafPackage}@${nativesPkg.version} installed but contains none of: ${target.addonFilenames.join(", ")}`,
+		);
+	}
+	// A leaf can ship a subset of the variants (darwin-x64@18.8.0 carries only
+	// baseline). A stale sibling the leaf did not replace would still be picked
+	// up by the embedder, which rejects any unstamped addon — set it aside
+	// (its bytes are already snapshotted in replacedByUs and restored after).
+	for (const filename of target.addonFilenames) {
+		const local = path.join(nativesNativeDir, filename);
+		if (!(filename in replacedByUs) || !(await Bun.file(local).exists())) continue;
+		if (await addonMatchesVersion(local)) continue;
+		console.log(`[build:omp] setting aside ${filename}: ${leafPackage}@${nativesPkg.version} does not ship it`);
+		await fs.rm(local, { force: true });
+	}
+}
+
+/** Undo the staging writes: remove files we added, restore files we overwrote. */
+async function restoreStagedAddons(): Promise<void> {
+	for (const filename of addedByUs) {
+		await fs.rm(path.join(nativesNativeDir, filename), { force: true });
+	}
+	for (const [filename, original] of Object.entries(replacedByUs)) {
+		await Bun.write(path.join(nativesNativeDir, filename), original);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Embed → compile → restore stub
+// ---------------------------------------------------------------------------
+
+async function hasPackageScript(pkgDir: string, script: string): Promise<boolean> {
+	const pkgPath = path.join(pkgDir, "package.json");
+	if (!(await Bun.file(pkgPath).exists())) return false;
+	const pkg = (await Bun.file(pkgPath).json()) as { scripts?: Record<string, string> };
+	return Boolean(pkg.scripts?.[script]);
+}
+
+async function runOptionalPackageScript(
+	cwd: string,
+	script: string,
+	env: NodeJS.ProcessEnv = process.env,
+): Promise<boolean> {
+	if (!(await hasPackageScript(cwd, script))) {
+		console.log(`[build:omsk] skipping '${script}' (not present in ${path.basename(cwd)}/package.json)`);
+		return false;
+	}
+	await runPackageScript(cwd, script, env);
+	return true;
+}
+
+async function runPackageScript(cwd: string, script: string, env: NodeJS.ProcessEnv = process.env): Promise<void> {
+	const proc = Bun.spawn([process.execPath, "run", script], {
+		cwd,
+		env,
+		stdout: "inherit",
+		stderr: "inherit",
+	});
+	const exitCode = await proc.exited;
+	if (exitCode !== 0) throw new Error(`${script} failed with exit code ${exitCode}`);
+}
+
+async function signMacBinary(filePath: string): Promise<void> {
+	const proc = Bun.spawn(
+		[
+			"/usr/bin/codesign",
+			"--force",
+			"--sign",
+			"-",
+			"--entitlements",
+			path.join(repoRoot, "scripts", "macos-entitlements.plist"),
+			filePath,
+		],
+		{ stdout: "inherit", stderr: "inherit" },
+	);
+	const exitCode = await proc.exited;
+	if (exitCode !== 0) throw new Error(`codesign failed with exit code ${exitCode}`);
+}
+
+async function restoreGeneratedAssets(): Promise<void> {
+	// gen:stats:reset stays: upstream removed gen:native when embedding moved
+	// into Bun.build({ files }) inside compileCodingAgent (in-memory manifest,
+	// no generated source to reset).
+	await runOptionalPackageScript(statsDir, "gen:stats:reset");
+}
+
+// ---------------------------------------------------------------------------
+
+const target = resolveTarget();
+const out = argValue("--out") ?? target.out;
+const shouldAdhocSign = process.platform === "darwin" && (!target.target || target.platformTag.startsWith("darwin-"));
+
+await stageNativeAddon(target);
+try {
+	try {
+		await runOptionalPackageScript(statsDir, "gen:stats");
+		await runOptionalPackageScript(collabWebDir, "gen:tool-views");
+		// Fork builds have no upstream CDN release for their viewer hash. Embed the
+		// generated viewer so exported sessions can open without that hosted asset.
+		await runOptionalPackageScript(collabWebDir, "gen:export-viewer");
+		const viewerMetaPath = path.join(codingAgentDir, "src/export/html/viewer.generated.json");
+		let exportViewer: string | undefined;
+		if (await Bun.file(viewerMetaPath).exists()) {
+			const viewerAsset = (await Bun.file(viewerMetaPath).json()) as { file: string; integrity: string };
+			exportViewer = await Bun.file(path.join(codingAgentDir, "export-assets", viewerAsset.file)).text();
+			const integrity = `sha256-${Buffer.from(Bun.SHA256.hash(exportViewer)).toBase64()}`;
+			if (integrity !== viewerAsset.integrity) throw new Error("Generated export viewer integrity mismatch");
+		}
+		const [platform, arch] = target.platformTag.split("-");
+		await compileCodingAgent({
+			repoRoot,
+			entrypoint: path.join(codingAgentDir, "src", "cli.ts"),
+			outfile: out,
+			...(exportViewer !== undefined ? { exportViewer } : {}),
+			native: { platform: platform!, arch: arch! },
+			...(target.target ? { target: target.target } : {}),
+			skipBuiltinCodesign: shouldAdhocSign,
+		});
+		if (shouldAdhocSign) await signMacBinary(out);
+	} finally {
+		// Compiled assets are temporary source substitutions. Reset every family
+		// even when generation or compilation fails; Promise.all starts both
+		// cleanups before surfacing an individual failure.
+		await restoreGeneratedAssets();
+	}
+} finally {
+	// Staged .node files are untracked artifacts: remove files we added and
+	// restore any local matching-path addon that predated this build.
+	await restoreStagedAddons();
+}
+
+console.log(`built bundled omsk → ${out}${target.target ? ` (target ${target.target})` : ""}`);

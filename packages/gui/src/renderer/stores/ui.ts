@@ -1,0 +1,757 @@
+import { useMemo } from "react";
+import { create } from "zustand";
+import { KEYMAP_DISABLED_PREF, KEYMAP_OVERRIDES_PREF } from "../../shared/hotkeys";
+import type { CustomProviderView, SessionInfo } from "../../shared/ipc-types";
+import type { SidecarRestartProgress } from "../../shared/rpc-types";
+import { effectiveOverrides, type KeymapOverrides, sanitizeDisabled, sanitizeOverrides } from "../lib/keymap";
+import { readPrepaintThemeMode, type ThemeMode } from "../lib/theme";
+import type { CustomThemeSelection } from "../lib/themes";
+import { useTabsStore } from "./tabs";
+
+export type { ThemeMode };
+
+export type PanelTab = "overview" | "agents" | "btw" | "diff" | "files" | "terminal" | "browser";
+const CLOSED_WORKSPACE_PAGES = {
+	activeToolsOpen: false,
+	agentHubOpen: false,
+	changelogOpen: false,
+	contextReportOpen: false,
+	debugOpen: false,
+	extensionsOpen: false,
+	hotkeysOpen: false,
+	inventoryOpen: false,
+	jobsOpen: false,
+	logsOpen: false,
+	memoryOpen: false,
+	modelCompareOpen: false,
+	modelRolesOpen: false,
+	modesOpen: false,
+	orchestratorOpen: false,
+	pluginsOpen: false,
+	prCenterOpen: false,
+	providersOpen: false,
+	sessionInfoOpen: false,
+	sessionTreeOpen: false,
+	sharkOpen: false,
+	statsDashboardOpen: false,
+	usageOpen: false,
+	workspaceDirsOpen: false,
+};
+export type WorkspacePageId = keyof typeof CLOSED_WORKSPACE_PAGES | "tasks";
+
+function workspacePagePatch(page: WorkspacePageId | null): Partial<UiStore> {
+	return {
+		...CLOSED_WORKSPACE_PAGES,
+		...(page && page !== "tasks" ? { [page]: true } : {}),
+		...(page ? { settingsOpen: false } : {}),
+		workspacePage: page,
+	};
+}
+
+export function activeWorkspacePage(state: UiStore): WorkspacePageId | null {
+	const page = state.workspacePage;
+	return page && (page === "tasks" || state[page]) ? page : null;
+}
+
+/** Edit → Find, Find Next and Find Previous, as the window routes them. */
+export type FindCommand = "find" | "next" | "previous";
+export interface FindRequest {
+	nonce: number;
+	command: FindCommand;
+}
+
+/** Memory window tabs. */
+export type MemoryTabId = "knowledge" | "skills" | "sources";
+
+/** Shark Command Center tabs. */
+export type SharkTabId = "cockpit" | "impact" | "capabilities" | "checkpoints" | "teia";
+/** Drawer tabs that exist in a tool-free chat tab: no diffs, shells, or agent browsing without tools. */
+export const CHAT_PANEL_TABS: ReadonlySet<PanelTab> = new Set(["overview", "btw", "files"]);
+/** What the Changes view compares: the checkout, this session's edits, their timeline, or virtual artifacts. */
+export type DiffScope = "repository" | "current" | "timeline" | "artifacts";
+/** Center-dock card identifiers: todo/plan/agents render as live cards above the composer. */
+export type DockCardId = "todo" | "plan" | "agents";
+export type TranscriptDetail = "compact" | "full";
+/** Chip size on the tab strip (Settings → GUI → Tab bar). */
+export type TabWidth = "compact" | "default" | "wide";
+/** One scrolling row of tabs, or up to three wrapped rows. */
+export type TabRows = "single" | "multi";
+/** Where a plain left-click on an http(s) link opens (#65). */
+export type LinkOpenMode = "panel" | "external";
+
+export interface GuiDisplayPreferences {
+	hideThinkingBlock?: boolean | null;
+	proseOnlyThinking?: boolean | null;
+	showTokenUsage?: boolean | null;
+	collapseCompacted?: boolean | null;
+	titleState?: boolean | null;
+	goalStatusInFooter?: boolean | null;
+	showProgress?: boolean | null;
+	emojiAutocomplete?: boolean | null;
+	pasteMenuThreshold?: number | null;
+}
+
+interface UiStore {
+	displayPreferences: GuiDisplayPreferences;
+	sidebarVisible: boolean;
+	panelVisible: boolean;
+	panelTab: PanelTab;
+	workspacePage: WorkspacePageId | null;
+	openTasksPage: () => void;
+	closeTasksPage: () => void;
+	returnToConversation: () => void;
+	diffScope: DiffScope;
+	/** Application log viewer (moved out of the drawer: logs are diagnostics, not workspace). */
+	logsOpen: boolean;
+	/** Local file currently shown in the Files drawer. */
+	filePreviewPath: string | null;
+	filePreviewRequestId: number;
+	filePreviewImage: { src: string; label: string } | null;
+	/** 1-based line the preview scrolls to and marks, when a link named one. */
+	filePreviewLine: number | null;
+	commandPaletteOpen: boolean;
+	modelPickerOpen: boolean;
+	settingsOpen: boolean;
+	settingsTab: string;
+	usageOpen: boolean;
+	providersOpen: boolean;
+	modelRolesOpen: boolean;
+	statsDashboardOpen: boolean;
+	modelCompareOpen: boolean;
+	benchmarkOpen: boolean;
+	extensionsOpen: boolean;
+	extensionsTab: "hooks" | "mcp" | "commands";
+	inventoryOpen: boolean;
+	inventoryTab: "plugins" | "marketplaces" | "templates" | "memory";
+	themePickerOpen: boolean;
+	/** The theme editor; null when closed. `selection` is the custom theme being changed, null for a new one. */
+	themeEditor: { selection: CustomThemeSelection | null } | null;
+	modesOpen: boolean;
+	modesTab: "vibe" | "goal" | "loop";
+	orchestratorOpen: boolean;
+	agentHubOpen: boolean;
+	agentHubTab: "definitions" | "hub";
+	memoryOpen: boolean;
+	memoryTab: MemoryTabId;
+	sharkOpen: boolean;
+	sharkTab: SharkTabId;
+	hotkeysOpen: boolean;
+	importDialogOpen: boolean;
+	copySelectorOpen: boolean;
+	changelogOpen: boolean;
+	contextReportOpen: boolean;
+	activeToolsOpen: boolean;
+	shareSessionOpen: boolean;
+	jobsOpen: boolean;
+	workspaceDirsOpen: boolean;
+	forceToolOpen: boolean;
+	btwRequest: string | null;
+	collabOpen: boolean;
+	collabJoinLink: string | null;
+	debugOpen: boolean;
+	liveOpen: boolean;
+	composerEditorOpen: boolean;
+	composerEditorInitial: string | null;
+	providerConfigOpen: boolean;
+	/** `"new"` opens straight into the add form; a view opens it pre-filled. */
+	providerConfigEdit: CustomProviderView | "new" | null;
+	renameDialogOpen: boolean;
+	/** Worktree-create dialog (plan/20): non-null opens it; baseCwd pins the
+	 * repo when invoked from a Sidebar group (default = active session cwd). */
+	worktreeDialog: { baseCwd?: string } | null;
+	/** Close-time cleanup prompt for a worktree-bound tab (plan/20): the tab
+	 * awaiting the user's delete/keep decision before closeTab proceeds. */
+	worktreeClosePrompt: { tabId: string } | null;
+	/** Live tab whose close is armed for confirmation: set by the chip's ×, ⌘W or
+	 * the menu, so all three share one inline confirm (the second commit closes). */
+	armedCloseTab: { tabId: string } | null;
+	/** PR Center fullscreen panel (plan/21). */
+	prCenterOpen: boolean;
+	/** Plugins page: browse catalogs and install plugins. */
+	pluginsOpen: boolean;
+	/** Search over what was said in sessions (⇧⌘F). */
+	conversationSearchOpen: boolean;
+	/** Edit → Find (⌘F) and Find Next/Previous (⌘G/⇧⌘G) for the focused tab's transcript. */
+	transcriptFindRequest: FindRequest;
+	/** The same commands for the browser panel's page, when it is what the window searches. */
+	browserFindRequest: FindRequest;
+	sessionPickerOpen: boolean;
+	branchPickerOpen: boolean;
+	sessionTreeOpen: boolean;
+	sessionInfoOpen: boolean;
+	/** Session the user tried to open while the attached session was busy
+	 * (streaming/compacting). Non-null shows the SessionSwitchDialog offering
+	 * a parallel new tab (recommended) / new window vs abort-and-switch. */
+	sessionSwitchPrompt: SessionInfo | null;
+	/** Session whose saved model could not be restored on switch; non-null shows
+	 * the ModelRestoreDialog offering to open it with the current model. */
+	modelRestorePrompt: { session: SessionInfo; missingModel: string } | null;
+	sidecarError: string | null;
+	/** Crash-loop progress carried by the status behind `sidecarError`: non-null
+	 * while the sidecar is respawning itself, and on the terminal error once the
+	 * attempts run out. Null for renderer-detected health failures. */
+	sidecarRestart: SidecarRestartProgress | null;
+	/** The banner was dismissed by the user. A new diagnostic — or the sidecar
+	 * coming back — clears it; the one that was closed stays hidden. */
+	sidecarDismissed: boolean;
+	theme: ThemeMode;
+	fontSize: number;
+	/** Application-wide display preferences, independent of a task's terminal configuration. */
+	compactDensity: boolean;
+	colorBlindMode: boolean;
+	followAgentTheme: boolean;
+	/** Master switch for desktop notifications (Settings → GUI, default on). */
+	notifications: boolean;
+	/** Also notify while the omp window has focus (Settings → GUI, default off). */
+	notificationsWhenFocused: boolean;
+	/** Expand reasoning (thinking) blocks by default (Settings → GUI, default off). */
+	thinkingExpanded: boolean;
+	/** Provider quotas above the sidebar footer (Settings → GUI, default off). */
+	sidebarQuotas: boolean;
+	/** Ask before `/delete` (`/drop`) deletes the current session; off deletes at once (#57). */
+	confirmSessionDelete: boolean;
+	/** Transcript density: compact folds reasoning/tools; full shows every step. */
+	transcriptDetail: TranscriptDetail;
+	tabWidth: TabWidth;
+	tabRows: TabRows;
+	/** Where plain left-clicks on http(s) links open: built-in browser panel or system browser (#65). */
+	linkOpenMode: LinkOpenMode;
+	/** Collapse long pasted text (>10 lines or >1000 chars) into `[Paste #N]` markers (#64). */
+	collapseLargePastes: boolean;
+	/** Expand/collapse-all signal for tool cards (⌃O); `seq` bumps per toggle so cards re-sync their local state. */
+	toolsExpandAll: { expanded: boolean; seq: number };
+	toggleSidebar: () => void;
+	togglePanel: () => void;
+	toggleToolsExpandAll: () => void;
+	setPanelTab: (tab: PanelTab) => void;
+	setDiffScope: (scope: DiffScope) => void;
+	/** Open the drawer on Changes at a given scope (the transcript's "Review" entry). */
+	openChanges: (scope: DiffScope) => void;
+	openLogs: () => void;
+	closeLogs: () => void;
+	openFilePreview: (path: string, line?: number) => void;
+	openImagePreview: (src: string, label: string) => void;
+	closeFilePreview: () => void;
+	/** Per-card collapse overrides for the center dock (absent = expanded). */
+	dockCollapsed: Partial<Record<DockCardId, boolean>>;
+	toggleDockCard: (id: DockCardId) => void;
+	/** Focus signal: bumps seq so the target card expands and flashes (command-palette deep links). */
+	dockFocus: { id: DockCardId; seq: number } | null;
+	focusDockCard: (id: DockCardId) => void;
+	openCommandPalette: () => void;
+	closeCommandPalette: () => void;
+	openModelPicker: () => void;
+	closeModelPicker: () => void;
+	openSettings: (tab?: string) => void;
+	closeSettings: () => void;
+	openUsage: () => void;
+	closeUsage: () => void;
+	openProviders: () => void;
+	closeProviders: () => void;
+	openModelRoles: () => void;
+	closeModelRoles: () => void;
+	openStatsDashboard: () => void;
+	closeStatsDashboard: () => void;
+	feedbackOpen: boolean;
+	/** Error text carried in from a crash/error surface; shown read-only in the dialog. */
+	feedbackPrefill: { error?: string; title?: string; description?: string } | null;
+	openFeedback: (prefill?: { error?: string; title?: string; description?: string } | null) => void;
+	closeFeedback: () => void;
+	openModelCompare: () => void;
+	closeModelCompare: () => void;
+	openBenchmark: () => void;
+	closeBenchmark: () => void;
+	openExtensions: (tab?: "hooks" | "mcp" | "commands") => void;
+	closeExtensions: () => void;
+	openInventory: (tab?: "plugins" | "marketplaces" | "templates" | "memory") => void;
+	closeInventory: () => void;
+	openThemePicker: () => void;
+	closeThemePicker: () => void;
+	/** Opens the theme editor in place of the picker: on a custom theme to change it, or empty for a new one. */
+	openThemeEditor: (selection?: CustomThemeSelection) => void;
+	/** Closes the theme editor; `backToPicker` returns to the theme picker it was opened from. */
+	closeThemeEditor: (backToPicker?: boolean) => void;
+	openModes: (tab?: "vibe" | "goal" | "loop") => void;
+	closeModes: () => void;
+	openOrchestrator: () => void;
+	closeOrchestrator: () => void;
+	openShark: (tab?: SharkTabId) => void;
+	closeShark: () => void;
+	openAgentHub: (tab?: "definitions" | "hub") => void;
+	/** The Memory window; reopening without a tab keeps the last one. */
+	openMemory: (tab?: MemoryTabId) => void;
+	closeMemory: () => void;
+	closeAgentHub: () => void;
+	openHotkeys: () => void;
+	closeHotkeys: () => void;
+	openImportDialog: () => void;
+	closeImportDialog: () => void;
+	openCopySelector: () => void;
+	closeCopySelector: () => void;
+	openChangelog: () => void;
+	closeChangelog: () => void;
+	openContextReport: () => void;
+	closeContextReport: () => void;
+	openActiveTools: () => void;
+	closeActiveTools: () => void;
+	openShareSession: () => void;
+	closeShareSession: () => void;
+	openJobs: () => void;
+	closeJobs: () => void;
+	openWorkspaceDirs: () => void;
+	closeWorkspaceDirs: () => void;
+	openForceTool: () => void;
+	closeForceTool: () => void;
+	openBtw: (question: string) => void;
+	closeBtw: () => void;
+	openCollab: (joinLink?: string) => void;
+	closeCollab: () => void;
+	openDebug: () => void;
+	closeDebug: () => void;
+	openLive: () => void;
+	closeLive: () => void;
+	openComposerEditor: (initial: string) => void;
+	closeComposerEditor: () => void;
+	openProviderConfig: (editProvider?: CustomProviderView | "new" | null) => void;
+	closeProviderConfig: () => void;
+	openRenameDialog: () => void;
+	closeRenameDialog: () => void;
+	openWorktreeDialog: (context?: { baseCwd?: string }) => void;
+	closeWorktreeDialog: () => void;
+	openWorktreeClosePrompt: (tabId: string) => void;
+	closeWorktreeClosePrompt: () => void;
+	armCloseTab: (tabId: string) => void;
+	cancelCloseTab: () => void;
+	openPrCenter: () => void;
+	closePrCenter: () => void;
+	openPlugins: () => void;
+	closePlugins: () => void;
+	openConversationSearch: () => void;
+	closeConversationSearch: () => void;
+	requestTranscriptFind: (command: FindCommand) => void;
+	requestBrowserFind: (command: FindCommand) => void;
+	openSessionPicker: () => void;
+	closeSessionPicker: () => void;
+	openBranchPicker: () => void;
+	closeBranchPicker: () => void;
+	openSessionTree: () => void;
+	closeSessionTree: () => void;
+	openSessionInfo: () => void;
+	closeSessionInfo: () => void;
+	requestSessionSwitch: (session: SessionInfo) => void;
+	closeSessionSwitch: () => void;
+	requestModelRestore: (prompt: { session: SessionInfo; missingModel: string }) => void;
+	closeModelRestore: () => void;
+	/** Close UI whose data or actions belong to the outgoing tab. */
+	closeSessionOverlays: () => void;
+	/** In-flight sidebar/picker session switch: keep the outgoing transcript painted. */
+	setSidecarError: (error: string | null, restart?: SidecarRestartProgress | null) => void;
+	clearSidecarError: () => void;
+	dismissSidecarBanner: () => void;
+	setTheme: (theme: ThemeMode) => void;
+	setFontSize: (size: number) => void;
+	setNotifications: (enabled: boolean) => void;
+	setNotificationsWhenFocused: (enabled: boolean) => void;
+	setThinkingExpanded: (enabled: boolean) => void;
+	setSidebarQuotas: (enabled: boolean) => void;
+	setTranscriptDetail: (detail: TranscriptDetail) => void;
+	setTabWidth: (width: TabWidth) => void;
+	setTabRows: (rows: TabRows) => void;
+	setLinkOpenMode: (mode: LinkOpenMode) => void;
+	setCollapseLargePastes: (enabled: boolean) => void;
+	/**
+	 * User keybinding overrides (B3 remap layer): actionId → replacement chord
+	 * list, compiled with the defaults in lib/keymap.ts into the keydown
+	 * dispatch map. GUI-local only — never synced to the TUI's keybindings.yml.
+	 */
+	keymapOverrides: KeymapOverrides;
+	/** Ids of the shortcuts the user turned off (prefs key "keymapDisabled"). */
+	keymapDisabled: readonly string[];
+	/** One-shot boot hydration guard for the saved shortcuts (input-history pattern). */
+	keymapHydrated: boolean;
+	/** `reload` re-reads after another window saved shortcut changes. */
+	hydrateKeymap: (reload?: boolean) => Promise<void>;
+	/** Replace one shortcut's chords; an empty list removes the override (reset to default). */
+	setKeymapOverride: (actionId: string, chords: string[]) => void;
+	setShortcutEnabled: (id: string, enabled: boolean) => void;
+	/** Every shortcut back to its default chord, and on. */
+	resetKeymapOverrides: () => void;
+}
+
+export const useUiStore = create<UiStore>()((set, get) => ({
+	displayPreferences: {},
+	sidebarVisible: true,
+	panelVisible: false,
+	panelTab: "overview",
+	workspacePage: null,
+	openTasksPage: () => set(workspacePagePatch("tasks")),
+	closeTasksPage: () => {
+		if (get().workspacePage === "tasks") set({ workspacePage: null });
+	},
+	returnToConversation: () => set(workspacePagePatch(null)),
+	diffScope: "repository",
+	logsOpen: false,
+	filePreviewPath: null,
+	filePreviewRequestId: 0,
+	filePreviewImage: null,
+	filePreviewLine: null,
+	commandPaletteOpen: false,
+	modelPickerOpen: false,
+	settingsOpen: false,
+	settingsTab: "capabilities",
+	theme: readPrepaintThemeMode(),
+	fontSize: 15,
+	compactDensity: false,
+	colorBlindMode: false,
+	followAgentTheme: false,
+	notifications: true,
+	notificationsWhenFocused: false,
+	thinkingExpanded: false,
+	sidebarQuotas: false,
+	confirmSessionDelete: true,
+	transcriptDetail: "compact",
+	tabWidth: "default",
+	tabRows: "single",
+	linkOpenMode: "panel",
+	collapseLargePastes: true,
+	toggleSidebar: () => set({ sidebarVisible: !get().sidebarVisible }),
+	// The bare toggle (title bar, shortcut) opens on Overview; links that open the
+	// drawer for a reason (Review, a file, /btw) go through setPanelTab instead.
+	togglePanel: () => {
+		const state = get();
+		set({
+			...workspacePagePatch(null),
+			...(state.panelVisible || activeWorkspacePage(state)
+				? { panelVisible: false }
+				: { panelVisible: true, panelTab: "overview" }),
+		});
+	},
+	toolsExpandAll: { expanded: false, seq: 0 },
+	toggleToolsExpandAll: () =>
+		set({ toolsExpandAll: { expanded: !get().toolsExpandAll.expanded, seq: get().toolsExpandAll.seq + 1 } }),
+	setPanelTab: tab => {
+		// Chat tabs are tool-free: only Overview, btw and Files exist there, so a
+		// force-open of any other drawer tab is a no-op.
+		if (!CHAT_PANEL_TABS.has(tab)) {
+			const activeKind = useTabsStore
+				.getState()
+				.tabs.find(t2 => t2.id === useTabsStore.getState().activeTabId)?.kind;
+			if (activeKind === "chat") return;
+		}
+		set({ ...workspacePagePatch(null), panelTab: tab, panelVisible: true });
+	},
+	setDiffScope: scope => set({ diffScope: scope }),
+	openChanges: scope => {
+		get().setPanelTab("diff");
+		if (get().panelTab === "diff") set({ diffScope: scope });
+	},
+	openLogs: () => set(workspacePagePatch("logsOpen")),
+	closeLogs: () => set({ logsOpen: false }),
+	openFilePreview: (path, line) =>
+		set({
+			...workspacePagePatch(null),
+			filePreviewPath: path,
+			filePreviewRequestId: get().filePreviewRequestId + 1,
+			filePreviewLine: line ?? null,
+			filePreviewImage: null,
+			panelTab: "files",
+			panelVisible: true,
+		}),
+	openImagePreview: (src, label) =>
+		set({
+			...workspacePagePatch(null),
+			filePreviewPath: null,
+			filePreviewLine: null,
+			filePreviewImage: { src, label },
+			panelTab: "files",
+			panelVisible: true,
+		}),
+	closeFilePreview: () => set({ filePreviewPath: null, filePreviewLine: null, filePreviewImage: null }),
+	dockCollapsed: {},
+	toggleDockCard: id =>
+		set({
+			dockCollapsed: { ...get().dockCollapsed, [id]: !(get().dockCollapsed[id] ?? false) },
+		}),
+	dockFocus: null,
+	focusDockCard: id =>
+		set({
+			dockCollapsed: { ...get().dockCollapsed, [id]: false },
+			dockFocus: { id, seq: (get().dockFocus?.seq ?? 0) + 1 },
+		}),
+	openCommandPalette: () => set({ commandPaletteOpen: true }),
+	closeCommandPalette: () => set({ commandPaletteOpen: false }),
+	openModelPicker: () => set({ modelPickerOpen: true }),
+	closeModelPicker: () => set({ modelPickerOpen: false }),
+	// Without an explicit target, a window that is already open stays on its
+	// page: ⌘, pressed again must not bounce the user back to the first tab (and
+	// wipe the search they typed). A cold open lands on the GUI preferences page
+	// (`GUI_TAB_ID`); the capabilities overview has its own navigation entry.
+	openSettings: tab =>
+		set(state => ({
+			settingsOpen: true,
+			settingsTab: tab ?? (state.settingsOpen ? state.settingsTab : "gui"),
+		})),
+	closeSettings: () => set({ settingsOpen: false }),
+	usageOpen: false,
+	providersOpen: false,
+	openUsage: () => set(workspacePagePatch("usageOpen")),
+	closeUsage: () => set({ usageOpen: false }),
+	openProviders: () => set(workspacePagePatch("providersOpen")),
+	closeProviders: () => set({ providersOpen: false }),
+	modelRolesOpen: false,
+	openModelRoles: () => set(workspacePagePatch("modelRolesOpen")),
+	closeModelRoles: () => set({ modelRolesOpen: false }),
+	statsDashboardOpen: false,
+	openStatsDashboard: () => set(workspacePagePatch("statsDashboardOpen")),
+	closeStatsDashboard: () => set({ statsDashboardOpen: false }),
+	feedbackOpen: false,
+	feedbackPrefill: null,
+	openFeedback: prefill => set({ feedbackOpen: true, feedbackPrefill: prefill ?? null }),
+	closeFeedback: () => set({ feedbackOpen: false, feedbackPrefill: null }),
+	modelCompareOpen: false,
+	openModelCompare: () => set(workspacePagePatch("modelCompareOpen")),
+	closeModelCompare: () => set({ modelCompareOpen: false }),
+	benchmarkOpen: false,
+	openBenchmark: () => set({ benchmarkOpen: true }),
+	closeBenchmark: () => set({ benchmarkOpen: false }),
+	extensionsOpen: false,
+	extensionsTab: "hooks" as const,
+	inventoryOpen: false,
+	inventoryTab: "plugins" as const,
+	openExtensions: tab => set({ ...workspacePagePatch("extensionsOpen"), extensionsTab: tab ?? "hooks" }),
+	closeExtensions: () => set({ extensionsOpen: false }),
+	openInventory: tab => set({ ...workspacePagePatch("inventoryOpen"), inventoryTab: tab ?? "plugins" }),
+	closeInventory: () => set({ inventoryOpen: false }),
+	themePickerOpen: false,
+	openThemePicker: () => set({ themePickerOpen: true }),
+	closeThemePicker: () => set({ themePickerOpen: false }),
+	themeEditor: null,
+	openThemeEditor: selection => set({ themePickerOpen: false, themeEditor: { selection: selection ?? null } }),
+	closeThemeEditor: backToPicker => set({ themeEditor: null, themePickerOpen: backToPicker === true }),
+	modesOpen: false,
+	modesTab: "vibe" as const,
+	openModes: tab => set({ ...workspacePagePatch("modesOpen"), modesTab: tab ?? "vibe" }),
+	closeModes: () => set({ modesOpen: false }),
+	orchestratorOpen: false,
+	openOrchestrator: () => set({ ...workspacePagePatch("orchestratorOpen") }),
+	closeOrchestrator: () => set({ orchestratorOpen: false }),
+	sharkOpen: false,
+	sharkTab: "cockpit" as SharkTabId,
+	openShark: tab => set(state => ({ ...workspacePagePatch("sharkOpen"), sharkTab: tab ?? state.sharkTab })),
+	closeShark: () => set({ sharkOpen: false }),
+	agentHubOpen: false,
+	agentHubTab: "definitions" as const,
+	openAgentHub: tab => set({ ...workspacePagePatch("agentHubOpen"), agentHubTab: tab ?? "definitions" }),
+	closeAgentHub: () => set({ agentHubOpen: false }),
+	memoryOpen: false,
+	memoryTab: "knowledge" as MemoryTabId,
+	openMemory: tab => set(state => ({ ...workspacePagePatch("memoryOpen"), memoryTab: tab ?? state.memoryTab })),
+	closeMemory: () => set({ memoryOpen: false }),
+	hotkeysOpen: false,
+	openHotkeys: () => set(workspacePagePatch("hotkeysOpen")),
+	closeHotkeys: () => set({ hotkeysOpen: false }),
+	importDialogOpen: false,
+	openImportDialog: () => set({ importDialogOpen: true }),
+	closeImportDialog: () => set({ importDialogOpen: false }),
+	copySelectorOpen: false,
+	openCopySelector: () => set({ copySelectorOpen: true }),
+	closeCopySelector: () => set({ copySelectorOpen: false }),
+	changelogOpen: false,
+	openChangelog: () => set(workspacePagePatch("changelogOpen")),
+	closeChangelog: () => set({ changelogOpen: false }),
+	contextReportOpen: false,
+	openContextReport: () => set(workspacePagePatch("contextReportOpen")),
+	closeContextReport: () => set({ contextReportOpen: false }),
+	activeToolsOpen: false,
+	openActiveTools: () => set(workspacePagePatch("activeToolsOpen")),
+	closeActiveTools: () => set({ activeToolsOpen: false }),
+	shareSessionOpen: false,
+	openShareSession: () => set({ shareSessionOpen: true }),
+	closeShareSession: () => set({ shareSessionOpen: false }),
+	jobsOpen: false,
+	openJobs: () => set(workspacePagePatch("jobsOpen")),
+	closeJobs: () => set({ jobsOpen: false }),
+	workspaceDirsOpen: false,
+	openWorkspaceDirs: () => set(workspacePagePatch("workspaceDirsOpen")),
+	closeWorkspaceDirs: () => set({ workspaceDirsOpen: false }),
+	forceToolOpen: false,
+	openForceTool: () => set({ forceToolOpen: true }),
+	closeForceTool: () => set({ forceToolOpen: false }),
+	btwRequest: null,
+	openBtw: question => set({ btwRequest: question }),
+	closeBtw: () => set({ btwRequest: null }),
+	collabOpen: false,
+	collabJoinLink: null as string | null,
+	openCollab: joinLink => set({ collabOpen: true, collabJoinLink: joinLink ?? null }),
+	closeCollab: () => set({ collabOpen: false, collabJoinLink: null }),
+	debugOpen: false,
+	openDebug: () => set(workspacePagePatch("debugOpen")),
+	closeDebug: () => set({ debugOpen: false }),
+	liveOpen: false,
+	openLive: () => set({ liveOpen: true }),
+	closeLive: () => set({ liveOpen: false }),
+	composerEditorOpen: false,
+	composerEditorInitial: null,
+	openComposerEditor: initial => set({ composerEditorOpen: true, composerEditorInitial: initial }),
+	closeComposerEditor: () => set({ composerEditorOpen: false, composerEditorInitial: null }),
+	providerConfigOpen: false,
+	providerConfigEdit: null as CustomProviderView | "new" | null,
+	openProviderConfig: editProvider => set({ providerConfigOpen: true, providerConfigEdit: editProvider ?? null }),
+	closeProviderConfig: () => set({ providerConfigOpen: false, providerConfigEdit: null }),
+	renameDialogOpen: false,
+	openRenameDialog: () => set({ renameDialogOpen: true }),
+	closeRenameDialog: () => set({ renameDialogOpen: false }),
+	worktreeDialog: null,
+	openWorktreeDialog: context => set({ worktreeDialog: context ?? {} }),
+	closeWorktreeDialog: () => set({ worktreeDialog: null }),
+	worktreeClosePrompt: null,
+	openWorktreeClosePrompt: tabId => set({ worktreeClosePrompt: { tabId } }),
+	closeWorktreeClosePrompt: () => set({ worktreeClosePrompt: null }),
+	armedCloseTab: null,
+	armCloseTab: tabId => set({ armedCloseTab: { tabId } }),
+	cancelCloseTab: () => set({ armedCloseTab: null }),
+	prCenterOpen: false,
+	openPrCenter: () => set(workspacePagePatch("prCenterOpen")),
+	closePrCenter: () => set({ prCenterOpen: false }),
+	pluginsOpen: false,
+	openPlugins: () => set(workspacePagePatch("pluginsOpen")),
+	closePlugins: () => set({ pluginsOpen: false }),
+	conversationSearchOpen: false,
+	openConversationSearch: () => set({ conversationSearchOpen: true }),
+	closeConversationSearch: () => set({ conversationSearchOpen: false }),
+	transcriptFindRequest: { nonce: 0, command: "find" },
+	requestTranscriptFind: command =>
+		set(state => ({ transcriptFindRequest: { nonce: state.transcriptFindRequest.nonce + 1, command } })),
+	browserFindRequest: { nonce: 0, command: "find" },
+	requestBrowserFind: command =>
+		set(state => ({ browserFindRequest: { nonce: state.browserFindRequest.nonce + 1, command } })),
+	sessionPickerOpen: false,
+	openSessionPicker: () => set({ sessionPickerOpen: true }),
+	closeSessionPicker: () => set({ sessionPickerOpen: false }),
+	branchPickerOpen: false,
+	openBranchPicker: () => set({ branchPickerOpen: true }),
+	closeBranchPicker: () => set({ branchPickerOpen: false }),
+	sessionTreeOpen: false,
+	openSessionTree: () => set(workspacePagePatch("sessionTreeOpen")),
+	closeSessionTree: () => set({ sessionTreeOpen: false }),
+	sessionInfoOpen: false,
+	openSessionInfo: () => set(workspacePagePatch("sessionInfoOpen")),
+	closeSessionInfo: () => set({ sessionInfoOpen: false }),
+	sessionSwitchPrompt: null as SessionInfo | null,
+	requestSessionSwitch: session => set({ sessionSwitchPrompt: session }),
+	closeSessionSwitch: () => set({ sessionSwitchPrompt: null }),
+	modelRestorePrompt: null as { session: SessionInfo; missingModel: string } | null,
+	requestModelRestore: prompt => set({ modelRestorePrompt: prompt }),
+	closeModelRestore: () => set({ modelRestorePrompt: null }),
+	closeSessionOverlays: () =>
+		set({
+			workspacePage: null,
+			commandPaletteOpen: false,
+			modelPickerOpen: false,
+			settingsOpen: false,
+			extensionsOpen: false,
+			inventoryOpen: false,
+			modesOpen: false,
+			orchestratorOpen: false,
+			sharkOpen: false,
+			agentHubOpen: false,
+			memoryOpen: false,
+			importDialogOpen: false,
+			copySelectorOpen: false,
+			contextReportOpen: false,
+			activeToolsOpen: false,
+			shareSessionOpen: false,
+			jobsOpen: false,
+			workspaceDirsOpen: false,
+			forceToolOpen: false,
+			btwRequest: null,
+			collabOpen: false,
+			collabJoinLink: null,
+			debugOpen: false,
+			liveOpen: false,
+			composerEditorOpen: false,
+			composerEditorInitial: null,
+			renameDialogOpen: false,
+			worktreeDialog: null,
+			worktreeClosePrompt: null,
+			armedCloseTab: null,
+			prCenterOpen: false,
+			pluginsOpen: false,
+			conversationSearchOpen: false,
+			filePreviewPath: null,
+			filePreviewImage: null,
+			filePreviewLine: null,
+			sessionPickerOpen: false,
+			branchPickerOpen: false,
+			sessionTreeOpen: false,
+			sessionInfoOpen: false,
+			sessionSwitchPrompt: null,
+			modelRestorePrompt: null,
+		}),
+	sidecarError: null as string | null,
+	sidecarRestart: null as SidecarRestartProgress | null,
+	sidecarDismissed: false,
+	setSidecarError: (error, restart = null) =>
+		set({ sidecarError: error, sidecarRestart: restart, sidecarDismissed: false }),
+	clearSidecarError: () => set({ sidecarError: null, sidecarRestart: null, sidecarDismissed: false }),
+	dismissSidecarBanner: () => set({ sidecarDismissed: true }),
+	setTheme: theme => set({ theme }),
+	setFontSize: size => set({ fontSize: size }),
+	setNotifications: enabled => set({ notifications: enabled }),
+	setNotificationsWhenFocused: enabled => set({ notificationsWhenFocused: enabled }),
+	setThinkingExpanded: enabled => set({ thinkingExpanded: enabled }),
+	setSidebarQuotas: enabled => set({ sidebarQuotas: enabled }),
+	setTranscriptDetail: detail => set({ transcriptDetail: detail }),
+	setTabWidth: width => set({ tabWidth: width }),
+	setTabRows: rows => set({ tabRows: rows }),
+	setLinkOpenMode: mode => set({ linkOpenMode: mode }),
+	setCollapseLargePastes: enabled => set({ collapseLargePastes: enabled }),
+	keymapOverrides: {} as KeymapOverrides,
+	keymapDisabled: [],
+	keymapHydrated: false,
+	hydrateKeymap: async reload => {
+		if (get().keymapHydrated && !reload) return;
+		try {
+			const [overrides, disabled] = await Promise.all([
+				window.omp.prefs.get(KEYMAP_OVERRIDES_PREF),
+				window.omp.prefs.get(KEYMAP_DISABLED_PREF),
+			]);
+			set({
+				keymapOverrides: sanitizeOverrides(overrides),
+				keymapDisabled: sanitizeDisabled(disabled),
+				keymapHydrated: true,
+			});
+		} catch {
+			// prefs IPC unavailable (tests, storybook) — defaults stay in effect.
+			set({ keymapHydrated: true });
+		}
+	},
+	setKeymapOverride: (actionId, chords) => {
+		// Fresh object per mutation so subscribers (and App's compiled-map memo)
+		// see a new reference; untouched overrides keep their identity.
+		const next = { ...get().keymapOverrides };
+		if (chords.length === 0) delete next[actionId];
+		else next[actionId] = chords;
+		set({ keymapOverrides: next });
+		void window.omp.prefs.set(KEYMAP_OVERRIDES_PREF, next).catch(() => {});
+	},
+	setShortcutEnabled: (id, enabled) => {
+		const current = get().keymapDisabled;
+		if (current.includes(id) !== enabled) return;
+		const next = enabled ? current.filter(other => other !== id) : [...current, id];
+		set({ keymapDisabled: next });
+		void window.omp.prefs.set(KEYMAP_DISABLED_PREF, next).catch(() => {});
+	},
+	resetKeymapOverrides: () => {
+		set({ keymapOverrides: {}, keymapDisabled: [] });
+		void window.omp.prefs.set(KEYMAP_OVERRIDES_PREF, {}).catch(() => {});
+		void window.omp.prefs.set(KEYMAP_DISABLED_PREF, []).catch(() => {});
+	},
+}));
+
+/** The chords in effect: saved overrides, with `[]` for every shortcut the user turned off. */
+export function useEffectiveKeymapOverrides(): KeymapOverrides {
+	const overrides = useUiStore(s => s.keymapOverrides);
+	const disabled = useUiStore(s => s.keymapDisabled);
+	return useMemo(() => effectiveOverrides(overrides, disabled), [overrides, disabled]);
+}

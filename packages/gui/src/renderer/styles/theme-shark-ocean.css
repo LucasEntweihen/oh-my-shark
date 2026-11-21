@@ -1,0 +1,113 @@
+/* OhMyShark (OMSK) Tactical Themes: Shark Ocean & Deep Abyss */
+
+:root[data-theme-name="sharkOcean"],
+.omsk-theme-shark-ocean {
+	color-scheme: dark;
+	--omsk-void: #06070a;
+	--omsk-primary: #0a0c10;
+	--omsk-surface: #12161f;
+	--omsk-flame: #ff5500;
+	--omsk-cyan: #00e5ff;
+	--omsk-aqua: #38bdf8;
+	--omsk-violet: #a855f7;
+	--omsk-green: #00e676;
+
+	--omp-accent: #38bdf8;
+	--omp-accent-bright: #00e5ff;
+	--omp-accent-dim: rgba(56, 189, 248, 0.14);
+	--omp-accent-glow: rgba(0, 229, 255, 0.22);
+	--omp-bg-primary: #0a0c10;
+	--omp-bg-secondary: #12161f;
+	--omp-bg-tertiary: #181e2a;
+	--omp-bg-elevated: #12161f;
+	--omp-sidebar-bg: #06070a;
+	--omp-code-bg: #06070a;
+	--omp-status-bg: #06070a;
+	--omp-titlebar-bg: #0a0c10;
+}
+
+:root[data-theme-name="deepAbyss"],
+.omsk-theme-deep-abyss {
+	color-scheme: dark;
+	--omsk-void: #030508;
+	--omsk-primary: #05080f;
+	--omsk-surface: #0b111e;
+	--omsk-flame: #ff5500;
+	--omsk-cyan: #00e5ff;
+	--omsk-aqua: #38bdf8;
+	--omsk-violet: #b47aff;
+	--omsk-green: #00e676;
+
+	--omp-accent: #00e5ff;
+	--omp-accent-bright: #67e8f9;
+	--omp-accent-dim: rgba(0, 229, 255, 0.14);
+	--omp-accent-glow: rgba(0, 229, 255, 0.24);
+	--omp-bg-primary: #05080f;
+	--omp-bg-secondary: #0b111e;
+	--omp-bg-tertiary: #101a2d;
+	--omp-bg-elevated: #0e1626;
+	--omp-sidebar-bg: #030508;
+	--omp-code-bg: #030508;
+	--omp-status-bg: #030508;
+	--omp-titlebar-bg: #05080f;
+}
+
+/* OMSK Magic Mode Pills & Shimmer Accent */
+@keyframes omsk-mode-shimmer {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+.omsk-modes-strip {
+	scrollbar-width: none;
+}
+
+.omsk-modes-strip::-webkit-scrollbar {
+	display: none;
+}
+
+.omsk-mode-pill {
+	position: relative;
+	transition:
+		border-color var(--omp-motion-fast) var(--omp-ease),
+		color var(--omp-motion-fast) var(--omp-ease),
+		background-color var(--omp-motion-fast) var(--omp-ease),
+		box-shadow var(--omp-motion-fast) var(--omp-ease);
+}
+
+.omsk-mode-pill--active {
+	background-image: linear-gradient(
+		110deg,
+		color-mix(in srgb, var(--omsk-pill-color, var(--omp-accent)) 18%, transparent) 0%,
+		color-mix(in srgb, var(--omsk-pill-color, var(--omp-accent)) 32%, transparent) 45%,
+		color-mix(in srgb, var(--omsk-pill-color, var(--omp-accent)) 18%, transparent) 100%
+	);
+	background-size: 220% 100%;
+	border-color: color-mix(in srgb, var(--omsk-pill-color, var(--omp-accent)) 68%, transparent);
+	color: var(--omsk-pill-color, var(--omp-accent-bright));
+	box-shadow: 0 0 12px -3px color-mix(in srgb, var(--omsk-pill-color, var(--omp-accent)) 45%, transparent);
+	animation: omsk-mode-shimmer 2.8s ease-in-out infinite; /* motion-ok: active magic mode shimmer */
+}
+
+.omsk-wave-lane {
+	border: 1px solid var(--omp-border-muted);
+	border-radius: var(--radius-xl);
+}
+
+.omsk-wave-lane--selected {
+	border-color: var(--omp-border-accent);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--omp-accent) 28%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.omsk-mode-pill--active {
+		animation: none;
+	}
+}

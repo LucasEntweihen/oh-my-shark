@@ -74,6 +74,11 @@ python/omp-rpc/build/
 .wt/
 CPU*.md
 packages/coding-agent/binaries/
+packages/gui/dist/
+packages/gui/out/
+packages/gui/resources/omsk*
+packages/gui/resources/omp*
+packages/natives/native/*.node
 
 # robomp runtime state
 python/robomp/data/
@@ -101,12 +106,10 @@ packages/coding-agent/bench/boot-baseline.json
 
 .bun-cache/
 
-apps/omsk-gui/
-apps/desktop/src-tauri/target/
-apps/desktop/dist/
-apps/desktop/node_modules/
 *.zip
 *.zip.sha256
 *.exe
 *.exe.sha256
 *.lnk
+
+.ohms-natives-*/

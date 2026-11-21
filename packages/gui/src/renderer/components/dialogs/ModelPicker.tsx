@@ -1,0 +1,566 @@
+import { useTabRpc } from "../../lib/tab-rpc";
+/**
+ * Model picker: provider groups as collapsible dropdowns with search, auth
+ * status from login providers, current model highlighted. Selection calls
+ * set_model.
+ */
+
+import { Check, ChevronRight, Cpu, Plus, Search, TriangleAlert } from "lucide-react";
+import {
+	type CSSProperties,
+	type KeyboardEvent as ReactKeyboardEvent,
+	useCallback,
+	useEffect,
+	useId,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import { createPortal } from "react-dom";
+import type { LoginProvider, ModelInfo } from "../../../shared/rpc-types";
+import { applyModelInfo, hydrateSession } from "../../hooks/use-rpc-events";
+import { describeProviderError } from "../../lib/errors";
+import { cx, formatTokens } from "../../lib/format";
+import { useT } from "../../lib/i18n";
+import { isImeKeyEvent } from "../../lib/ime";
+import { useModelStore } from "../../stores/model";
+import { useSessionStore } from "../../stores/session";
+import { useRuntimeTabId } from "../../stores/session-runtime-context";
+import { toast } from "../../stores/toast";
+import { useUiStore } from "../../stores/ui";
+import { Badge, Spinner } from "../common";
+
+function modelTrigger(tabId: string | null | undefined): HTMLButtonElement | undefined {
+	return Array.from(document.querySelectorAll<HTMLButtonElement>("[data-model-picker-trigger]")).find(
+		button => button.dataset.modelPickerTrigger === (tabId ?? "") && button.getClientRects().length > 0,
+	);
+}
+
+export function ModelPicker() {
+	const tabRpc = useTabRpc();
+	const tabId = useRuntimeTabId();
+	const t = useT();
+	const open = useUiStore(state => state.modelPickerOpen);
+	const close = useUiStore(state => state.closeModelPicker);
+	const availableModels = useModelStore(state => state.availableModels);
+	const current = useModelStore(state => state.model);
+	const refreshAvailableModels = useModelStore(state => state.refreshAvailableModels);
+	const openProviders = useUiStore(state => state.openProviders);
+	// Live session usage: models whose window is smaller render with an
+	// over-context warning and compact-first on pick (TUI markOverContext parity).
+	const contextUsage = useSessionStore(state => state.contextUsage);
+	const sidecarReady = useSessionStore(state => state.status) === "ready";
+
+	const [query, setQuery] = useState("");
+	const [providers, setProviders] = useState<LoginProvider[]>([]);
+	const [switching, setSwitching] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [activeIndex, setActiveIndex] = useState(0);
+	const inputRef = useRef<HTMLInputElement>(null);
+	const listRef = useRef<HTMLDivElement>(null);
+	const panelRef = useRef<HTMLDivElement>(null);
+	const restoreFocus = useRef<HTMLElement | null>(null);
+	const [position, setPosition] = useState<CSSProperties>();
+	const listboxId = useId();
+	/** Providers the user opened; persists across picker opens. */
+	const [expandedProviders, setExpandedProviders] = useState<ReadonlySet<string>>(() => new Set());
+	/** While searching every matching provider is open; these were closed for the current query. */
+	const [searchCollapsed, setSearchCollapsed] = useState<ReadonlySet<string>>(() => new Set());
+
+	const requestVersion = useRef(0);
+
+	const dismiss = useCallback(() => {
+		if (!useUiStore.getState().modelPickerOpen) return;
+		close();
+		restoreFocus.current?.focus({ preventScroll: true });
+	}, [close]);
+
+	useLayoutEffect(() => {
+		if (!open) return;
+		const anchor = modelTrigger(tabId);
+		const fallback = document.querySelector<HTMLElement>(".omp-workspace-main");
+		const composer = anchor?.closest(".omp-composer-box");
+		restoreFocus.current = anchor ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+		const place = () => {
+			const rect = anchor?.getBoundingClientRect();
+			const workspace = fallback?.getBoundingClientRect();
+			const width = Math.min(420, Math.max(0, window.innerWidth - 24));
+			const left = Math.max(12, Math.min(rect?.left ?? (workspace?.left ?? 0) + 16, window.innerWidth - width - 12));
+			const above = (composer?.getBoundingClientRect().top ?? rect?.top ?? window.innerHeight - 60) - 8;
+			const below = (rect?.bottom ?? 0) + 8;
+			const spaceAbove = above - 12;
+			const spaceBelow = window.innerHeight - below - 12;
+			setPosition(
+				spaceAbove >= 200 || spaceAbove >= spaceBelow
+					? { left, width, bottom: window.innerHeight - above, maxHeight: Math.min(400, spaceAbove) }
+					: { left, width, top: below, maxHeight: Math.min(400, spaceBelow) },
+			);
+		};
+		const closeOutside = (event: PointerEvent | FocusEvent) => {
+			const target = event.target;
+			if (target instanceof Node && (panelRef.current?.contains(target) || anchor?.contains(target))) return;
+			close();
+		};
+		const onEscape = (event: KeyboardEvent) => {
+			if (event.key !== "Escape" || event.defaultPrevented || isImeKeyEvent(event)) return;
+			event.preventDefault();
+			dismiss();
+		};
+		const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(place);
+		if (fallback) observer?.observe(fallback);
+		if (composer) observer?.observe(composer);
+		place();
+		window.addEventListener("resize", place);
+		document.addEventListener("pointerdown", closeOutside);
+		document.addEventListener("focusin", closeOutside);
+		document.addEventListener("keydown", onEscape);
+		return () => {
+			observer?.disconnect();
+			window.removeEventListener("resize", place);
+			document.removeEventListener("pointerdown", closeOutside);
+			document.removeEventListener("focusin", closeOutside);
+			document.removeEventListener("keydown", onEscape);
+		};
+	}, [close, dismiss, open, tabId]);
+
+	/** Login flows are the picker's own concern, but the model list is shared
+	 * catalog state: it commits through the store's generation guard, so a
+	 * `model_catalog_update` that lands mid-read can never be reverted by this
+	 * response. `forceRefresh` belongs to the retry path, where the user is
+	 * disputing what the list shows. */
+	const load = useCallback(
+		async (forceRefresh: boolean, failedCopy?: string): Promise<void> => {
+			const version = ++requestVersion.current;
+			setLoading(true);
+			setError(null);
+			if (!sidecarReady) {
+				setError(t("modelPicker.notConnected"));
+				setLoading(false);
+				return;
+			}
+			const [providersResult, modelsResult] = await Promise.allSettled([
+				tabRpc.getLoginProviders(),
+				refreshAvailableModels(forceRefresh),
+			]);
+			if (version !== requestVersion.current) return;
+			setLoading(false);
+			const providersOk = providersResult.status === "fulfilled" && providersResult.value.success;
+			if (providersOk) {
+				const data = providersResult.value.data as { providers?: LoginProvider[] } | undefined;
+				setProviders(data?.providers ?? []);
+				return;
+			}
+			if (modelsResult.status === "fulfilled") return;
+			const reason = (settled: PromiseSettledResult<unknown>): string | null => {
+				if (settled.status === "rejected") {
+					return describeProviderError(settled.reason);
+				}
+				const failure = (settled.value as { error?: string } | undefined)?.error;
+				return failure ? describeProviderError(failure) : null;
+			};
+			setError(failedCopy ?? reason(providersResult) ?? reason(modelsResult) ?? t("modelPicker.notResponding"));
+		},
+		[refreshAvailableModels, sidecarReady, t, tabRpc],
+	);
+
+	useEffect(() => {
+		if (!open) return undefined;
+		setQuery("");
+		setSearchCollapsed(new Set());
+		setActiveIndex(0);
+		// The current model's provider always opens with the picker. Read via
+		// getState so a model switch while open does not re-run this effect.
+		const currentProvider = useModelStore.getState().model?.provider;
+		if (currentProvider) {
+			setExpandedProviders(prev => (prev.has(currentProvider) ? prev : new Set(prev).add(currentProvider)));
+		}
+		requestAnimationFrame(() => inputRef.current?.focus());
+		void load(false);
+		return () => {
+			requestVersion.current++;
+		};
+	}, [open, load]);
+
+	const authByProvider = useMemo(() => {
+		const map = new Map<string, LoginProvider>();
+		for (const provider of providers) map.set(provider.id, provider);
+		return map;
+	}, [providers]);
+
+	const groups = useMemo(() => {
+		const q = query.trim().toLowerCase();
+		const filtered = availableModels.filter(
+			model =>
+				q.length === 0 ||
+				model.id.toLowerCase().includes(q) ||
+				model.provider.toLowerCase().includes(q) ||
+				model.name?.toLowerCase().includes(q) ||
+				model.description?.toLowerCase().includes(q),
+		);
+		const map = new Map<string, typeof filtered>();
+		for (const model of filtered) {
+			const list = map.get(model.provider) ?? [];
+			list.push(model);
+			map.set(model.provider, list);
+		}
+		return [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
+	}, [availableModels, query]);
+
+	const searching = query.trim().length > 0;
+	const openProviderSet = useMemo(
+		() =>
+			new Set(
+				groups
+					.map(([provider]) => provider)
+					.filter(provider => (searching ? !searchCollapsed.has(provider) : expandedProviders.has(provider))),
+			),
+		[expandedProviders, groups, searchCollapsed, searching],
+	);
+
+	const toggleProvider = (provider: string) => {
+		const toggle = (prev: ReadonlySet<string>): ReadonlySet<string> => {
+			const next = new Set(prev);
+			if (!next.delete(provider)) next.add(provider);
+			return next;
+		};
+		if (searching) setSearchCollapsed(toggle);
+		else setExpandedProviders(toggle);
+	};
+
+	// Flat row order over open groups (group order → in-group order) for keyboard navigation.
+	const flatOptions = useMemo(
+		() =>
+			groups
+				.filter(([provider]) => openProviderSet.has(provider))
+				.flatMap(([provider, models]) =>
+					models.map(model => ({ provider, modelId: model.id, key: `${provider}/${model.id}` })),
+				),
+		[groups, openProviderSet],
+	);
+	const indexByKey = useMemo(() => new Map(flatOptions.map((option, index) => [option.key, index])), [flatOptions]);
+
+	// Clamp the highlight when the visible list shrinks (search, reload).
+	useEffect(() => {
+		setActiveIndex(index => Math.min(index, Math.max(0, flatOptions.length - 1)));
+	}, [flatOptions.length]);
+
+	useEffect(() => {
+		listRef.current?.querySelector(`[data-option-index="${activeIndex}"]`)?.scrollIntoView({ block: "nearest" });
+	}, [activeIndex]);
+
+	const isOverContext = (model: ModelInfo): boolean => {
+		const tokens = contextUsage?.tokens ?? 0;
+		const contextWindow = model.contextWindow ?? 0;
+		return tokens > 0 && contextWindow > 0 && tokens > contextWindow;
+	};
+
+	const select = async (provider: string, modelId: string) => {
+		if (!sidecarReady || switching !== null) return;
+		const key = `${provider}/${modelId}`;
+		setSwitching(key);
+		try {
+			// TUI parity: picking a model whose context window is smaller than the
+			// live session usage compacts with the CURRENT model first, then
+			// switches. The row carries the over-context warning before the pick.
+			const target = availableModels.find(m => m.provider === provider && m.id === modelId);
+			const overContext = target !== undefined && isOverContext(target);
+			if (overContext) {
+				const compactRes = await tabRpc.compact();
+				if (!compactRes.success) {
+					toast({ variant: "error", title: t("modelPicker.compactFailed"), message: compactRes.error });
+					return;
+				}
+				toast({ variant: "info", message: t("modelPicker.compactedSwitching") });
+			}
+			const response = await tabRpc.setModel(provider, modelId);
+			if (!response.success) {
+				toast({ variant: "error", title: t("modelPicker.failed"), message: response.error });
+				return;
+			}
+			// The response carries the sidecar's live model. Applying it here covers
+			// the switch that emits no model_changed at all — re-picking the current
+			// model is a server-side no-op, so the event channel can never heal a
+			// stale label.
+			if (tabId) applyModelInfo(response.data, tabId);
+			// Compaction rewrote the transcript — rehydrate so the chat and the
+			// context bar reflect the compacted session, not just the new model.
+			if (overContext) await hydrateSession();
+			dismiss();
+		} catch (cause) {
+			toast({ variant: "error", title: t("modelPicker.failed"), message: String(cause) });
+		} finally {
+			setSwitching(null);
+		}
+	};
+
+	const onKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+		if (isImeKeyEvent(event)) return;
+		switch (event.key) {
+			case "ArrowDown":
+				event.preventDefault();
+				setActiveIndex(index => Math.min(index + 1, Math.max(0, flatOptions.length - 1)));
+				break;
+			case "ArrowUp":
+				event.preventDefault();
+				setActiveIndex(index => Math.max(index - 1, 0));
+				break;
+			case "Home":
+				event.preventDefault();
+				setActiveIndex(0);
+				break;
+			case "End":
+				event.preventDefault();
+				setActiveIndex(Math.max(0, flatOptions.length - 1));
+				break;
+			case "Enter": {
+				event.preventDefault();
+				const option = flatOptions[activeIndex];
+				if (option) void select(option.provider, option.modelId);
+				break;
+			}
+		}
+	};
+
+	// role="listbox" only when option rows actually render (loading / error /
+	// empty states are plain status blocks, not listbox children).
+	const showOptions = !error && !loading && groups.length > 0;
+
+	if (!open) return null;
+	return createPortal(
+		<div
+			aria-label={t("modelPicker.searchLabel")}
+			className="omp-pop-in fixed z-[100] flex flex-col overflow-hidden rounded-xl border border-(--omp-border) bg-(--omp-bg-elevated) shadow-(--omp-shadow-md)"
+			id="omp-model-picker"
+			ref={panelRef}
+			role="region"
+			style={position ?? { visibility: "hidden" }}
+		>
+			<div className="flex min-h-0 flex-col">
+				<div className="flex items-center gap-2.5 border-b border-(--omp-border-muted) px-3.5 py-2.5">
+					<Search className="shrink-0 text-(--omp-dim)" size={14} />
+					<input
+						aria-activedescendant={flatOptions.length > 0 ? `${listboxId}-option-${activeIndex}` : undefined}
+						aria-controls={listboxId}
+						aria-label={t("modelPicker.searchLabel")}
+						className="min-w-0 flex-1 bg-transparent text-omp-md text-(--omp-text) placeholder:text-(--omp-dim) focus:outline-none"
+						onChange={event => {
+							setQuery(event.target.value);
+							setSearchCollapsed(new Set());
+						}}
+						onKeyDown={onKeyDown}
+						placeholder={t("modelPicker.placeholder")}
+						ref={inputRef}
+						value={query}
+					/>
+				</div>
+				<div
+					className="min-h-0 flex-1 overflow-y-auto p-1.5"
+					id={listboxId}
+					ref={listRef}
+					role={showOptions ? "listbox" : undefined}
+				>
+					{error ? (
+						<div className="flex flex-col items-center gap-3 py-10">
+							<span className="text-omp-xs text-[var(--omp-error)]">{error}</span>
+							<span className="text-omp-xs text-[var(--omp-dim)]">{t("modelPicker.notRespondingHint")}</span>
+							<button
+								type="button"
+								className="rounded-md border border-[var(--omp-border-muted)] px-3 py-1 text-omp-sm font-medium text-[var(--omp-text)] hover:bg-[var(--omp-selected-bg)]"
+								onClick={() => void load(true, t("modelPicker.stillNotResponding"))}
+								disabled={!sidecarReady}
+								title={!sidecarReady ? t("modelPicker.notConnected") : undefined}
+							>
+								{t("modelPicker.retry")}
+							</button>
+						</div>
+					) : loading ? (
+						<div className="flex items-center justify-center gap-2 py-10">
+							<Spinner size="sm" />
+							<span className="text-omp-xs text-(--omp-dim)">{t("modelPicker.loading")}</span>
+						</div>
+					) : availableModels.length === 0 ? (
+						<div className="py-10 text-center text-omp-xs text-(--omp-dim)">{t("modelPicker.empty")}</div>
+					) : groups.length === 0 ? (
+						<div className="py-10 text-center text-omp-xs text-(--omp-dim)">
+							{t("modelPicker.noMatch", { query })}
+						</div>
+					) : (
+						groups.map(([provider, models]) => {
+							const auth = authByProvider.get(provider);
+							const expanded = openProviderSet.has(provider);
+							const groupId = `${listboxId}-group-${provider}`;
+							return (
+								<section aria-label={provider} className="mb-1" key={provider} role="group">
+									<div className="flex items-center gap-1 px-1 pt-1">
+										<button
+											aria-controls={expanded ? groupId : undefined}
+											aria-expanded={expanded}
+											className="omp-pressable flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1 text-left hover:bg-(--omp-bg-tertiary)"
+											onClick={() => toggleProvider(provider)}
+											type="button"
+										>
+											<ChevronRight
+												aria-hidden="true"
+												className={cx(
+													"omp-disclosure-chevron shrink-0 text-(--omp-dim)",
+													expanded && "rotate-90",
+												)}
+												size={12}
+											/>
+											<Cpu className="shrink-0 text-(--omp-dim)" size={10} />
+											<span className="truncate text-omp-xxs font-semibold text-(--omp-dim)">
+												{provider}
+											</span>
+											{auth && (
+												<Badge
+													variant={auth.authenticated ? "success" : auth.available ? "warning" : "muted"}
+												>
+													{auth.authenticated
+														? t("modelPicker.auth.authenticated")
+														: auth.available
+															? t("modelPicker.auth.notSignedIn")
+															: t("modelPicker.auth.unavailable")}
+												</Badge>
+											)}
+											{!expanded && current?.provider === provider && (
+												<Check aria-hidden="true" className="shrink-0 text-(--omp-accent)" size={11} />
+											)}
+											<span className="ml-auto text-omp-xxs tabular-nums text-(--omp-dim)">
+												{models.length}
+											</span>
+										</button>
+										{auth?.available && !auth.authenticated && (
+											<button
+												type="button"
+												className="rounded px-1.5 py-0.5 text-omp-xxs font-medium text-(--omp-accent) hover:bg-(--omp-selected-bg)"
+												onClick={() => {
+													close();
+													openProviders();
+												}}
+											>
+												{t("providers.login")}
+											</button>
+										)}
+									</div>
+									{expanded && (
+										<div className="mt-0.5" id={groupId}>
+											{models.map(model => {
+												const isCurrent = current?.provider === provider && current.id === model.id;
+												const key = `${provider}/${model.id}`;
+												const optionIndex = indexByKey.get(key) ?? 0;
+												const isActive = optionIndex === activeIndex;
+												const over = !isCurrent && isOverContext(model);
+												return (
+													<button
+														aria-selected={isCurrent}
+														className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors ${
+															isActive ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"
+														}`}
+														data-option-index={optionIndex}
+														disabled={switching !== null || !sidecarReady}
+														title={!sidecarReady ? t("modelPicker.notConnected") : undefined}
+														id={`${listboxId}-option-${optionIndex}`}
+														key={key}
+														onClick={() => void select(provider, model.id)}
+														onMouseEnter={() => setActiveIndex(optionIndex)}
+														role="option"
+														type="button"
+													>
+														<div className="flex min-w-0 flex-1 flex-col gap-0.5">
+															<div className="flex min-w-0 items-center gap-1.5">
+																<span
+																	className={`truncate text-omp-xs ${isCurrent ? "font-semibold text-(--omp-accent)" : over ? "text-(--omp-dim)" : "text-(--omp-text)"}`}
+																>
+																	{model.name || model.id}
+																</span>
+																{model.isRecommended && (
+																	<Badge className="px-1.5 text-omp-xxs leading-3" variant="success">
+																		{t("modelPicker.badge.recommended")}
+																	</Badge>
+																)}
+																{model.isNew && (
+																	<Badge className="px-1.5 text-omp-xxs leading-3" variant="info">
+																		{t("modelPicker.badge.new")}
+																	</Badge>
+																)}
+																{model.isBeta && (
+																	<Badge className="px-1.5 text-omp-xxs leading-3" variant="warning">
+																		{t("modelPicker.badge.beta")}
+																	</Badge>
+																)}
+															</div>
+															{((model.name && model.name !== model.id) || model.description) && (
+																<span
+																	className="truncate text-omp-xxs text-(--omp-dim)"
+																	title={model.description}
+																>
+																	{/* Only the id is code; the description is prose and stays
+																	    in the interface face, which carries CJK text. */}
+																	{model.name && model.name !== model.id && (
+																		<span className="font-mono">{model.id}</span>
+																	)}
+																	{model.name && model.name !== model.id && model.description && " · "}
+																	{model.description}
+																</span>
+															)}
+														</div>
+														{model.int != null && Number.isFinite(model.int) && (
+															<span className="shrink-0 text-omp-xxs tabular-nums text-(--omp-dim)">
+																{t("modelPicker.intelligence", { value: Math.round(model.int) })}
+															</span>
+														)}
+														{model.tps != null && Number.isFinite(model.tps) && model.tps > 0 && (
+															<span className="shrink-0 text-omp-xxs tabular-nums text-(--omp-dim)">
+																{t("modelPicker.speed", {
+																	value:
+																		model.tps >= 10 ? Math.round(model.tps) : model.tps.toFixed(1),
+																})}
+															</span>
+														)}
+														{over && (
+															<span
+																className="flex shrink-0 items-center gap-1 text-(--omp-warning)"
+																title={t("modelPicker.overContextHint", {
+																	current: formatTokens(contextUsage?.tokens),
+																	limit: formatTokens(model.contextWindow),
+																})}
+															>
+																<TriangleAlert size={12} />
+																<span className="text-omp-xxs font-medium">
+																	{t("modelPicker.overContext")}
+																</span>
+															</span>
+														)}
+														{switching === key && <Spinner size="sm" />}
+														{isCurrent && <Check className="shrink-0 text-(--omp-accent)" size={13} />}
+													</button>
+												);
+											})}
+										</div>
+									)}
+								</section>
+							);
+						})
+					)}
+				</div>
+				{/* Adding a model means adding (or signing in to) its provider. */}
+				<div className="flex shrink-0 items-center border-t border-(--omp-border-muted) px-3 py-2">
+					<button
+						type="button"
+						className="omp-pressable flex items-center gap-1.5 rounded-md px-1.5 py-1 text-omp-sm text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+						onClick={() => {
+							close();
+							openProviders();
+						}}
+					>
+						<Plus aria-hidden size={13} />
+						{t("modelPicker.addModels")}
+					</button>
+				</div>
+			</div>
+		</div>,
+		document.body,
+	);
+}

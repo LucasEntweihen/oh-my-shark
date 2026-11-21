@@ -1,0 +1,116 @@
+appId: dev.ohmyshark.gui
+productName: OhMyShark
+afterPack: scripts/after-pack.cjs
+directories:
+  buildResources: resources
+  output: dist
+files:
+  - out/**/*
+  - "!node_modules/**/*"
+extraResources:
+  - from: resources/omsk
+    to: omsk
+# `omsk://` / `ohms://` / `omp://` deep links only work if LaunchServices sees CFBundleURLTypes, which
+# this block is the only thing that writes. Without it `open-url` never fires in
+# an installed build and the handler in src/main/deep-link.ts is dead code.
+protocols:
+  - name: omsk
+    schemes:
+      - omsk
+      - ohms
+      - omp
+asar: true
+compression: maximum
+
+mac:
+  category: public.app-category.developer-tools
+  icon: resources/icon.icns
+  # Seal the complete bundle even when no Developer ID certificate is available.
+  # This preserves macOS's user-override flow instead of presenting the app as damaged.
+  identity: "-"
+  target:
+    # arm64 only here — x64 builds go through electron-builder.x64.yml, which
+    # points extraResources at the x86_64 sidecar (resources/omp.x64) instead of
+    # the arm64 one below. Building x64 from this config would ship the wrong-arch
+    # sidecar.
+    - target: dmg
+      arch: [arm64]
+    - target: zip
+      arch: [arm64]
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: resources/entitlements.mac.plist
+  entitlementsInherit: resources/entitlements.mac.plist
+  extendInfo:
+    NSMicrophoneUsageDescription: OhMyShark uses the microphone for voice dictation in the composer.
+    # Electron's stock bundle asks for camera and Bluetooth with text that names no
+    # app; OhMyShark never calls either API, so the prompt a user might see stays honest.
+    NSCameraUsageDescription: OhMyShark does not use the camera.
+    NSBluetoothAlwaysUsageDescription: OhMyShark does not use Bluetooth.
+    NSBluetoothPeripheralUsageDescription: OhMyShark does not use Bluetooth.
+    # Two origins only: the loopback stats server and GitHub releases over TLS.
+    # Declaring that is stricter than the default, so an accidental remote
+    # cleartext request cannot start working because some build set
+    # NSAllowsArbitraryLoads.
+    NSAppTransportSecurity:
+      NSAllowsArbitraryLoads: false
+      NSAllowsLocalNetworking: true
+  notarize: false
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+win:
+  icon: resources/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+
+linux:
+  icon: resources/icons
+  category: Development
+  # electron-builder defaults Linux executableName to lowercased metadata.name
+  # (@ohms/gui → "@ohms/gui"), which would disagree with
+  # StartupWMClass and the AppRun BIN — window/taskbar association breaks.
+  executableName: omsk-gui
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+  desktop:
+    entry:
+      StartupWMClass: omsk-gui
+
+# Root compression "maximum" maps to xz on the FUSE2 toolset, which
+# AppImageHub's mounter and some FUSE environments can't open — gzip is the
+# canonical AppImage compression.
+appImage:
+  compression: gzip
+
+# Default deb artifactName embeds the scoped package name (@oh-my-pi/omp-gui)
+# — the slash makes fpm write into a nonexistent dist/@oh-my-pi/ directory.
+deb:
+  artifactName: omsk_${version}_${arch}.${ext}
+
+publish:
+  provider: github
+  owner: LucasEntweihen
+  repo: oh-my-shark
+
+# NO `electronLanguages` here on purpose — see the note in
+# electron-builder.win.yml: exact-basename matching deleted every `locales/*.pak`,
+# and the missing `en-US.pak` makes Chromium abort the renderer (issue #12).

@@ -1,0 +1,226 @@
+name: Release Windows builds
+
+# Builds the Windows artifacts (NSIS setup + portable + latest.yml) on
+# windows-latest and attaches them to the release. This exists so Windows
+# binaries can be produced by CI without a local Windows PC — issue #12's
+# blank-window bug shipped for three releases precisely because there was no
+# Windows build host to smoke-test on. The bundled sidecar must come from the
+# monorepo fork — upstream lacks the GUI-only flags — so this checks out BOTH
+# repos: the GUI at the selected ref and the monorepo repository and commit
+# recorded in that GUI revision's sidecar-source.json.
+#
+# The macOS artifacts (DMGs, ZIPs) are unchanged: they still follow the local
+# Release Runbook in AGENTS.md, which needs a Mac for signing/inspection anyway.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach artifacts to (e.g. v0.9.15)"
+        required: true
+      gui_ref:
+        description: "GUI checkout ref (default: the tag; use main to backfill an old tag)"
+        required: false
+      monorepo_sha:
+        description: "Monorepo commit override (default: sidecar-source.json pin)"
+        required: false
+
+permissions:
+  contents: write
+
+env:
+  GUI_REPO: nornzach/oh-my-pi-gui
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Resolve release tag
+        id: refs
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+            echo "gui_ref=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+            echo "gui_ref=${{ inputs.gui_ref || inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read the Core pin from the selected GUI commit
+        uses: actions/checkout@v6
+        with:
+          repository: nornzach/oh-my-pi-gui
+          ref: ${{ steps.refs.outputs.gui_ref }}
+          path: gui-pin
+          sparse-checkout: sidecar-source.json
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - name: Resolve the sidecar source
+        id: sidecar
+        shell: bash
+        env:
+          MONOREPO_SHA: ${{ inputs.monorepo_sha }}
+        run: |
+          repo="nornzach/oh-my-pi"
+          commit="main"
+          if [ -f gui-pin/sidecar-source.json ]; then
+            repo="$(jq -er '(.repo // "nornzach/oh-my-pi") | strings' gui-pin/sidecar-source.json)"
+            # Release binaries are built only from the project's own Core fork: a pin
+            # that names any other repository fails the build instead of shipping it.
+            if [ "$repo" != "nornzach/oh-my-pi" ]; then
+              echo "sidecar-source.json names $repo; release sidecars build only from nornzach/oh-my-pi" >&2
+              exit 1
+            fi
+            commit="$(jq -er '.commit | strings | select(test("^[a-fA-F0-9]{40}$"))' gui-pin/sidecar-source.json)"
+          fi
+          ref="${MONOREPO_SHA:-$commit}"
+          if [[ "$ref" == *$'\n'* || "$ref" == *$'\r'* ]]; then
+            echo "Invalid monorepo ref" >&2
+            exit 1
+          fi
+          gui_sha="$(git -C gui-pin rev-parse HEAD)"
+          printf 'repo=%s\nref=%s\ngui_sha=%s\n' "$repo" "$ref" "$gui_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout the pinned monorepo
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ steps.sidecar.outputs.repo }}
+          ref: ${{ steps.sidecar.outputs.ref }}
+          path: oh-my-pi
+          persist-credentials: false
+
+      - name: Checkout GUI source at the same commit
+        uses: actions/checkout@v6
+        with:
+          repository: nornzach/oh-my-pi-gui
+          ref: ${{ steps.sidecar.outputs.gui_sha }}
+          path: oh-my-pi/packages/gui
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          # The sidecar build requires the monorepo's exact Bun (packageManager),
+          # so follow the pinned checkout instead of a hard-coded version.
+          bun-version-file: oh-my-pi/package.json
+
+      - name: Install dependencies
+        working-directory: oh-my-pi
+        run: bun install
+
+      - name: Build native addons from the pinned Core source
+        working-directory: oh-my-pi
+        shell: bash
+        env:
+          OMP_NATIVE_CARGO_PROFILE: ci
+        run: |
+          PI_NATIVE_VARIANT=modern bun --cwd=packages/natives run build
+          PI_NATIVE_VARIANT=baseline bun --cwd=packages/natives run build
+
+      - name: Build the bundled Windows sidecar
+        working-directory: oh-my-pi
+        run: bun --cwd=packages/gui run build:omp:win
+
+      - name: Smoke-test the sidecar (RPC handshake + settings round-trip)
+        working-directory: oh-my-pi/packages/gui
+        run: bun scripts/smoke-sidecar.mjs resources/omp.exe
+
+      - name: Verify sidecar architecture
+        shell: pwsh
+        working-directory: oh-my-pi/packages/gui
+        # Read the PE machine field: a darwin-arm64 binary slipped into a
+        # Windows package once and the app never started. `file` isn't shipped
+        # with Git Bash on windows runners, so parse the header directly.
+        run: |
+          $bytes = [IO.File]::ReadAllBytes("resources/omp.exe")
+          $peOffset = [BitConverter]::ToInt32($bytes, 0x3C)
+          $machine = [BitConverter]::ToUInt16($bytes, $peOffset + 4)
+          $name = switch ($machine) {
+            0x8664 { "x86-64" }
+            0xAA64 { "ARM64" }
+            0x014C { "i386" }
+            default { "0x{0:X4}" -f $machine }
+          }
+          Write-Host "sidecar machine: $name"
+          if ($machine -ne 0x8664) { Write-Host "::error::sidecar is $name, expected x86-64"; exit 1 }
+
+      - name: Build GUI + Windows packages
+        working-directory: oh-my-pi/packages/gui
+        shell: bash
+        # NOTE: invoke electron-builder through bun — the bunx shim falls back
+        # to Node, which crashes on ESM deps under Node < 22 (see issue #10).
+        # The monorepo's bun install hoists deps to the workspace root, so the
+        # cli.js lives two levels up, not in packages/gui/node_modules.
+        run: |
+          bun run build
+          bun ../../node_modules/electron-builder/cli.js \
+            --config electron-builder.win.yml --win --x64 --publish never
+
+      - name: Verify locale paks shipped (blank-window regression guard)
+        working-directory: oh-my-pi/packages/gui
+        shell: bash
+        # electron-builder's `electronLanguages` option deletes paks whose
+        # basename doesn't exactly match — that stripped all 55 and crashed
+        # Chromium on Windows (issue #12). The configs must never reintroduce it.
+        run: |
+          count=$(ls dist/win-unpacked/locales/*.pak 2>/dev/null | wc -l)
+          echo "locale paks: $count"
+          test "$count" -ge 1
+          test -f dist/win-unpacked/locales/en-US.pak
+
+      - name: Smoke-test the packaged GUI (launch, no renderer crash)
+        working-directory: oh-my-pi/packages/gui
+        shell: pwsh
+        # Launch the real unpacked build exactly as a user would (no flags).
+        # Healthy boot = the `--type=renderer` child of the main process exists.
+        # The issue #12 failure = that child dies within ~1s of appearing, which
+        # also appends `renderer-process … crashed` to the runtime log — both are
+        # checked. Only log lines written after this launch are considered.
+        run: |
+          $runtimeLog = Join-Path $env:APPDATA "omp\logs\gui-runtime.jsonl"
+          $before = 0
+          if (Test-Path $runtimeLog) { $before = (Get-Content $runtimeLog | Measure-Object -Line).Lines }
+
+          $proc = Start-Process -FilePath "dist\win-unpacked\omp.exe" -PassThru
+          function Get-Renderer($mainId) {
+            Get-CimInstance Win32_Process -Filter "Name='omp.exe'" |
+              Where-Object { $_.CommandLine -match '--type=renderer' -and $_.ParentProcessId -eq $mainId }
+          }
+          # Wait for the renderer to spawn (or the main process to die).
+          $booted = $false
+          for ($i = 0; $i -lt 40 -and -not $proc.HasExited; $i++) {
+            Start-Sleep -Seconds 3
+            if (Get-Renderer $proc.Id) { $booted = $true; break }
+          }
+          # Renderer crashes land ~1s after spawn — give it a grace window.
+          Start-Sleep -Seconds 10
+          $alive = -not $proc.HasExited
+          $rendererUp = $false
+          if ($alive -and $booted) { $rendererUp = [bool](Get-Renderer $proc.Id) }
+          $crashes = 0
+          if (Test-Path $runtimeLog) {
+            $new = Get-Content $runtimeLog | Select-Object -Skip $before
+            $crashes = ($new | Where-Object { $_ -match 'renderer-process' -and $_ -match '"crashed"' }).Count
+          }
+          Write-Host "booted=$booted main-alive=$alive renderer-up=$rendererUp new-renderer-crashes=$crashes"
+          Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+          if (-not $alive) { Write-Host "::error::GUI main process exited during smoke test"; exit 1 }
+          if (-not $booted) { Write-Host "::error::GUI renderer never spawned in 120s"; exit 1 }
+          if (-not $rendererUp) { Write-Host "::error::GUI renderer died after spawn (issue #12 regression)"; exit 1 }
+          if ($crashes -gt 0) { Write-Host "::error::renderer crashed during smoke test (issue #12 regression)"; exit 1 }
+
+      - name: Upload Windows assets to the release
+        working-directory: oh-my-pi/packages/gui/dist
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          shopt -s nullglob
+          files=(omp-*-setup.exe omp-*-setup.exe.blockmap omp-*-portable.exe latest.yml)
+          printf 'uploading: %s\n' "${files[@]}"
+          gh release upload "${{ steps.refs.outputs.tag }}" \
+            "${files[@]}" --repo "$GUI_REPO" --clobber

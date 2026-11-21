@@ -1,0 +1,43 @@
+# GitHub Pages deployment — the publisher.
+# Pages is set to build_type=workflow, so nothing goes live unless this runs. That is
+# what lets the site live in `site/` instead of the repo root, where an old renderer
+# config wrote its build output.
+# History: on 2026-08-06 the legacy root builder wedged for hours and this path carried
+# the deploys, so it became the primary publisher on 2026-09-22.
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          # Milliseconds, not minutes — GitHub's Pages backend has been slow
+          # to reach a terminal state today (default 10 min timed out twice).
+          timeout: 1800000
