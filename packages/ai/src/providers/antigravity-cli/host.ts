@@ -844,7 +844,9 @@ export class AgyHost implements ProviderSessionState {
 async function startTransport(options: AgyTransportOptions): Promise<AgyTransport> {
 	const binary = await resolveAgyBinary();
 	options.signal.throwIfAborted();
-	if (!$which("nc")) throw new Error("Antigravity CLI needs nc (netcat) on PATH for its tool bridge");
+	if (process.platform !== "win32" && !$which("nc")) {
+		throw new Error("Antigravity CLI needs nc (netcat) on PATH for its tool bridge");
+	}
 	await writeAgentDefinition(options.geminiDir);
 	options.signal.throwIfAborted();
 	let closeProcess: (() => void) | undefined;
@@ -875,7 +877,12 @@ async function startTransport(options: AgyTransportOptions): Promise<AgyTranspor
 			if (closed) return;
 			closed = true;
 			bridge.close();
-			child.kill("SIGKILL");
+			try {
+				if (process.platform === "win32") child.kill();
+				else child.kill("SIGKILL");
+			} catch {
+				// Ignore errors if subprocess has already exited.
+			}
 		};
 		closeProcess = close;
 		try {

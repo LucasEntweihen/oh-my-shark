@@ -122,3 +122,20 @@ it("a download that stops sending fails as a stalled download and installs nothi
 	await expect(install).rejects.toThrow(/Antigravity CLI download stalled: no data for 60s after .+ of /);
 	expect(await Bun.file(path.join(directory, "install.json")).exists()).toBe(false);
 });
+
+it("installs a direct executable download (Windows-style .exe) into its version directory", async () => {
+	using temp = TempDir.createSync("@omp-agy-direct-");
+	const directory = temp.join("bin");
+	const payload = new TextEncoder().encode("direct-executable-bytes");
+	const manifest = {
+		version: "1.5.14",
+		url: "https://storage.googleapis.com/antigravity-public/antigravity-cli/1.5.14/windows-x64/cli_windows_x64.exe",
+		sha512: new Bun.CryptoHasher("sha512").update(payload).digest("hex"),
+	};
+	const fetchImpl: FetchImpl = async input => {
+		const url = input instanceof Request ? input.url : String(input);
+		return url.endsWith(".json") ? Response.json(manifest) : new Response(payload);
+	};
+	const binary = await ensureAgyInstalled(directory, fetchImpl);
+	expect(await Bun.file(binary).text()).toBe("direct-executable-bytes");
+});

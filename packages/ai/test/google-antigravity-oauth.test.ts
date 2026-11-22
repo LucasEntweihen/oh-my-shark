@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "bun:test";
-import { getProviderDefinition } from "@oh-my-pi/pi-ai/registry";
+import { getProviderDefinition, PASTE_CODE_LOGIN_PROVIDERS } from "@oh-my-pi/pi-ai/registry";
+import { getOAuthProviders, loginRiskWarning, providerPauseReason } from "@oh-my-pi/pi-ai/registry/oauth";
 import type { OAuthController } from "@oh-my-pi/pi-ai/registry/oauth/types";
 import {
 	ANTIGRAVITY_LOAD_CODE_ASSIST_METADATA,
@@ -293,5 +294,47 @@ describe("Antigravity OAuth login", () => {
 		expect(tokenForm?.get("redirect_uri")).toBe(params.get("redirect_uri"));
 		expect(Bun.SHA256.hash(tokenForm!.get("code_verifier")!, "base64url")).toBe(params.get("code_challenge")!);
 		expect(credentials).toMatchObject({ access: "access-token", refresh: "refresh-token", projectId: "project-123" });
+	});
+
+	it("is active in the OAuth login list without a disabled or risk-warning gate", () => {
+		expect(providerPauseReason("google-antigravity")).toBeUndefined();
+		expect(loginRiskWarning("google-antigravity")).toBeUndefined();
+		expect(PASTE_CODE_LOGIN_PROVIDERS.has("google-antigravity")).toBe(true);
+		expect(getOAuthProviders().some(provider => provider.id === "google-antigravity")).toBe(true);
+	});
+
+	it("accepts object-shaped cloudaicompanionProject and default paid-tier onboarding", async () => {
+		const responses = [
+			{ allowedTiers: [{ id: "standard-tier", isDefault: true }] },
+			{
+				name: "operations/onboard-456",
+				done: true,
+				response: {
+					"@type": "type.googleapis.com/google.internal.cloud.code.v1internal.OnboardUserResponse",
+					cloudaicompanionProject: { id: "project-object-456" },
+				},
+			},
+			{
+				currentTier: { id: "standard-tier" },
+				paidTier: { id: "standard-tier" },
+			},
+		];
+		const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(
+			Object.assign(
+				async () => {
+					const payload = responses.shift();
+					if (!payload) throw new Error("Unexpected Cloud Code Assist request");
+					return jsonResponse(payload);
+				},
+				{ preconnect: fetch.preconnect },
+			),
+		);
+
+		const credentials = await discoverAntigravityProject();
+		expect(credentials.projectId).toBe("project-object-456");
+		expect(JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body))).toEqual({
+			tierId: "standard-tier",
+			metadata: ANTIGRAVITY_LOAD_CODE_ASSIST_METADATA,
+		});
 	});
 });

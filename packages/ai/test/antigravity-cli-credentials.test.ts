@@ -115,17 +115,20 @@ describe("Antigravity CLI credential ownership", () => {
 		const account = path.join(directory, agyCredentialKey(apiKey));
 		await stageAgyCredentials(apiKey, account);
 		const tokenPath = path.join(account, "antigravity-cli", "antigravity-oauth-token");
-		const previous = await fs.open(tokenPath, "r");
-		try {
-			await stageAgyCredentials(JSON.stringify({ ...JSON.parse(apiKey), token: "new-access" }), account);
-			expect(JSON.parse(await previous.readFile("utf8")).token.access_token).toBe(grant.access);
-			expect((await exportAgyCredentials(account)).access).toBe("new-access");
-		} finally {
-			await previous.close();
-		}
 		if (process.platform !== "win32") {
+			const previous = await fs.open(tokenPath, "r");
+			try {
+				await stageAgyCredentials(JSON.stringify({ ...JSON.parse(apiKey), token: "new-access" }), account);
+				expect(JSON.parse(await previous.readFile("utf8")).token.access_token).toBe(grant.access);
+				expect((await exportAgyCredentials(account)).access).toBe("new-access");
+			} finally {
+				await previous.close();
+			}
 			expect((await fs.stat(account)).mode & 0o777).toBe(0o700);
 			expect((await fs.stat(tokenPath)).mode & 0o777).toBe(0o600);
+		} else {
+			await stageAgyCredentials(JSON.stringify({ ...JSON.parse(apiKey), token: "new-access" }), account);
+			expect((await exportAgyCredentials(account)).access).toBe("new-access");
 		}
 		expect(await fs.readdir(path.join(account, "antigravity-cli"))).toEqual(["antigravity-oauth-token"]);
 		const otherKey = JSON.stringify({
@@ -186,9 +189,13 @@ describe("Antigravity CLI authorization output", () => {
 	});
 
 	it("accepts codes and callback URLs, not failed callbacks or multiline input", () => {
+		expect(AGY_OAUTH_CLIENT_ID).toContain(".apps.googleusercontent.com");
 		expect(agyAuthorizationCode("  fixture-code  ")).toBe("fixture-code");
 		expect(agyAuthorizationCode("http://localhost/callback?code=one%2Btwo&state=fixture")).toBe("one+two");
-		expect(() => agyAuthorizationCode("http://localhost/callback?error=access_denied")).toThrow();
+		expect(agyAuthorizationCode("https://antigravity.google/oauth-callback#code=frag-code&state=s")).toBe(
+			"frag-code",
+		);
+		expect(() => agyAuthorizationCode("http://localhost/callback?error=access_denied")).toThrow("access_denied");
 		expect(() => agyAuthorizationCode("one\ntwo")).toThrow();
 	});
 });

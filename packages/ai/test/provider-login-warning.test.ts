@@ -9,8 +9,8 @@ import * as registry from "@oh-my-pi/pi-ai/registry";
 import type { OAuthCredentials, OAuthPrompt } from "@oh-my-pi/pi-ai/registry/oauth/types";
 import { removeWithRetries } from "../../utils/src/temp";
 
-// The real auth rules give google-antigravity a `login-warning`; it is also paused, so the pause is lifted here.
-const PROVIDER = "google-antigravity";
+// The real auth rules give antigravity-cli a `login-warning`.
+const PROVIDER = "antigravity-cli";
 
 describe("a provider whose login carries an account risk", () => {
 	let tempDir = "";

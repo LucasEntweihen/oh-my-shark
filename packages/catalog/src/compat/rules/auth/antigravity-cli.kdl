@@ -1,5 +1,5 @@
 // Sign-in runs `agy acp --login` with private file-backed auth, exports the real
-// consumer OAuth grant to omp's encrypted credential store, and removes the
+// consumer OAuth grant to oh-my-shark's encrypted credential store, and removes the
 // temporary CLI login directory. Inference imports the resolved account into a
 // separate --gemini-dir; it never swaps the user's global agy/keychain account.
 auth "antigravity-cli" {
@@ -8,4 +8,5 @@ auth "antigravity-cli" {
 	login "custom" hook="antigravity-cli"
 	refresh hook="antigravity-cli"
 	api-key-format "structured"
+	paste-code #true
 }

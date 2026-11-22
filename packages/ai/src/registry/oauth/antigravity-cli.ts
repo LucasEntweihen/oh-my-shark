@@ -55,12 +55,39 @@ export class AgyAuthUrlParser {
 	}
 }
 
+function extractCodeFromUrl(parsed: URL): string {
+	const oauthError = parsed.searchParams.get("error");
+	if (oauthError) {
+		throw new AIError.OAuthError(`Google sign-in returned an error (${oauthError}); try signing in again`, {
+			kind: "validation",
+			provider: PROVIDER,
+		});
+	}
+	const queryCode = parsed.searchParams.get("code");
+	if (queryCode) return queryCode;
+	const hash = parsed.hash.startsWith("#") ? parsed.hash.slice(1) : parsed.hash;
+	if (hash) {
+		const hashParams = new URLSearchParams(hash);
+		const hashError = hashParams.get("error");
+		if (hashError) {
+			throw new AIError.OAuthError(`Google sign-in returned an error (${hashError}); try signing in again`, {
+				kind: "validation",
+				provider: PROVIDER,
+			});
+		}
+		const hashCode = hashParams.get("code");
+		if (hashCode) return hashCode;
+	}
+	return "";
+}
+
 export function agyAuthorizationCode(input: string): string {
 	let code = input.trim();
 	if (/^https?:\/\//i.test(code)) {
 		try {
-			code = new URL(code).searchParams.get("code") ?? "";
-		} catch {
+			code = extractCodeFromUrl(new URL(code));
+		} catch (error) {
+			if (error instanceof AIError.OAuthError) throw error;
 			code = "";
 		}
 	}
@@ -71,6 +98,16 @@ export function agyAuthorizationCode(input: string): string {
 		});
 	}
 	return code;
+}
+
+function terminateChild(proc: Subprocess<"pipe", "pipe", "pipe"> | undefined): void {
+	if (!proc) return;
+	try {
+		if (process.platform === "win32") proc.kill();
+		else proc.kill("SIGKILL");
+	} catch {
+		// Process may have already exited.
+	}
 }
 
 /** Bounds even callbacks that do not implement cancellation themselves; omit `milliseconds` to only honor `signal`. */
@@ -186,7 +223,7 @@ export async function loginAntigravityCli(ctrl: OAuthController): Promise<OAuthC
 			},
 		);
 		child = process;
-		const onAbort = () => process.kill("SIGKILL");
+		const onAbort = () => terminateChild(process);
 		signal.addEventListener("abort", onAbort, { once: true });
 		try {
 			const authUrl = Promise.withResolvers<string>();
@@ -227,7 +264,7 @@ export async function loginAntigravityCli(ctrl: OAuthController): Promise<OAuthC
 			});
 			const input = ctrl.onManualCodeInput
 				? ctrl.onManualCodeInput(signal)
-				: ctrl.onPrompt!({ message: "Paste the authorization code (or callback URL)", secret: true });
+				: ctrl.onPrompt!({ message: "Paste the authorization code (or callback URL)" });
 			const code = agyAuthorizationCode(await bounded(input, signal, LOGIN_TIMEOUT_MS));
 			process.stdin.write(`${code}\n`);
 			await bounded(Promise.resolve(process.stdin.end()), signal, FINISH_TIMEOUT_MS);
@@ -267,7 +304,7 @@ export async function loginAntigravityCli(ctrl: OAuthController): Promise<OAuthC
 			provider: PROVIDER,
 		});
 	} finally {
-		child?.kill("SIGKILL");
+		terminateChild(child);
 		if (child) await Promise.race([child.exited.catch(() => {}), Bun.sleep(1000)]);
 		// Do not destroy a completed grant if a future agy format change makes
 		// export fail. It remains private and recoverable without another login.

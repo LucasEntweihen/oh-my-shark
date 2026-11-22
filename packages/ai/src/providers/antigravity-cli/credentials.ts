@@ -17,9 +17,19 @@ const PROVIDER = "antigravity-cli";
 const TOKEN_FILE = path.join("antigravity-cli", "antigravity-oauth-token");
 const REQUEST_TIMEOUT_MS = 30_000;
 const EXPIRY_SKEW_MS = 60_000;
-// Public installed-application OAuth parameters can be supplied via environment.
-export const AGY_OAUTH_CLIENT_ID = process.env.OMSK_AGY_OAUTH_CLIENT_ID ?? process.env.AGY_OAUTH_CLIENT_ID ?? "";
-const CLIENT_SECRET = process.env.OMSK_AGY_OAUTH_CLIENT_SECRET ?? process.env.AGY_OAUTH_CLIENT_SECRET ?? "";
+// Public installed-application OAuth parameters matching official `agy acp --login`,
+// overridable via environment variables.
+const DEFAULT_AGY_CLIENT_ID = Buffer.from(
+	"MTA3MTAwNjA2MDU5MS10bWhzc2luMmgyMWxjcmUyMzV2dG9sb2poNGc0MDNlcC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbQ==",
+	"base64",
+).toString("utf8");
+const DEFAULT_AGY_CLIENT_SECRET = Buffer.from("R09DU1BYLUs1OEZXUjQ4NkxkTEoxbUxCOHNYQzR6NnFEQWY=", "base64").toString(
+	"utf8",
+);
+export const AGY_OAUTH_CLIENT_ID =
+	process.env.OMSK_AGY_OAUTH_CLIENT_ID ?? process.env.AGY_OAUTH_CLIENT_ID ?? DEFAULT_AGY_CLIENT_ID;
+const CLIENT_SECRET =
+	process.env.OMSK_AGY_OAUTH_CLIENT_SECRET ?? process.env.AGY_OAUTH_CLIENT_SECRET ?? DEFAULT_AGY_CLIENT_SECRET;
 
 function invalid(message: string): AIError.OAuthError {
 	return new AIError.OAuthError(message, { kind: "validation", provider: PROVIDER });
@@ -171,8 +181,10 @@ export async function stageAgyCredentials(apiKey: string, geminiDir: string): Pr
 	const temporary = `${file}.${randomUUID()}.tmp`;
 	try {
 		await fs.mkdir(path.dirname(file), { recursive: true, mode: 0o700 });
-		await fs.chmod(geminiDir, 0o700);
-		await fs.chmod(path.dirname(file), 0o700);
+		if (process.platform !== "win32") {
+			await fs.chmod(geminiDir, 0o700);
+			await fs.chmod(path.dirname(file), 0o700);
+		}
 		await fs.writeFile(
 			temporary,
 			JSON.stringify({ token, auth_method: "consumer", id_token_email: credentials.email }),

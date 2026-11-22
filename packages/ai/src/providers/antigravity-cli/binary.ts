@@ -108,17 +108,21 @@ async function install(directory: string, fetchImpl: FetchImpl): Promise<string>
 			const binary = releasePath(directory, value.version);
 			if (!(await Bun.file(binary).exists())) {
 				const payload = await download(url, value.sha512, fetchImpl);
+				await fs.mkdir(path.dirname(binary), { recursive: true });
 				const staging = `${binary}.${crypto.randomUUID()}.tmp`;
 				try {
-					if (url.pathname.endsWith(".tar.gz")) {
+					if (url.pathname.endsWith(".tar.gz") || url.pathname.endsWith(".zip")) {
 						const files = await new Bun.Archive(payload).files();
-						const executable = files.get("antigravity");
+						const executableName = process.platform === "win32" ? "antigravity.exe" : "antigravity";
+						const executable = files.get(executableName) ?? files.get("antigravity");
 						if (!executable) throw new Error("Antigravity CLI archive has no antigravity executable");
 						await Bun.write(staging, executable);
 					} else {
 						await Bun.write(staging, payload);
 					}
-					await fs.chmod(staging, 0o755);
+					if (process.platform !== "win32") {
+						await fs.chmod(staging, 0o755);
+					}
 					await fs.rename(staging, binary);
 				} finally {
 					await fs.rm(staging, { force: true });

@@ -4,6 +4,7 @@
  */
 import { type } from "@oh-my-pi/omptype";
 import { getAntigravityHeaders } from "@oh-my-pi/pi-catalog/wire/gemini-headers";
+import { $env } from "@oh-my-pi/pi-utils";
 import * as AIError from "../../error";
 import { raceWithSignal } from "../../utils/abort";
 import { extractGoogleValidationUrl, formatGoogleValidationRequiredMessage } from "../../utils/google-validation";
@@ -39,7 +40,12 @@ interface CloudCodeRequest extends CloudCodeContext {
 
 const userTierSchema = type({
 	"id?": "string",
+	"isDefault?": "boolean",
 });
+
+const projectReferenceSchema = type("string")
+	.or(type({ "id?": "string" }))
+	.or("null");
 
 const ineligibleTierSchema = type({
 	"tierId?": "string",
@@ -52,7 +58,7 @@ const loadCodeAssistResponseSchema = type({
 	"paidTier?": userTierSchema.or("null"),
 	"allowedTiers?": userTierSchema.array(),
 	"ineligibleTiers?": ineligibleTierSchema.array(),
-	"cloudaicompanionProject?": "string",
+	"cloudaicompanionProject?": projectReferenceSchema,
 });
 type LoadCodeAssistResponse = typeof loadCodeAssistResponseSchema.infer;
 
@@ -64,7 +70,7 @@ type OperationError = typeof operationErrorSchema.infer;
 
 const onboardUserResponseSchema = type({
 	"@type": "string",
-	"cloudaicompanionProject?": "string",
+	"cloudaicompanionProject?": projectReferenceSchema,
 });
 
 const onboardOperationSchema = type({
@@ -97,9 +103,18 @@ function parseOnboardOperation(payload: unknown): OnboardOperation {
 	return result;
 }
 
+function extractProjectString(value: string | { id?: string } | null | undefined): string | undefined {
+	if (typeof value === "string") {
+		return value.length > 0 ? value : undefined;
+	}
+	if (value && typeof value === "object" && typeof value.id === "string" && value.id.length > 0) {
+		return value.id;
+	}
+	return undefined;
+}
+
 function extractProjectId(payload: LoadCodeAssistResponse): string | undefined {
-	const projectId = payload.cloudaicompanionProject;
-	return projectId && projectId.length > 0 ? projectId : undefined;
+	return extractProjectString(payload.cloudaicompanionProject);
 }
 
 function hasMessageField(payload: LoadCodeAssistResponse, field: "currentTier" | "paidTier"): boolean {
@@ -199,7 +214,17 @@ function describeOperationError(error: OperationError): string {
 	return JSON.stringify(error) ?? String(error);
 }
 
-async function onboardUser(context: CloudCodeContext): Promise<void> {
+function selectOnboardingTierId(payload: LoadCodeAssistResponse): string {
+	const allowed = payload.allowedTiers;
+	if (!allowed || allowed.length === 0) return FREE_TIER_ID;
+	if (allowed.some(tier => tier.id === FREE_TIER_ID)) return FREE_TIER_ID;
+	const defaultTier = allowed.find(tier => tier.isDefault && tier.id);
+	if (defaultTier?.id) return defaultTier.id;
+	const firstNamed = allowed.find(tier => tier.id);
+	return firstNamed?.id ?? FREE_TIER_ID;
+}
+
+async function onboardUser(context: CloudCodeContext, tierId = FREE_TIER_ID): Promise<string | undefined> {
 	const deadline = Date.now() + ONBOARD_TIMEOUT_MS;
 	let operation = parseOnboardOperation(
 		await requestCloudCodeAssist({
@@ -208,7 +233,7 @@ async function onboardUser(context: CloudCodeContext): Promise<void> {
 			url: ONBOARD_USER_URL,
 			method: "POST",
 			body: JSON.stringify({
-				tierId: FREE_TIER_ID,
+				tierId,
 				metadata: ANTIGRAVITY_LOAD_CODE_ASSIST_METADATA,
 			}),
 			timeoutMs: remainingOnboardTime(deadline),
@@ -229,7 +254,7 @@ async function onboardUser(context: CloudCodeContext): Promise<void> {
 					provider: PROVIDER,
 				});
 			}
-			return;
+			return extractProjectString(operation.response.cloudaicompanionProject);
 		}
 
 		await raceWithSignal(
@@ -274,14 +299,20 @@ async function discoverProject(
 	try {
 		const initial = await loadCodeAssist(context);
 		assertFreeTierEligible(initial);
+		let onboardedProjectId: string | undefined;
 		if (!hasMessageField(initial, "currentTier")) {
+			const tierId = selectOnboardingTierId(initial);
 			onProgress?.("Provisioning the Antigravity free tier...");
-			await onboardUser(context);
+			onboardedProjectId = await onboardUser(context, tierId);
 		}
 
 		onProgress?.("Refreshing Cloud Code Assist project...");
 		const refreshed = await loadCodeAssist(context);
-		const projectId = extractProjectId(refreshed);
+		const projectId =
+			extractProjectId(refreshed) ??
+			onboardedProjectId ??
+			extractProjectId(initial) ??
+			($env.GOOGLE_CLOUD_PROJECT || $env.GOOGLE_CLOUD_PROJECT_ID || undefined);
 		if (projectId) return projectId;
 		throw new AIError.OAuthError("loadCodeAssist did not return a cloudaicompanionProject", {
 			kind: "provisioning",
