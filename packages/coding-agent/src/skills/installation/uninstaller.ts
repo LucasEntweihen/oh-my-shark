@@ -5,10 +5,7 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import {
-	getDefaultProjectSkillsDir,
-	getDefaultUserInstalledSkillsDir,
-} from "../discovery/local-discovery";
+import { getDefaultProjectSkillsDir, getDefaultUserInstalledSkillsDir } from "../discovery/local-discovery";
 
 export interface UninstallResult {
 	success: boolean;
@@ -26,9 +23,7 @@ export async function uninstallSkill(
 	const normalizedId = skillId.toLowerCase().trim();
 	const scope = options.scope || "user";
 	const baseDir =
-		scope === "user"
-			? getDefaultUserInstalledSkillsDir(options.home)
-			: getDefaultProjectSkillsDir(options.cwd);
+		scope === "user" ? getDefaultUserInstalledSkillsDir(options.home) : getDefaultProjectSkillsDir(options.cwd);
 
 	const targetPath = path.resolve(baseDir, normalizedId);
 
@@ -56,7 +51,7 @@ export async function uninstallSkill(
 			removedPath: targetPath,
 			message: `Skill "${normalizedId}" uninstalled successfully from ${targetPath}.`,
 		};
-	} catch (err) {
+	} catch {
 		return {
 			success: false,
 			message: `Skill "${normalizedId}" is not installed in ${scope} scope (${targetPath}).`,

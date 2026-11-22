@@ -15,7 +15,7 @@ export interface CrossBuild {
 }
 
 /** Resolves a CROSS_TARGET value to the Bun compile target used by local binary builds. */
-function resolveCrossBuild(value: string | undefined): CrossBuild | null {
+export function resolveCrossBuild(value: string | undefined): CrossBuild | null {
 	switch (value) {
 		case undefined:
 		case "":

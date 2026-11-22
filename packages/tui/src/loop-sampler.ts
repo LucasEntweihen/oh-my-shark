@@ -6,15 +6,22 @@
  * stack every millisecond while it runs JS and nothing while the loop idles,
  * so the samples taken during a block name the code that caused it.
  */
-import {
-	profile,
-	type SamplingProfileStackTraces,
-	samplingProfilerStackTraces,
-	startSamplingProfiler,
-} from "bun:jsc";
+import { profile, samplingProfilerStackTraces, startSamplingProfiler } from "bun:jsc";
 
 // Exported by bun:jsc at runtime but not yet declared by bun-types.
 declare module "bun:jsc" {
+	interface SamplingProfileStackFrame {
+		name: string;
+		sourceURL?: string;
+		line: number;
+	}
+	interface SamplingProfileStackTrace {
+		timestamp: number;
+		frames: readonly SamplingProfileStackFrame[];
+	}
+	interface SamplingProfileStackTraces {
+		traces: readonly SamplingProfileStackTrace[];
+	}
 	/** Returns the samples recorded since the previous call and clears the profiler's buffer. */
 	function samplingProfilerStackTraces(): SamplingProfileStackTraces;
 }
@@ -85,7 +92,7 @@ export function createJscLoopSampler(): LoopSampler | null {
 			running = false;
 			// bun:jsc has no stop call; profile() pauses the shared profiler and
 			// clears its buffer once its callback returns.
-			if (--runningSamplers === 0) profile(() => {});
+			if (--runningSamplers === 0) profile(() => { });
 		},
 		drain(): LoopSample[] {
 			const { traces } = samplingProfilerStackTraces();

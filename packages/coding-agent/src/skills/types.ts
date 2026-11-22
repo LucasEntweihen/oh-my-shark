@@ -19,6 +19,7 @@ export interface SkillPermissions {
 
 export type SkillCompatibilityStandard =
 	| "agentskills"
+	| "omsk"
 	| "claude-code"
 	| "codex"
 	| "opencode"

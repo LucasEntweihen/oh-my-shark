@@ -6,10 +6,7 @@
  */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import {
-	getDefaultProjectSkillsDir,
-	getDefaultUserInstalledSkillsDir,
-} from "../discovery/local-discovery";
+import { getDefaultProjectSkillsDir, getDefaultUserInstalledSkillsDir } from "../discovery/local-discovery";
 import { verifySkillIntegrity } from "../security/integrity-checker";
 import type { SkillDoctorIssue, SkillDoctorReport, SkillManifest } from "../types";
 import { getUniversalSkillRegistry } from "./skill-registry";
@@ -32,7 +29,7 @@ export async function runSkillsDoctor(options: { cwd?: string; home?: string } =
 		try {
 			await fs.mkdir(dir, { recursive: true });
 			await fs.access(dir, fs.constants.R_OK | fs.constants.W_OK);
-		} catch (err) {
+		} catch {
 			issues.push({
 				severity: "warning",
 				skillPath: dir,

@@ -4,7 +4,6 @@
  * Central in-memory and persisted registry managing discovered, installed, and active skills.
  */
 import { discoverAllLocalSkills } from "../discovery/local-discovery";
-import { CURATED_75_SKILLS } from "../discovery/marketplace-discovery";
 import type { UniversalSkill } from "../types";
 
 export class UniversalSkillRegistry {

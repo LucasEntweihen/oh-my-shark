@@ -9,19 +9,10 @@ import * as path from "node:path";
 import { buildUniversalSkillRecord, computeContentHash } from "../core/skill-parser";
 import { validateSkill } from "../core/skill-validator";
 import { fetchRemoteSkill } from "../discovery/github-discovery";
-import {
-	getDefaultProjectSkillsDir,
-	getDefaultUserInstalledSkillsDir,
-} from "../discovery/local-discovery";
+import { getDefaultProjectSkillsDir, getDefaultUserInstalledSkillsDir } from "../discovery/local-discovery";
 import { CURATED_75_SKILLS, findCuratedSkill } from "../discovery/marketplace-discovery";
 import { evaluateSkillTrust } from "../security/trust-manager";
-import type {
-	CuratedSkillEntry,
-	SkillInstallOptions,
-	SkillInstallResult,
-	SkillManifest,
-	UniversalSkill,
-} from "../types";
+import type { SkillInstallOptions, SkillInstallResult, SkillManifest, UniversalSkill } from "../types";
 
 const MANIFEST_FILENAME = ".skill-manifest.json";
 
@@ -105,8 +96,7 @@ async function installSingleSkillPackage(
  */
 export async function installSkills(options: SkillInstallOptions): Promise<SkillInstallResult> {
 	const scope = options.scope || "user";
-	const baseTargetDir =
-		scope === "user" ? getDefaultUserInstalledSkillsDir() : getDefaultProjectSkillsDir();
+	const baseTargetDir = scope === "user" ? getDefaultUserInstalledSkillsDir() : getDefaultProjectSkillsDir();
 
 	const installedSkills: UniversalSkill[] = [];
 	const manifests: SkillManifest[] = [];
@@ -176,7 +166,9 @@ export async function installSkills(options: SkillInstallOptions): Promise<Skill
 			errors.push(`Could not find skill "${specificSkill}" in catalog or repository.`);
 		}
 	} else {
-		errors.push(`Invalid installation target: "${target}". Provide a valid repository (e.g. obra/superpowers) or skill name.`);
+		errors.push(
+			`Invalid installation target: "${target}". Provide a valid repository (e.g. obra/superpowers) or skill name.`,
+		);
 	}
 
 	if (options.dryRun) {
@@ -225,7 +217,9 @@ ${curated.utility}
 ## Deliverables
 - Working, verified implementation matching the stated objective.
 `;
-					warnings.push(`Remote repository offline or rate-limited; generated verified baseline for "${item.id}" from curated catalog.`);
+					warnings.push(
+						`Remote repository offline or rate-limited; generated verified baseline for "${item.id}" from curated catalog.`,
+					);
 				} else {
 					errors.push(`Failed to download SKILL.md for "${item.id}" from ${item.repo}`);
 					continue;
@@ -252,7 +246,9 @@ ${curated.utility}
 
 			const validation = validateSkill(skill);
 			if (!validation.valid) {
-				warnings.push(`Skill "${item.id}" installed with validation warnings: ${validation.issues.map(i => i.message).join("; ")}`);
+				warnings.push(
+					`Skill "${item.id}" installed with validation warnings: ${validation.issues.map(i => i.message).join("; ")}`,
+				);
 			}
 
 			installedSkills.push(skill);

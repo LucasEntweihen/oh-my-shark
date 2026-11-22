@@ -905,7 +905,7 @@ export class WriteTool implements AgentTool<typeof writeSchema, WriteToolDetails
 				throw new ToolError(`SQLite database '${displayPath}' not found`);
 			}
 
-			db = new Database(resolvedSqlitePath.absolutePath, { create: false, strict: true });
+			db = new Database(resolvedSqlitePath.absolutePath, { readwrite: true, create: false, strict: true });
 			db.run("PRAGMA busy_timeout = 3000");
 			// FK enforcement is per-connection and off by default; enable it so edits
 			// honor the schema's REFERENCES constraints and ON DELETE/UPDATE actions.

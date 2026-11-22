@@ -17,17 +17,8 @@ import { searchCuratedSkills } from "../skills/discovery/marketplace-discovery";
 import { installSkills } from "../skills/installation/installer";
 import { uninstallSkill } from "../skills/installation/uninstaller";
 import { updateAllSkills, updateSingleSkill } from "../skills/installation/updater";
-import type { UniversalSkill } from "../skills/types";
 
-export type SkillsAction =
-	| "search"
-	| "install"
-	| "list"
-	| "inspect"
-	| "update"
-	| "uninstall"
-	| "doctor"
-	| "config";
+export type SkillsAction = "search" | "install" | "list" | "inspect" | "update" | "uninstall" | "doctor" | "config";
 
 export interface SkillsCommandFlags {
 	json?: boolean;
@@ -80,7 +71,11 @@ export async function runSkillsCommand(cmd: SkillsCommandArgs): Promise<void> {
 		case "install": {
 			const target = cmd.args[0]?.trim();
 			if (!target) {
-				console.log(chalk.yellow("Usage: ohms skills install <repo|skill> [--skill <name>] [--scope user|project] [--force]"));
+				console.log(
+					chalk.yellow(
+						"Usage: ohms skills install <repo|skill> [--skill <name>] [--scope user|project] [--force]",
+					),
+				);
 				return;
 			}
 
@@ -111,7 +106,11 @@ export async function runSkillsCommand(cmd: SkillsCommandArgs): Promise<void> {
 			}
 
 			if (res.success) {
-				console.log(chalk.bold.green(`  ✓ Successfully installed ${res.installedSkills.length} skill(s) into ${res.targetDir}:`));
+				console.log(
+					chalk.bold.green(
+						`  ✓ Successfully installed ${res.installedSkills.length} skill(s) into ${res.targetDir}:`,
+					),
+				);
 				for (const s of res.installedSkills) {
 					console.log(`    - ${chalk.bold(s.id)} (${s.name})`);
 				}
@@ -135,7 +134,8 @@ export async function runSkillsCommand(cmd: SkillsCommandArgs): Promise<void> {
 				return;
 			}
 			for (const s of skills) {
-				const levelColor = s.level === "project" ? chalk.cyan : s.level === "installed" ? chalk.green : chalk.yellow;
+				const levelColor =
+					s.level === "project" ? chalk.cyan : s.level === "installed" ? chalk.green : chalk.yellow;
 				console.log(`  ${chalk.bold(s.id)} ${levelColor(`[${s.level.toUpperCase()}]`)}`);
 				console.log(`    ${chalk.dim("Name:")} ${s.name}`);
 				console.log(`    ${chalk.dim("Path:")} ${chalk.gray(s.filePath)}`);
@@ -210,7 +210,9 @@ export async function runSkillsCommand(cmd: SkillsCommandArgs): Promise<void> {
 				console.log(chalk.cyan("\n  Updating all installed skills...\n"));
 				const report = await updateAllSkills({ scope: cmd.flags.scope });
 				for (const r of report.results) {
-					console.log(`  ${chalk.bold(r.skillId)}: ${r.updated ? chalk.green("UPDATED") : chalk.gray("OK")} - ${r.message}`);
+					console.log(
+						`  ${chalk.bold(r.skillId)}: ${r.updated ? chalk.green("UPDATED") : chalk.gray("OK")} - ${r.message}`,
+					);
 				}
 				console.log(chalk.bold(`\n  ${report.summary}\n`));
 			}
@@ -224,7 +226,9 @@ export async function runSkillsCommand(cmd: SkillsCommandArgs): Promise<void> {
 				console.log(JSON.stringify(report, null, 2));
 				return;
 			}
-			console.log(`  Discovered Skills: ${chalk.bold(String(report.totalDiscovered))} (${report.localCount} local, ${report.installedCount} installed)`);
+			console.log(
+				`  Discovered Skills: ${chalk.bold(String(report.totalDiscovered))} (${report.localCount} local, ${report.installedCount} installed)`,
+			);
 			for (const dir of report.scannedDirectories) {
 				console.log(`  Directory: ${chalk.dim(dir)}`);
 			}
