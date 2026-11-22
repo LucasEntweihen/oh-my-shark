@@ -4,7 +4,6 @@ import { alibabaTokenPlanRankingStrategy, alibabaTokenPlanUsageProvider } from "
 import { charmHyperUsageProvider } from "./charm-hyper";
 import { claudeRankingStrategy, claudeUsageProvider } from "./claude";
 import { clinePassUsageProvider } from "./cline-pass";
-import { commandCodeRankingStrategy, commandCodeUsageProvider } from "./commandcode";
 import { cursorRankingStrategy, cursorUsageProvider } from "./cursor";
 import { devinUsageProvider } from "./devin";
 import { factoryDroidRankingStrategy, factoryDroidUsageProvider } from "./factory-droid";
@@ -49,7 +48,6 @@ export const DEFAULT_USAGE_PROVIDERS: readonly UsageProvider[] = [
 	xaiOauthUsageProvider,
 	devinUsageProvider,
 	charmHyperUsageProvider,
-	commandCodeUsageProvider,
 	kiroUsageProvider,
 ];
 
@@ -73,7 +71,6 @@ const DEFAULT_RANKING_STRATEGIES = new Map<Provider, CredentialRankingStrategy>(
 	["zai", zaiRankingStrategy],
 	["opencode-go", opencodeGoRankingStrategy],
 	["xai-oauth", xaiOauthRankingStrategy],
-	["commandcode", commandCodeRankingStrategy],
 	["kiro", kiroRankingStrategy],
 ]);
 

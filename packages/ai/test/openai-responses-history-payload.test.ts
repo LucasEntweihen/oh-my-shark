@@ -1188,7 +1188,7 @@ describe("OpenAI responses history payload", () => {
 		}
 
 		it("carries the cold rebuild's reasoning_text for targets that require it", async () => {
-			const model = getOpenAIReasoningModel("commandcode", "deepseek/deepseek-v4.1-flash");
+			const model = getOpenAIReasoningModel("opencode-go", "deepseek-v4-flash");
 			const context = summaryOnlyReasoningContext(model);
 			const options = { reasoning: Effort.Medium };
 			const cold = (await captureResponsesPayload(asConnectionBound(model), context, new Map(), options)) as {

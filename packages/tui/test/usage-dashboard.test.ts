@@ -487,12 +487,12 @@ describe("UsageDashboardComponent", () => {
 		const balance = (id: string, label: string, status?: "exhausted", unit: "credits" | "unknown" = "credits") => ({
 			id,
 			label,
-			scope: { provider: "commandcode", accountId: "a", windowId: id },
+			scope: { provider: "custom-credits", accountId: "a", windowId: id },
 			amount: { remaining: 0, unit },
 			...(status ? { status } : {}),
 		});
 		const component = dashboard([
-			report("commandcode", "a@test", [
+			report("custom-credits", "a@test", [
 				balance("drained", "Drained balance", "exhausted"),
 				balance("plain", "Plain balance"),
 				balance("spent", "Spent quota", "exhausted", "unknown"),

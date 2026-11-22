@@ -66,7 +66,6 @@ const BUILTIN_PROVIDERS: ReadonlySet<string> = new Set([
 	"cline-pass",
 	"cloudflare-ai-gateway",
 	"cloudflare-workers-ai",
-	"commandcode",
 	"coralbricks",
 	"coreweave",
 	"cursor",
