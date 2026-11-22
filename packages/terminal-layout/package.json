@@ -1,6 +1,6 @@
 {
   "name": "@ohms/terminal-layout",
-  "version": "0.0.52",
+  "version": "0.1.2",
   "description": "OhMyShark Modular TUI Layout Engine - Dynamic Responsive Panels, Themes, and Extensible Custom Views",
   "type": "module",
   "main": "src/index.ts",

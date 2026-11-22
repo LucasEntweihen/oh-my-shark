@@ -1,6 +1,6 @@
 {
   "name": "@ohms/execution-engine",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "OhMyShark Transactional Execution Engine - Finite State Machine, Operation Checkpoints, Rollback, and Independent Validation",
   "type": "module",
   "main": "src/index.ts",

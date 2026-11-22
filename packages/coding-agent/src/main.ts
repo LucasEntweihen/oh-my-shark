@@ -94,6 +94,7 @@ import { invokeSkillCommandFromText, isKnownSkillCommand } from "./modes/skill-c
 import {
 	applyStartupComposerPreferences,
 	type ComposerLease,
+	setStartupComposerLspServers,
 	stopPendingStartupComposer,
 	takeStartupComposerLease,
 } from "./modes/startup-composer";
@@ -145,6 +146,7 @@ import { createTelemetryExportConfig, initTelemetryExport, isTelemetryExportEnab
 import { cfgTelemetryOtlpExportEnabled } from "./telemetry-settings";
 import { registerLocalInferenceApi } from "./tiny/local-inference-api";
 import { automaticThinkingLevel, concreteThinkingLevel, parseConfiguredThinkingLevel } from "@oh-my-pi/pi-tui/thinking";
+import { discoverStartupLspServers } from "./lsp";
 import type { LspStartupServerInfo } from "./tools";
 import { sanitizeDisplayWarnings } from "@oh-my-pi/pi-tui/render/render-utils";
 import { getChangelogPath, readLastChangelogVersion, resolveStartupChangelogForDisplay } from "./utils/changelog";
@@ -182,6 +184,7 @@ import {
 	cfgThemeLight,
 	cfgTuiCompleteScrollback,
 	cfgTuiImeSafeCursor,
+	cfgTuiLayout,
 	cfgTuiMaxInlineImages,
 	cfgTuiResizeScrollback,
 	cfgTuiSpinnerInterval,
@@ -2167,6 +2170,7 @@ export async function runRootCommand(
 			spellingTypoDetection: cfgSpellingTypoDetection.get(settingsInstance),
 			spellingAutocomplete: cfgSpellingAutocomplete.get(settingsInstance),
 			spellingAutocorrect: cfgSpellingAutocorrect.get(settingsInstance),
+			tuiLayout: cfgTuiLayout.get(settingsInstance),
 			theme: {
 				symbolPreset: cfgSymbolPreset.get(settingsInstance),
 				colorBlindMode: cfgColorBlindMode.get(settingsInstance),
@@ -2174,6 +2178,13 @@ export async function runRootCommand(
 				lightTheme: cfgThemeLight.get(settingsInstance),
 			},
 		});
+		if (isInteractive) {
+			try {
+				setStartupComposerLspServers(discoverStartupLspServers(cwd, "connecting"));
+			} catch {
+				// Ignore transient LSP config discovery issues during startup prepaint
+			}
+		}
 
 		await credentialScopedCacheHydration;
 		let scopedModels = await logger.time(

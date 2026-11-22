@@ -1317,13 +1317,14 @@ export class ProcessTerminal implements Terminal {
 	#enableWindowsVTInput(): void {
 		if (process.platform !== "win32") return;
 		this.#restoreWindowsVTInput();
-		this.#windowsInputMode = enableConsoleVtInput() ?? undefined;
+		this.#windowsInputMode =
+			typeof enableConsoleVtInput === "function" ? (enableConsoleVtInput() ?? undefined) : undefined;
 	}
 
 	#restoreWindowsVTInput(): void {
 		const mode = this.#windowsInputMode;
 		this.#windowsInputMode = undefined;
-		if (mode !== undefined) restoreConsoleInputMode(mode);
+		if (mode !== undefined && typeof restoreConsoleInputMode === "function") restoreConsoleInputMode(mode);
 	}
 
 	/**
@@ -1856,7 +1857,10 @@ export class ProcessTerminal implements Terminal {
 				// Windows console hosts drop AltGr text under kitty (AltGr+F → `CSI 102;3u`);
 				// recover it from the active layout before any keybinding sees an Alt chord.
 				const altGrText =
-					this.#kittyProtocolActive && this.#conpty && process.platform === "win32"
+					this.#kittyProtocolActive &&
+					this.#conpty &&
+					process.platform === "win32" &&
+					typeof translateWindowsAltGrSequence === "function"
 						? translateWindowsAltGrSequence(sequence)
 						: undefined;
 				this.#inputHandler(altGrText ?? sequence);

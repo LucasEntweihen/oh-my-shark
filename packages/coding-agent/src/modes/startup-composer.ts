@@ -7,7 +7,10 @@ import {
 	sharedComposerCache,
 } from "@oh-my-pi/pi-tui/prompt/composer-cache";
 import { setMagicKeywords } from "@oh-my-pi/pi-tui/prompt/magic-keywords";
+import type { LspServerInfo, RecentSession } from "@oh-my-pi/pi-tui/prompt/welcome";
 import { initThemeSync } from "@oh-my-pi/pi-tui/theme";
+import { logger } from "@oh-my-pi/pi-utils";
+import { registerWelcomeCockpitRenderer } from "../tui/deep-sea-command";
 import { MAGIC_KEYWORDS } from "./magic-keywords";
 
 /** Inputs available at the CLI prepaint boundary before command modules load. */
@@ -19,6 +22,7 @@ export interface PrepaintComposerOptions {
 	readonly cwd?: string;
 	readonly preferences?: Partial<ComposerPreferences>;
 	readonly theme?: ComposerThemePreferences;
+	readonly recentSessions?: () => Promise<RecentSession[]>;
 	readonly cache?: boolean;
 }
 
@@ -32,6 +36,7 @@ interface PendingComposer {
 	readonly cwd: string;
 	/** Speculation store to refresh; `undefined` when caching is off or unavailable. */
 	readonly cache: ComposerCache | undefined;
+	recentSessions?: Promise<RecentSession[] | undefined>;
 }
 
 let pendingComposer: PendingComposer | undefined;
@@ -39,10 +44,12 @@ let pendingComposer: PendingComposer | undefined;
 /** Ownership token that transfers one already-started Composer to InteractiveMode. */
 export class ComposerLease {
 	readonly composer: Composer;
+	readonly recentSessions?: Promise<RecentSession[] | undefined>;
 	#adopted = false;
 
-	constructor(composer: Composer) {
+	constructor(composer: Composer, recentSessions?: Promise<RecentSession[] | undefined>) {
 		this.composer = composer;
+		this.recentSessions = recentSessions;
 	}
 
 	/** Transfer terminal ownership exactly once. */
@@ -64,6 +71,7 @@ export class ComposerLease {
 /** Start the canonical Composer with speculative cached state. */
 export function beginStartupComposer(options: PrepaintComposerOptions = {}): void {
 	if (pendingComposer) throw new Error("A prepaint composer is already active");
+	registerWelcomeCockpitRenderer();
 	// Headless launches share the lease helpers, but never need the editor graph.
 	const { Composer, COMPOSER_DEFAULTS }: typeof ComposerRuntime = require("@oh-my-pi/pi-tui/prompt/composer.js");
 	const cwd = options.cwd ?? process.cwd();
@@ -72,8 +80,17 @@ export function beginStartupComposer(options: PrepaintComposerOptions = {}): voi
 	const theme = { ...cached.theme, ...options.theme };
 	initThemeSync(theme.symbolPreset, theme.colorBlindMode, theme.darkTheme, theme.lightTheme);
 	setMagicKeywords(MAGIC_KEYWORDS);
-	const preferences = { ...COMPOSER_DEFAULTS, ...cached.preferences, ...options.preferences };
-	const welcome: ComposerWelcomeUpdate = { version: options.version ?? "" };
+	const preferences: ComposerPreferences = {
+		...COMPOSER_DEFAULTS,
+		...cached.preferences,
+		...options.preferences,
+		tuiLayout:
+			options.preferences?.tuiLayout ?? cached.preferences?.tuiLayout ?? COMPOSER_DEFAULTS.tuiLayout ?? "cockpit",
+	};
+	const welcome: ComposerWelcomeUpdate = {
+		version: options.version ?? "",
+		layoutMode: preferences.tuiLayout,
+	};
 	const composer = new Composer({
 		terminal: options.terminal,
 		exit: options.exit,
@@ -90,14 +107,34 @@ export function beginStartupComposer(options: PrepaintComposerOptions = {}): voi
 		} catch {}
 		throw error;
 	}
-	pendingComposer = { composer, cwd, cache };
+	const pending: PendingComposer = { composer, cwd, cache };
+	pendingComposer = pending;
+	if (options.recentSessions) {
+		pending.recentSessions = options
+			.recentSessions()
+			.then(sessions => {
+				if (pendingComposer === pending) {
+					pending.composer.updateWelcome({ recentSessions: sessions });
+				}
+				return sessions;
+			})
+			.catch(error => {
+				logger.debug("composer recent sessions load failed", { error });
+				return undefined;
+			});
+	}
+}
+
+/** Push discovered project LSP servers into the prepaint Composer welcome banner. */
+export function setStartupComposerLspServers(servers: readonly LspServerInfo[]): void {
+	pendingComposer?.composer.updateWelcome({ lspServers: servers });
 }
 
 /** Take the live prepaint composer away from the module-level startup owner. */
 export function takeStartupComposerLease(): ComposerLease | undefined {
 	const pending = pendingComposer;
 	pendingComposer = undefined;
-	return pending ? new ComposerLease(pending.composer) : undefined;
+	return pending ? new ComposerLease(pending.composer, pending.recentSessions) : undefined;
 }
 
 /** Stop and forget any prepaint composer that never reached InteractiveMode. */
@@ -122,6 +159,7 @@ export function applyStartupComposerPreferences(update: PrepaintComposerPreferen
 		spellingTypoDetection: update.spellingTypoDetection,
 		spellingAutocomplete: update.spellingAutocomplete,
 		spellingAutocorrect: update.spellingAutocorrect,
+		tuiLayout: update.tuiLayout ?? "cockpit",
 	};
 	pending.composer.setPreferences(preferences);
 	// Settings resolved means the module graph is loaded and the event loop is

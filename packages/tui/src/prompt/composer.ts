@@ -25,7 +25,13 @@ import { postmortem } from "@oh-my-pi/pi-utils";
 import { CustomEditor } from "./custom-editor";
 import type { WordCompletionMethod } from "./word-completion";
 import { type AnimationFrame, TranscriptContainer } from "../chrome/transcript-container";
-import { type VersionUpdate, WelcomeComponent } from "./welcome";
+import {
+	type LspServerInfo,
+	type RecentSession,
+	type VersionUpdate,
+	WelcomeComponent,
+	type WelcomeLayoutMode,
+} from "./welcome";
 import { ensureThemeSync, getEditorTheme, theme } from "../theme/theme";
 
 const DOUBLE_INTERRUPT_MS = 500;
@@ -46,6 +52,7 @@ export interface ComposerPreferences {
 	readonly spellingTypoDetection: boolean;
 	readonly spellingAutocomplete: WordCompletionMethod;
 	readonly spellingAutocorrect: boolean;
+	readonly tuiLayout?: WelcomeLayoutMode;
 }
 
 /** Settings-schema-compatible defaults used when constructing a dependency-free composer. */
@@ -61,6 +68,7 @@ export const COMPOSER_DEFAULTS: ComposerPreferences = {
 	spellingTypoDetection: true,
 	spellingAutocomplete: "auto",
 	spellingAutocorrect: false,
+	tuiLayout: "cockpit",
 };
 
 /** Welcome data that can be supplied initially or patched as startup resolves it. */
@@ -68,6 +76,11 @@ export interface ComposerWelcomeUpdate {
 	readonly version?: string;
 	/** Background self-update activity after the version label; `null` clears it. */
 	readonly versionUpdate?: VersionUpdate | null;
+	readonly modelName?: string;
+	readonly providerName?: string;
+	readonly recentSessions?: readonly RecentSession[];
+	readonly lspServers?: readonly LspServerInfo[];
+	readonly layoutMode?: WelcomeLayoutMode;
 }
 
 /**
@@ -252,6 +265,11 @@ export class Composer implements TerminalFrameProvider, NativeSurfaceProvider {
 	#welcome: WelcomeComponent | undefined;
 	#version = "";
 	#versionUpdate: VersionUpdate | null = null;
+	#modelName = "Unknown";
+	#providerName = "Unknown";
+	#recentSessions: readonly RecentSession[] = [];
+	#lspServers: readonly LspServerInfo[] = [];
+	#layoutMode: WelcomeLayoutMode = "cockpit";
 	#headerBefore: readonly Component[] = [];
 	#headerAfter: readonly Component[] = [];
 	#runtimeChildren: readonly Component[] = [];
@@ -366,6 +384,7 @@ export class Composer implements TerminalFrameProvider, NativeSurfaceProvider {
 		this.#exit = options.exit ?? (code => postmortem.exitProcess(code));
 		this.#now = options.now ?? Date.now;
 		this.#preferences = { ...COMPOSER_DEFAULTS, ...options.preferences };
+		if (this.#preferences.tuiLayout !== undefined) this.#layoutMode = this.#preferences.tuiLayout;
 		this.#applyWelcomeUpdate(options.welcome ?? {});
 
 		this.ui = new TUI(
@@ -1130,6 +1149,7 @@ export class Composer implements TerminalFrameProvider, NativeSurfaceProvider {
 		if (this.#stopped) return;
 		const wasQuiet = this.#preferences.quiet;
 		this.#preferences = { ...this.#preferences, ...update };
+		if (update.tuiLayout !== undefined) this.#layoutMode = update.tuiLayout;
 		this.editor.setTheme(getEditorTheme());
 		try {
 			this.editor.setBorderStyle(this.#preferences.composerShape);
@@ -1153,6 +1173,7 @@ export class Composer implements TerminalFrameProvider, NativeSurfaceProvider {
 			this.#welcome = undefined;
 		} else {
 			this.#ensureWelcome();
+			if (update.tuiLayout !== undefined) this.#welcome?.setLayoutMode(update.tuiLayout);
 			this.#welcome?.invalidate();
 			if (wasQuiet && this.#started) this.playWelcomeIntro();
 		}
@@ -1170,6 +1191,12 @@ export class Composer implements TerminalFrameProvider, NativeSurfaceProvider {
 		if (!welcome) return;
 		if (update.version !== undefined) welcome.setVersion(this.#version);
 		if (update.versionUpdate !== undefined) welcome.setVersionUpdate(this.#versionUpdate);
+		if (update.modelName !== undefined || update.providerName !== undefined) {
+			welcome.setModel(this.#modelName, this.#providerName);
+		}
+		if (update.recentSessions !== undefined) welcome.setRecentSessions(this.#recentSessions);
+		if (update.lspServers !== undefined) welcome.setLspServers(this.#lspServers);
+		if (update.layoutMode !== undefined) welcome.setLayoutMode(this.#layoutMode);
 		this.ui.requestRender();
 	}
 
@@ -1284,11 +1311,23 @@ export class Composer implements TerminalFrameProvider, NativeSurfaceProvider {
 	#applyWelcomeUpdate(update: ComposerWelcomeUpdate): void {
 		if (update.version !== undefined) this.#version = update.version;
 		if (update.versionUpdate !== undefined) this.#versionUpdate = update.versionUpdate;
+		if (update.modelName !== undefined) this.#modelName = update.modelName;
+		if (update.providerName !== undefined) this.#providerName = update.providerName;
+		if (update.recentSessions !== undefined) this.#recentSessions = update.recentSessions;
+		if (update.lspServers !== undefined) this.#lspServers = update.lspServers;
+		if (update.layoutMode !== undefined) this.#layoutMode = update.layoutMode;
 	}
 
 	#ensureWelcome(): void {
 		if (this.#welcome) return;
-		this.#welcome = new WelcomeComponent(this.#version);
+		this.#welcome = new WelcomeComponent(
+			this.#version,
+			this.#modelName,
+			this.#providerName,
+			this.#recentSessions,
+			this.#lspServers,
+			this.#layoutMode,
+		);
 		this.#welcome.setVersionUpdate(this.#versionUpdate);
 	}
 

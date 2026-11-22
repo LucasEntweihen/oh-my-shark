@@ -146,7 +146,9 @@ export async function handleCockpitCommand(
 				await runtime.output(`✅ Densidade do Cockpit configurada para ${mode.toUpperCase()}:\n\n${rendered}`);
 			} else {
 				const current = cockpit.getConfig().density;
-				await runtime.output(`ℹ️ Densidade atual: ${current}. Modos disponíveis: auto, compact, standard, advanced.\nUso: /cockpit density <mode>`);
+				await runtime.output(
+					`ℹ️ Densidade atual: ${current}. Modos disponíveis: auto, compact, standard, advanced.\nUso: /cockpit density <mode>`,
+				);
 			}
 			return commandConsumed();
 		}
@@ -158,7 +160,9 @@ export async function handleCockpitCommand(
 				await runtime.output(`✅ Modo da barra lateral configurado para ${mode.toUpperCase()} com sucesso!`);
 			} else {
 				const current = cockpit.getConfig().sidebar;
-				await runtime.output(`ℹ️ Barra lateral atual: ${current}. Modos disponíveis: auto, visible, collapsed, hidden.\nUso: /cockpit sidebar <mode>`);
+				await runtime.output(
+					`ℹ️ Barra lateral atual: ${current}. Modos disponíveis: auto, visible, collapsed, hidden.\nUso: /cockpit sidebar <mode>`,
+				);
 			}
 			return commandConsumed();
 		}
@@ -166,9 +170,12 @@ export async function handleCockpitCommand(
 			const mode = (sub.rest || "").trim().toLowerCase();
 			if (mode === "cockpit" || mode === "compact" || mode === "classic" || mode === "default") {
 				persistSettingSafe(runtime.settings, "tui.layout", mode);
+				runtime.ctx?.syncTuiLayout?.();
 				await runtime.output(`✅ Layout padrão do terminal TUI configurado para: ${mode.toUpperCase()}`);
 			} else {
-				await runtime.output(`ℹ️ Layouts disponíveis: cockpit (padrão), compact, classic, default.\nUso: /cockpit layout <mode>`);
+				await runtime.output(
+					`ℹ️ Layouts disponíveis: cockpit (padrão), compact, classic, default.\nUso: /cockpit layout <mode>`,
+				);
 			}
 			return commandConsumed();
 		}
@@ -219,10 +226,10 @@ export async function handleCockpitCommand(
 			const graph = cockpit.getMemoryGraph();
 			await runtime.output(
 				`🔄 Deep Sea Cockpit sincronizado com sucesso!\n` +
-				`  • Alterações: +${changes.totalAdded} / -${changes.totalRemoved} linhas (${changes.modifiedCount} arquivos, ${changes.checkpointsCount} checkpoints)\n` +
-				`  • Arquivos recentes rastreados: ${files.length}\n` +
-				`  • Nós na Mente em Teia: ${graph.nodes.length} nós, ${graph.edges.length} arestas\n` +
-				`  • Eventos registrados: ${cockpit.getRecentEvents().length}`
+					`  • Alterações: +${changes.totalAdded} / -${changes.totalRemoved} linhas (${changes.modifiedCount} arquivos, ${changes.checkpointsCount} checkpoints)\n` +
+					`  • Arquivos recentes rastreados: ${files.length}\n` +
+					`  • Nós na Mente em Teia: ${graph.nodes.length} nós, ${graph.edges.length} arestas\n` +
+					`  • Eventos registrados: ${cockpit.getRecentEvents().length}`,
 			);
 			return commandConsumed();
 		}

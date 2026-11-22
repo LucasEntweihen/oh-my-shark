@@ -124,6 +124,7 @@ import { rescopeSessionToCwd } from "../session/cwd-rescope";
 import { copyLocalArtifacts, resolveLocalRoot } from "../internal-urls";
 import { hasNativeJudge } from "../judgment";
 import { LSP_STARTUP_EVENT_CHANNEL, type LspStartupEvent } from "../lsp/startup-events";
+import { registerWelcomeCockpitRenderer } from "../tui/deep-sea-command";
 import type { MCPManager } from "../mcp";
 import {
 	formatMCPConnectionStatusMessage,
@@ -308,7 +309,7 @@ import { CodexResetFireworksController } from "@oh-my-pi/pi-tui/overlays/codex-r
 import { type ComposerNativeState, CustomEditor } from "@oh-my-pi/pi-tui/prompt/custom-editor";
 import { DynamicBorder } from "@oh-my-pi/pi-tui/chrome/dynamic-border";
 import { EditorTopGap } from "@oh-my-pi/pi-tui/prompt/editor-top-gap";
-import type { VersionUpdate } from "@oh-my-pi/pi-tui/prompt/welcome";
+import type { LspServerInfo as WelcomeLspServerInfo, VersionUpdate } from "@oh-my-pi/pi-tui/prompt/welcome";
 import { ErrorBannerComponent } from "@oh-my-pi/pi-tui/overlays/error-banner";
 import type { EvalExecutionComponent } from "@oh-my-pi/pi-tui/chat/eval-execution";
 import type { HookEditorComponent } from "@oh-my-pi/pi-tui/overlays/hook-editor";
@@ -467,6 +468,7 @@ import {
 	cfgTuiCompleteScrollback,
 	cfgTuiTextSizing,
 	cfgTuiTight,
+	cfgTuiLayout,
 	cfgTuiTitleSpinner,
 	cfgMotionResolved,
 	cfgTuiTitleState,
@@ -545,6 +547,7 @@ const cfgLiveUiSettings = combine({
 	"tui.autoGraph": cfgTuiAutoGraph,
 	"tui.textSizing": cfgTuiTextSizing,
 	"tui.tight": cfgTuiTight,
+	"tui.layout": cfgTuiLayout,
 	"tui.hyperlinks": cfgTuiHyperlinks,
 	"tui.titleState": cfgTuiTitleState,
 	"tui.titleSpinner": cfgTuiTitleSpinner,
@@ -2306,6 +2309,14 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.session = session;
 		this.sessionManager = session.sessionManager;
 		this.settings = session.settings;
+		const initialModelName = session.model?.name ?? "Unknown";
+		const initialProviderName = session.model?.provider ?? "Unknown";
+		const initialLayoutMode = cfgTuiLayout.get(settings) ?? "cockpit";
+		const initialLspServers = lspServers?.map(server => ({
+			name: server.name,
+			status: server.status,
+			fileTypes: server.fileTypes,
+		}));
 		const preferences = {
 			quiet: cfgStartupQuiet.get(settings),
 			composerShape: cfgComposerShape.get(settings),
@@ -2313,13 +2324,29 @@ export class InteractiveMode implements InteractiveModeContext {
 		};
 		const wasStarted = composer?.started ?? false;
 		setMagicKeywords(MAGIC_KEYWORDS);
+		registerWelcomeCockpitRenderer();
 		this.composer =
 			composer ??
 			new Composer({
 				preferences,
-				welcome: { version },
+				welcome: {
+					version,
+					modelName: initialModelName,
+					providerName: initialProviderName,
+					lspServers: initialLspServers,
+					layoutMode: initialLayoutMode,
+				},
 			});
 		this.composer.setPreferences(preferences);
+		if (composer) {
+			this.composer.updateWelcome({
+				version,
+				modelName: initialModelName,
+				providerName: initialProviderName,
+				lspServers: initialLspServers,
+				layoutMode: initialLayoutMode,
+			});
+		}
 		this.ui = this.composer.ui;
 		this.editor = this.composer.editor;
 		this.editor.magicKeywordsEnabled = () => cfgMagicKeywordsEnabled.get(this.settings);
@@ -2739,8 +2766,14 @@ export class InteractiveMode implements InteractiveModeContext {
 		);
 
 		const startupQuiet = cfgStartupQuiet.get(settings);
-		this.composer.setPreferences({ quiet: startupQuiet });
-		this.composer.updateWelcome({ version: this.#version });
+		this.composer.setPreferences({ quiet: startupQuiet, tuiLayout: cfgTuiLayout.get(this.settings) ?? "cockpit" });
+		this.composer.updateWelcome({
+			version: this.#version,
+			modelName: this.session.model?.name ?? "Unknown",
+			providerName: this.session.model?.provider ?? "Unknown",
+			lspServers: this.#getWelcomeLspServers(),
+			layoutMode: cfgTuiLayout.get(this.settings) ?? "cockpit",
+		});
 		this.#syncHeaderExtras();
 		this.statusLine.watchBranch(() => this.ui.requestRender());
 		this.composer.setStatusComponent(this.statusLine);
@@ -3133,6 +3166,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			this.session.subscribe(event => {
 				this.#followTrayMain(event);
 				if (event.type === "model_changed") {
+					this.#updateWelcomeModel();
 					this.#scheduleComposerStatusPersist();
 					this.session.prewarmModelConnection();
 				}
@@ -4413,6 +4447,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			spellingTypoDetection: cfgSpellingTypoDetection.get(this.settings),
 			spellingAutocomplete: cfgSpellingAutocomplete.get(this.settings),
 			spellingAutocorrect: cfgSpellingAutocorrect.get(this.settings),
+			tuiLayout: cfgTuiLayout.get(this.settings) ?? "cockpit",
 		};
 	}
 
@@ -4478,6 +4513,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			this.updateEditorBorderColor();
 		}
 		if (any("composer.shape")) this.syncComposerShape();
+		if (any("tui.layout")) this.syncTuiLayout();
 		if (any("tui.vimMode", "tui.vimModeDisplay")) this.#applyVimModeSetting();
 		if (any("display.pinnedAgents")) this.applyPinnedAgentsSetting();
 		if (any("display.subagentLivePreview")) {
@@ -4664,6 +4700,12 @@ export class InteractiveMode implements InteractiveModeContext {
 			compactThinkingLevel: cfgStatusLineCompactThinkingLevel.get(settings),
 			contextLine: cfgStatusLineContextLine.get(settings),
 		});
+	}
+	syncTuiLayout(): void {
+		const layout = cfgTuiLayout.get(settings) ?? "cockpit";
+		this.composer.setPreferences({ tuiLayout: layout });
+		this.composer.welcome?.setLayoutMode(layout);
+		this.ui.requestRender();
 	}
 	syncComposerShape(): void {
 		const shape = cfgComposerShape.get(settings);
@@ -9102,6 +9144,7 @@ export class InteractiveMode implements InteractiveModeContext {
 	}
 
 	#handleLspStartupEvent(event: LspStartupEvent): void {
+		this.#updateWelcomeLspServers();
 		if (event.type === "failed") {
 			this.showWarning(`LSP startup failed: ${event.error}. It will retry lazily on write.`);
 			return;
@@ -9120,6 +9163,26 @@ export class InteractiveMode implements InteractiveModeContext {
 			const failedNames = failedServers.map(server => server.name).join(", ");
 			this.showWarning(`LSP startup failed for ${failedNames}. It will retry lazily on write.`);
 		}
+	}
+
+	#getWelcomeLspServers(): WelcomeLspServerInfo[] {
+		return (
+			this.lspServers?.map(server => ({
+				name: server.name,
+				status: server.status,
+				fileTypes: server.fileTypes,
+			})) ?? []
+		);
+	}
+
+	#updateWelcomeModel(): void {
+		const modelName = this.session.model?.name ?? "Unknown";
+		const providerName = this.session.model?.provider ?? "Unknown";
+		this.composer.updateWelcome({ modelName, providerName });
+	}
+
+	#updateWelcomeLspServers(): void {
+		this.composer.updateWelcome({ lspServers: this.#getWelcomeLspServers() });
 	}
 
 	#syncHeaderExtras(): void {

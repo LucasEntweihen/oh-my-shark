@@ -101,6 +101,7 @@ function parseUiState(
 		spellingTypoDetection,
 		spellingAutocomplete,
 		spellingAutocorrect,
+		tuiLayout,
 	} = value.preferences;
 	if (
 		typeof quiet !== "boolean" ||
@@ -116,7 +117,12 @@ function parseUiState(
 		typeof autocompleteMaxVisible !== "number" ||
 		typeof spellingTypoDetection !== "boolean" ||
 		!isWordCompletionMethod(spellingAutocomplete) ||
-		typeof spellingAutocorrect !== "boolean"
+		typeof spellingAutocorrect !== "boolean" ||
+		(tuiLayout !== undefined &&
+			tuiLayout !== "cockpit" &&
+			tuiLayout !== "default" &&
+			tuiLayout !== "compact" &&
+			tuiLayout !== "classic")
 	) {
 		return undefined;
 	}
@@ -145,6 +151,7 @@ function parseUiState(
 			spellingTypoDetection,
 			spellingAutocomplete,
 			spellingAutocorrect,
+			tuiLayout: tuiLayout ?? "cockpit",
 		},
 		theme: { symbolPreset, colorBlindMode, darkTheme, lightTheme },
 	};

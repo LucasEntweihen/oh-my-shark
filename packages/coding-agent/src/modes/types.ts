@@ -208,6 +208,7 @@ export interface InteractiveModeContext {
 	/** Show a pin change already written to the pins file; supersedes any in-flight pins-file reload. */
 	applySessionPin(sessionId: string, pinned: boolean): void;
 	syncComposerShape(): void;
+	syncTuiLayout(): void;
 	/**
 	 * Push the extension link schemes to the markdown renderer; redraws the transcript when that
 	 * changes how links are drawn.

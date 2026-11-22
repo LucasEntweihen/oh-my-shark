@@ -10,6 +10,8 @@
  * - Adaptive rendering from 20 columns up to ultra-wide displays
  * - 100% Pure TypeScript string & ANSI calculation for complete cross-platform portability.
  */
+import { setWelcomeCockpitRenderer } from "@oh-my-pi/pi-tui/prompt/welcome";
+import { PRODUCT_VERSION } from "@oh-my-pi/pi-utils";
 import { truncateToWidth } from "@oh-my-pi/pi-tui";
 import { REST_FRAME } from "../modes/components/shark-logo";
 import type { ChangesSummary, FileChangeDiff } from "../edit/transactional-engine";
@@ -209,13 +211,23 @@ export class DeepSeaCockpit {
 		this.config = {
 			density: options.config?.density ?? getSettingSafe("cockpit.density", DEFAULT_COCKPIT_CONFIG.density),
 			sidebar: options.config?.sidebar ?? getSettingSafe("cockpit.sidebar", DEFAULT_COCKPIT_CONFIG.sidebar),
-			eventStreamLines: options.config?.eventStreamLines ?? getSettingSafe("cockpit.eventStreamLines", DEFAULT_COCKPIT_CONFIG.eventStreamLines),
+			eventStreamLines:
+				options.config?.eventStreamLines ??
+				getSettingSafe("cockpit.eventStreamLines", DEFAULT_COCKPIT_CONFIG.eventStreamLines),
 			showTips: options.config?.showTips ?? getSettingSafe("cockpit.showTips", DEFAULT_COCKPIT_CONFIG.showTips),
-			showMemoryGraph: options.config?.showMemoryGraph ?? getSettingSafe("cockpit.showMemoryGraph", DEFAULT_COCKPIT_CONFIG.showMemoryGraph),
-			showRecentFiles: options.config?.showRecentFiles ?? getSettingSafe("cockpit.showRecentFiles", DEFAULT_COCKPIT_CONFIG.showRecentFiles),
-			showProgress: options.config?.showProgress ?? getSettingSafe("cockpit.showProgress", DEFAULT_COCKPIT_CONFIG.showProgress),
-			showShortcuts: options.config?.showShortcuts ?? getSettingSafe("cockpit.showShortcuts", DEFAULT_COCKPIT_CONFIG.showShortcuts),
-			autoHeight: options.config?.autoHeight ?? getSettingSafe("cockpit.autoHeight", DEFAULT_COCKPIT_CONFIG.autoHeight),
+			showMemoryGraph:
+				options.config?.showMemoryGraph ??
+				getSettingSafe("cockpit.showMemoryGraph", DEFAULT_COCKPIT_CONFIG.showMemoryGraph),
+			showRecentFiles:
+				options.config?.showRecentFiles ??
+				getSettingSafe("cockpit.showRecentFiles", DEFAULT_COCKPIT_CONFIG.showRecentFiles),
+			showProgress:
+				options.config?.showProgress ?? getSettingSafe("cockpit.showProgress", DEFAULT_COCKPIT_CONFIG.showProgress),
+			showShortcuts:
+				options.config?.showShortcuts ??
+				getSettingSafe("cockpit.showShortcuts", DEFAULT_COCKPIT_CONFIG.showShortcuts),
+			autoHeight:
+				options.config?.autoHeight ?? getSettingSafe("cockpit.autoHeight", DEFAULT_COCKPIT_CONFIG.autoHeight),
 		};
 		if (options.density !== undefined) {
 			this.density = options.density;
@@ -226,7 +238,7 @@ export class DeepSeaCockpit {
 			this.density = "advanced";
 		}
 		this.workspaceName = options.workspaceName ?? "OMSK Workspace";
-		this.version = options.version ?? "0.0.45";
+		this.version = options.version ?? PRODUCT_VERSION;
 		this.modelName = options.modelName ?? "gemini-2.5-pro";
 		this.providerName = options.providerName ?? "Google";
 		this.mission = options.mission ?? {
@@ -246,32 +258,39 @@ export class DeepSeaCockpit {
 		this.passedChecks = options.passedChecks ?? 0;
 		this.totalChecks = options.totalChecks ?? 0;
 		this.events = options.recentEvents ? [...options.recentEvents] : [];
-		this.quickTips = options.quickTips ? [...options.quickTips] : [
-			"Use [Ctrl+D] to view detailed changes! [NEW]",
-			"Deep Sea Cockpit tracks tasks & diffs live.",
-		];
-		this.recentSessions = options.recentSessions ? [...options.recentSessions] : [
-			{ name: "refactor-auth", timeAgo: "2h ago", active: true },
-			{ name: "fix-memory-leak", timeAgo: "3h ago" },
-			{ name: "add-tests", timeAgo: "1d ago" },
-			{ name: "update-docs", timeAgo: "1d ago" },
-		];
-		this.lspServers = options.lspServers ? [...options.lspServers] : [
-			{ name: "tsserver", language: "TypeScript", status: "ready" },
-			{ name: "pyright", language: "Python", status: "ready" },
-			{ name: "rust-analyzer", language: "Rust", status: "ready" },
-		];
-		this.activitySteps = options.activitySteps ? [...options.activitySteps] : [
-			{ label: "Analyze code", status: "completed" },
-			{ label: "Apply changes", status: "completed" },
-			{ label: "Run tests...", status: "active" },
-			{ label: "Finalize", status: "pending" },
-		];
-		this.recentFiles = options.recentFiles ? [...options.recentFiles] : [
-			{ path: "auth.service.ts", linesAdded: 42, linesRemoved: 12 },
-			{ path: "auth.controller.ts", linesAdded: 28, linesRemoved: 8 },
-			{ path: "auth.spec.ts", linesAdded: 72, linesRemoved: 17 },
-		];
+		this.quickTips = options.quickTips
+			? [...options.quickTips]
+			: ["Use [Ctrl+D] to view detailed changes! [NEW]", "Deep Sea Cockpit tracks tasks & diffs live."];
+		this.recentSessions = options.recentSessions
+			? [...options.recentSessions]
+			: [
+					{ name: "refactor-auth", timeAgo: "2h ago", active: true },
+					{ name: "fix-memory-leak", timeAgo: "3h ago" },
+					{ name: "add-tests", timeAgo: "1d ago" },
+					{ name: "update-docs", timeAgo: "1d ago" },
+				];
+		this.lspServers = options.lspServers
+			? [...options.lspServers]
+			: [
+					{ name: "tsserver", language: "TypeScript", status: "ready" },
+					{ name: "pyright", language: "Python", status: "ready" },
+					{ name: "rust-analyzer", language: "Rust", status: "ready" },
+				];
+		this.activitySteps = options.activitySteps
+			? [...options.activitySteps]
+			: [
+					{ label: "Analyze code", status: "completed" },
+					{ label: "Apply changes", status: "completed" },
+					{ label: "Run tests...", status: "active" },
+					{ label: "Finalize", status: "pending" },
+				];
+		this.recentFiles = options.recentFiles
+			? [...options.recentFiles]
+			: [
+					{ path: "auth.service.ts", linesAdded: 42, linesRemoved: 12 },
+					{ path: "auth.controller.ts", linesAdded: 28, linesRemoved: 8 },
+					{ path: "auth.spec.ts", linesAdded: 72, linesRemoved: 17 },
+				];
 		this.memoryGraph = options.memoryGraph ?? {
 			nodes: [
 				{ id: "1", label: "auth.service.ts", kind: "file" },
@@ -379,9 +398,10 @@ export class DeepSeaCockpit {
 			return { show: true, width: 20, isFullLogo: false };
 		}
 		if (this.config.sidebar === "visible") {
-			const w = termWidth >= 115
-				? Math.max(58, Math.min(62, Math.floor(termWidth * 0.48)))
-				: Math.max(20, Math.min(32, Math.floor(termWidth * 0.28)));
+			const w =
+				termWidth >= 115
+					? Math.max(58, Math.min(62, Math.floor(termWidth * 0.48)))
+					: Math.max(20, Math.min(32, Math.floor(termWidth * 0.28)));
 			return { show: true, width: w, isFullLogo: w >= 56 };
 		}
 		if (termWidth < 80) {
@@ -559,6 +579,21 @@ export class DeepSeaCockpit {
 		this.recentSessions = [...sessions];
 	}
 
+	public updateMetadata(options: {
+		version?: string;
+		modelName?: string;
+		providerName?: string;
+		recentSessions?: SessionHistoryItem[];
+		lspServers?: LspStatusItem[];
+	}): void {
+		if (options.version !== undefined && options.version.length > 0) this.version = options.version;
+		if (options.modelName !== undefined && options.modelName.length > 0) this.modelName = options.modelName;
+		if (options.providerName !== undefined && options.providerName.length > 0)
+			this.providerName = options.providerName;
+		if (options.recentSessions !== undefined) this.recentSessions = [...options.recentSessions];
+		if (options.lspServers !== undefined) this.lspServers = [...options.lspServers];
+	}
+
 	public async syncFromEditEngine(engine: {
 		getChangesSummary(): Promise<ChangesSummary>;
 		getDetailedDiff?(): Promise<FileChangeDiff[]>;
@@ -569,7 +604,7 @@ export class DeepSeaCockpit {
 		if (typeof engine.getDetailedDiff === "function") {
 			try {
 				const diffs = await engine.getDetailedDiff();
-				this.recentFiles = diffs.map((d) => ({
+				this.recentFiles = diffs.map(d => ({
 					path: d.path,
 					linesAdded: d.linesAdded,
 					linesRemoved: d.linesRemoved,
@@ -590,8 +625,8 @@ export class DeepSeaCockpit {
 			try {
 				const snapshot = store.exportGraphSnapshot();
 				this.memoryGraph = {
-					nodes: snapshot.nodes.map((n) => ({ id: n.id, label: n.name, kind: n.kind })),
-					edges: snapshot.edges.map((e) => ({ source: e.sourceId, target: e.targetId, label: e.relation })),
+					nodes: snapshot.nodes.map(n => ({ id: n.id, label: n.name, kind: n.kind })),
+					edges: snapshot.edges.map(e => ({ source: e.sourceId, target: e.targetId, label: e.relation })),
 				};
 			} catch {
 				// Fallback
@@ -616,17 +651,13 @@ export class DeepSeaCockpit {
 		}
 
 		const workers = Object.values(run.workers);
-		const completedWorkers = workers.filter((w) => w.status === "completed").length;
+		const completedWorkers = workers.filter(w => w.status === "completed").length;
 		const totalWorkers = workers.length;
 		const progressPercent =
-			run.phase === "COMMITTED"
-				? 100
-				: totalWorkers > 0
-					? Math.round((completedWorkers / totalWorkers) * 100)
-					: 0;
+			run.phase === "COMMITTED" ? 100 : totalWorkers > 0 ? Math.round((completedWorkers / totalWorkers) * 100) : 0;
 
 		const activeWorker = workers.find(
-			(w) => w.status === "running" || w.status === "steered" || w.status === "verifying" || w.status === "repaired",
+			w => w.status === "running" || w.status === "steered" || w.status === "verifying" || w.status === "repaired",
 		);
 		const missionStatus: ActiveMissionInfo["status"] =
 			run.phase === "COMMITTED"
@@ -648,7 +679,7 @@ export class DeepSeaCockpit {
 		};
 
 		if (run.waves.length > 1) {
-			this.activitySteps = run.waves.map((wave) => ({
+			this.activitySteps = run.waves.map(wave => ({
 				label: `Wave #${wave.index} (${wave.workerIds.length}w · ${wave.status})`,
 				status:
 					wave.status === "completed"
@@ -658,12 +689,15 @@ export class DeepSeaCockpit {
 							: "pending",
 			}));
 		} else {
-			this.activitySteps = workers.map((w) => ({
+			this.activitySteps = workers.map(w => ({
 				label: `@${w.role}: ${w.title}`,
 				status:
 					w.status === "completed"
 						? "completed"
-						: w.status === "running" || w.status === "steered" || w.status === "verifying" || w.status === "repaired"
+						: w.status === "running" ||
+							  w.status === "steered" ||
+							  w.status === "verifying" ||
+							  w.status === "repaired"
 							? "active"
 							: "pending",
 			}));
@@ -674,7 +708,7 @@ export class DeepSeaCockpit {
 		this.agentStatus = `${run.phase} (${completedWorkers}/${totalWorkers})`;
 
 		const verifications = run.waves
-			.map((w) => w.verification)
+			.map(w => w.verification)
 			.filter((v): v is NonNullable<typeof v> => v !== undefined);
 		if (verifications.length > 0) {
 			let passed = 0;
@@ -756,9 +790,7 @@ export class DeepSeaCockpit {
 			const tipParts = tip.split(" [NEW]");
 			const tipBody = tipParts[0];
 			const hasNew = tip.includes("[NEW]");
-			const tipFormatted = hasNew
-				? `${tipBody} ${style.warning(style.bold("[NEW]"))}`
-				: tipBody;
+			const tipFormatted = hasNew ? `${tipBody} ${style.warning(style.bold("[NEW]"))}` : tipBody;
 
 			// Word wrap tip across lines
 			const words = tipFormatted.split(" ");
@@ -788,13 +820,14 @@ export class DeepSeaCockpit {
 		// LSP Servers
 		lines.push(padToWidth(style.cyan("🧩 LSP Servers:"), w));
 		for (const server of this.lspServers.slice(0, 3)) {
-			const dot = server.status === "ready"
-				? style.success("●")
-				: server.status === "connecting"
-					? style.warning("●")
-					: server.status === "error"
-						? style.error("●")
-						: style.dim("●");
+			const dot =
+				server.status === "ready"
+					? style.success("●")
+					: server.status === "connecting"
+						? style.warning("●")
+						: server.status === "error"
+							? style.error("●")
+							: style.dim("●");
 			const text = `${dot} ${server.name} ${style.dim(`(${server.language})`)}`;
 			lines.push(padToWidth(truncateToWidth(text, w - 2), w));
 		}
@@ -814,15 +847,9 @@ export class DeepSeaCockpit {
 		const diamond = style.cyan("◆");
 		const title = `${diamond} ${style.bold(style.cyan("Deep Sea Cockpit"))} ${style.dim("—")} ${style.white(`Task #${this.mission.id}`)}`;
 
-		const compactPill = this.density === "compact"
-			? style.activePill(" Compact ")
-			: style.dim("Compact");
-		const standardPill = this.density === "standard"
-			? style.activePill(" Standard ")
-			: style.dim("Standard");
-		const advancedPill = this.density === "advanced"
-			? style.activePill(" Advanced ")
-			: style.dim("Advanced");
+		const compactPill = this.density === "compact" ? style.activePill(" Compact ") : style.dim("Compact");
+		const standardPill = this.density === "standard" ? style.activePill(" Standard ") : style.dim("Standard");
+		const advancedPill = this.density === "advanced" ? style.activePill(" Advanced ") : style.dim("Advanced");
 
 		const densityPills = `${style.borderBlue("╭")} ${compactPill} ${style.borderBlue("│")} ${standardPill} ${style.borderBlue("│")} ${advancedPill} ${style.borderBlue("╯")}`;
 
@@ -853,7 +880,10 @@ export class DeepSeaCockpit {
 		const barWidth = Math.max(8, innerW - 6);
 		const filledChars = Math.round((this.mission.progressPercent / 100) * barWidth);
 		const emptyChars = Math.max(0, barWidth - filledChars);
-		const progressBar = style.cyan("━".repeat(filledChars)) + style.dim("─".repeat(emptyChars)) + ` ${style.cyan(`${this.mission.progressPercent}%`)}`;
+		const progressBar =
+			style.cyan("━".repeat(filledChars)) +
+			style.dim("─".repeat(emptyChars)) +
+			` ${style.cyan(`${this.mission.progressPercent}%`)}`;
 
 		return [
 			borderTop,
@@ -873,14 +903,17 @@ export class DeepSeaCockpit {
 
 		const header = `${style.blue("🔮 Changes")}`;
 		const linesDiff = `${style.success(`+${this.changes.totalAdded} lines`)}  ${style.error(`-${this.changes.totalRemoved} lines`)}`;
-		const ckptLabel = this.changes.checkpointsCount === 1 ? "1 checkpoint" : `${this.changes.checkpointsCount} checkpoints`;
+		const ckptLabel =
+			this.changes.checkpointsCount === 1 ? "1 checkpoint" : `${this.changes.checkpointsCount} checkpoints`;
 		const summary = style.dim(`(${this.changes.modifiedCount} files, ${ckptLabel})`);
 
 		return [
 			borderTop,
 			style.borderBlue("│") + padToWidth(` ${header}`, innerW) + style.borderBlue("│"),
 			style.borderBlue("│") + padToWidth(` ${linesDiff}`, innerW) + style.borderBlue("│"),
-			style.borderBlue("│") + padToWidth(innerW >= visibleWidth(summary) + 1 ? ` ${summary}` : summary, innerW) + style.borderBlue("│"),
+			style.borderBlue("│") +
+				padToWidth(innerW >= visibleWidth(summary) + 1 ? ` ${summary}` : summary, innerW) +
+				style.borderBlue("│"),
 			style.borderBlue("│") + padToWidth(" ", innerW) + style.borderBlue("│"),
 			borderBottom,
 		];
@@ -910,8 +943,12 @@ export class DeepSeaCockpit {
 		return [
 			borderTop,
 			style.borderBlue("│") + padToWidth(` ${header}`, innerW) + style.borderBlue("│"),
-			style.borderBlue("│") + padToWidth(innerW >= visibleWidth(statusLine) + 1 ? ` ${statusLine}` : statusLine, innerW) + style.borderBlue("│"),
-			style.borderBlue("│") + padToWidth(innerW >= visibleWidth(detailLine) + 1 ? ` ${detailLine}` : detailLine, innerW) + style.borderBlue("│"),
+			style.borderBlue("│") +
+				padToWidth(innerW >= visibleWidth(statusLine) + 1 ? ` ${statusLine}` : statusLine, innerW) +
+				style.borderBlue("│"),
+			style.borderBlue("│") +
+				padToWidth(innerW >= visibleWidth(detailLine) + 1 ? ` ${detailLine}` : detailLine, innerW) +
+				style.borderBlue("│"),
 			style.borderBlue("│") + padToWidth(" ", innerW) + style.borderBlue("│"),
 			borderBottom,
 		];
@@ -950,29 +987,27 @@ export class DeepSeaCockpit {
 		const borderBottom = style.borderBlue(`╰${"─".repeat(safeWidth - 2)}╯`);
 
 		const header = `${style.cyan("〰 LIVE EVENT STREAM & PROVENANCE")}`;
-		const lines: string[] = [
-			borderTop,
-			style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │"),
-		];
+		const lines: string[] = [borderTop, style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │")];
 
 		if (this.events.length === 0) {
-			lines.push(style.borderBlue("│ ") + padToWidth(style.dim("No events recorded yet"), innerW) + style.borderBlue(" │"));
+			lines.push(
+				style.borderBlue("│ ") + padToWidth(style.dim("No events recorded yet"), innerW) + style.borderBlue(" │"),
+			);
 		} else {
 			const visibleEvents = this.events.slice(0, maxLines);
 			for (const ev of visibleEvents) {
-				const checkMark = ev.type === "error"
-					? style.error("✖")
-					: style.success("✔");
+				const checkMark = ev.type === "error" ? style.error("✖") : style.success("✔");
 				const time = style.dim(ev.timestamp);
-				const badge = ev.type === "checkpoint"
-					? style.warning(style.bold("CKPT"))
-					: ev.type === "edit"
-						? style.success(style.bold("EDIT"))
-						: ev.type === "test"
-							? style.blue(style.bold("TEST"))
-							: ev.type === "error"
-								? style.error(style.bold("ERR!"))
-								: style.cyan(style.bold("EVNT"));
+				const badge =
+					ev.type === "checkpoint"
+						? style.warning(style.bold("CKPT"))
+						: ev.type === "edit"
+							? style.success(style.bold("EDIT"))
+							: ev.type === "test"
+								? style.blue(style.bold("TEST"))
+								: ev.type === "error"
+									? style.error(style.bold("ERR!"))
+									: style.cyan(style.bold("EVNT"));
 
 				const label = truncateToWidth(ev.label, Math.floor(innerW * 0.45));
 				const detail = ev.detail ? style.dim(truncateToWidth(ev.detail, Math.floor(innerW * 0.35))) : "";
@@ -991,13 +1026,8 @@ export class DeepSeaCockpit {
 	// ==========================================
 	public renderShortcutBar(width: number): string[] {
 		const safeWidth = Math.max(20, width);
-		const shortcuts = [
-			`[Ctrl+P] Commands`,
-			`[Ctrl+J] Tasks`,
-			`[Ctrl+D] Diff`,
-			`[Ctrl+L] Events`,
-		];
-		const text = shortcuts.map((s) => style.cyan(s)).join("   ");
+		const shortcuts = [`[Ctrl+P] Commands`, `[Ctrl+J] Tasks`, `[Ctrl+D] Diff`, `[Ctrl+L] Events`];
+		const text = shortcuts.map(s => style.cyan(s)).join("   ");
 		const border = style.borderBlue("─".repeat(safeWidth));
 		return [padToWidth(` ${text}`, safeWidth), border];
 	}
@@ -1020,19 +1050,17 @@ export class DeepSeaCockpit {
 
 		const stepRows: string[] = [];
 		for (const step of this.activitySteps.slice(0, 4)) {
-			const icon = step.status === "completed"
-				? style.success("✔")
-				: step.status === "active"
-					? style.blue("▶")
-					: style.dim("○");
+			const icon =
+				step.status === "completed"
+					? style.success("✔")
+					: step.status === "active"
+						? style.blue("▶")
+						: style.dim("○");
 			const label = truncateToWidth(step.label, innerW - 12);
 			stepRows.push(`${icon} ${label}`);
 		}
 
-		const rows: string[] = [
-			borderTop,
-			style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │"),
-		];
+		const rows: string[] = [borderTop, style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │")];
 
 		const maxH = Math.max(donutGauge.length, stepRows.length);
 		for (let i = 0; i < maxH; i++) {
@@ -1081,10 +1109,7 @@ export class DeepSeaCockpit {
 			];
 		}
 
-		const rows: string[] = [
-			borderTop,
-			style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │"),
-		];
+		const rows: string[] = [borderTop, style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │")];
 
 		for (const line of diagram) {
 			rows.push(style.borderBlue("│ ") + padToWidth(truncateToWidth(line, innerW), innerW) + style.borderBlue(" │"));
@@ -1105,10 +1130,7 @@ export class DeepSeaCockpit {
 		const borderBottom = style.borderBlue(`╰${"─".repeat(w - 2)}╯`);
 
 		const header = style.cyan("Recent Files");
-		const rows: string[] = [
-			borderTop,
-			style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │"),
-		];
+		const rows: string[] = [borderTop, style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │")];
 
 		for (const file of this.recentFiles.slice(0, 4)) {
 			const fileIcon = "📄";
@@ -1180,25 +1202,30 @@ export class DeepSeaCockpit {
 		}
 
 		if (activePanels.length >= 2) {
-			const panelsToRender = activePanels.length === 3
-				? (safeWidth >= 70 ? ["progress", "files"] : ["progress"])
-				: activePanels.slice(0, 2);
+			const panelsToRender =
+				activePanels.length === 3
+					? safeWidth >= 70
+						? ["progress", "files"]
+						: ["progress"]
+					: activePanels.slice(0, 2);
 
 			if (panelsToRender.length === 2) {
-				const col1W = Math.floor(safeWidth * 0.50) - 1;
+				const col1W = Math.floor(safeWidth * 0.5) - 1;
 				const col2W = Math.max(16, safeWidth - col1W - 1);
 
-				const p1 = panelsToRender[0] === "progress"
-					? this.renderProgressPanel(col1W)
-					: panelsToRender[0] === "memory"
-						? this.renderMemoryGraphPanel(col1W)
-						: this.renderRecentFilesPanel(col1W);
+				const p1 =
+					panelsToRender[0] === "progress"
+						? this.renderProgressPanel(col1W)
+						: panelsToRender[0] === "memory"
+							? this.renderMemoryGraphPanel(col1W)
+							: this.renderRecentFilesPanel(col1W);
 
-				const p2 = panelsToRender[1] === "files"
-					? this.renderRecentFilesPanel(col2W)
-					: panelsToRender[1] === "memory"
-						? this.renderMemoryGraphPanel(col2W)
-						: this.renderProgressPanel(col2W);
+				const p2 =
+					panelsToRender[1] === "files"
+						? this.renderRecentFilesPanel(col2W)
+						: panelsToRender[1] === "memory"
+							? this.renderMemoryGraphPanel(col2W)
+							: this.renderProgressPanel(col2W);
 
 				const maxH = Math.max(p1.length, p2.length);
 				const rows: string[] = [];
@@ -1258,17 +1285,17 @@ export class DeepSeaCockpit {
 		}
 
 		const compactHeight = this.config.autoHeight && height <= 26;
-		const streamLines = this.config.eventStreamLines > 0
-			? (compactHeight ? Math.min(2, this.config.eventStreamLines) : this.config.eventStreamLines)
-			: 0;
+		const streamLines =
+			this.config.eventStreamLines > 0
+				? compactHeight
+					? Math.min(2, this.config.eventStreamLines)
+					: this.config.eventStreamLines
+				: 0;
 
 		const sidebarInfo = this.resolveSidebarWidth(width);
 
 		if (!sidebarInfo.show) {
-			const lines: string[] = [
-				...this.renderHeader(width),
-				...this.renderTopTitleBar(width),
-			];
+			const lines: string[] = [...this.renderHeader(width), ...this.renderTopTitleBar(width)];
 
 			if (width >= 60) {
 				lines.push(...this.renderCardsRow(width));
@@ -1301,9 +1328,7 @@ export class DeepSeaCockpit {
 		const sidebarW = sidebarInfo.width;
 		const mainW = Math.max(30, width - sidebarW - 2);
 
-		const mainLines: string[] = [
-			...this.renderTopTitleBar(mainW),
-		];
+		const mainLines: string[] = [...this.renderTopTitleBar(mainW)];
 
 		if (mainW >= 60) {
 			mainLines.push(...this.renderCardsRow(mainW));
@@ -1339,12 +1364,7 @@ export class DeepSeaCockpit {
 
 		const statusLines = this.renderBottomStatus(width);
 
-		return [
-			...headerLines,
-			...combinedLines,
-			style.borderBlue("─".repeat(width)),
-			...statusLines,
-		];
+		return [...headerLines, ...combinedLines, style.borderBlue("─".repeat(width)), ...statusLines];
 	}
 
 	// ==========================================
@@ -1353,9 +1373,7 @@ export class DeepSeaCockpit {
 	public render(termWidth: number): string[] {
 		const width = Math.max(20, termWidth - 2);
 
-		const density = this.config.density === "auto"
-			? this.resolveEffectiveDensity(width)
-			: this.density;
+		const density = this.config.density === "auto" ? this.resolveEffectiveDensity(width) : this.density;
 
 		if (width <= 35 || density === "compact") {
 			return this.renderCompact(width);
@@ -1369,9 +1387,7 @@ export class DeepSeaCockpit {
 	}
 
 	private renderCompact(width: number): string[] {
-		const prefix = width > 45
-			? style.bold(style.cyan("OMSK / COCKPIT"))
-			: style.bold(style.cyan("OMSK"));
+		const prefix = width > 45 ? style.bold(style.cyan("OMSK / COCKPIT")) : style.bold(style.cyan("OMSK"));
 		const missionStr = style.muted(`[${this.mission.id}]`);
 		const diffStr = style.success(`+${this.changes.totalAdded}`) + " " + style.error(`-${this.changes.totalRemoved}`);
 		const checksStr = style.dim(`${this.passedChecks}/${this.totalChecks}`);
@@ -1390,9 +1406,12 @@ export class DeepSeaCockpit {
 		const borderHoriz = "─".repeat(innerWidth);
 		const title = ` Workspace: ${this.workspaceName} `;
 		const bannerPrefix = `╭─ OMSK / DEEP SEA COMMAND ─`;
-		const topBorder = bannerPrefix.length + title.length < innerWidth
-			? style.cyan(`${bannerPrefix}─${title}${"─".repeat(Math.max(0, innerWidth - bannerPrefix.length - title.length - 1))}╮`)
-			: style.cyan(`╭─ OMSK / DEEP SEA COMMAND ${borderHoriz.slice(26)}╮`);
+		const topBorder =
+			bannerPrefix.length + title.length < innerWidth
+				? style.cyan(
+						`${bannerPrefix}─${title}${"─".repeat(Math.max(0, innerWidth - bannerPrefix.length - title.length - 1))}╮`,
+					)
+				: style.cyan(`╭─ OMSK / DEEP SEA COMMAND ${borderHoriz.slice(26)}╮`);
 
 		const bottom = style.cyan(`╰${borderHoriz}╯`);
 
@@ -1400,12 +1419,14 @@ export class DeepSeaCockpit {
 		const subtaskStr = this.mission.activeSubtask ? ` · ${this.mission.activeSubtask}` : "";
 		const phaseInfo = style.dim(`   Status: ${this.mission.phase}${subtaskStr} (${this.mission.progressPercent}%)`);
 
-		const changesInfo = style.bold(" CHANGES: ") +
+		const changesInfo =
+			style.bold(" CHANGES: ") +
 			style.success(`+${this.changes.totalAdded} lines `) +
 			style.error(`-${this.changes.totalRemoved} lines `) +
 			style.dim(`(${this.changes.modifiedCount} files, ${this.changes.checkpointsCount} ckpts)`);
 
-		const checksInfo = style.bold(" CHECKS: ") +
+		const checksInfo =
+			style.bold(" CHECKS: ") +
 			(this.totalChecks === 0
 				? style.dim("None pending")
 				: this.passedChecks === this.totalChecks
@@ -1434,15 +1455,16 @@ export class DeepSeaCockpit {
 		} else {
 			for (const ev of this.events.slice(0, 4)) {
 				const time = style.dim(`[${ev.timestamp}]`);
-				const badge = ev.type === "edit"
-					? style.success("EDIT")
-					: ev.type === "test"
-						? style.blue("TEST")
-						: ev.type === "checkpoint"
-							? style.warning("CKPT")
-							: ev.type === "error"
-								? style.error("ERR!")
-								: style.dim("TOOL");
+				const badge =
+					ev.type === "edit"
+						? style.success("EDIT")
+						: ev.type === "test"
+							? style.blue("TEST")
+							: ev.type === "checkpoint"
+								? style.warning("CKPT")
+								: ev.type === "error"
+									? style.error("ERR!")
+									: style.dim("TOOL");
 				const detail = ev.detail ? ` - ${style.dim(ev.detail)}` : "";
 				const evLine = `│   ${time} ${badge} ${style.muted(ev.label)}${detail}`;
 				lines.push(truncateToWidth(evLine, width - 1) + "│");
@@ -1451,7 +1473,7 @@ export class DeepSeaCockpit {
 
 		const shortcutLabels = Array.from(this.shortcuts.values())
 			.slice(0, 4)
-			.map((s) => `[${s.key}] ${s.label}`)
+			.map(s => `[${s.key}] ${s.label}`)
 			.join("  ");
 		const hotkeys = style.dim(` ${shortcutLabels} `);
 		lines.push(truncateToWidth(`│ ${hotkeys}`, width - 1) + "│");
@@ -1482,4 +1504,44 @@ export function getDeepSeaCockpit(options?: DeepSeaCockpitOptions): DeepSeaCockp
 	}
 	syncCockpitFromSettings(activeCockpit);
 	return activeCockpit;
+}
+
+/**
+ * Registers the OMSK Deep Sea Cockpit renderer on `@oh-my-pi/pi-tui`'s
+ * {@link WelcomeComponent} without introducing a reverse package dependency.
+ */
+export function registerWelcomeCockpitRenderer(): void {
+	setWelcomeCockpitRenderer(input => {
+		if (!activeCockpit) {
+			activeCockpit = new DeepSeaCockpit({
+				version: input.version,
+				modelName: input.modelName,
+				providerName: input.providerName,
+				recentSessions: input.recentSessions.map(s => ({ name: s.name, timeAgo: s.timeAgo })),
+				lspServers: input.lspServers.map(l => ({
+					name: l.name,
+					language: l.fileTypes[0] ?? "Code",
+					status: l.status,
+				})),
+			});
+		} else {
+			activeCockpit.updateMetadata({
+				version: input.version,
+				modelName: input.modelName,
+				providerName: input.providerName,
+				recentSessions: input.recentSessions.map(s => ({ name: s.name, timeAgo: s.timeAgo })),
+				lspServers: input.lspServers.map(l => ({
+					name: l.name,
+					language: l.fileTypes[0] ?? "Code",
+					status: l.status,
+				})),
+			});
+		}
+		syncCockpitFromSettings(activeCockpit);
+		if (input.layoutMode === "compact") {
+			activeCockpit.setDensity("compact");
+			return activeCockpit.render(input.termWidth);
+		}
+		return activeCockpit.renderFullCockpit(input.termWidth, input.termHeight);
+	});
 }

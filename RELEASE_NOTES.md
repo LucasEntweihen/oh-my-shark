@@ -1,176 +1,185 @@
-# OhMyShark v0.1.0 � OMP 19.0.1, Shark Orchestrator & Native Desktop GUI
+# OhMyShark v0.1.2 — Correção de Inicialização Windows VT & Restauração do Design OMSK
 
-Primeira release minor do OhMyShark: o n�cleo foi atualizado para o **Oh My Pi 19.0.1** (com a ponte GUI-RPC), preservando 100% dos pilares do OMSK, e o projeto agora traz um **Orchestrator** estilo Antigravity / Claude Code e uma **GUI nativa de desktop**.
+Release de correção imediata garantindo execução limpa do binário compilado `omsk` / `ohms` e restauração integral da identidade visual OMSK na inicialização do terminal.
+
+## Correções
+- **Correção definitiva de `TypeError: enableConsoleVtInput is not a function` (`packages/natives/native/index.js`, `packages/tui/src/terminal.ts`)**: adicionados fallbacks nativos via `kernel32.dll` (`bun:ffi`) para `enableConsoleVtInput` / `restoreConsoleInputMode`, fallback seguro para `translateWindowsAltGrSequence`, fallback compatível para `diffLineRunsWithin` e guardas defensivas no `ProcessTerminal`.
+- **Restauração do Design OMSK na TUI (`packages/tui/src/prompt/welcome.ts`, `packages/tui/src/prompt/composer.ts`, `packages/coding-agent`)**: restaurado o **Deep Sea Cockpit** padrão (`tui.layout = "cockpit"`), a arte **ASCII Shark** em gradiente azul oceânico, o cabeçalho `ohmyshark v0.1.2 · made by LucasEntweihen`, os painéis de Missão/Changes/Checks/LSP/Sessões Recentes e dicas do OMSK (removendo o banner/logo `███ omp` e o aviso de nerdfont).
+
+---
+# OhMyShark v0.1.0 — OMP 19.0.1, Shark Orchestrator & Native Desktop GUI
+
+Primeira release minor do OhMyShark: o núcleo foi atualizado para o **Oh My Pi 19.0.1** (com a ponte GUI-RPC), preservando 100% dos pilares do OMSK, e o projeto agora traz um **Orchestrator** estilo Antigravity / Claude Code e uma **GUI nativa de desktop**.
 
 ## Novidades
 
-### 1. N�cleo OMP 19.0.1 + GUI-RPC
-- Atualiza��o completa de `packages/*` e `crates/*` para o OMP 19.0.1 (MCP compartilhado no daemon, ovnfs, jobs/pty, ask forms, chillax/jevify).
+### 1. Núcleo OMP 19.0.1 + GUI-RPC
+- Atualização completa de `packages/*` e `crates/*` para o OMP 19.0.1 (MCP compartilhado no daemon, ovnfs, jobs/pty, ask forms, chillax/jevify).
 - Protocolo RPC expandido (settings, providers, model roles, skills, agents, MCP, queue, subagents, worktrees, PR, terminal).
 - Addons nativos `pi_natives` 19.0.1 travados por SHA-512 em `packaging/native-inputs.lock.json`.
 - Preservados: `@ohms/kernel`, `@ohms/project-intelligence`, `@ohms/capability-registry`, `@ohms/execution-engine`, `@ohms/terminal-layout`, Vibe Toolkit, Deep Sea Cockpit, Mente em Teia, Transactional Edit Engine, Root Hub e todos os modos (`promaxthink`, `xlr8`, `doomania`, `deepseaneuron`, `fastthinkworkerz`, `vibecoding`, `learner-proj`).
 
 ### 2. Shark Orchestrator (TUI + RPC)
-- `SharkOrchestratorEngine`: plano em DAG, waves paralelas com posse disjunta de arquivos, gate de aprova��o, FSM transacional, checkpoints at�micos com rollback por wave, self-repair limitado, TDD enforcer e verifica��o independente.
-- Comando `/orchestrator` (aliases `/orch`, `/swarm`, `/team`) com board TUI responsivo e sincroniza��o com o Deep Sea Cockpit.
+- `SharkOrchestratorEngine`: plano em DAG, waves paralelas com posse disjunta de arquivos, gate de aprovação, FSM transacional, checkpoints atômicos com rollback por wave, self-repair limitado, TDD enforcer e verificação independente.
+- Comando `/orchestrator` (aliases `/orch`, `/swarm`, `/team`) com board TUI responsivo e sincronização com o Deep Sea Cockpit.
 - 20 endpoints RPC (`orchestrator_*` e `shark_*`) + eventos `orchestrator_event` / `shark_event`.
 
 ### 3. OhMyShark Native Desktop GUI (`packages/gui`)
-- Electron + React 19 com sidecar OMSK embutido (n�o precisa instalar Bun/Node).
+- Electron + React 19 com sidecar OMSK embutido (não precisa instalar Bun/Node).
 - **Orchestrator Studio**, **Shark Command Center** (Cockpit/Kernel, Impact Analysis, Capabilities, Checkpoints & Rollback, Mente em Teia), **OmskModesBar** e temas **Shark Ocean / Deep Abyss**.
-- Localiza��o completa em **Portugu�s (pt-BR)**; deep links `omsk://`, `ohms://` e `omp://`; `omsk desktop` abre a GUI instalada.
+- Localização completa em **Português (pt-BR)**; deep links `omsk://`, `ohms://` e `omp://`; `omsk desktop` abre a GUI instalada.
 
 ### 4. Release
-- Bin�rios CLI otimizados (bytecode + addons nativos embutidos) para Windows x64/arm64, Linux x64/arm64 e macOS x64/arm64 (`ohms-*` e aliases `omsk-*`).
+- Binários CLI otimizados (bytecode + addons nativos embutidos) para Windows x64/arm64, Linux x64/arm64 e macOS x64/arm64 (`ohms-*` e aliases `omsk-*`).
 - Instaladores da GUI (Windows Setup/Portable; Linux AppImage/DEB e macOS DMG/ZIP via CI), `SHA256SUMS.txt` e attestations.
 
 ---
-# OhMyShark v0.0.51 — Autonomous Software Engineering Environment & Superiority Architecture
+# OhMyShark v0.0.51 â€” Autonomous Software Engineering Environment & Superiority Architecture
 
-Esta release eleva o OhMyShark de um agente de terminal tradicional para uma **plataforma completa de engenharia de software autônoma**, integrando inteligência de projeto profunda, verificação independente com provas observáveis, autocorreção controlada e sistema de benchmarking contínuo.
+Esta release eleva o OhMyShark de um agente de terminal tradicional para uma **plataforma completa de engenharia de software autÃ´noma**, integrando inteligÃªncia de projeto profunda, verificaÃ§Ã£o independente com provas observÃ¡veis, autocorreÃ§Ã£o controlada e sistema de benchmarking contÃ­nuo.
 
 ---
 
-## 🌟 Novidades da Versão 0.0.51
+## ðŸŒŸ Novidades da VersÃ£o 0.0.51
 
 ### 1. Shark Context Engine (`@ohms/project-intelligence`)
-- **Adaptação Dinâmica por Intenção:** Classificação automatizada do tipo de tarefa (`bug_fix`, `feature`, `refactor`, `optimization`, `security`) e ponderação seletiva de contexto.
-- **Pontuação Multidimensional de Relevância:** Avaliação léxica, estrutural e contextual garantindo que apenas arquivos e símbolos de alto sinal sejam incluídos no prompt.
-- **Orçamento Inteligente de Tokens & Detecção de Contexto Obsoleto:** Rastreamento por hash de conteúdo para invalidação imediata de caches de arquivos modificados.
+- **AdaptaÃ§Ã£o DinÃ¢mica por IntenÃ§Ã£o:** ClassificaÃ§Ã£o automatizada do tipo de tarefa (`bug_fix`, `feature`, `refactor`, `optimization`, `security`) e ponderaÃ§Ã£o seletiva de contexto.
+- **PontuaÃ§Ã£o Multidimensional de RelevÃ¢ncia:** AvaliaÃ§Ã£o lÃ©xica, estrutural e contextual garantindo que apenas arquivos e sÃ­mbolos de alto sinal sejam incluÃ­dos no prompt.
+- **OrÃ§amento Inteligente de Tokens & DetecÃ§Ã£o de Contexto Obsoleto:** Rastreamento por hash de conteÃºdo para invalidaÃ§Ã£o imediata de caches de arquivos modificados.
 
 ### 2. Shark Impact Analysis & Breaking Risk
-- **Mapeamento Prévio de Efeitos Colaterais:** Identificação precisa de símbolos exportados modificados, chamadores diretos e arquivos afetados antes de qualquer edição.
-- **Descoberta Automatizada de Testes Transitivos:** Priorização e execução automática dos testes unitários e de integração pertinentes aos módulos alterados.
+- **Mapeamento PrÃ©vio de Efeitos Colaterais:** IdentificaÃ§Ã£o precisa de sÃ­mbolos exportados modificados, chamadores diretos e arquivos afetados antes de qualquer ediÃ§Ã£o.
+- **Descoberta Automatizada de Testes Transitivos:** PriorizaÃ§Ã£o e execuÃ§Ã£o automÃ¡tica dos testes unitÃ¡rios e de integraÃ§Ã£o pertinentes aos mÃ³dulos alterados.
 
 ### 3. Independent Verification Engine (`@ohms/execution-engine`)
-- **Auditoria em Múltiplas Camadas Independentes:** Verificação rigorosa de Sintaxe, Tipagem Estrita (política zero-any e proibição de `@ts-ignore`), Quality Gates (limite de 350 linhas por arquivo) e Confinamento de Workspace.
-- **Zero Confiança em Auto-Declarações:** O sistema rejeita afirmações verbais de sucesso do executor sem código de saída limpo e evidências empíricas observáveis.
+- **Auditoria em MÃºltiplas Camadas Independentes:** VerificaÃ§Ã£o rigorosa de Sintaxe, Tipagem Estrita (polÃ­tica zero-any e proibiÃ§Ã£o de `@ts-ignore`), Quality Gates (limite de 350 linhas por arquivo) e Confinamento de Workspace.
+- **Zero ConfianÃ§a em Auto-DeclaraÃ§Ãµes:** O sistema rejeita afirmaÃ§Ãµes verbais de sucesso do executor sem cÃ³digo de saÃ­da limpo e evidÃªncias empÃ­ricas observÃ¡veis.
 
 ### 4. Controlled Self-Repair & Transactional FSM
-- **Máquina de Estados Finita Transacional:** FSM formal de 8 estados (`CREATED` -> `INVESTIGATING` -> `PLANNED` -> `EXECUTING` -> `VALIDATING` -> `COMMITTED` / `RECOVERING` / `ABORTED`).
-- **Diagnóstico Categorizado & Limite de Retentativas:** Classificação estruturada de falhas (`SYNTAX_ERROR`, `TYPE_ERROR`, `IMPORT_ERROR`, `TEST_FAILURE`, `SAFETY_VIOLATION`) com teto rígido de retentativas (máximo 3) para impedir loops infinitos e acionar rollback automático em violações de segurança.
+- **MÃ¡quina de Estados Finita Transacional:** FSM formal de 8 estados (`CREATED` -> `INVESTIGATING` -> `PLANNED` -> `EXECUTING` -> `VALIDATING` -> `COMMITTED` / `RECOVERING` / `ABORTED`).
+- **DiagnÃ³stico Categorizado & Limite de Retentativas:** ClassificaÃ§Ã£o estruturada de falhas (`SYNTAX_ERROR`, `TYPE_ERROR`, `IMPORT_ERROR`, `TEST_FAILURE`, `SAFETY_VIOLATION`) com teto rÃ­gido de retentativas (mÃ¡ximo 3) para impedir loops infinitos e acionar rollback automÃ¡tico em violaÃ§Ãµes de seguranÃ§a.
 
 ### 5. Shark Hybrid Retrieval (4-Way Retrieval)
-- **Recuperação Híbrida Quádrupla:** Combinação calibrada de busca Léxica (FTS5 / tokens), Estrutural (AST e símbolos do grafo), Contextual (recência temporal) e Semântica com reranqueamento ponderado e deduplicação.
+- **RecuperaÃ§Ã£o HÃ­brida QuÃ¡drupla:** CombinaÃ§Ã£o calibrada de busca LÃ©xica (FTS5 / tokens), Estrutural (AST e sÃ­mbolos do grafo), Contextual (recÃªncia temporal) e SemÃ¢ntica com reranqueamento ponderado e deduplicaÃ§Ã£o.
 
 ### 6. Shark Benchmark Engine & Performance Lab
-- **Avaliação Objetiva em 13 Métricas:** Avaliação contínua de taxa de sucesso, taxa de regressão, eficiência de tokens, latência de ferramentas, precisão de contexto e velocidade de inicialização.
-- **Índice de Superioridade Mensurável:** Comparação matemática direta contra baselines com geração de relatórios estruturados de vantagens e desvantagens.
+- **AvaliaÃ§Ã£o Objetiva em 13 MÃ©tricas:** AvaliaÃ§Ã£o contÃ­nua de taxa de sucesso, taxa de regressÃ£o, eficiÃªncia de tokens, latÃªncia de ferramentas, precisÃ£o de contexto e velocidade de inicializaÃ§Ã£o.
+- **Ã�ndice de Superioridade MensurÃ¡vel:** ComparaÃ§Ã£o matemÃ¡tica direta contra baselines com geraÃ§Ã£o de relatÃ³rios estruturados de vantagens e desvantagens.
 
-### 7. Governança de Agentes Baseada em Competências (`AGENTS.md`)
-- **Roster Otimizado:** Substituição de agentes genéricos pelo `@verification-specialist`, focado em auditoria independente, conformidade contratual e quality gates.
-
----
-
-# OhMyShark v0.0.50 — Hyper-Optimized Autonomous Multi-System Architecture & Unified Desktop Integration
-
-Esta release consolida o OhMyShark (OMSK) como uma plataforma autônoma de alta performance, unificando a integração nativa com o **OMSK Desktop (Tauri 2)**, motor de despacho de ondas e quality gates do **Vibe Coding Toolkit**, sistema reativo da TUI **Deep Sea Cockpit**, motor transacional atômico **TransactionalEditEngine** e base de conhecimento semântica **Mente em Teia (Graphify)**.
+### 7. GovernanÃ§a de Agentes Baseada em CompetÃªncias (`AGENTS.md`)
+- **Roster Otimizado:** SubstituiÃ§Ã£o de agentes genÃ©ricos pelo `@verification-specialist`, focado em auditoria independente, conformidade contratual e quality gates.
 
 ---
 
-## 🌟 Novidades da Versão 0.0.50
+# OhMyShark v0.0.50 â€” Hyper-Optimized Autonomous Multi-System Architecture & Unified Desktop Integration
+
+Esta release consolida o OhMyShark (OMSK) como uma plataforma autÃ´noma de alta performance, unificando a integraÃ§Ã£o nativa com o **OMSK Desktop (Tauri 2)**, motor de despacho de ondas e quality gates do **Vibe Coding Toolkit**, sistema reativo da TUI **Deep Sea Cockpit**, motor transacional atÃ´mico **TransactionalEditEngine** e base de conhecimento semÃ¢ntica **Mente em Teia (Graphify)**.
+
+---
+
+## ðŸŒŸ Novidades da VersÃ£o 0.0.50
 
 ### 1. OMSK Desktop Nativo via Tauri 2 (`apps/desktop`)
-- **Adaptador OmskEngine de Primeira Classe:** Backend nativo em Rust (`src-tauri/src/engine/omsk.rs`) com comunicação via stdio NDJSON (`--mode rpc-ui` para turnos interativos e `--mode acp` para sessões de plano transacional).
-- **Pureza CLI e Zero Overhead:** O comando `omsk desktop` encapsula o lançamento seguro do GUI mantendo os caminhos da CLI 100% headless e livres de acoplamento legado.
-- **Localização Completa em Português (pt-BR):** Suporte nativo completo a strings e fluxos de trabalho em pt-BR.
+- **Adaptador OmskEngine de Primeira Classe:** Backend nativo em Rust (`src-tauri/src/engine/omsk.rs`) com comunicaÃ§Ã£o via stdio NDJSON (`--mode rpc-ui` para turnos interativos e `--mode acp` para sessÃµes de plano transacional).
+- **Pureza CLI e Zero Overhead:** O comando `omsk desktop` encapsula o lanÃ§amento seguro do GUI mantendo os caminhos da CLI 100% headless e livres de acoplamento legado.
+- **LocalizaÃ§Ã£o Completa em PortuguÃªs (pt-BR):** Suporte nativo completo a strings e fluxos de trabalho em pt-BR.
 
-### 2. Vibe Coding Toolkit Wave Engine & Catálogo Duplo
-- **Despacho em Ondas Paralelas Aclíclicas (Part C):** Particionamento inteligente de tarefas em conjuntos estritamente disjuntos de arquivos com commits serializados.
-- **Quality Gate Estrito de 350 Linhas:** Verificação automatizada de tamanho de arquivos para evitar acúmulo de complexidade e funções monolíticas.
-- **Catálogo Integrado de 22 Ferramentas e 14 Prompts Canônicos:** Inclui o Prompt 13 (Auditoria Diferencial de Segurança) e resolução instantânea das ferramentas do harness (`edit`, `read`, `write`, `bash`).
+### 2. Vibe Coding Toolkit Wave Engine & CatÃ¡logo Duplo
+- **Despacho em Ondas Paralelas AclÃ­clicas (Part C):** Particionamento inteligente de tarefas em conjuntos estritamente disjuntos de arquivos com commits serializados.
+- **Quality Gate Estrito de 350 Linhas:** VerificaÃ§Ã£o automatizada de tamanho de arquivos para evitar acÃºmulo de complexidade e funÃ§Ãµes monolÃ­ticas.
+- **CatÃ¡logo Integrado de 22 Ferramentas e 14 Prompts CanÃ´nicos:** Inclui o Prompt 13 (Auditoria Diferencial de SeguranÃ§a) e resoluÃ§Ã£o instantÃ¢nea das ferramentas do harness (`edit`, `read`, `write`, `bash`).
 
-### 3. Deep Sea Cockpit TUI Reativa & Otimização de Tokens
-- **Artwork Canônico do Tubarão em 17 Linhas:** ASCII shark autêntico (stackedlol/ascii-sharks) com degradê ciano-oceano para azul-abissal.
-- **Layout Responsivo Adaptativo:** Adaptação perfeita desde terminais ultra-compactos (20 colunas) até telas ultrawide (115+ colunas).
-- **Contrato DEEPSEANEURON:** Otimização dinâmica de tokens sem perda de sinal ou qualidade em raciocínios analíticos profundos.
+### 3. Deep Sea Cockpit TUI Reativa & OtimizaÃ§Ã£o de Tokens
+- **Artwork CanÃ´nico do TubarÃ£o em 17 Linhas:** ASCII shark autÃªntico (stackedlol/ascii-sharks) com degradÃª ciano-oceano para azul-abissal.
+- **Layout Responsivo Adaptativo:** AdaptaÃ§Ã£o perfeita desde terminais ultra-compactos (20 colunas) atÃ© telas ultrawide (115+ colunas).
+- **Contrato DEEPSEANEURON:** OtimizaÃ§Ã£o dinÃ¢mica de tokens sem perda de sinal ou qualidade em raciocÃ­nios analÃ­ticos profundos.
 
-### 4. TransactionalEditEngine com Resiliência EBUSY
-- **Checkpoints Transacionais Multi-Arquivo:** Rastreamento atômico de arquivos alterados com hash SHA-256 antes e depois das mutações.
-- **Escrita Atômica com Swap Files:** Mitigação de conflitos de lock EBUSY no Windows e garantia de reversão bit-a-bit limpa.
-- **Confinamento Rígido de Workspace:** Proteção ativa contra travessia de diretórios (path traversal).
+### 4. TransactionalEditEngine com ResiliÃªncia EBUSY
+- **Checkpoints Transacionais Multi-Arquivo:** Rastreamento atÃ´mico de arquivos alterados com hash SHA-256 antes e depois das mutaÃ§Ãµes.
+- **Escrita AtÃ´mica com Swap Files:** MitigaÃ§Ã£o de conflitos de lock EBUSY no Windows e garantia de reversÃ£o bit-a-bit limpa.
+- **Confinamento RÃ­gido de Workspace:** ProteÃ§Ã£o ativa contra travessia de diretÃ³rios (path traversal).
 
 ### 5. Mente em Teia SQLite (Grafo de Conhecimento Graphify)
-- **Relacionamentos Semânticos Bidirecionais:** Mapeamento de nós, arestas e dependências com indexação de busca textual completa FTS5.
-- **Travessia de Subgrafos Multi-Hop Aclíclicos:** Recuperação rápida de contexto e histórico de decisões com rastreamento auditável de invalidações.
+- **Relacionamentos SemÃ¢nticos Bidirecionais:** Mapeamento de nÃ³s, arestas e dependÃªncias com indexaÃ§Ã£o de busca textual completa FTS5.
+- **Travessia de Subgrafos Multi-Hop AclÃ­clicos:** RecuperaÃ§Ã£o rÃ¡pida de contexto e histÃ³rico de decisÃµes com rastreamento auditÃ¡vel de invalidaÃ§Ãµes.
 
 ---
 
-# OhMyShark v0.0.49 — Root Providers, Shared Database & Universal Knowledge Hub
+# OhMyShark v0.0.49 â€” Root Providers, Shared Database & Universal Knowledge Hub
 
-Esta release introduz a centralização e exportação universal dos subsistemas de **Provedores de IA**, **Autenticação/Login**, **Banco de Dados SQLite Compartilhado** e **Base de Conhecimento Relacional (Mente em Teia)** na raiz do projeto, permitindo consumo simultâneo e seguro por múltiplos sistemas, agentes e linguagens externas sem qualquer perda de performance ou degradação na conexão com os modelos.
+Esta release introduz a centralizaÃ§Ã£o e exportaÃ§Ã£o universal dos subsistemas de **Provedores de IA**, **AutenticaÃ§Ã£o/Login**, **Banco de Dados SQLite Compartilhado** e **Base de Conhecimento Relacional (Mente em Teia)** na raiz do projeto, permitindo consumo simultÃ¢neo e seguro por mÃºltiplos sistemas, agentes e linguagens externas sem qualquer perda de performance ou degradaÃ§Ã£o na conexÃ£o com os modelos.
 
 ---
 
-## 🌟 Novidades da Versão 0.0.49
+## ðŸŒŸ Novidades da VersÃ£o 0.0.49
 
 ### 1. Sistema de Provedores e Login na Raiz do Projeto (`OmskSharedProviders`)
-- **Persistência Local e Centralizada:** Credenciais salvas no banco de dados SQLite local da raiz em `.omsk/agent.db`.
-- **Sincronização Bidirecional Transparente:** Importação automática das credenciais globais existentes (`~/.omsk/agent/agent.db`) no primeiro boot e sincronização mútua ao salvar novas credenciais.
-- **Snapshot Interoperável (`.omsk/providers.json`):** Exportação atômica em formato JSON padronizado para leitura instantânea por sistemas em qualquer linguagem (Python, Go, Rust, Java, scripts bash) sem necessidade de dependências SQLite.
-- **Isolamento e Zero Overhead:** Conexões otimizadas com SQLite nativo, `PRAGMA journal_mode = WAL;`, `synchronous = NORMAL;` e `busy_timeout = 5000;`, eliminando contenção entre múltiplos processos.
+- **PersistÃªncia Local e Centralizada:** Credenciais salvas no banco de dados SQLite local da raiz em `.omsk/agent.db`.
+- **SincronizaÃ§Ã£o Bidirecional Transparente:** ImportaÃ§Ã£o automÃ¡tica das credenciais globais existentes (`~/.omsk/agent/agent.db`) no primeiro boot e sincronizaÃ§Ã£o mÃºtua ao salvar novas credenciais.
+- **Snapshot InteroperÃ¡vel (`.omsk/providers.json`):** ExportaÃ§Ã£o atÃ´mica em formato JSON padronizado para leitura instantÃ¢nea por sistemas em qualquer linguagem (Python, Go, Rust, Java, scripts bash) sem necessidade de dependÃªncias SQLite.
+- **Isolamento e Zero Overhead:** ConexÃµes otimizadas com SQLite nativo, `PRAGMA journal_mode = WAL;`, `synchronous = NORMAL;` e `busy_timeout = 5000;`, eliminando contenÃ§Ã£o entre mÃºltiplos processos.
 
 ### 2. Base de Dados e Conhecimento Relacional Compartilhada (`OmskSharedKnowledge` & `OmskSharedDatabase`)
-- **Acesso Direto à Engine Mente em Teia:** Gestão de nós, arestas, decisões arquiteturais (`recordDecision`), fatos técnicos (`recordFact`), evidências (`recordEvidence`) e grafos relacionais.
-- **Busca Léxica FTS5 / Trigramas:** Pesquisa ultrarrápida na base de conhecimento com ranqueamento léxico e navegação em subgrafos multi-hop (`getMultiHopSubgraph`).
-- **Conexão SQLite Unificada de Alta Performance:** Suporte a queries parametrizadas tipadas, comandos DDL/DML e transações atômicas seguras para leituras e escritas concorrentes.
+- **Acesso Direto Ã  Engine Mente em Teia:** GestÃ£o de nÃ³s, arestas, decisÃµes arquiteturais (`recordDecision`), fatos tÃ©cnicos (`recordFact`), evidÃªncias (`recordEvidence`) e grafos relacionais.
+- **Busca LÃ©xica FTS5 / Trigramas:** Pesquisa ultrarrÃ¡pida na base de conhecimento com ranqueamento lÃ©xico e navegaÃ§Ã£o em subgrafos multi-hop (`getMultiHopSubgraph`).
+- **ConexÃ£o SQLite Unificada de Alta Performance:** Suporte a queries parametrizadas tipadas, comandos DDL/DML e transaÃ§Ãµes atÃ´micas seguras para leituras e escritas concorrentes.
 
 ### 3. Ecossistema de Consumo Universal na Raiz
 - **SDK TypeScript Raiz:** Exportado diretamente no ponto de entrada `./index.ts` e configurado no `package.json` (`ohmyshark`, `./providers`, `./database`, `./knowledge`, `./hub`).
 - **CLI Dedicado na Raiz (`bun run hub`):** Comandos diretos para `status`, `providers`, `models`, `login`, `knowledge`, `record-decision` e `export`.
-- **Servidor HTTP REST Embutido (`bun run hub:serve [porta]`):** Endpoints REST leves (`/api/status`, `/api/providers`, `/api/knowledge`, `/api/database/query`) com CORS habilitado para integração instantânea com microserviços e ferramentas externas.
+- **Servidor HTTP REST Embutido (`bun run hub:serve [porta]`):** Endpoints REST leves (`/api/status`, `/api/providers`, `/api/knowledge`, `/api/database/query`) com CORS habilitado para integraÃ§Ã£o instantÃ¢nea com microserviÃ§os e ferramentas externas.
 
 ---
 
 
-# OhMyShark v0.0.48 — Architectural Independence & 5 Core Pillars
+# OhMyShark v0.0.48 â€” Architectural Independence & 5 Core Pillars
 
-Esta release marca o salto definitivo do OhMyShark (omsk/ohms) para uma plataforma de engenharia autônoma, extensível e 100% terminal-first, estabelecendo arquitetura autoral própria sobre os 5 pilares estruturais e 15 princípios inegociáveis de engenharia.
+Esta release marca o salto definitivo do OhMyShark (omsk/ohms) para uma plataforma de engenharia autÃ´noma, extensÃ­vel e 100% terminal-first, estabelecendo arquitetura autoral prÃ³pria sobre os 5 pilares estruturais e 15 princÃ­pios inegociÃ¡veis de engenharia.
 
 ---
 
-## 🏛️ Os 5 Pilares Arquiteturais Implementados
+## ðŸ�›ï¸� Os 5 Pilares Arquiteturais Implementados
 
 ### 1. Shark Kernel (`@ohms/kernel`)
-- **Arquitetura Hexagonal:** Desacoplamento estrito entre núcleo e interfaces (TUI, CLI, ACP).
+- **Arquitetura Hexagonal:** Desacoplamento estrito entre nÃºcleo e interfaces (TUI, CLI, ACP).
 - **Typed Event Bus:** Barramento reativo tipado para telemetria (`session.started`, `task.planned`, `tool.discovered`, `file.changed`, etc.).
-- **Isolamento de Falhas:** Erros em listeners de terceiros não derrubam o fluxo principal de execução.
-- **Segurança Baseada em Capacidades:** Matriz de permissões categorizadas por nível de risco (`low`, `medium`, `high`, `critical`).
+- **Isolamento de Falhas:** Erros em listeners de terceiros nÃ£o derrubam o fluxo principal de execuÃ§Ã£o.
+- **SeguranÃ§a Baseada em Capacidades:** Matriz de permissÃµes categorizadas por nÃ­vel de risco (`low`, `medium`, `high`, `critical`).
 
 ### 2. Project Intelligence (`@ohms/project-intelligence`)
-- **Grafo de Símbolos e Dependências:** Mapeamento bidirecional de arquivos, funções, rotas, tipos e testes associados.
-- **Indexação Incremental com SHA-256:** Cache instantâneo de conteúdo; arquivos inalterados não são re-processados.
-- **Shark Impact Analysis (`/impact`):** Cálculo preventivo de raio de impacto, chamadores afetados, suites de teste a executar e análise de quebra de contrato público.
+- **Grafo de SÃ­mbolos e DependÃªncias:** Mapeamento bidirecional de arquivos, funÃ§Ãµes, rotas, tipos e testes associados.
+- **IndexaÃ§Ã£o Incremental com SHA-256:** Cache instantÃ¢neo de conteÃºdo; arquivos inalterados nÃ£o sÃ£o re-processados.
+- **Shark Impact Analysis (`/impact`):** CÃ¡lculo preventivo de raio de impacto, chamadores afetados, suites de teste a executar e anÃ¡lise de quebra de contrato pÃºblico.
 
 ### 3. Universal Capability Ecosystem (`@ohms/capability-registry`)
-- **Ingestão Universal:** Suporte nativo e unificado para Agent Skills (`SKILL.md`), Model Context Protocol (MCP), Plugins e Builtins.
-- **Ciclo de Vida de 6 Estágios:** `DISCOVERY` ➔ `IDENTIFICATION` ➔ `INSPECTION` ➔ `COMPATIBILITY` ➔ `AUTHORIZATION` ➔ `ACTIVATION`.
-- **Security Sandbox:** Bloqueio ativo de path traversal (`../`) fora do workspace e redação automática de credenciais e chaves de API em saídas e logs.
+- **IngestÃ£o Universal:** Suporte nativo e unificado para Agent Skills (`SKILL.md`), Model Context Protocol (MCP), Plugins e Builtins.
+- **Ciclo de Vida de 6 EstÃ¡gios:** `DISCOVERY` âž” `IDENTIFICATION` âž” `INSPECTION` âž” `COMPATIBILITY` âž” `AUTHORIZATION` âž” `ACTIVATION`.
+- **Security Sandbox:** Bloqueio ativo de path traversal (`../`) fora do workspace e redaÃ§Ã£o automÃ¡tica de credenciais e chaves de API em saÃ­das e logs.
 
 ### 4. Transactional Execution Engine (`@ohms/execution-engine`)
-- **Máquina de Estados Finitos (FSM):** Transições determinísticas `CREATED` ➔ `INVESTIGATING` ➔ `PLANNED` ➔ `EXECUTING` ➔ `VALIDATING` ➔ `COMMITTED` com contingências `RECOVERING` e `WAITING_FOR_APPROVAL`.
-- **Checkpoints Atômicos:** Snapshots de arquivos com hash SHA-256 e rollback seletivo por arquivo.
-- **Detecção de Conflitos Externos:** Verificação de drift em modificações concorrentes no disco.
+- **MÃ¡quina de Estados Finitos (FSM):** TransiÃ§Ãµes determinÃ­sticas `CREATED` âž” `INVESTIGATING` âž” `PLANNED` âž” `EXECUTING` âž” `VALIDATING` âž” `COMMITTED` com contingÃªncias `RECOVERING` e `WAITING_FOR_APPROVAL`.
+- **Checkpoints AtÃ´micos:** Snapshots de arquivos com hash SHA-256 e rollback seletivo por arquivo.
+- **DetecÃ§Ã£o de Conflitos Externos:** VerificaÃ§Ã£o de drift em modificaÃ§Ãµes concorrentes no disco.
 
 ### 5. Modular TUI Layout Engine (`@ohms/terminal-layout`)
 - **Layout Adaptativo Responsivo:** Presets modulares (`command-center`, `developer`, `research`, `minimal`) com auto-collapse em terminais estreitos (<80 colunas).
-- **Engine de Temas:** 6 temas integrados (`shark-ocean`, `deep-abyss`, `arctic`, `amber-terminal`, `retro-green`, `high-contrast`) com degradação graciosa de TrueColor para 256 cores e ANSI 16 cores.
-- **Painéis Extensíveis:** Permite que extensões registrem visualizações customizadas na TUI.
+- **Engine de Temas:** 6 temas integrados (`shark-ocean`, `deep-abyss`, `arctic`, `amber-terminal`, `retro-green`, `high-contrast`) com degradaÃ§Ã£o graciosa de TrueColor para 256 cores e ANSI 16 cores.
+- **PainÃ©is ExtensÃ­veis:** Permite que extensÃµes registrem visualizaÃ§Ãµes customizadas na TUI.
 
 ---
 
-## 🧪 Qualidade e Cobertura TDD
+## ðŸ§ª Qualidade e Cobertura TDD
 
-- **30 Testes TDD Automatizados:** 5 testes para cada pilar arquitetural + testes de integração de slash commands.
-- **Tempo de Execução:** Menos de 2 segundos no Bun v1.4.2 com zero falhas e zero dependências circulares.
-- **Comandos no Terminal:** `/shark`, `/impact <alvo>` e `/capabilities [busca]` disponíveis nativamente.
+- **30 Testes TDD Automatizados:** 5 testes para cada pilar arquitetural + testes de integraÃ§Ã£o de slash commands.
+- **Tempo de ExecuÃ§Ã£o:** Menos de 2 segundos no Bun v1.4.2 com zero falhas e zero dependÃªncias circulares.
+- **Comandos no Terminal:** `/shark`, `/impact <alvo>` e `/capabilities [busca]` disponÃ­veis nativamente.
 
 ---
 
-## 📦 Assets Oficiais da Release (19 arquivos)
+## ðŸ“¦ Assets Oficiais da Release (19 arquivos)
 
 Todos os assets foram compilados e verificados com SHA-256:
-- Binários Windows: `omsk-windows-x64.exe`, `ohms-windows-x64.exe`, `CosmoSky-windows-x64.exe`, `omsk-windows-arm64.exe`, `ohms-windows-arm64.exe`
-- Binários Linux: `omsk-linux-x64`, `ohms-linux-x64`, `omsk-linux-arm64`, `ohms-linux-arm64`
-- Binários macOS: `omsk-darwin-x64`, `ohms-darwin-x64`, `omsk-darwin-arm64`, `ohms-darwin-arm64`
+- BinÃ¡rios Windows: `omsk-windows-x64.exe`, `ohms-windows-x64.exe`, `CosmoSky-windows-x64.exe`, `omsk-windows-arm64.exe`, `ohms-windows-arm64.exe`
+- BinÃ¡rios Linux: `omsk-linux-x64`, `ohms-linux-x64`, `omsk-linux-arm64`, `ohms-linux-arm64`
+- BinÃ¡rios macOS: `omsk-darwin-x64`, `ohms-darwin-x64`, `omsk-darwin-arm64`, `ohms-darwin-arm64`
 - Instaladores e Configs: `install.ps1`, `install.sh`, `ohmyshark.config.yml`, `ohmyshark.models.yml`, `LICENSE`, `THIRD-PARTY-NOTICES.txt`, `SHA256SUMS.txt`

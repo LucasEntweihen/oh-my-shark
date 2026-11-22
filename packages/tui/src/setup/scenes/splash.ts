@@ -10,21 +10,25 @@ import type { NativeNode } from "../../native/node";
 export const SETUP_SPLASH_MS = 2600;
 export const SETUP_TICK_MS = 33;
 
-/** Brand mark at 2x: every glyph doubled horizontally, every row doubled vertically. */
-const LARGE_LOGO = PI_LOGO.flatMap(line => {
-	let wide = "";
-	for (const char of line) {
-		wide += char === " " ? "  " : `${char}${char}`;
-	}
-	return [wide, wide];
-});
+/** Brand mark at full shark resolution (58x17), or doubled only for compact glyphs. */
+const BASE_LOGO_WIDTH = Math.max(...PI_LOGO.map(line => visibleWidth(line)));
+const LARGE_LOGO: readonly string[] =
+	BASE_LOGO_WIDTH >= 32
+		? [...PI_LOGO]
+		: PI_LOGO.flatMap(line => {
+				let wide = "";
+				for (const char of line) {
+					wide += char === " " ? "  " : `${char}${char}`;
+				}
+				return [wide, wide];
+			});
 const LOGO_WIDTH = Math.max(...LARGE_LOGO.map(line => visibleWidth(line)));
 const LOGO_HEIGHT = LARGE_LOGO.length;
 const RESET = "\x1b[0m";
 
 /** Full scene needs comfortable room; below this we drop to a centered mark. */
-const MIN_SCENE_WIDTH = 56;
-const MIN_SCENE_HEIGHT = 22;
+const MIN_SCENE_WIDTH = Math.max(56, LOGO_WIDTH + 2);
+const MIN_SCENE_HEIGHT = Math.max(22, LOGO_HEIGHT + 5);
 
 /** Skip affordance; built at render time so it follows the live symbol preset. */
 function skipHint(): string {
