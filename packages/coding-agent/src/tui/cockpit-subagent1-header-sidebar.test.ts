@@ -1,49 +1,43 @@
 import { describe, expect, it } from "bun:test";
-import {
-	DeepSeaCockpit,
-	type LspStatusItem,
-	type SessionHistoryItem,
-	stripAnsi,
-} from "./deep-sea-command";
+import { DeepSeaCockpit, type LspStatusItem, type SessionHistoryItem, stripAnsi } from "./deep-sea-command";
 
 describe("Subagent 1: Header & Sidebar Engine", () => {
-	it("TDD 1.1: should render top header with brand, version, title, model, provider, and clock", () => {
+	it("TDD 1.1: should omit removed top header bar and expose real model/provider/version in sidebar", () => {
 		const cockpit = new DeepSeaCockpit({
-			version: "0.0.45",
+			version: "0.1.3",
 			modelName: "gemini-2.5-pro",
 			providerName: "Google",
 		});
 
 		const headerLines = cockpit.renderHeader(120);
-		expect(headerLines.length).toBeGreaterThanOrEqual(1);
+		expect(headerLines).toEqual([]);
 
-		const headerText = stripAnsi(headerLines.join("\n"));
-		expect(headerText).toContain("Oh My Shark");
-		expect(headerText).toContain("v0.0.45");
-		expect(headerText).toContain("Deep Sea Cockpit");
-		expect(headerText).toContain("gemini-2.5-pro");
-		expect(headerText).toContain("Google");
-		// Check connection status dot
-		expect(headerText).toContain("●");
+		const sidebarText = stripAnsi(cockpit.renderSidebar(40, 25).join("\n"));
+		expect(sidebarText).toContain("Oh My Shark");
+		expect(sidebarText).toContain("v0.1.3");
+		expect(sidebarText).toContain("gemini-2.5-pro");
+		expect(sidebarText).toContain("Google");
+		expect(sidebarText).toContain("●");
 	});
 
-	it("TDD 1.2: should render sidebar with pixel shark mark, OMSK wordmark, and tagline", () => {
-		const cockpit = new DeepSeaCockpit();
+	it("TDD 1.2: should render sidebar with pixel shark mark, OMSK wordmark, and live workspace telemetry", () => {
+		const cockpit = new DeepSeaCockpit({ workspaceName: "oh-my-shark", gitBranch: "main" });
 		const sidebarLines = cockpit.renderSidebar(28, 25);
 		expect(sidebarLines.length).toBeGreaterThanOrEqual(10);
 
 		const sidebarText = stripAnsi(sidebarLines.join("\n"));
 		expect(sidebarText).toContain("OMSK");
-		expect(sidebarText).toContain("Code. Plan. Build. Repeat.");
+		expect(sidebarText).toContain("Oh My Shark");
+		expect(sidebarText).toContain("oh-my-shark (main)");
 		// Must include pixel art / shark structure
-		expect(sidebarLines.some(l => l.includes("▄") || l.includes("█") || l.includes("■") || l.includes(";"))).toBe(true);
+		expect(sidebarLines.some(l => l.includes("▄") || l.includes("█") || l.includes("■") || l.includes(";"))).toBe(
+			true,
+		);
 	});
 
 	it("TDD 1.3: should render quick tips in sidebar with [NEW] tag highlighted", () => {
 		const cockpit = new DeepSeaCockpit({
-			quickTips: [
-				"Use [Ctrl+D] to view detailed changes! [NEW]",
-			],
+			quickTips: ["Use [Ctrl+D] to view detailed changes! [NEW]"],
 		});
 
 		const sidebarLines = cockpit.renderSidebar(28, 25);

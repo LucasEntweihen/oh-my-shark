@@ -39,15 +39,16 @@ describe("Builtin Cockpit Slash Commands", () => {
 
 	it("TDD C.2: should render full cockpit view on /cockpit and format help", async () => {
 		let outputText = "";
-		const runtime = createMockRuntime((text) => {
+		const runtime = createMockRuntime(text => {
 			outputText = text;
 		});
 
 		const cmd: ParsedSlashCommand = { name: "cockpit", args: "view", text: "/cockpit view" };
 		const res = await handleCockpitCommand(cmd, runtime);
 		expect(res).toEqual({ consumed: true });
-		expect(outputText).toContain("Deep Sea Cockpit");
+		expect(outputText).toContain("OMSK");
 		expect(outputText).toContain("Oh My Shark");
+		expect(outputText).not.toContain("Task #042");
 
 		const helpText = formatCockpitHelp();
 		expect(helpText).toContain("/cockpit");
@@ -58,7 +59,7 @@ describe("Builtin Cockpit Slash Commands", () => {
 
 	it("TDD C.3: should toggle density to compact, standard, and advanced", async () => {
 		let outputText = "";
-		const runtime = createMockRuntime((text) => {
+		const runtime = createMockRuntime(text => {
 			outputText = text;
 		});
 
@@ -76,7 +77,7 @@ describe("Builtin Cockpit Slash Commands", () => {
 
 	it("TDD C.4: should sync live metrics and execute /diff reporting changes", async () => {
 		let outputText = "";
-		const runtime = createMockRuntime((text) => {
+		const runtime = createMockRuntime(text => {
 			outputText = text;
 		});
 
@@ -86,14 +87,14 @@ describe("Builtin Cockpit Slash Commands", () => {
 		expect(outputText).toContain("Mente em Teia");
 
 		await handleDiffCommand({ name: "diff", args: "", text: "/diff" }, runtime);
-		expect(outputText).toContain("[Ctrl+D] Live Diff & Changes Monitor");
+		expect(outputText).toContain("Live Diff & Changes Monitor");
 		expect(outputText).toContain("Total adicionado:");
 		expect(outputText).toContain("Total removido:");
 	});
 
 	it("TDD C.5: should execute /tasks and /events reporting active mission and event stream", async () => {
 		let outputText = "";
-		const runtime = createMockRuntime((text) => {
+		const runtime = createMockRuntime(text => {
 			outputText = text;
 		});
 
@@ -109,7 +110,7 @@ describe("Builtin Cockpit Slash Commands", () => {
 	it("TDD C.6: should handle configuration subcommands: density, sidebar, config, layout, reset", async () => {
 		let outputText = "";
 		const settingsMap = new Map<string, unknown>();
-		const runtime = createMockRuntime((text) => {
+		const runtime = createMockRuntime(text => {
 			outputText = text;
 		});
 		runtime.settings = {
@@ -140,7 +141,10 @@ describe("Builtin Cockpit Slash Commands", () => {
 		expect(outputText).toContain("cockpit.sidebar");
 
 		// /cockpit config showTips false
-		await handleCockpitCommand({ name: "cockpit", args: "config showTips false", text: "/cockpit config showTips false" }, runtime);
+		await handleCockpitCommand(
+			{ name: "cockpit", args: "config showTips false", text: "/cockpit config showTips false" },
+			runtime,
+		);
 		expect(outputText).toContain("showTips = false");
 		expect(settingsMap.get("cockpit.showTips")).toBe(false);
 

@@ -2,6 +2,8 @@
  * Built-in Slash Commands for Deep Sea Cockpit, Live Diffs, Tasks, and Events in Oh My Shark (OMSK).
  * Implements /cockpit, /diff, /tasks, and /events slash commands with live runtime integration.
  */
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { PRODUCT_VERSION } from "@oh-my-pi/pi-utils";
 import { getTransactionalEditEngine } from "../edit/transactional-engine";
 import { getMenteEmTeiaStore } from "../memories/mente-em-teia-sqlite";
@@ -25,6 +27,7 @@ import type {
 
 export const COCKPIT_SUBCOMMANDS: SubcommandDef[] = [
 	{ name: "view", description: "Display the full Deep Sea Cockpit dashboard" },
+	{ name: "cycle", description: "Cycle Cockpit density between Compact, Standard, and Advanced" },
 	{ name: "compact", description: "Switch Cockpit density to Compact (single line status)" },
 	{ name: "standard", description: "Switch Cockpit density to Standard (cards & summary)" },
 	{ name: "advanced", description: "Switch Cockpit density to Advanced (full event stream)" },
@@ -47,6 +50,7 @@ export function formatCockpitHelp(): string {
 		"",
 		"Subcommands:",
 		"  view                    Display full dashboard (default)",
+		"  cycle                   Cycle density: compact -> standard -> advanced",
 		"  density <mode>          Set density: auto | compact | standard | advanced",
 		"  sidebar <mode>          Set sidebar: auto | visible | collapsed | hidden",
 		"  config [key] [val]      View or update Cockpit configuration",
@@ -55,30 +59,30 @@ export function formatCockpitHelp(): string {
 		"  compact                 Quick switch to Compact density",
 		"  standard                Quick switch to Standard density",
 		"  advanced                Quick switch to Advanced density",
-		"  sync                    Sync with live EditEngine, Mente em Teia, and LSP",
+		"  sync                    Sync with live EditEngine, Git workspace, Mente em Teia, and LSP",
 		"  events [count]          Display live event stream & provenance",
 		"  help                    Show this help message",
 		"",
 		"Related commands:",
-		"  /diff                   Show transactional changes and detailed diff",
+		"  /diff                   Show live workspace/transactional diffs",
 		"  /tasks                  Show mission tasks and progress",
 		"  /events                 Show live event stream and provenance",
-		"",
-		"Shortcuts in Cockpit:",
-		"  Ctrl+P                  Commands palette",
-		"  Ctrl+J                  Active mission tasks",
-		"  Ctrl+D                  Live diffs monitor",
-		"  Ctrl+L                  Live event stream",
 	].join("\n");
 }
 
 function persistSettingSafe(settings: Settings | undefined, id: string, value: unknown): void {
-	if (!settings || typeof settings.writeValue !== "function") return;
+	if (!settings) return;
 	const setting = lookupSetting(id);
-	if (!setting) return;
 	try {
-		setting.assertWritable(value);
-		setting.set(settings, value as never);
+		if (setting && typeof settings.writeValue === "function") {
+			setting.assertWritable(value);
+			setting.set(settings, value as never);
+			return;
+		}
+		const fallbackSettings = settings as { set?: (key: string, val: unknown) => void };
+		if (typeof fallbackSettings.set === "function") {
+			fallbackSettings.set(id, value);
+		}
 	} catch {
 		// Non-blocking: ignore invalid setting persistence while keeping live cockpit updated
 	}
@@ -91,9 +95,14 @@ export async function handleCockpitCommand(
 	const cwd = runtime.cwd;
 	const cockpit = getDeepSeaCockpit({
 		version: PRODUCT_VERSION,
-		modelName: runtime.session.model?.id ?? "gemini-2.5-pro",
-		providerName: runtime.session.model?.provider ?? "Google",
-		workspaceName: cwd,
+		modelName: runtime.session.model?.id ?? "Not configured",
+		providerName: runtime.session.model?.provider ?? "",
+		workspaceName: path.basename(cwd) || cwd,
+	});
+	cockpit.updateMetadata({
+		version: PRODUCT_VERSION,
+		modelName: runtime.session.model?.id ?? "Not configured",
+		providerName: runtime.session.model?.provider ?? "",
 	});
 
 	// Sync live data from Edit Engine
@@ -104,21 +113,35 @@ export async function handleCockpitCommand(
 		// Non-blocking fallback
 	}
 
-	// Sync live data from Mente em Teia
+	const sub = parseSubcommand(parsed.args);
+	const action = sub.verb || "view";
+
+	// Sync live data from Git workspace (force only for view/sync so rapid settings toggles stay instant)
+	cockpit.syncFromWorkspaceGit(cwd, action === "view" || action === "sync");
+
+	// Sync live data from Mente em Teia only if initialized for this workspace
 	try {
-		const teiaStore = getMenteEmTeiaStore();
-		cockpit.syncFromMenteEmTeia(teiaStore);
+		if (fs.existsSync(path.join(cwd, ".omsk", "teia.db"))) {
+			const teiaStore = getMenteEmTeiaStore();
+			cockpit.syncFromMenteEmTeia(teiaStore);
+		}
 	} catch {
 		// Non-blocking fallback
 	}
 
-	const sub = parseSubcommand(parsed.args);
-	const action = sub.verb || "view";
-
 	switch (action) {
+		case "cycle": {
+			const next = cockpit.cycleDensity();
+			persistSettingSafe(runtime.settings, "cockpit.density", next);
+			runtime.ctx?.syncCockpit?.();
+			const rendered = cockpit.render(100).join("\n");
+			await runtime.output(`✅ Densidade do Cockpit alternada para ${next}:\n\n${rendered}`);
+			return commandConsumed();
+		}
 		case "compact": {
 			cockpit.setDensity("compact");
 			persistSettingSafe(runtime.settings, "cockpit.density", "compact");
+			runtime.ctx?.syncCockpit?.();
 			const rendered = cockpit.render(100).join("\n");
 			await runtime.output(`✅ Densidade do Cockpit alterada para Compact:\n\n${rendered}`);
 			return commandConsumed();
@@ -126,6 +149,7 @@ export async function handleCockpitCommand(
 		case "standard": {
 			cockpit.setDensity("standard");
 			persistSettingSafe(runtime.settings, "cockpit.density", "standard");
+			runtime.ctx?.syncCockpit?.();
 			const rendered = cockpit.render(100).join("\n");
 			await runtime.output(`✅ Densidade do Cockpit alterada para Standard:\n\n${rendered}`);
 			return commandConsumed();
@@ -133,6 +157,7 @@ export async function handleCockpitCommand(
 		case "advanced": {
 			cockpit.setDensity("advanced");
 			persistSettingSafe(runtime.settings, "cockpit.density", "advanced");
+			runtime.ctx?.syncCockpit?.();
 			const rendered = cockpit.render(100).join("\n");
 			await runtime.output(`✅ Densidade do Cockpit alterada para Advanced:\n\n${rendered}`);
 			return commandConsumed();
@@ -142,6 +167,7 @@ export async function handleCockpitCommand(
 			if (mode === "auto" || mode === "compact" || mode === "standard" || mode === "advanced") {
 				cockpit.setDensity(mode as CockpitDensityMode);
 				persistSettingSafe(runtime.settings, "cockpit.density", mode);
+				runtime.ctx?.syncCockpit?.();
 				const rendered = cockpit.render(100).join("\n");
 				await runtime.output(`✅ Densidade do Cockpit configurada para ${mode.toUpperCase()}:\n\n${rendered}`);
 			} else {
@@ -157,6 +183,7 @@ export async function handleCockpitCommand(
 			if (mode === "auto" || mode === "visible" || mode === "collapsed" || mode === "hidden") {
 				cockpit.setSidebar(mode as CockpitSidebarMode);
 				persistSettingSafe(runtime.settings, "cockpit.sidebar", mode);
+				runtime.ctx?.syncCockpit?.();
 				await runtime.output(`✅ Modo da barra lateral configurado para ${mode.toUpperCase()} com sucesso!`);
 			} else {
 				const current = cockpit.getConfig().sidebar;
@@ -261,11 +288,18 @@ export async function handleDiffCommand(
 	try {
 		const txEngine = getTransactionalEditEngine(cwd);
 		await cockpit.syncFromEditEngine(txEngine);
-		const summary = await txEngine.getChangesSummary();
+		cockpit.syncFromWorkspaceGit(cwd, true);
 		const detailed = await txEngine.getDetailedDiff();
+		const summary = detailed.length > 0 ? await txEngine.getChangesSummary() : cockpit.getChanges();
+		const files =
+			detailed.length > 0
+				? detailed.map(file => `  • ${file.path} (+${file.linesAdded} / -${file.linesRemoved}) [${file.status}]`)
+				: cockpit
+						.getRecentFiles()
+						.map(file => `  • ${file.path} (+${file.linesAdded} / -${file.linesRemoved}) [git]`);
 
 		const lines: string[] = [
-			"🔮 [Ctrl+D] Live Diff & Changes Monitor:",
+			"🔮 Live Diff & Changes Monitor:",
 			`Total adicionado: +${summary.totalAdded} linhas`,
 			`Total removido:   -${summary.totalRemoved} linhas`,
 			`Arquivos modificados: ${summary.modifiedCount}`,
@@ -273,13 +307,10 @@ export async function handleDiffCommand(
 			"",
 		];
 
-		if (detailed.length === 0) {
+		if (files.length === 0) {
 			lines.push("Nenhuma alteração pendente no workspace (workspace limpo).");
 		} else {
-			lines.push("Arquivos modificados:");
-			for (const file of detailed) {
-				lines.push(`  • ${file.path} (+${file.linesAdded} / -${file.linesRemoved}) [${file.status}]`);
-			}
+			lines.push("Arquivos modificados:", ...files);
 		}
 
 		await runtime.output(lines.join("\n"));

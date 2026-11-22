@@ -1,15 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { visibleWidth, truncateToWidth } from "@oh-my-pi/pi-tui";
-import { padToWidth } from "../packages/coding-agent/src/tui/utils";
-import {
-	DeepSeaCockpit,
-	type CockpitEventItem,
-} from "../packages/coding-agent/src/tui/deep-sea-command";
-import {
-	SHARK_LOGO,
-	REST_FRAME,
-	SHARK_WIDTH,
-} from "../packages/coding-agent/src/modes/components/shark-logo";
+import { DeepSeaCockpit, padToWidth, type CockpitEventItem } from "../packages/coding-agent/src/tui/deep-sea-command";
+import { SHARK_LOGO, REST_FRAME, SHARK_WIDTH } from "../packages/coding-agent/src/modes/components/shark-logo";
 describe("Subagent 2 TDD: Deep Sea Cockpit TUI Reactive System", () => {
 	it("initializes cockpit with default metrics and status", () => {
 		const cockpit = new DeepSeaCockpit();
@@ -26,7 +18,7 @@ describe("Subagent 2 TDD: Deep Sea Cockpit TUI Reactive System", () => {
 		const cockpit = new DeepSeaCockpit();
 		const eventsReceived: CockpitEventItem[] = [];
 
-		const unsubscribe = cockpit.onEvent((ev) => {
+		const unsubscribe = cockpit.onEvent(ev => {
 			eventsReceived.push(ev);
 		});
 

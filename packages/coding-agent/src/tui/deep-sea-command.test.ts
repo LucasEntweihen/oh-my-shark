@@ -72,7 +72,7 @@ describe("DeepSeaCockpit", () => {
 		const cockpit = new DeepSeaCockpit();
 		const received: string[] = [];
 
-		const unsubscribe = cockpit.onEvent((ev) => {
+		const unsubscribe = cockpit.onEvent(ev => {
 			received.push(`${ev.type}:${ev.label}`);
 		});
 
@@ -137,8 +137,8 @@ describe("DeepSeaCockpit", () => {
 		});
 
 		const shortcuts = cockpit.listShortcuts();
-		expect(shortcuts.some((s) => s.key === "Ctrl+P")).toBe(true);
-		expect(shortcuts.some((s) => s.key === "Ctrl+D")).toBe(true);
+		expect(shortcuts.some(s => s.key === "Ctrl+P")).toBe(true);
+		expect(shortcuts.some(s => s.key === "Ctrl+D")).toBe(true);
 
 		const triggered1 = cockpit.triggerShortcut("Ctrl+P");
 		expect(triggered1).toBe(true);
@@ -220,5 +220,40 @@ describe("DeepSeaCockpit", () => {
 		expect(events[0].type).toBe("test");
 		expect(events[0].detail).toBe("FAILED");
 		expect(events[1].detail).toBe("PASSED");
+	});
+
+	it("TDD 7: should expose 100% real non-mocked defaults, cycleDensity, and syncFromTodos", () => {
+		const cockpit = new DeepSeaCockpit();
+		expect(cockpit.renderHeader(120)).toEqual([]);
+		expect(cockpit.renderTopTitleBar(120)).toEqual([]);
+
+		const full = cockpit.renderFullCockpit(120, 35).join("\n");
+		expect(full).not.toContain("Task #042");
+		expect(full).not.toContain("Refactor authentication flow");
+		expect(full).not.toContain("auth.service.ts");
+		expect(full).not.toContain("Use JWT");
+		expect(full).not.toContain("commandcode");
+
+		cockpit.syncFromTodos(
+			[
+				{
+					name: "Execution",
+					tasks: [
+						{ content: "Wire git sync", status: "completed" },
+						{ content: "Verify release", status: "in_progress" },
+					],
+				},
+			],
+			"Release 0.1.3",
+		);
+		expect(cockpit.getMission().title).toBe("Release 0.1.3");
+		expect(cockpit.getMission().progressPercent).toBe(50);
+		expect(cockpit.getAgentStatus().completedSteps).toBe(1);
+		expect(cockpit.getAgentStatus().totalSteps).toBe(2);
+
+		const d1 = cockpit.cycleDensity();
+		const d2 = cockpit.cycleDensity();
+		const d3 = cockpit.cycleDensity();
+		expect(new Set([d1, d2, d3]).size).toBe(3);
 	});
 });

@@ -2,6 +2,7 @@
  * Interactive mode for the coding agent.
  * Handles TUI rendering and user interaction, delegating business logic to AgentSession.
  */
+import { existsSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { type Agent, AgentBusyError, type AgentMessage, agentPauseGate, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
@@ -124,7 +125,10 @@ import { rescopeSessionToCwd } from "../session/cwd-rescope";
 import { copyLocalArtifacts, resolveLocalRoot } from "../internal-urls";
 import { hasNativeJudge } from "../judgment";
 import { LSP_STARTUP_EVENT_CHANNEL, type LspStartupEvent } from "../lsp/startup-events";
-import { registerWelcomeCockpitRenderer } from "../tui/deep-sea-command";
+import { getTransactionalEditEngine } from "../edit/transactional-engine";
+import { getMenteEmTeiaStore } from "../memories/mente-em-teia-sqlite";
+import { getRecentSessions } from "../session/session-listing";
+import { getDeepSeaCockpit, registerWelcomeCockpitRenderer } from "../tui/deep-sea-command";
 import type { MCPManager } from "../mcp";
 import {
 	formatMCPConnectionStatusMessage,
@@ -2769,11 +2773,21 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.composer.setPreferences({ quiet: startupQuiet, tuiLayout: cfgTuiLayout.get(this.settings) ?? "cockpit" });
 		this.composer.updateWelcome({
 			version: this.#version,
-			modelName: this.session.model?.name ?? "Unknown",
-			providerName: this.session.model?.provider ?? "Unknown",
+			modelName: this.session.model?.name ?? "Not configured",
+			providerName: this.session.model?.provider ?? "",
 			lspServers: this.#getWelcomeLspServers(),
 			layoutMode: cfgTuiLayout.get(this.settings) ?? "cockpit",
 		});
+		this.syncCockpit();
+		const sessionDir = this.sessionManager?.getSessionDir?.();
+		if (sessionDir) {
+			void getRecentSessions(sessionDir, 4)
+				.then(sessions => {
+					getDeepSeaCockpit().setRecentSessions(sessions);
+					this.composer.updateWelcome({ recentSessions: sessions });
+				})
+				.catch(() => {});
+		}
 		this.#syncHeaderExtras();
 		this.statusLine.watchBranch(() => this.ui.requestRender());
 		this.composer.setStatusComponent(this.statusLine);
@@ -5819,6 +5833,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.#todoPhasesOwner = source;
 		this.#syncTodoHudState(source);
 		this.#renderTodoList();
+		this.syncCockpit();
 	}
 
 	async #getPlanFilePath(): Promise<string> {
@@ -9176,13 +9191,50 @@ export class InteractiveMode implements InteractiveModeContext {
 	}
 
 	#updateWelcomeModel(): void {
-		const modelName = this.session.model?.name ?? "Unknown";
-		const providerName = this.session.model?.provider ?? "Unknown";
+		const modelName = this.session.model?.name ?? "Not configured";
+		const providerName = this.session.model?.provider ?? "";
 		this.composer.updateWelcome({ modelName, providerName });
+		this.syncCockpit();
 	}
 
 	#updateWelcomeLspServers(): void {
 		this.composer.updateWelcome({ lspServers: this.#getWelcomeLspServers() });
+		this.syncCockpit();
+	}
+
+	syncCockpit(): void {
+		const cockpit = getDeepSeaCockpit();
+		const cwd = this.sessionManager?.getCwd?.() ?? process.cwd();
+		cockpit.updateMetadata({
+			version: this.#version,
+			modelName: this.session.model?.name ?? "Not configured",
+			providerName: this.session.model?.provider ?? "",
+			lspServers: this.#getWelcomeLspServers().map(server => ({
+				name: server.name,
+				language: server.fileTypes[0] ?? "Code",
+				status: server.status,
+			})),
+		});
+		cockpit.syncFromWorkspaceGit(cwd);
+		cockpit.syncFromTodos(this.todoPhases);
+		try {
+			if (existsSync(path.join(cwd, ".omsk", "teia.db"))) {
+				cockpit.syncFromMenteEmTeia(getMenteEmTeiaStore());
+			}
+		} catch {
+			// Skip memory graph sync when store is unavailable
+		}
+		this.composer.updateWelcome({});
+		try {
+			void cockpit
+				.syncFromEditEngine(getTransactionalEditEngine(cwd))
+				.then(() => {
+					this.composer.updateWelcome({});
+				})
+				.catch(() => {});
+		} catch {
+			// Non-blocking fallback
+		}
 	}
 
 	#syncHeaderExtras(): void {
@@ -10253,6 +10305,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		this.#todoPhasesOwner = this.viewSession;
 		this.#syncTodoHudState(this.viewSession);
 		this.#renderTodoList();
+		this.syncCockpit();
 		this.ui.requestRender();
 	}
 

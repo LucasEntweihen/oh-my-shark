@@ -1197,6 +1197,7 @@ export class Composer implements TerminalFrameProvider, NativeSurfaceProvider {
 		if (update.recentSessions !== undefined) welcome.setRecentSessions(this.#recentSessions);
 		if (update.lspServers !== undefined) welcome.setLspServers(this.#lspServers);
 		if (update.layoutMode !== undefined) welcome.setLayoutMode(this.#layoutMode);
+		welcome.invalidate();
 		this.ui.requestRender();
 	}
 

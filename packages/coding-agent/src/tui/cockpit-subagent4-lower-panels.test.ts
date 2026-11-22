@@ -1,10 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import {
-	DeepSeaCockpit,
-	type MemoryGraphData,
-	type RecentFileItem,
-	stripAnsi,
-} from "./deep-sea-command";
+import { DeepSeaCockpit, type MemoryGraphData, type RecentFileItem, stripAnsi } from "./deep-sea-command";
 
 describe("Subagent 4: Lower Panels & Shortcuts Engine", () => {
 	it("TDD 4.1: should render horizontal shortcut bar and dispatch actions", () => {
@@ -18,10 +13,10 @@ describe("Subagent 4: Lower Panels & Shortcuts Engine", () => {
 		expect(barLines.length).toBeGreaterThanOrEqual(1);
 
 		const text = stripAnsi(barLines.join("\n"));
-		expect(text).toContain("[Ctrl+P] Commands");
-		expect(text).toContain("[Ctrl+J] Tasks");
-		expect(text).toContain("[Ctrl+D] Diff");
-		expect(text).toContain("[Ctrl+L] Events");
+		expect(text).toContain("[/diff] Changes");
+		expect(text).toContain("[/tasks] Tasks");
+		expect(text).toContain("[/events] Events");
+		expect(text).toContain("[/cockpit cycle] Density");
 
 		cockpit.triggerShortcut("Ctrl+D");
 		expect(triggered).toBe(true);

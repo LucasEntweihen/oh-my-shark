@@ -60,6 +60,8 @@ import { SpeechEnhancer } from "../../tts/speech-enhancer";
 import { vocalizer } from "../../tts/vocalizer";
 import { canonicalizeMessage } from "@oh-my-pi/pi-tui/chat/thinking-display";
 import { type RunFlowStatus, setRunStatus } from "../../utils/run-status";
+import { getDeepSeaCockpit } from "../../tui/deep-sea-command";
+import { getTransactionalEditEngine } from "../../edit/transactional-engine";
 import {
 	assistantMessageLinkTargets,
 	createAssistantMessageComponent,
@@ -226,6 +228,8 @@ export class EventController {
 	#lastIntent: string | undefined = undefined;
 	/** Returned calls parked for their background job's frames ({@link parksAsBackground}). */
 	#backgroundCallIds = new Set<string>();
+	/** File paths recorded at tool_execution_start for live cockpit edit telemetry. */
+	#activeToolPaths = new Map<string, string>();
 	/**
 	 * A job's settled frame ({@link isSettledJobFrame}) that landed while its
 	 * call was still executing, keyed by call id: a fast job can settle before
@@ -1256,6 +1260,7 @@ export class EventController {
 		this.#orphanedToolCompletions.clear();
 		this.#postToolAssistantComponents.clear();
 		this.#toolReplyBlocks.clear();
+		this.#activeToolPaths.clear();
 		this.#lastIntent = undefined;
 		// Something outside woke the run: the row stops naming the wait and
 		// follows this loop's intents again.
@@ -1291,6 +1296,10 @@ export class EventController {
 		this.#runActive = true;
 		this.#syncComposerActivity();
 		setRunStatus({ state: "working" });
+		const cockpit = getDeepSeaCockpit();
+		cockpit.setAgentStatus("Working...");
+		cockpit.emitEvent({ type: "tool", label: "Agent turn started" });
+		this.ctx.syncCockpit?.();
 		this.ctx.ui.requestRender();
 	}
 
@@ -2093,6 +2102,12 @@ export class EventController {
 		this.#updateWorkingMessageFromIntent(event.intent);
 		const tool = this.ctx.viewSession.getToolByName(event.toolName);
 		const renderToolName = toolRenderName(event.toolName, tool);
+		if (isRecord(event.args) && typeof event.args.path === "string") {
+			this.#activeToolPaths.set(event.toolCallId, event.args.path);
+		}
+		const cockpit = getDeepSeaCockpit();
+		cockpit.setAgentStatus(`Running ${renderToolName}`);
+		cockpit.emitEvent({ type: "tool", label: `Tool: ${renderToolName}` });
 		this.#resolveDisplaceablePoll(renderToolName);
 		if (!this.ctx.pendingTools.has(event.toolCallId) && !this.#toolTimelineComponents.has(event.toolCallId)) {
 			const stale = this.#priorTurnToolComponents.get(event.toolCallId);
@@ -2356,6 +2371,20 @@ export class EventController {
 			}
 		}
 		if (syntheticFailureCard) this.#syntheticFailureCards.set(event.toolCallId, syntheticFailureCard);
+		const cockpit = getDeepSeaCockpit();
+		const cwd = this.ctx.sessionManager?.getCwd?.() ?? process.cwd();
+		const targetPath = this.#activeToolPaths.get(event.toolCallId);
+		this.#activeToolPaths.delete(event.toolCallId);
+		if (event.isError) {
+			cockpit.emitEvent({ type: "error", label: `Tool failed: ${event.toolName}` });
+		} else if (event.toolName === "edit" || event.toolName === "write") {
+			cockpit.emitEvent({ type: "edit", label: `Modified ${event.toolName}`, detail: targetPath });
+			void cockpit.syncFromEditEngine(getTransactionalEditEngine(cwd)).catch(() => {});
+		} else if (event.toolName === "bash") {
+			cockpit.emitEvent({ type: "tool", label: "Completed bash" });
+		}
+		cockpit.syncFromWorkspaceGit(cwd, true);
+		this.ctx.syncCockpit?.();
 		if (event.toolName === "todo" && !event.isError) {
 			const details = event.result.details as { op?: string; phases?: TodoPhase[] } | undefined;
 			if (details?.op !== "view" && details?.phases) this.ctx.setTodos(details.phases);
@@ -2557,6 +2586,13 @@ export class EventController {
 		}
 		this.#runActive = false;
 		this.#syncComposerActivity();
+		const cockpit = getDeepSeaCockpit();
+		cockpit.setAgentStatus(options?.interrupted ? "Interrupted" : "Ready");
+		cockpit.emitEvent({
+			type: options?.interrupted ? "error" : "checkpoint",
+			label: options?.interrupted ? "Agent turn interrupted" : "Agent turn ready",
+		});
+		this.ctx.syncCockpit?.();
 		await this.ctx.flushPendingModelSwitch();
 		this.#sealAbandonedForegroundTools();
 		this.#readToolCallArgs.clear();

@@ -1,8 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import {
-	DeepSeaCockpit,
-	stripAnsi,
-} from "./deep-sea-command";
+import { DeepSeaCockpit, stripAnsi } from "./deep-sea-command";
 
 describe("Subagent 5: Runtime Status, Layout & System Integration Engine", () => {
 	it("TDD 5.1: should render bottom status bar with agent state, steps, progress bar, and shortcuts", () => {
@@ -19,7 +16,7 @@ describe("Subagent 5: Runtime Status, Layout & System Integration Engine", () =>
 		const text = stripAnsi(statusLines.join("\n"));
 		expect(text).toContain("Agent: Working...");
 		expect(text).toContain("3/4 steps completed");
-		expect(text).toContain("Ctrl+C to cancel");
+		expect(text).toContain("Advanced");
 		expect(text).toContain("help");
 	});
 
@@ -123,7 +120,9 @@ describe("Subagent 5: Runtime Status, Layout & System Integration Engine", () =>
 
 		const fullText = stripAnsi(fullLines.join("\n"));
 		expect(fullText).toContain("Oh My Shark");
-		expect(fullText).toContain("Deep Sea Cockpit");
+		expect(fullText).toContain("gemini-2.5-pro");
+		expect(fullText).not.toContain("Task #042");
+		expect(fullText).not.toContain("Provider:");
 		expect(fullText).toContain("OMSK");
 		expect(fullText).toContain("Mission");
 		expect(fullText).toContain("Changes");

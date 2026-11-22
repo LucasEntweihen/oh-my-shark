@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { DeepSeaCockpit, stripAnsi } from "./deep-sea-command";
 
 describe("Subagent 2: Cards & Density Engine", () => {
-	it("TDD 2.1: should render Top Title Bar with task ID and active density highlighted", () => {
+	it("TDD 2.1: should omit removed Top Title Bar line and surface active density in status bar", () => {
 		const cockpit = new DeepSeaCockpit({
 			density: "advanced",
 			mission: {
@@ -14,14 +14,10 @@ describe("Subagent 2: Cards & Density Engine", () => {
 		});
 
 		const titleBarLines = cockpit.renderTopTitleBar(100);
-		expect(titleBarLines.length).toBeGreaterThanOrEqual(1);
+		expect(titleBarLines).toEqual([]);
 
-		const text = stripAnsi(titleBarLines.join("\n"));
-		expect(text).toContain("Deep Sea Cockpit");
-		expect(text).toContain("Task #042");
-		expect(text).toContain("Compact");
-		expect(text).toContain("Standard");
-		expect(text).toContain("Advanced");
+		const statusText = stripAnsi(cockpit.renderBottomStatus(100).join("\n"));
+		expect(statusText).toContain("Advanced");
 	});
 
 	it("TDD 2.2: should render Mission card with title, phase, percentage, and horizontal progress bar", () => {

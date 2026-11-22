@@ -48,10 +48,11 @@ describe("TUI Cockpit Layout as Standard Configuration", () => {
 		expect(sidebarText).toContain("XSSS8SSX%XX8#");
 		expect(sidebarText).toContain("OMSK");
 
-		// Render full cockpit
+		// Render full cockpit (without removed header / Task #042 title lines)
 		const fullCockpit = cockpit.renderFullCockpit(120, 35);
 		const fullText = stripAnsi(fullCockpit.join("\n"));
-		expect(fullText).toContain("Deep Sea Cockpit");
+		expect(fullText).toContain("Oh My Shark");
+		expect(fullText).not.toContain("Task #042");
 		expect(fullText).toContain(";;t");
 		expect(fullText).toContain("OMSK");
 		expect(fullText).toContain("Mission");
@@ -75,7 +76,8 @@ describe("TUI Cockpit Layout as Standard Configuration", () => {
 		cockpit.setDensity("advanced");
 		expect(cockpit.getDensity()).toBe("advanced");
 		const advancedText = stripAnsi(cockpit.render(120).join("\n"));
-		expect(advancedText).toContain("Deep Sea Cockpit");
+		expect(advancedText).toContain("DEEP SEA COMMAND");
+		expect(advancedText).toContain("LIVE EVENT STREAM");
 	});
 
 	it("should have all cockpit.* settings properly defined in settings registry", () => {
@@ -127,9 +129,10 @@ describe("TUI Cockpit Layout as Standard Configuration", () => {
 		const mid = cockpit.renderFullCockpit(90);
 		expect(mid.length).toBeGreaterThan(0);
 		const midText = stripAnsi(mid.join("\n"));
-		expect(midText).toContain("Deep Sea Cockpit");
+		expect(midText).toContain("OMSK");
+		expect(midText).toContain("Mission");
 
-		// Wide (120 cols) - full authentic ASCII shark and 3 columns
+		// Wide (120 cols) - full authentic ASCII shark and columns
 		const wide = cockpit.renderFullCockpit(120);
 		expect(wide.length).toBeGreaterThan(0);
 		const wideText = stripAnsi(wide.join("\n"));
@@ -144,7 +147,8 @@ describe("TUI Cockpit Layout as Standard Configuration", () => {
 		cockpit.setSidebar("hidden");
 		const hiddenLines = cockpit.renderFullCockpit(120);
 		const hiddenText = stripAnsi(hiddenLines.join("\n"));
-		expect(hiddenText).toContain("Deep Sea Cockpit");
+		expect(hiddenText).toContain("Mission");
+		expect(hiddenText).toContain("Memory Graph");
 		// Should not have the left sidebar divider column
 		expect(cockpit.resolveSidebarWidth(120).show).toBe(false);
 

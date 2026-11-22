@@ -10,11 +10,14 @@
  * - Adaptive rendering from 20 columns up to ultra-wide displays
  * - 100% Pure TypeScript string & ANSI calculation for complete cross-platform portability.
  */
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { setWelcomeCockpitRenderer } from "@oh-my-pi/pi-tui/prompt/welcome";
 import { PRODUCT_VERSION } from "@oh-my-pi/pi-utils";
 import { truncateToWidth } from "@oh-my-pi/pi-tui";
 import { REST_FRAME } from "../modes/components/shark-logo";
 import type { ChangesSummary, FileChangeDiff } from "../edit/transactional-engine";
+import { getMenteEmTeiaStore } from "../memories/mente-em-teia-sqlite";
 import type { OrchestratorRun } from "../orchestrator/types";
 import { lookup as lookupSetting } from "../config/registry";
 import { settings } from "../config/settings";
@@ -137,6 +140,7 @@ export interface DeepSeaCockpitOptions {
 	passedChecks?: number;
 	totalChecks?: number;
 	recentEvents?: CockpitEventItem[];
+	gitBranch?: string;
 	quickTips?: string[];
 	recentSessions?: SessionHistoryItem[];
 	lspServers?: LspStatusItem[];
@@ -159,7 +163,7 @@ export function visibleWidth(text: string): number {
 	return stripAnsi(text).length;
 }
 
-function padToWidth(text: string, targetWidth: number): string {
+export function padToWidth(text: string, targetWidth: number): string {
 	const w = visibleWidth(text);
 	if (w >= targetWidth) return truncateToWidth(text, targetWidth);
 	return text + " ".repeat(targetWidth - w);
@@ -187,9 +191,12 @@ export class DeepSeaCockpit {
 	private density: CockpitDensity;
 	private config: CockpitConfig;
 	private workspaceName: string;
+	private gitBranch: string;
 	private version: string;
 	private modelName: string;
 	private providerName: string;
+	private lastGitSyncAt = 0;
+	private lastGitSyncCwd = "";
 	private mission: ActiveMissionInfo;
 	private changes: ChangesSummary;
 	private passedChecks: number;
@@ -237,78 +244,39 @@ export class DeepSeaCockpit {
 		} else {
 			this.density = "advanced";
 		}
-		this.workspaceName = options.workspaceName ?? "OMSK Workspace";
+		this.workspaceName = options.workspaceName ?? (path.basename(process.cwd()) || "workspace");
+		this.gitBranch = options.gitBranch ?? "";
 		this.version = options.version ?? PRODUCT_VERSION;
-		this.modelName = options.modelName ?? "gemini-2.5-pro";
-		this.providerName = options.providerName ?? "Google";
+		this.modelName = options.modelName ?? "Not configured";
+		this.providerName = options.providerName ?? "";
 		this.mission = options.mission ?? {
-			id: "042",
-			title: "Refactor authentication flow",
-			phase: "Phase 2 · Active",
-			progressPercent: 68,
+			id: "idle",
+			title: "Ready for instructions",
+			phase: "Idle",
+			progressPercent: 0,
 			startTime: Date.now(),
 			status: "active",
 		};
 		this.changes = options.changes ?? {
-			totalAdded: 142,
-			totalRemoved: 37,
-			modifiedCount: 3,
-			checkpointsCount: 1,
+			totalAdded: 0,
+			totalRemoved: 0,
+			modifiedCount: 0,
+			checkpointsCount: 0,
 		};
 		this.passedChecks = options.passedChecks ?? 0;
 		this.totalChecks = options.totalChecks ?? 0;
 		this.events = options.recentEvents ? [...options.recentEvents] : [];
 		this.quickTips = options.quickTips
 			? [...options.quickTips]
-			: ["Use [Ctrl+D] to view detailed changes! [NEW]", "Deep Sea Cockpit tracks tasks & diffs live."];
-		this.recentSessions = options.recentSessions
-			? [...options.recentSessions]
-			: [
-					{ name: "refactor-auth", timeAgo: "2h ago", active: true },
-					{ name: "fix-memory-leak", timeAgo: "3h ago" },
-					{ name: "add-tests", timeAgo: "1d ago" },
-					{ name: "update-docs", timeAgo: "1d ago" },
-				];
-		this.lspServers = options.lspServers
-			? [...options.lspServers]
-			: [
-					{ name: "tsserver", language: "TypeScript", status: "ready" },
-					{ name: "pyright", language: "Python", status: "ready" },
-					{ name: "rust-analyzer", language: "Rust", status: "ready" },
-				];
-		this.activitySteps = options.activitySteps
-			? [...options.activitySteps]
-			: [
-					{ label: "Analyze code", status: "completed" },
-					{ label: "Apply changes", status: "completed" },
-					{ label: "Run tests...", status: "active" },
-					{ label: "Finalize", status: "pending" },
-				];
-		this.recentFiles = options.recentFiles
-			? [...options.recentFiles]
-			: [
-					{ path: "auth.service.ts", linesAdded: 42, linesRemoved: 12 },
-					{ path: "auth.controller.ts", linesAdded: 28, linesRemoved: 8 },
-					{ path: "auth.spec.ts", linesAdded: 72, linesRemoved: 17 },
-				];
-		this.memoryGraph = options.memoryGraph ?? {
-			nodes: [
-				{ id: "1", label: "auth.service.ts", kind: "file" },
-				{ id: "2", label: "AuthFlow", kind: "symbol" },
-				{ id: "3", label: "Tests", kind: "test" },
-				{ id: "4", label: "Security", kind: "decision" },
-				{ id: "5", label: "Decision: Use JWT", kind: "decision" },
-			],
-			edges: [
-				{ source: "1", target: "2" },
-				{ source: "3", target: "2" },
-				{ source: "4", target: "2" },
-				{ source: "5", target: "2" },
-			],
-		};
-		this.agentStatus = options.agentStatus ?? "Working...";
-		this.completedSteps = options.completedSteps ?? 3;
-		this.totalSteps = options.totalSteps ?? 4;
+			: ["Run /diff, /tasks, /events or /cockpit cycle", "Real-time workspace, git & memory telemetry"];
+		this.recentSessions = options.recentSessions ? [...options.recentSessions] : [];
+		this.lspServers = options.lspServers ? [...options.lspServers] : [];
+		this.activitySteps = options.activitySteps ? [...options.activitySteps] : [];
+		this.recentFiles = options.recentFiles ? [...options.recentFiles] : [];
+		this.memoryGraph = options.memoryGraph ?? { nodes: [], edges: [] };
+		this.agentStatus = options.agentStatus ?? "Ready";
+		this.completedSteps = options.completedSteps ?? 0;
+		this.totalSteps = options.totalSteps ?? 0;
 
 		if (options.progressPercent !== undefined) {
 			this.mission.progressPercent = options.progressPercent;
@@ -342,6 +310,24 @@ export class DeepSeaCockpit {
 			this.density = density;
 			this.config.density = density;
 		}
+	}
+
+	public cycleDensity(): CockpitDensity {
+		const order: CockpitDensity[] = ["compact", "standard", "advanced"];
+		const idx = order.indexOf(this.density);
+		const next = order[(idx + 1) % order.length];
+		this.setDensity(next);
+		this.emitEvent({
+			type: "tool",
+			label: "Cockpit density",
+			detail: next,
+		});
+		return next;
+	}
+
+	public setWorkspaceInfo(workspaceName: string, gitBranch?: string): void {
+		if (workspaceName.length > 0) this.workspaceName = workspaceName;
+		if (gitBranch !== undefined) this.gitBranch = gitBranch;
 	}
 
 	public setSidebar(sidebar: CockpitSidebarMode): void {
@@ -594,6 +580,169 @@ export class DeepSeaCockpit {
 		if (options.lspServers !== undefined) this.lspServers = [...options.lspServers];
 	}
 
+	public syncFromWorkspaceGit(cwd: string = process.cwd(), force: boolean = false): void {
+		const now = Date.now();
+		if (!force && this.lastGitSyncCwd === cwd && now - this.lastGitSyncAt < 2000) {
+			return;
+		}
+		this.lastGitSyncCwd = cwd;
+		this.lastGitSyncAt = now;
+		this.workspaceName = path.basename(cwd) || cwd;
+
+		try {
+			const statusProc = Bun.spawnSync(["git", "status", "--porcelain=v1", "-b"], {
+				cwd,
+				stdin: "ignore",
+				stdout: "pipe",
+				stderr: "pipe",
+			});
+			if (statusProc.exitCode !== 0) {
+				this.gitBranch = "";
+				return;
+			}
+
+			const rawLines = statusProc.stdout.toString().split(/\r?\n/);
+			const headerLine = rawLines[0] ?? "";
+			if (headerLine.startsWith("## ")) {
+				const branchSpec = headerLine.slice(3).trim();
+				if (branchSpec.startsWith("No commits yet on ")) {
+					this.gitBranch = branchSpec.slice("No commits yet on ".length).trim();
+				} else if (branchSpec.startsWith("HEAD (no branch)")) {
+					this.gitBranch = "HEAD";
+				} else {
+					const dotIdx = branchSpec.indexOf("...");
+					const spaceIdx = branchSpec.indexOf(" ");
+					const endIdx =
+						dotIdx >= 0 && (spaceIdx < 0 || dotIdx < spaceIdx)
+							? dotIdx
+							: spaceIdx >= 0
+								? spaceIdx
+								: branchSpec.length;
+					this.gitBranch = branchSpec.slice(0, endIdx).trim();
+				}
+			} else {
+				this.gitBranch = "";
+			}
+
+			// Do not clobber active transactional edits with raw working-tree diff
+			if (this.changes.checkpointsCount > 0) {
+				return;
+			}
+
+			let hasTrackedChanges = false;
+			const dirtyPaths = new Set<string>();
+			const filesByPath = new Map<string, RecentFileItem>();
+
+			for (const line of rawLines.slice(1)) {
+				if (line.length < 4) continue;
+				const statusCode = line.slice(0, 2);
+				const filePath = line.slice(3).trim();
+				if (!filePath) continue;
+				dirtyPaths.add(filePath);
+				if (statusCode === "??") {
+					filesByPath.set(filePath, { path: filePath, linesAdded: 0, linesRemoved: 0 });
+				} else {
+					hasTrackedChanges = true;
+				}
+			}
+
+			let totalAdded = 0;
+			let totalRemoved = 0;
+
+			if (hasTrackedChanges) {
+				const numstatProc = Bun.spawnSync(["git", "diff", "--numstat", "HEAD"], {
+					cwd,
+					stdin: "ignore",
+					stdout: "pipe",
+					stderr: "pipe",
+				});
+				if (numstatProc.exitCode === 0) {
+					const raw = numstatProc.stdout.toString();
+					for (const line of raw.split(/\r?\n/)) {
+						if (!line.trim()) continue;
+						const parts = line.split("\t");
+						if (parts.length < 3) continue;
+						const added = parts[0] === "-" ? 0 : Number.parseInt(parts[0], 10) || 0;
+						const removed = parts[1] === "-" ? 0 : Number.parseInt(parts[1], 10) || 0;
+						const filePath = parts.slice(2).join("\t");
+						totalAdded += added;
+						totalRemoved += removed;
+						filesByPath.set(filePath, { path: filePath, linesAdded: added, linesRemoved: removed });
+					}
+				}
+			}
+
+			for (const filePath of dirtyPaths) {
+				if (!filesByPath.has(filePath)) {
+					filesByPath.set(filePath, { path: filePath, linesAdded: 0, linesRemoved: 0 });
+				}
+			}
+
+			this.changes = {
+				totalAdded,
+				totalRemoved,
+				modifiedCount: dirtyPaths.size,
+				checkpointsCount: 0,
+			};
+			this.recentFiles = Array.from(filesByPath.values()).slice(0, 6);
+		} catch {
+			// Git unavailable or directory unreadable; leave clean non-git state
+		}
+	}
+
+	public syncFromTodos(
+		phases: ReadonlyArray<{ name: string; tasks: ReadonlyArray<{ content: string; status: string }> }>,
+		title?: string,
+	): void {
+		const allTasks = phases.flatMap(phase => phase.tasks);
+		if (allTasks.length === 0) {
+			if (this.mission.id === "tasks") {
+				this.mission = {
+					id: "idle",
+					title: "Ready for instructions",
+					phase: "Idle",
+					progressPercent: 0,
+					startTime: this.mission.startTime ?? Date.now(),
+					status: "active",
+				};
+				this.activitySteps = [];
+				this.completedSteps = 0;
+				this.totalSteps = 0;
+			}
+			return;
+		}
+
+		let completed = 0;
+		for (const t of allTasks) {
+			if (t.status === "completed" || t.status === "done") completed++;
+		}
+		const progressPercent = Math.round((completed / allTasks.length) * 100);
+		const activePhase = phases.find(p => p.tasks.some(t => t.status === "in_progress" || t.status === "active"));
+		const currentPhase = activePhase ?? phases.find(p => p.tasks.some(t => t.status === "pending")) ?? phases[0];
+		const activeTask = allTasks.find(t => t.status === "in_progress" || t.status === "active");
+
+		this.mission = {
+			id: "tasks",
+			title: title ?? currentPhase.name,
+			phase: `${phases.length} ${phases.length === 1 ? "phase" : "phases"}`,
+			progressPercent,
+			activeSubtask: activeTask?.content,
+			startTime: this.mission.startTime ?? Date.now(),
+			status: completed === allTasks.length ? "completed" : "active",
+		};
+		this.activitySteps = allTasks.slice(0, 8).map(t => ({
+			label: t.content,
+			status:
+				t.status === "completed" || t.status === "done"
+					? "completed"
+					: t.status === "in_progress" || t.status === "active"
+						? "active"
+						: "pending",
+		}));
+		this.completedSteps = completed;
+		this.totalSteps = allTasks.length;
+	}
+
 	public async syncFromEditEngine(engine: {
 		getChangesSummary(): Promise<ChangesSummary>;
 		getDetailedDiff?(): Promise<FileChangeDiff[]>;
@@ -732,31 +881,8 @@ export class DeepSeaCockpit {
 	// ==========================================
 	// 1. HEADER SUPERIOR
 	// ==========================================
-	public renderHeader(width: number): string[] {
-		const safeWidth = Math.max(20, width);
-		const sharkIcon = style.cyan("🦈 [SHARK]");
-		const brand = `${sharkIcon} ${style.bold(style.white("Oh My Shark"))} ${style.dim(`v${this.version}`)}`;
-		const cockpitTitle = style.cyan(style.bold("Deep Sea Cockpit"));
-
-		const now = new Date();
-		const timeStr = now.toTimeString().split(" ")[0];
-		const statusDot = style.success("●");
-		const rightInfo = `${statusDot} ${style.dim("Model:")} ${style.cyan(this.modelName)} ${style.borderBlue("│")} ${style.dim("Provider:")} ${style.white(this.providerName)} ${style.borderBlue("│")} ${style.dim(timeStr)}`;
-
-		const leftContent = `${brand}   ${cockpitTitle}`;
-		const leftLen = visibleWidth(leftContent);
-		const rightLen = visibleWidth(rightInfo);
-
-		let headerLine = "";
-		if (leftLen + rightLen + 4 <= safeWidth) {
-			const space = " ".repeat(Math.max(1, safeWidth - leftLen - rightLen));
-			headerLine = `${leftContent}${space}${rightInfo}`;
-		} else {
-			headerLine = truncateToWidth(`${brand}  ${cockpitTitle} | ${this.modelName}`, safeWidth);
-		}
-
-		const divider = style.borderBlue("─".repeat(safeWidth));
-		return [headerLine, divider];
+	public renderHeader(_width: number): string[] {
+		return [];
 	}
 
 	// ==========================================
@@ -767,26 +893,31 @@ export class DeepSeaCockpit {
 		const lines: string[] = [];
 
 		// Authentic TUI Shark Logo (stackedlol/ascii-sharks from welcome surface)
-		if (w >= 56) {
+		if (w >= 56 && height >= 32) {
 			for (const line of REST_FRAME) {
 				lines.push(padToWidth(truncateToWidth(line, w), w));
 			}
 		} else {
-			// Compact focal rows of the authentic ASCII shark
+			// Compact focal rows of the authentic ASCII shark so live model, branch, sessions & LSP remain visible
 			for (const line of REST_FRAME.slice(5, 13)) {
 				lines.push(padToWidth(truncateToWidth(line, w), w));
 			}
 		}
 
-		// Wordmark & Tagline
-		lines.push(padToWidth(style.bold(style.cyan("OMSK")), w));
-		lines.push(padToWidth(style.dim("Code. Plan. Build. Repeat."), w));
+		// Wordmark & Real Runtime Telemetry
+		lines.push(padToWidth(`${style.bold(style.cyan("OMSK"))} ${style.dim(`· Oh My Shark v${this.version}`)}`, w));
+		const modelDisplay = this.providerName ? `${this.modelName} · ${this.providerName}` : this.modelName;
+		lines.push(padToWidth(`${style.success("●")} ${truncateToWidth(modelDisplay, Math.max(6, w - 3))}`, w));
+		const workspaceDisplay = this.gitBranch ? `${this.workspaceName} (${this.gitBranch})` : this.workspaceName;
+		lines.push(
+			padToWidth(`${style.cyan("⎇")} ${style.dim(truncateToWidth(workspaceDisplay, Math.max(6, w - 3)))}`, w),
+		);
 		lines.push(padToWidth(style.borderBlue("─".repeat(w - 2)), w));
 
 		// Quick Tips
 		if (this.config.showTips) {
 			lines.push(padToWidth(style.yellow("💡 Quick Tips:"), w));
-			const tip = this.quickTips[0] ?? "Use [Ctrl+D] to view detailed changes! [NEW]";
+			const tip = this.quickTips[0] ?? "Run /diff, /tasks, /events or /cockpit cycle";
 			const tipParts = tip.split(" [NEW]");
 			const tipBody = tipParts[0];
 			const hasNew = tip.includes("[NEW]");
@@ -809,27 +940,35 @@ export class DeepSeaCockpit {
 
 		// Recent Sessions
 		lines.push(padToWidth(style.cyan("🕒 Recent Sessions:"), w));
-		for (const session of this.recentSessions.slice(0, 4)) {
-			const activeIcon = session.active ? style.cyan("⊕") : style.dim("○");
-			const name = truncateToWidth(session.name, Math.max(5, w - 12));
-			const time = style.dim(session.timeAgo);
-			lines.push(padToWidth(`${activeIcon} ${name} ${time}`, w));
+		if (this.recentSessions.length === 0) {
+			lines.push(padToWidth(style.dim("  No recent sessions"), w));
+		} else {
+			for (const session of this.recentSessions.slice(0, 4)) {
+				const activeIcon = session.active ? style.cyan("⊕") : style.dim("○");
+				const name = truncateToWidth(session.name, Math.max(5, w - 12));
+				const time = style.dim(session.timeAgo);
+				lines.push(padToWidth(`${activeIcon} ${name} ${time}`, w));
+			}
 		}
 		lines.push(padToWidth(style.borderBlue("─".repeat(w - 2)), w));
 
 		// LSP Servers
 		lines.push(padToWidth(style.cyan("🧩 LSP Servers:"), w));
-		for (const server of this.lspServers.slice(0, 3)) {
-			const dot =
-				server.status === "ready"
-					? style.success("●")
-					: server.status === "connecting"
-						? style.warning("●")
-						: server.status === "error"
-							? style.error("●")
-							: style.dim("●");
-			const text = `${dot} ${server.name} ${style.dim(`(${server.language})`)}`;
-			lines.push(padToWidth(truncateToWidth(text, w - 2), w));
+		if (this.lspServers.length === 0) {
+			lines.push(padToWidth(style.dim("  No active LSP servers"), w));
+		} else {
+			for (const server of this.lspServers.slice(0, 3)) {
+				const dot =
+					server.status === "ready"
+						? style.success("●")
+						: server.status === "connecting"
+							? style.warning("●")
+							: server.status === "error"
+								? style.error("●")
+								: style.dim("●");
+				const text = `${dot} ${server.name} ${style.dim(`(${server.language})`)}`;
+				lines.push(padToWidth(truncateToWidth(text, w - 2), w));
+			}
 		}
 
 		while (lines.length < height) {
@@ -842,25 +981,8 @@ export class DeepSeaCockpit {
 	// ==========================================
 	// 3. TOP TITLE BAR & DENSITY SELECTOR
 	// ==========================================
-	public renderTopTitleBar(width: number): string[] {
-		const safeWidth = Math.max(20, width);
-		const diamond = style.cyan("◆");
-		const title = `${diamond} ${style.bold(style.cyan("Deep Sea Cockpit"))} ${style.dim("—")} ${style.white(`Task #${this.mission.id}`)}`;
-
-		const compactPill = this.density === "compact" ? style.activePill(" Compact ") : style.dim("Compact");
-		const standardPill = this.density === "standard" ? style.activePill(" Standard ") : style.dim("Standard");
-		const advancedPill = this.density === "advanced" ? style.activePill(" Advanced ") : style.dim("Advanced");
-
-		const densityPills = `${style.borderBlue("╭")} ${compactPill} ${style.borderBlue("│")} ${standardPill} ${style.borderBlue("│")} ${advancedPill} ${style.borderBlue("╯")}`;
-
-		const leftLen = visibleWidth(title);
-		const rightLen = visibleWidth(densityPills);
-
-		if (leftLen + rightLen + 2 <= safeWidth) {
-			const space = " ".repeat(Math.max(1, safeWidth - leftLen - rightLen));
-			return [`${title}${space}${densityPills}`];
-		}
-		return [truncateToWidth(`${title}  [${this.density.toUpperCase()}]`, safeWidth)];
+	public renderTopTitleBar(_width: number): string[] {
+		return [];
 	}
 
 	// ==========================================
@@ -1026,7 +1148,7 @@ export class DeepSeaCockpit {
 	// ==========================================
 	public renderShortcutBar(width: number): string[] {
 		const safeWidth = Math.max(20, width);
-		const shortcuts = [`[Ctrl+P] Commands`, `[Ctrl+J] Tasks`, `[Ctrl+D] Diff`, `[Ctrl+L] Events`];
+		const shortcuts = [`[/diff] Changes`, `[/tasks] Tasks`, `[/events] Events`, `[/cockpit cycle] Density`];
 		const text = shortcuts.map(s => style.cyan(s)).join("   ");
 		const border = style.borderBlue("─".repeat(safeWidth));
 		return [padToWidth(` ${text}`, safeWidth), border];
@@ -1049,15 +1171,26 @@ export class DeepSeaCockpit {
 		];
 
 		const stepRows: string[] = [];
-		for (const step of this.activitySteps.slice(0, 4)) {
-			const icon =
-				step.status === "completed"
-					? style.success("✔")
-					: step.status === "active"
-						? style.blue("▶")
-						: style.dim("○");
-			const label = truncateToWidth(step.label, innerW - 12);
-			stepRows.push(`${icon} ${label}`);
+		if (this.activitySteps.length === 0) {
+			stepRows.push(
+				`${style.success("✔")} ${truncateToWidth(this.agentStatus || "Ready", Math.max(4, innerW - 12))}`,
+			);
+			if (this.gitBranch) {
+				stepRows.push(`${style.cyan("⎇")} ${truncateToWidth(this.gitBranch, Math.max(4, innerW - 12))}`);
+			}
+			const dirtyLabel = `${this.changes.modifiedCount} ${this.changes.modifiedCount === 1 ? "modified file" : "modified files"}`;
+			stepRows.push(`${style.dim("○")} ${truncateToWidth(dirtyLabel, Math.max(4, innerW - 12))}`);
+		} else {
+			for (const step of this.activitySteps.slice(0, 4)) {
+				const icon =
+					step.status === "completed"
+						? style.success("✔")
+						: step.status === "active"
+							? style.blue("▶")
+							: style.dim("○");
+				const label = truncateToWidth(step.label, Math.max(4, innerW - 12));
+				stepRows.push(`${icon} ${label}`);
+			}
 		}
 
 		const rows: string[] = [borderTop, style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │")];
@@ -1080,38 +1213,112 @@ export class DeepSeaCockpit {
 		const borderTop = style.borderBlue(`╭${"─".repeat(w - 2)}╮`);
 		const borderBottom = style.borderBlue(`╰${"─".repeat(w - 2)}╯`);
 
-		const header = style.cyan("Memory Graph");
-		let diagram: string[];
+		const nodeCount = this.memoryGraph.nodes.length;
+		const edgeCount = this.memoryGraph.edges.length;
+		const header = style.cyan(`Memory Graph (${nodeCount}n/${edgeCount}e)`);
+		const diagram: string[] = [];
 
-		if (innerW >= 30) {
-			diagram = [
-				style.dim("     auth.service.ts"),
-				style.borderBlue("            │"),
-				`${style.blue("Tests")} ${style.borderBlue("────")} ${style.cyan(style.bold("AuthFlow"))} ${style.borderBlue("────")} ${style.white("Security")}`,
-				style.borderBlue("            │"),
-				style.yellow("        Decision:"),
-				style.dim("         Use JWT"),
-			];
-		} else if (innerW >= 22) {
-			diagram = [
-				style.dim("   auth.service.ts"),
-				style.borderBlue("          │"),
-				`${style.blue("Tests")} ${style.borderBlue("──")} ${style.cyan(style.bold("AuthFlow"))} ${style.borderBlue("──")} ${style.white("Sec")}`,
-				style.borderBlue("          │"),
-				style.yellow("      Decision:"),
-				style.dim("       Use JWT"),
-			];
+		if (nodeCount === 0) {
+			if (this.recentFiles.length > 0) {
+				const hubLabel = truncateToWidth(this.gitBranch || this.workspaceName, Math.max(8, innerW - 4));
+				diagram.push(style.cyan(style.bold(`◈ ${hubLabel}`)));
+				for (const f of this.recentFiles.slice(0, 2)) {
+					const shortPath = path.basename(f.path);
+					diagram.push(
+						`${style.borderBlue("├─")} ${style.dim(truncateToWidth(shortPath, Math.max(6, innerW - 4)))}`,
+					);
+				}
+				diagram.push(style.dim("No Teia memory nodes yet"));
+			} else {
+				diagram.push(style.dim("No graph nodes indexed yet"));
+				diagram.push(style.dim(`Workspace: ${truncateToWidth(this.workspaceName, Math.max(4, innerW - 11))}`));
+				diagram.push(
+					style.dim(
+						this.gitBranch
+							? `Branch: ${truncateToWidth(this.gitBranch, Math.max(4, innerW - 8))}`
+							: "Teia memory ready",
+					),
+				);
+			}
 		} else {
-			diagram = [
-				style.dim("auth.service.ts"),
-				`${style.blue("Tests")} ${style.borderBlue("→")} ${style.cyan(style.bold("AuthFlow"))}`,
-				style.yellow("Decision: Use JWT"),
-			];
+			const nodeById = new Map<string, MemoryGraphNode>();
+			const degree = new Map<string, number>();
+			for (const node of this.memoryGraph.nodes) {
+				nodeById.set(node.id, node);
+				degree.set(node.id, 0);
+			}
+			for (const edge of this.memoryGraph.edges) {
+				degree.set(edge.source, (degree.get(edge.source) ?? 0) + 1);
+				degree.set(edge.target, (degree.get(edge.target) ?? 0) + 1);
+			}
+			let hub = this.memoryGraph.nodes[0];
+			let bestDeg = degree.get(hub.id) ?? 0;
+			for (const node of this.memoryGraph.nodes) {
+				const d = degree.get(node.id) ?? 0;
+				if (d > bestDeg) {
+					bestDeg = d;
+					hub = node;
+				}
+			}
+
+			const neighborRows: Array<{ label: string; relation?: string }> = [];
+			for (const edge of this.memoryGraph.edges) {
+				if (edge.source === hub.id) {
+					const target = nodeById.get(edge.target);
+					if (target) neighborRows.push({ label: target.label, relation: edge.label });
+				} else if (edge.target === hub.id) {
+					const source = nodeById.get(edge.source);
+					if (source) neighborRows.push({ label: source.label, relation: edge.label });
+				}
+			}
+
+			if (neighborRows.length === 0) {
+				for (const node of this.memoryGraph.nodes) {
+					if (node.id !== hub.id) {
+						neighborRows.push({ label: node.label, relation: node.kind });
+					}
+				}
+			}
+
+			const maxLabel = Math.max(6, Math.floor((innerW - 8) / 2));
+			if (neighborRows.length >= 2 && innerW >= 24) {
+				const top = neighborRows[0];
+				const left = neighborRows[1];
+				const right = neighborRows[2];
+				diagram.push(style.dim(`   ${truncateToWidth(top.label, innerW - 4)}`));
+				diagram.push(style.borderBlue("      │"));
+				if (right) {
+					const leftText = style.blue(truncateToWidth(left.label, maxLabel));
+					const centerText = style.cyan(style.bold(truncateToWidth(hub.label, maxLabel)));
+					const rightText = style.white(truncateToWidth(right.label, maxLabel));
+					diagram.push(
+						`${leftText} ${style.borderBlue("──")} ${centerText} ${style.borderBlue("──")} ${rightText}`,
+					);
+				} else {
+					diagram.push(
+						`${style.blue(truncateToWidth(left.label, maxLabel))} ${style.borderBlue("──")} ${style.cyan(style.bold(truncateToWidth(hub.label, maxLabel)))}`,
+					);
+				}
+				const extra = neighborRows[3];
+				if (extra) {
+					diagram.push(style.borderBlue("      │"));
+					const relPrefix = extra.relation ? `${extra.relation}: ` : "";
+					diagram.push(style.yellow(truncateToWidth(`${relPrefix}${extra.label}`, innerW)));
+				}
+			} else {
+				diagram.push(style.cyan(style.bold(truncateToWidth(hub.label, innerW))));
+				for (const neighbor of neighborRows.slice(0, 4)) {
+					const rel = neighbor.relation ? ` (${neighbor.relation})` : "";
+					diagram.push(
+						`${style.borderBlue("├─")} ${truncateToWidth(`${neighbor.label}${rel}`, Math.max(4, innerW - 3))}`,
+					);
+				}
+			}
 		}
 
 		const rows: string[] = [borderTop, style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │")];
 
-		for (const line of diagram) {
+		for (const line of diagram.slice(0, 6)) {
 			rows.push(style.borderBlue("│ ") + padToWidth(truncateToWidth(line, innerW), innerW) + style.borderBlue(" │"));
 		}
 
@@ -1132,27 +1339,36 @@ export class DeepSeaCockpit {
 		const header = style.cyan("Recent Files");
 		const rows: string[] = [borderTop, style.borderBlue("│ ") + padToWidth(header, innerW) + style.borderBlue(" │")];
 
-		for (const file of this.recentFiles.slice(0, 4)) {
-			const fileIcon = "📄";
-			const diff = `${style.success(`+${file.linesAdded}`)} ${style.error(`-${file.linesRemoved}`)}`;
-			const prefix = ` ${fileIcon} `;
-			const diffLen = visibleWidth(diff);
-			const availForPath = Math.max(4, innerW - diffLen - visibleWidth(prefix) - 1);
-			const rawPath = file.path;
-			let path = rawPath;
-			if (visibleWidth(rawPath) > availForPath) {
-				if (availForPath > 8 && rawPath.includes("/")) {
-					const parts = rawPath.split("/");
-					const filePart = parts[parts.length - 1];
-					path = truncateToWidth(`.../${filePart}`, availForPath);
-				} else {
-					path = truncateToWidth(rawPath, availForPath);
+		if (this.recentFiles.length === 0) {
+			rows.push(
+				style.borderBlue("│ ") + padToWidth(style.dim("Clean working tree"), innerW) + style.borderBlue(" │"),
+			);
+			rows.push(
+				style.borderBlue("│ ") + padToWidth(style.dim("No modified files"), innerW) + style.borderBlue(" │"),
+			);
+		} else {
+			for (const file of this.recentFiles.slice(0, 4)) {
+				const fileIcon = "📄";
+				const diff = `${style.success(`+${file.linesAdded}`)} ${style.error(`-${file.linesRemoved}`)}`;
+				const prefix = ` ${fileIcon} `;
+				const diffLen = visibleWidth(diff);
+				const availForPath = Math.max(4, innerW - diffLen - visibleWidth(prefix) - 1);
+				const rawPath = file.path;
+				let displayPath = rawPath;
+				if (visibleWidth(rawPath) > availForPath) {
+					if (availForPath > 8 && rawPath.includes("/")) {
+						const parts = rawPath.split("/");
+						const filePart = parts[parts.length - 1];
+						displayPath = truncateToWidth(`.../${filePart}`, availForPath);
+					} else {
+						displayPath = truncateToWidth(rawPath, availForPath);
+					}
 				}
+				const spaceCount = Math.max(1, innerW - visibleWidth(`${prefix}${displayPath}`) - diffLen);
+				const spacing = " ".repeat(spaceCount);
+				const fileLine = `${prefix}${displayPath}${spacing}${diff}`;
+				rows.push(style.borderBlue("│") + padToWidth(fileLine, innerW) + style.borderBlue("│"));
 			}
-			const spaceCount = Math.max(1, innerW - visibleWidth(`${prefix}${path}`) - diffLen);
-			const spacing = " ".repeat(spaceCount);
-			const fileLine = `${prefix}${path}${spacing}${diff}`;
-			rows.push(style.borderBlue("│") + padToWidth(fileLine, innerW) + style.borderBlue("│"));
 		}
 
 		while (rows.length < 8) {
@@ -1204,8 +1420,8 @@ export class DeepSeaCockpit {
 		if (activePanels.length >= 2) {
 			const panelsToRender =
 				activePanels.length === 3
-					? safeWidth >= 70
-						? ["progress", "files"]
+					? safeWidth >= 56
+						? ["progress", "memory"]
 						: ["progress"]
 					: activePanels.slice(0, 2);
 
@@ -1254,12 +1470,14 @@ export class DeepSeaCockpit {
 		const stepsText = `${style.dim(`${this.completedSteps}/${this.totalSteps} steps completed`)}`;
 
 		// Bar in center
-		const barBudget = Math.max(6, Math.min(30, Math.floor(safeWidth * 0.3)));
-		const filled = Math.round((this.completedSteps / Math.max(1, this.totalSteps)) * barBudget);
+		const barBudget = Math.max(6, Math.min(26, Math.floor(safeWidth * 0.25)));
+		const filled = this.totalSteps > 0 ? Math.round((this.completedSteps / this.totalSteps) * barBudget) : 0;
 		const empty = Math.max(0, barBudget - filled);
 		const bar = style.cyan("━".repeat(filled)) + style.dim("─".repeat(empty));
 
-		const rightHints = `${style.dim("Ctrl+C to cancel")} ${style.borderBlue("│")} ${style.dim("ⓘ for help")}`;
+		const densityLabel = `${this.density[0].toUpperCase()}${this.density.slice(1)}`;
+		const densityPill = style.activePill(` ${densityLabel} `);
+		const rightHints = `${densityPill} ${style.borderBlue("│")} ${style.dim("/cockpit ? for help")}`;
 
 		const leftContent = `${agentText} ${style.borderBlue("│")} ${stepsText}   ${bar}`;
 		const leftLen = visibleWidth(leftContent);
@@ -1269,7 +1487,7 @@ export class DeepSeaCockpit {
 			const space = " ".repeat(Math.max(1, safeWidth - leftLen - rightLen));
 			return [`${leftContent}${space}${rightHints}`];
 		}
-		return [truncateToWidth(`${agentText} | ${stepsText} | ${rightHints}`, safeWidth)];
+		return [truncateToWidth(`${agentText} | ${stepsText} | [${densityLabel}]`, safeWidth)];
 	}
 
 	// ==========================================
@@ -1295,7 +1513,7 @@ export class DeepSeaCockpit {
 		const sidebarInfo = this.resolveSidebarWidth(width);
 
 		if (!sidebarInfo.show) {
-			const lines: string[] = [...this.renderHeader(width), ...this.renderTopTitleBar(width)];
+			const lines: string[] = [];
 
 			if (width >= 60) {
 				lines.push(...this.renderCardsRow(width));
@@ -1324,11 +1542,10 @@ export class DeepSeaCockpit {
 			return lines;
 		}
 
-		const headerLines = this.renderHeader(width);
 		const sidebarW = sidebarInfo.width;
 		const mainW = Math.max(30, width - sidebarW - 2);
 
-		const mainLines: string[] = [...this.renderTopTitleBar(mainW)];
+		const mainLines: string[] = [];
 
 		if (mainW >= 60) {
 			mainLines.push(...this.renderCardsRow(mainW));
@@ -1364,7 +1581,7 @@ export class DeepSeaCockpit {
 
 		const statusLines = this.renderBottomStatus(width);
 
-		return [...headerLines, ...combinedLines, style.borderBlue("─".repeat(width)), ...statusLines];
+		return [...combinedLines, style.borderBlue("─".repeat(width)), ...statusLines];
 	}
 
 	// ==========================================
@@ -1538,6 +1755,16 @@ export function registerWelcomeCockpitRenderer(): void {
 			});
 		}
 		syncCockpitFromSettings(activeCockpit);
+		const cwd = process.cwd();
+		activeCockpit.syncFromWorkspaceGit(cwd);
+		try {
+			const teiaDbPath = path.join(cwd, ".omsk", "teia.db");
+			if (fs.existsSync(teiaDbPath)) {
+				activeCockpit.syncFromMenteEmTeia(getMenteEmTeiaStore());
+			}
+		} catch {
+			// Skip memory graph sync if store cannot be opened read-only
+		}
 		if (input.layoutMode === "compact") {
 			activeCockpit.setDensity("compact");
 			return activeCockpit.render(input.termWidth);
