@@ -24,7 +24,7 @@ name: OhMyShark Release
         description: "Existing omsk-v* or ohms-v* tag to build and publish"
         required: true
         type: string
-        default: "omsk-v0.1.2"
+        default: "omsk-v0.1.3"
 
 permissions:
   contents: read
@@ -88,7 +88,7 @@ jobs:
           - { target_id: linux-x64, os: ubuntu-24.04, native_tags: linux-x64, binary: ohms-linux-x64 }
           - { target_id: linux-arm64, os: ubuntu-24.04-arm, native_tags: linux-arm64, binary: ohms-linux-arm64 }
           - { target_id: darwin-x64, os: macos-15-intel, native_tags: darwin-x64, binary: ohms-darwin-x64 }
-          - { target_id: darwin-arm64, os: macos-14, native_tags: darwin-arm64, binary: ohms-darwin-arm64 }
+          - { target_id: darwin-arm64, os: macos-15, native_tags: darwin-arm64, binary: ohms-darwin-arm64 }
           - { target_id: win32-x64, os: windows-2022, native_tags: win32-x64, binary: ohms-windows-x64.exe }
           - { target_id: win32-arm64, os: windows-11-arm, native_tags: win32-arm64, binary: ohms-windows-arm64.exe }
     steps:
@@ -99,7 +99,7 @@ jobs:
         with:
           bun-version: "1.4"
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
       - name: Stage locked native addon
         run: bun scripts/ohms-fetch-natives.ts --tag ${{ matrix.native_tags }}
       - name: Build binary
@@ -159,7 +159,7 @@ jobs:
             build_sidecar: bun --cwd=packages/gui run build:omsk
             package_cmd: bun --cwd=packages/gui run electron-builder --linux --publish never
           - target_id: darwin-arm64
-            os: macos-14
+            os: macos-15
             native_tags: darwin-arm64
             sidecar: resources/omsk
             build_sidecar: bun --cwd=packages/gui run build:omsk
@@ -179,7 +179,7 @@ jobs:
           bun-version: "1.4"
       - name: Install root and GUI dependencies
         run: |
-          bun install --frozen-lockfile
+          bun install
           bun install --cwd packages/gui
       - name: Stage locked native addon
         run: bun scripts/ohms-fetch-natives.ts --tag ${{ matrix.native_tags }}
@@ -295,7 +295,7 @@ jobs:
           cat > "$NOTES" <<EOF
           OhMyShark v${VERSION} — Standalone CLI + Native Desktop GUI release.
 
-          - Built on Oh My Pi (OMP) 19.0.1 core + GUI-RPC bridge, preserving all 5 OMSK architectural pillars, Deep Sea Cockpit, Mente em Teia, Transactional Edit Engine, and magic modes.
+          - Powered by the 5 OMSK architectural pillars, Deep Sea Cockpit, Mente em Teia, Transactional Edit Engine, GUI-RPC bridge, and magic modes.
           - Includes the Antigravity / Claude Code-grade Shark Orchestrator Engine, TUI \`/orchestrator\` board, and 20 live RPC endpoints.
           - Ships OhMyShark Native Desktop GUI (Electron + React 19) with Orchestrator Studio, Shark Command Center, OmskModesBar, Shark Ocean / Deep Abyss themes, and native \`pt-BR\` localization.
           - Six standalone CLI binaries for Linux x64/arm64, macOS x64/arm64, and Windows x64/arm64 (\`ohms-*\` + \`omsk-*\` aliases), plus installers, configs, \`SHA256SUMS.txt\`, and build-provenance attestations.

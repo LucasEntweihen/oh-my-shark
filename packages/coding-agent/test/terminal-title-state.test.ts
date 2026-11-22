@@ -19,7 +19,7 @@ import { mockWindowsConsoleTitle, type WindowsConsoleTitleMock } from "./termina
 const LABEL = "my-project";
 // The brand the title runtime prefixes every composed title with. Plain π —
 // window titles render in the OS UI font, so nerd-font glyphs are unusable here.
-const BRAND = "π";
+const BRAND = "🦈";
 
 describe("buildTerminalTitleWithState", () => {
 	it("separates brand and label with '>' when idle/done (your turn)", () => {
@@ -308,7 +308,7 @@ describe("disposeTerminalTitleState", () => {
 		expect(titles.length).toBeGreaterThan(0);
 		for (const title of titles) {
 			expect(title).toContain("my-project");
-			expect(title).toMatch(/^π [-\\|/] my-project$/);
+			expect(title).toMatch(new RegExp(`^${BRAND} [-\\\\|/] my-project$`));
 			expect(title).not.toContain("⠋");
 		}
 	});
@@ -337,7 +337,7 @@ describe("disposeTerminalTitleState", () => {
 		expect(titles.length).toBeGreaterThan(0);
 		for (const title of titles) {
 			expect(title).toContain("my-project");
-			expect(title).toMatch(/^π [○◔◑◕●] my-project$/);
+			expect(title).toMatch(new RegExp(`^${BRAND} [○◔◑◕●] my-project$`));
 		}
 	});
 
@@ -381,7 +381,7 @@ describe("disposeTerminalTitleState", () => {
 		resetObserved(writes, windowsTitleMock);
 		setTerminalTitleState("working");
 
-		expect(observedTitles(writes, windowsTitleMock)).toEqual(["π : my-project"]);
+		expect(observedTitles(writes, windowsTitleMock)).toEqual([`${BRAND} : my-project`]);
 		expect(vi.getTimerCount()).toBe(0);
 		resetObserved(writes, windowsTitleMock);
 		vi.advanceTimersByTime(DEFAULT_SPINNER_INTERVAL_MS * 10);
@@ -389,7 +389,7 @@ describe("disposeTerminalTitleState", () => {
 
 		// Other states are unaffected by the static spinner.
 		setTerminalTitleState("idle");
-		expect(observedTitles(writes, windowsTitleMock)).toEqual(["π > my-project"]);
+		expect(observedTitles(writes, windowsTitleMock)).toEqual([`${BRAND} > my-project`]);
 	});
 
 	it("clears the title before popping the saved one on shutdown", () => {
@@ -411,7 +411,7 @@ describe("disposeTerminalTitleState", () => {
 
 			initTerminalTitleState();
 			setSessionTerminalTitle("running-session");
-			expect(native.titles).toContain("π > running-session");
+			expect(native.titles).toContain(`${BRAND} > running-session`);
 
 			resetObserved(writes, native);
 			// The `InteractiveMode.shutdown()` order: dispose, then pop.

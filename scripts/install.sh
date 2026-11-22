@@ -14,7 +14,7 @@ set -e
 #   -r <ref>       Shorthand for --ref
 
 REPO="LucasEntweihen/oh-my-shark"
-DEFAULT_TAG="omsk-v0.1.2"
+DEFAULT_TAG="omsk-v0.1.3"
 BIN_NAME="omsk"
 INSTALL_DIR="${PI_INSTALL_DIR:-$HOME/.local/bin}"
 MIN_BUN_VERSION="1.3.14"
@@ -316,6 +316,13 @@ install_binary() {
     fi
 
     EXPECTED="$(grep -F "  ${BINARY}" "$SUMS_FILE" | awk '{print $1}' || true)"
+    if [ -z "$EXPECTED" ]; then
+        FALLBACK_BINARY="omsk-${PLATFORM}-${ARCH}"
+        EXPECTED="$(grep -F "  ${FALLBACK_BINARY}" "$SUMS_FILE" | awk '{print $1}' || true)"
+        if [ -n "$EXPECTED" ]; then
+            BINARY="$FALLBACK_BINARY"
+        fi
+    fi
     if [ -z "$EXPECTED" ]; then
         echo "Release $TAG has no asset named $BINARY"
         exit 1

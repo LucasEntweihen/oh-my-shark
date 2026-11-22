@@ -15,7 +15,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { expandWindowsLongPath } from "@oh-my-pi/pi-natives/path";
-import { engines, version } from "../package.json" with { type: "json" };
+import { engines } from "../package.json" with { type: "json" };
 import { isEnoent, isEnotdir } from "./fs-error";
 import { isBunTestRuntime } from "./test-runtime";
 
@@ -26,7 +26,7 @@ export const APP_NAME: string = "omsk";
 export const DISPLAY_NAME: string = "ohmyshark";
 
 /** Downstream product version, independent of the upstream technical VERSION. */
-export const PRODUCT_VERSION: string = "0.1.2";
+export const PRODUCT_VERSION: string = "0.1.3";
 
 /** Product byline shown in TUI titles and splash surfaces. */
 export const PRODUCT_BYLINE: string = "made by LucasEntweihen";
@@ -40,8 +40,8 @@ export const CONFIG_DIR_NAME: string = ".omsk";
 /** Ordered main settings filenames: canonical write target first, legacy-compatible YAML fallback second. */
 export const MAIN_CONFIG_FILENAMES = ["config.yml", "config.yaml"] as const;
 
-/** Version (e.g. "1.0.0") */
-export const VERSION: string = version;
+/** Product version reported across CLI, TUI, and updater */
+export const VERSION: string = PRODUCT_VERSION;
 
 /** Default User-Agent header string (e.g. "omsk/0.1.2") */
 export const USER_AGENT = `${APP_NAME}/${PRODUCT_VERSION}`;

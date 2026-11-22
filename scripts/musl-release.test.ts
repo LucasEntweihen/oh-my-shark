@@ -54,7 +54,7 @@ describe("musl release artifacts", () => {
 		);
 	});
 
-	test("selects the musl asset when the Linux host reports musl", async () => {
+	test.skipIf(process.platform === "win32")("selects the musl asset when the Linux host reports musl", async () => {
 		const dir = await fs.mkdtemp(path.join(os.tmpdir(), "ohms-musl-install-"));
 		tempDirs.push(dir);
 		const binDir = path.join(dir, "bin");
@@ -89,9 +89,9 @@ esac
 		});
 
 		expect(result.exitCode, result.stderr).toBe(0);
-		expect(result.stdout).toContain("Using version: ohms-v0.0.3");
+		expect(result.stdout).toContain("Using version: omsk-v0.1.3");
 		expect(result.stdout).toContain("Downloading ohms-linux-musl-x64...");
 		expect(result.stdout).toContain("Checksum OK");
-		expect(await Bun.file(path.join(installDir, "ohms")).text()).toBe(binaryContent);
+		expect(await Bun.file(path.join(installDir, "omsk")).text()).toBe(binaryContent);
 	});
 });

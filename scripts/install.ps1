@@ -18,7 +18,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $Repo = "LucasEntweihen/oh-my-shark"
-$DefaultTag = "omsk-v0.1.2"
+$DefaultTag = "omsk-v0.1.3"
 $InstallDir = if ($env:PI_INSTALL_DIR) { $env:PI_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA "omsk" }
 
 # Resolucao universal de arquitetura compativel com PS 5.1, PS 7+, 32-bit e 64-bit
@@ -110,7 +110,7 @@ function Find-BashShell {
 
 function Configure-BashShell {
     try {
-        $settingsDir = Join-Path $env:USERPROFILE ".ohms\agent"
+        $settingsDir = Join-Path $env:USERPROFILE ".omsk\agent"
         $settingsFile = Join-Path $settingsDir "settings.json"
 
         # Never touch an existing settings file: shellPath is only added
@@ -331,6 +331,14 @@ function Install-Binary {
             throw "Failed to download SHA256SUMS.txt for release $Tag. Check that the release exists: https://github.com/$Repo/releases/tag/$Tag"
         }
         $match = Select-String -Path $SumsPath -Pattern "  $BinaryName$" | Select-Object -First 1
+        if (-not $match) {
+            $FallbackBinaryName = "omsk-windows-$NativeArchitecture.exe"
+            $match = Select-String -Path $SumsPath -Pattern "  $FallbackBinaryName$" | Select-Object -First 1
+            if ($match) {
+                $BinaryName = $FallbackBinaryName
+                $BinaryUrl = "https://github.com/$Repo/releases/download/$Tag/$BinaryName"
+            }
+        }
         $Expected = if ($match) { ($match.Line -split '\s+')[0] } else { $null }
         if (-not $Expected) {
             throw "Release $Tag has no asset named $BinaryName"
