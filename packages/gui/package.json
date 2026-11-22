@@ -1,6 +1,6 @@
 {
   "name": "@ohms/gui",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": "OhMyShark Contributors",
   "private": true,
   "type": "module",

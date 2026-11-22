@@ -244,9 +244,9 @@ describe("DeepSeaCockpit", () => {
 					],
 				},
 			],
-			"Release 0.1.3",
+			"Release 0.1.4",
 		);
-		expect(cockpit.getMission().title).toBe("Release 0.1.3");
+		expect(cockpit.getMission().title).toBe("Release 0.1.4");
 		expect(cockpit.getMission().progressPercent).toBe(50);
 		expect(cockpit.getAgentStatus().completedSteps).toBe(1);
 		expect(cockpit.getAgentStatus().totalSteps).toBe(2);

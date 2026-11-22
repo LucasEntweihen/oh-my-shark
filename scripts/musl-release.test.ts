@@ -89,7 +89,7 @@ esac
 		});
 
 		expect(result.exitCode, result.stderr).toBe(0);
-		expect(result.stdout).toContain("Using version: omsk-v0.1.3");
+		expect(result.stdout).toContain("Using version: omsk-v0.1.4");
 		expect(result.stdout).toContain("Downloading ohms-linux-musl-x64...");
 		expect(result.stdout).toContain("Checksum OK");
 		expect(await Bun.file(path.join(installDir, "omsk")).text()).toBe(binaryContent);

@@ -4,7 +4,7 @@ import { DeepSeaCockpit, type LspStatusItem, type SessionHistoryItem, stripAnsi 
 describe("Subagent 1: Header & Sidebar Engine", () => {
 	it("TDD 1.1: should omit removed top header bar and expose real model/provider/version in sidebar", () => {
 		const cockpit = new DeepSeaCockpit({
-			version: "0.1.3",
+			version: "0.1.4",
 			modelName: "gemini-2.5-pro",
 			providerName: "Google",
 		});
@@ -14,7 +14,7 @@ describe("Subagent 1: Header & Sidebar Engine", () => {
 
 		const sidebarText = stripAnsi(cockpit.renderSidebar(40, 25).join("\n"));
 		expect(sidebarText).toContain("Oh My Shark");
-		expect(sidebarText).toContain("v0.1.3");
+		expect(sidebarText).toContain("v0.1.4");
 		expect(sidebarText).toContain("gemini-2.5-pro");
 		expect(sidebarText).toContain("Google");
 		expect(sidebarText).toContain("●");
