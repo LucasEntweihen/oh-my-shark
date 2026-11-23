@@ -310,4 +310,37 @@ describe("auth-broker import (broker-routed)", () => {
 
 		expect(brokerStore!.listAuthCredentials()).toHaveLength(0);
 	});
+
+	test("preserves Antigravity project_id and numeric expiry during import", async () => {
+		const futureSeconds = Math.floor((Date.now() + 3_600_000) / 1000);
+		await Bun.write(
+			path.join(cliproxyDir, "antigravity-pro.json"),
+			JSON.stringify({
+				type: "google-antigravity",
+				access_token: "agy-access-1",
+				refresh_token: "agy-refresh-1",
+				expiry: futureSeconds,
+				email: "agy@example.com",
+				project_id: "agy-project-42",
+			}),
+		);
+
+		const ORIGINAL_STDOUT = process.stdout.write.bind(process.stdout);
+		process.stdout.write = (() => true) as typeof process.stdout.write;
+		try {
+			await runAuthBrokerCommand({
+				action: "import",
+				flags: { source: cliproxyDir },
+			});
+		} finally {
+			process.stdout.write = ORIGINAL_STDOUT;
+		}
+
+		const persisted = brokerStore!.getOAuth("google-antigravity");
+		expect(persisted?.access).toBe("agy-access-1");
+		expect(persisted?.refresh).toBe("agy-refresh-1");
+		expect(persisted?.email).toBe("agy@example.com");
+		expect(persisted?.projectId).toBe("agy-project-42");
+		expect(persisted?.expires).toBe(futureSeconds * 1000);
+	});
 });
