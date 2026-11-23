@@ -349,7 +349,10 @@ describe("Antigravity OAuth login", () => {
 			jsonResponse({
 				name: "operations/onboard-paid",
 				done: true,
-				response: { cloudaicompanionProject: "paid-proj-789" },
+				response: {
+					"@type": "type.googleapis.com/google.internal.cloud.code.v1internal.OnboardUserResponse",
+					cloudaicompanionProject: "paid-proj-789",
+				},
 			}),
 			jsonResponse({ currentTier: { id: "g1-pro-tier" }, paidTier: { id: "g1-pro-tier" } }),
 		];
