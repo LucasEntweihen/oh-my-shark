@@ -131,4 +131,60 @@ describe("getLatestRelease proxy errors", () => {
 		expect(err?.message).toMatch(/SOCKS/i);
 		expect(err?.message).toMatch(/https?:\/\//i);
 	});
+
+	it("retries transient DNS errors on GitHub API and recovers", async () => {
+		let attempts = 0;
+		const fetchStub = Object.assign(
+			async () => {
+				attempts++;
+				if (attempts < 3) {
+					throw Object.assign(new Error("getaddrinfo ENOTFOUND api.github.com"), { code: "ENOTFOUND" });
+				}
+				return new Response(JSON.stringify({ tag_name: "omsk-v0.2.0" }), {
+					status: 200,
+					headers: { "Content-Type": "application/json" },
+				});
+			},
+			{ preconnect: globalThis.fetch.preconnect },
+		);
+		vi.spyOn(globalThis, "fetch").mockImplementation(fetchStub);
+
+		const release = await getLatestRelease({ timeoutMs: 5000 });
+		expect(attempts).toBe(3);
+		expect(release).toEqual({
+			tag: "omsk-v0.2.0",
+			version: "0.2.0",
+			dist: "binary",
+		});
+	});
+
+	it("falls back to GitHub web redirect when API fails repeatedly with ENOTFOUND", async () => {
+		const seenUrls: string[] = [];
+		const fetchStub = Object.assign(
+			async (input: string | URL | Request) => {
+				const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+				seenUrls.push(url);
+				if (url.startsWith("https://api.github.com/")) {
+					throw Object.assign(new Error("getaddrinfo ENOTFOUND api.github.com"), { code: "ENOTFOUND" });
+				}
+				return new Response(null, {
+					status: 302,
+					headers: {
+						location: "https://github.com/LucasEntweihen/oh-my-shark/releases/tag/omsk-v0.1.5",
+					},
+				});
+			},
+			{ preconnect: globalThis.fetch.preconnect },
+		);
+		vi.spyOn(globalThis, "fetch").mockImplementation(fetchStub);
+
+		const release = await getLatestRelease({ timeoutMs: 5000 });
+		expect(seenUrls.filter(u => u.startsWith("https://api.github.com/"))).toHaveLength(3);
+		expect(seenUrls.at(-1)).toBe("https://github.com/LucasEntweihen/oh-my-shark/releases/latest");
+		expect(release).toEqual({
+			tag: "omsk-v0.1.5",
+			version: "0.1.5",
+			dist: "binary",
+		});
+	});
 });

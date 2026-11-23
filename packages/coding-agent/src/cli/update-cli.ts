@@ -257,6 +257,130 @@ export function resolveReleaseBinaryAsset(
 	};
 }
 
+const TRANSIENT_NETWORK_CODES = new Set([
+	"ENOTFOUND",
+	"EAI_AGAIN",
+	"EAI_FAIL",
+	"ECONNRESET",
+	"ETIMEDOUT",
+	"ECONNREFUSED",
+	"UND_ERR_CONNECT_TIMEOUT",
+]);
+
+function isTransientNetworkError(err: unknown): boolean {
+	if (isTimeoutError(err) || isUnsupportedProxyError(err)) return false;
+	const queue: unknown[] = [err];
+	while (queue.length > 0) {
+		const current = queue.shift();
+		if (current && typeof current === "object") {
+			const record = current as { code?: unknown; message?: unknown; cause?: unknown };
+			if (typeof record.code === "string" && TRANSIENT_NETWORK_CODES.has(record.code)) {
+				return true;
+			}
+			if (
+				typeof record.message === "string" &&
+				/\b(ENOTFOUND|EAI_AGAIN|EAI_FAIL|ECONNRESET|ETIMEDOUT|ECONNREFUSED|getaddrinfo)\b|Unable to connect/i.test(
+					record.message,
+				)
+			) {
+				return true;
+			}
+			if (record.cause !== undefined) queue.push(record.cause);
+		}
+	}
+	return false;
+}
+
+async function fetchWithNetworkRetry(
+	url: string,
+	init: RequestInit,
+	timeoutMs: number,
+	fetchImpl: Fetch,
+	maxAttempts = 3,
+): Promise<Response> {
+	let lastError: unknown;
+	for (let attempt = 0; attempt < maxAttempts; attempt++) {
+		try {
+			return await fetchImpl(url, {
+				...init,
+				signal: init.signal ?? withTimeoutSignal(timeoutMs),
+			});
+		} catch (err) {
+			lastError = err;
+			if (!isTransientNetworkError(err) || attempt + 1 >= maxAttempts) {
+				throw err;
+			}
+			await Bun.sleep(50 * (attempt + 1));
+		}
+	}
+	throw lastError;
+}
+
+async function resolveLatestReleaseViaWebRedirect(timeoutMs: number, fetchImpl: Fetch): Promise<ReleaseInfo | null> {
+	try {
+		const webResponse = await fetchWithNetworkRetry(
+			`https://github.com/${REPO}/releases/latest`,
+			{
+				method: "HEAD",
+				redirect: "manual",
+			},
+			timeoutMs,
+			fetchImpl,
+		);
+		const location = webResponse.headers.get("location");
+		if (!location) return null;
+		const tagMatch = location.match(/\/releases\/tag\/([^/?#]+)/);
+		if (!tagMatch?.[1]) return null;
+		const tag = decodeURIComponent(tagMatch[1]);
+		const version = parseProductTag(tag);
+		return version ? { tag, version, dist: "binary" } : null;
+	} catch {
+		return null;
+	}
+}
+
+async function resolveBinaryAssetViaDirectDownload(
+	tag: string,
+	binaryName: string,
+	timeoutMs: number,
+	fetchImpl: Fetch,
+): Promise<ReleaseBinaryAsset | null> {
+	try {
+		const sumsUrl = `https://github.com/${REPO}/releases/download/${encodeURIComponent(tag)}/SHA256SUMS.txt`;
+		const sumsResponse = await fetchWithNetworkRetry(sumsUrl, {}, timeoutMs, fetchImpl);
+		if (!sumsResponse.ok) return null;
+		const sumsText = await sumsResponse.text();
+		let foundDigest: string | undefined;
+		for (const line of sumsText.split("\n")) {
+			const parts = line.trim().split(/\s+/);
+			if (parts.length >= 2 && parts[1] === binaryName) {
+				foundDigest = parts[0]?.toLowerCase();
+				break;
+			}
+		}
+		if (!foundDigest || !/^[0-9a-f]{64}$/i.test(foundDigest)) return null;
+		const binaryUrl = `https://github.com/${REPO}/releases/download/${encodeURIComponent(tag)}/${binaryName}`;
+		const headResponse = await fetchWithNetworkRetry(
+			binaryUrl,
+			{ method: "HEAD", redirect: "follow" },
+			timeoutMs,
+			fetchImpl,
+		);
+		const contentLength = headResponse.headers.get("content-length");
+		const size = contentLength ? parseInt(contentLength, 10) : 0;
+		if (headResponse.ok && size > 0) {
+			return {
+				url: binaryUrl,
+				size,
+				digest: `sha256:${foundDigest}`,
+			};
+		}
+	} catch {
+		// direct fallback failed
+	}
+	return null;
+}
+
 async function getReleaseBinaryAsset(
 	expectedVersion: string,
 	binaryName: string,
@@ -279,15 +403,24 @@ async function getReleaseBinaryAsset(
 
 	let response: Response;
 	try {
-		response = await fetchImpl(`${GITHUB_API}/repos/${REPO}/releases/tags/${encodeURIComponent(tag)}`, {
-			headers,
-			signal: withTimeoutSignal(RELEASE_METADATA_TIMEOUT_MS),
-		});
+		response = await fetchWithNetworkRetry(
+			`${GITHUB_API}/repos/${REPO}/releases/tags/${encodeURIComponent(tag)}`,
+			{ headers },
+			RELEASE_METADATA_TIMEOUT_MS,
+			fetchImpl,
+		);
 	} catch (err) {
 		if (isTimeoutError(err)) {
 			throw new Error("Timed out fetching GitHub release metadata after 30s", { cause: err });
 		}
 		if (isUnsupportedProxyError(err)) throw new Error(unsupportedProxyMessage(), { cause: err });
+		const directFallback = await resolveBinaryAssetViaDirectDownload(
+			tag,
+			binaryName,
+			RELEASE_METADATA_TIMEOUT_MS,
+			fetchImpl,
+		);
+		if (directFallback) return directFallback;
 		throw err;
 	}
 	if (response.status === 403 || response.status === 429) {
@@ -306,43 +439,13 @@ async function getReleaseBinaryAsset(
 		}
 
 		// Fallback: resolve directly from public SHA256SUMS.txt and HEAD binary request
-		try {
-			const sumsUrl = `https://github.com/${REPO}/releases/download/${encodeURIComponent(tag)}/SHA256SUMS.txt`;
-			const sumsResponse = await fetchImpl(sumsUrl, {
-				signal: withTimeoutSignal(RELEASE_METADATA_TIMEOUT_MS),
-			});
-			if (sumsResponse.ok) {
-				const sumsText = await sumsResponse.text();
-				const lines = sumsText.split("\n");
-				let foundDigest: string | undefined;
-				for (const line of lines) {
-					const parts = line.trim().split(/\s+/);
-					if (parts.length >= 2 && parts[1] === binaryName) {
-						foundDigest = parts[0]?.toLowerCase();
-						break;
-					}
-				}
-				if (foundDigest && /^[0-9a-f]{64}$/i.test(foundDigest)) {
-					const binaryUrl = `https://github.com/${REPO}/releases/download/${encodeURIComponent(tag)}/${binaryName}`;
-					const headResponse = await fetchImpl(binaryUrl, {
-						method: "HEAD",
-						redirect: "follow",
-						signal: withTimeoutSignal(RELEASE_METADATA_TIMEOUT_MS),
-					});
-					const contentLength = headResponse.headers.get("content-length");
-					const size = contentLength ? parseInt(contentLength, 10) : 0;
-					if (headResponse.ok && size > 0) {
-						return {
-							url: binaryUrl,
-							size,
-							digest: `sha256:${foundDigest}`,
-						};
-					}
-				}
-			}
-		} catch {
-			// direct fallback failed
-		}
+		const directFallback = await resolveBinaryAssetViaDirectDownload(
+			tag,
+			binaryName,
+			RELEASE_METADATA_TIMEOUT_MS,
+			fetchImpl,
+		);
+		if (directFallback) return directFallback;
 
 		throw new Error(
 			"GitHub API rate limit exceeded while fetching release metadata; retry later or set GITHUB_TOKEN or GH_TOKEN",
@@ -381,6 +484,8 @@ export interface VerifiedBinaryDownloadOptions {
 	fetchImpl?: Fetch;
 	onProgress?: (received: number, total: number) => void;
 }
+
+class NonRetriableDownloadError extends Error {}
 
 /**
  * Download a binary and verify its GitHub-reported size and SHA-256 digest.
@@ -446,7 +551,8 @@ export async function downloadVerifiedBinary(options: VerifiedBinaryDownloadOpti
 					if (value) {
 						currentBytes += value.byteLength;
 						if (currentBytes > options.expectedSize) {
-							throw new Error(
+							await reader.cancel().catch(() => {});
+							throw new NonRetriableDownloadError(
 								`Downloaded binary size mismatch: expected ${options.expectedSize} bytes, received at least ${currentBytes}`,
 							);
 						}
@@ -465,14 +571,32 @@ export async function downloadVerifiedBinary(options: VerifiedBinaryDownloadOpti
 				break;
 			}
 
+			const contentLengthHeader = response.headers.get("content-length");
+			const advertisedLength = contentLengthHeader ? Number(contentLengthHeader) : undefined;
+			if (
+				!isPartial &&
+				response.status === 200 &&
+				(advertisedLength === undefined || advertisedLength === currentBytes)
+			) {
+				throw new NonRetriableDownloadError(
+					`Downloaded binary size mismatch: expected ${options.expectedSize} bytes, received ${currentBytes}`,
+				);
+			}
+
 			throw new Error(`Incomplete download: received ${currentBytes} of ${options.expectedSize} bytes`);
 		} catch (err) {
 			lastError = err;
 			if (isTimeoutError(err)) {
+				await unlinkIfExists(partPath);
 				throw new Error("Timed out downloading release binary after 15 minutes", { cause: err });
 			}
 			if (isUnsupportedProxyError(err)) {
+				await unlinkIfExists(partPath);
 				throw new Error(unsupportedProxyMessage(), { cause: err });
+			}
+			if (err instanceof NonRetriableDownloadError) {
+				await unlinkIfExists(partPath);
+				throw err;
 			}
 
 			if (attempt < maxRetries) {
@@ -654,10 +778,12 @@ export async function getLatestRelease(
 
 	let response: Response;
 	try {
-		response = await fetchImpl(`${GITHUB_API}/repos/${REPO}/releases/latest`, {
-			headers,
-			signal: withTimeoutSignal(timeoutMs),
-		});
+		response = await fetchWithNetworkRetry(
+			`${GITHUB_API}/repos/${REPO}/releases/latest`,
+			{ headers },
+			timeoutMs,
+			fetchImpl,
+		);
 	} catch (err) {
 		if (isTimeoutError(err)) {
 			throw new Error(`Timed out fetching release info for ${REPO} after ${Math.round(timeoutMs / 1000)}s`, {
@@ -665,30 +791,14 @@ export async function getLatestRelease(
 			});
 		}
 		if (isUnsupportedProxyError(err)) throw new Error(unsupportedProxyMessage(), { cause: err });
+		const webRelease = await resolveLatestReleaseViaWebRedirect(timeoutMs, fetchImpl);
+		if (webRelease) return webRelease;
 		throw err;
 	}
 	if (response.status === 403 || response.status === 429) {
 		// Rate limit fallback: resolve latest release tag via GitHub web redirect (rate-limit immune)
-		try {
-			const webResponse = await fetchImpl(`https://github.com/${REPO}/releases/latest`, {
-				method: "HEAD",
-				redirect: "manual",
-				signal: withTimeoutSignal(timeoutMs),
-			});
-			const location = webResponse.headers.get("location");
-			if (location) {
-				const tagMatch = location.match(/\/releases\/tag\/([^/?#]+)/);
-				if (tagMatch?.[1]) {
-					const tag = decodeURIComponent(tagMatch[1]);
-					const version = parseProductTag(tag);
-					if (version) {
-						return { tag, version, dist: "binary" };
-					}
-				}
-			}
-		} catch {
-			// web redirect fallback failed
-		}
+		const webRelease = await resolveLatestReleaseViaWebRedirect(timeoutMs, fetchImpl);
+		if (webRelease) return webRelease;
 		throw new Error(
 			"GitHub API rate limit exceeded while fetching release metadata; retry later or set GITHUB_TOKEN or GH_TOKEN",
 		);
@@ -699,7 +809,10 @@ export async function getLatestRelease(
 
 	const rawData: unknown = await response.json();
 	const data = Array.isArray(rawData)
-		? rawData.find(item => isRecord(item) && item.draft === false && item.prerelease === false && parseProductTag(item.tag_name))
+		? rawData.find(
+				item =>
+					isRecord(item) && item.draft === false && item.prerelease === false && parseProductTag(item.tag_name),
+			)
 		: rawData;
 	if (!isRecord(data)) {
 		throw new Error(`No stable ${TAG_PREFIX}<semver> release found for ${REPO}`);
