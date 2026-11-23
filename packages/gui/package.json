@@ -2,7 +2,7 @@
   "name": "@ohms/gui",
   "version": "0.1.5",
   "homepage": "https://ohmyshark.vercel.app",
-  "author": "OhMyShark Contributors",
+  "author": "OhMyShark Contributors <maintainers@ohmyshark.dev>",
   "private": true,
   "type": "module",
   "description": "OhMyShark (OMSK) Native Desktop GUI — Parallel Coding Agents, Orchestrator Studio & Deep Sea Cockpit",
