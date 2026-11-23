@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, setSystemTime } from "bun:test";
 import type { FetchImpl } from "@oh-my-pi/pi-catalog/types";
-import { ensureAntigravityVersion, getAntigravityPlatform } from "@oh-my-pi/pi-catalog/wire/gemini-headers";
+import {
+	DEFAULT_ANTIGRAVITY_VERSION,
+	ensureAntigravityVersion,
+	getAntigravityHeaders,
+	getAntigravityModelWireProfile,
+	getAntigravityPlatform,
+} from "@oh-my-pi/pi-catalog/wire/gemini-headers";
 
 const RETRY_WINDOW_MS = 10 * 60_000;
 // The lookup state is process-wide; every test starts on a fresh clock past any
@@ -77,5 +83,15 @@ describe("getAntigravityPlatform", () => {
 
 	it("falls back to the Linux build on an OS without a native client", () => {
 		expect(getAntigravityPlatform("freebsd")).toEqual({ os: "linux", arch: "amd64" });
+	});
+
+	it("ships updated fallback client version and full-capacity Gemini 4 / Claude 5.5 wire profiles", () => {
+		expect(DEFAULT_ANTIGRAVITY_VERSION).toBe("2.34.0");
+		expect(getAntigravityHeaders()["User-Agent"]).toContain(`antigravity/hub/${DEFAULT_ANTIGRAVITY_VERSION}`);
+		expect(getAntigravityModelWireProfile("gemini-4-carbon")?.maxOutputTokens).toBe(262144);
+		expect(getAntigravityModelWireProfile("gemini-4-hydrogen")?.maxOutputTokens).toBe(262144);
+		expect(getAntigravityModelWireProfile("gemini-4-neon")?.maxOutputTokens).toBe(262144);
+		expect(getAntigravityModelWireProfile("claude-sonnet-5-5")?.maxOutputTokens).toBe(128000);
+		expect(getAntigravityModelWireProfile("claude-opus-5-5-thinking")?.maxOutputTokens).toBe(128000);
 	});
 });

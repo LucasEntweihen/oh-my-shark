@@ -36,7 +36,7 @@ export const getGeminiCliHeaders = (modelId?: string) => ({
  * {@link getAntigravityPlatform}. The changelist is identical across those
  * builds. Overrides: PI_AI_ANTIGRAVITY_VERSION / _CL / _OS / _ARCH.
  */
-export const DEFAULT_ANTIGRAVITY_VERSION = "2.26.0";
+export const DEFAULT_ANTIGRAVITY_VERSION = "2.34.0";
 
 const ANTIGRAVITY_VERSION_MANIFEST_URL =
 	"https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/manifest/latest-arm64-mac.yml";
@@ -178,6 +178,11 @@ export const ANTIGRAVITY_MODEL_WIRE_PROFILES: Readonly<Record<string, Antigravit
 	// untracked for these ids; the backend does not require it.
 	"claude-sonnet-4-6": { maxOutputTokens: 64000 },
 	"claude-opus-4-6-thinking": { maxOutputTokens: 64000 },
+	"claude-sonnet-5-5": { maxOutputTokens: 128000 },
+	"claude-opus-5-5-thinking": { maxOutputTokens: 128000 },
+	"gemini-4-carbon": { maxOutputTokens: 262144 },
+	"gemini-4-hydrogen": { maxOutputTokens: 262144 },
+	"gemini-4-neon": { maxOutputTokens: 262144 },
 };
 
 /**
