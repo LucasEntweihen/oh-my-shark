@@ -645,4 +645,53 @@ describe("antigravity ranking strategy", () => {
 		expect(primary).toBeUndefined();
 		expect(secondary).toBeUndefined();
 	});
+
+	it("falls back to production cloudcode-pa endpoint when daily and sandbox fail", async () => {
+		const seenUrls: string[] = [];
+		const fetcher = Object.assign(
+			async (input: string | URL | Request) => {
+				const url = String(input instanceof Request ? input.url : input);
+				seenUrls.push(url);
+				if (url.startsWith("https://cloudcode-pa.googleapis.com/")) {
+					return new Response(
+						JSON.stringify({
+							groups: [
+								{
+									displayName: "Gemini Models",
+									buckets: [
+										{
+											bucketId: "gemini-weekly",
+											displayName: "Weekly Limit Remaining",
+											window: "weekly",
+											remainingFraction: 0.75,
+											resetTime: new Date(Date.now() + 3600_000).toISOString(),
+										},
+									],
+								},
+							],
+						}),
+						{ status: 200, headers: { "content-type": "application/json" } },
+					);
+				}
+				return new Response("unavailable", { status: 503 });
+			},
+			{ preconnect: fetch.preconnect },
+		);
+
+		const report = await antigravityUsageProvider.fetchUsage!(
+			{
+				provider: "google-antigravity",
+				credential: makeCredential(),
+				signal: undefined,
+			},
+			makeCtx(fetcher),
+		);
+
+		expect(seenUrls).toEqual([
+			"https://daily-cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary",
+			"https://daily-cloudcode-pa.sandbox.googleapis.com/v1internal:retrieveUserQuotaSummary",
+			"https://cloudcode-pa.googleapis.com/v1internal:retrieveUserQuotaSummary",
+		]);
+		expect(report?.limits[0]?.amount.remainingFraction).toBe(0.75);
+	});
 });

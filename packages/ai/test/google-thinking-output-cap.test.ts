@@ -123,9 +123,16 @@ describe("Gemini 4 Hydrogen xhigh thinking level", () => {
 	it.each([
 		["google-generative-ai", bundled("google", "gemini-4-hydrogen")],
 		["google-vertex", bundled("google-vertex", "gemini-4-hydrogen")],
+		["google-antigravity (hydrogen)", bundled("google-antigravity", "gemini-4-hydrogen")],
+		["google-antigravity (neon)", bundled("google-antigravity", "gemini-4-neon")],
 	])("%s sends the documented xhigh level", async (_name, model) => {
-		const config = await captureGenerationConfig(model, 512, { reasoning: Effort.XHigh });
+		const apiKey =
+			model.provider === "google-antigravity" ? JSON.stringify({ token: "t", projectId: "p" }) : undefined;
+		const config = await captureGenerationConfig(model, 512, { apiKey, reasoning: Effort.XHigh });
 
 		expect(config?.thinkingConfig?.thinkingLevel).toBe("xhigh");
+		if (model.provider === "google-antigravity") {
+			expect(config?.maxOutputTokens).toBe(262_144);
+		}
 	});
 });

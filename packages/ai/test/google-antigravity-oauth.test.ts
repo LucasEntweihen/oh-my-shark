@@ -396,6 +396,7 @@ describe("Antigravity OAuth login", () => {
 			{
 				phase: "refresh",
 				provider: "google-antigravity",
+				fetch: globalThis.fetch,
 				raw: {},
 				stored: { access: "old-access", refresh: "old-refresh", expires: 0 },
 			},

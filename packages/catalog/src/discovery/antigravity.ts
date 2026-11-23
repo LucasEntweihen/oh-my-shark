@@ -32,8 +32,6 @@ const ANTIGRAVITY_THINKING_LEVELS: Readonly<Record<number, AntigravityModelWireP
 };
 
 const ANTIGRAVITY_STRING_THINKING_LEVELS: Readonly<Record<string, AntigravityModelWireProfile["thinkingLevel"]>> = {
-	"0": "MINIMAL",
-	minimal: "MINIMAL",
 	"1": "LOW",
 	low: "LOW",
 	"2": "MEDIUM",

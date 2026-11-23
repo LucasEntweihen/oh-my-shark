@@ -186,11 +186,14 @@ async function requestCloudCodeAssist({
 				return response.json();
 			}
 			const errorText = await response.text();
-			const error = new AIError.OAuthError(`${label} failed: ${response.status} ${response.statusText}: ${errorText}`, {
-				kind: "provisioning",
-				provider: PROVIDER,
-				status: response.status,
-			});
+			const error = new AIError.OAuthError(
+				`${label} failed: ${response.status} ${response.statusText}: ${errorText}`,
+				{
+					kind: "provisioning",
+					provider: PROVIDER,
+					status: response.status,
+				},
+			);
 			const isTransientStatus = response.status === 429 || response.status >= 500;
 			if (isTransientStatus && index + 1 < candidateUrls.length) {
 				lastError = error;
