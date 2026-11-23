@@ -12,9 +12,20 @@ import type { AfterExchangeHook } from "../hooks/types";
 import { oauthFetch, throwIfLoginCancelled } from "./google-oauth-shared";
 
 const CLOUD_CODE_ASSIST_ENDPOINT = "https://daily-cloudcode-pa.googleapis.com";
+const CLOUD_CODE_ASSIST_ENDPOINTS = [
+	CLOUD_CODE_ASSIST_ENDPOINT,
+	"https://daily-cloudcode-pa.sandbox.googleapis.com",
+	"https://cloudcode-pa.googleapis.com",
+] as const;
 const LOAD_CODE_ASSIST_URL = `${CLOUD_CODE_ASSIST_ENDPOINT}/v1internal:loadCodeAssist`;
 const ONBOARD_USER_URL = `${CLOUD_CODE_ASSIST_ENDPOINT}/v1internal:onboardUser`;
 const OPERATIONS_URL = `${CLOUD_CODE_ASSIST_ENDPOINT}/v1internal`;
+
+function getEndpointCandidateUrls(url: string): string[] {
+	if (!url.startsWith(`${CLOUD_CODE_ASSIST_ENDPOINT}/`)) return [url];
+	const suffix = url.slice(CLOUD_CODE_ASSIST_ENDPOINT.length);
+	return CLOUD_CODE_ASSIST_ENDPOINTS.map(endpoint => `${endpoint}${suffix}`);
+}
 const FREE_TIER_ID = "free-tier";
 const ONBOARD_TIMEOUT_MS = 30_000;
 const ONBOARD_POLL_INTERVAL_MS = 1_000;
@@ -138,6 +149,13 @@ function getFreeTierIneligibility(
 
 function assertFreeTierEligible(payload: LoadCodeAssistResponse): void {
 	if (isFreeTierAllowed(payload)) return;
+	if (
+		(payload.currentTier !== undefined && payload.currentTier !== null) ||
+		(payload.paidTier !== undefined && payload.paidTier !== null) ||
+		Boolean(payload.allowedTiers?.some(tier => Boolean(tier.id && tier.id !== FREE_TIER_ID)))
+	) {
+		return;
+	}
 	const ineligibility = getFreeTierIneligibility(payload);
 	if (!ineligibility) return;
 	const validation = ineligibility.validationUrl ? `\n${ineligibility.validationUrl}` : "";
@@ -156,18 +174,42 @@ async function requestCloudCodeAssist({
 	signal,
 	timeoutMs,
 }: CloudCodeRequest): Promise<unknown> {
-	throwIfLoginCancelled(signal);
-	const init: RequestInit = body === undefined ? { method, headers } : { method, headers, body };
-	const response = await oauthFetch(url, init, { provider: PROVIDER, signal, timeoutMs });
-	if (response.status !== 200) {
-		const errorText = await response.text();
-		throw new AIError.OAuthError(`${label} failed: ${response.status} ${response.statusText}: ${errorText}`, {
-			kind: "provisioning",
-			provider: PROVIDER,
-			status: response.status,
-		});
+	const candidateUrls = getEndpointCandidateUrls(url);
+	let lastError: unknown;
+	for (let index = 0; index < candidateUrls.length; index++) {
+		const targetUrl = candidateUrls[index]!;
+		throwIfLoginCancelled(signal);
+		const init: RequestInit = body === undefined ? { method, headers } : { method, headers, body };
+		try {
+			const response = await oauthFetch(targetUrl, init, { provider: PROVIDER, signal, timeoutMs });
+			if (response.status === 200) {
+				return response.json();
+			}
+			const errorText = await response.text();
+			const error = new AIError.OAuthError(`${label} failed: ${response.status} ${response.statusText}: ${errorText}`, {
+				kind: "provisioning",
+				provider: PROVIDER,
+				status: response.status,
+			});
+			const isTransientStatus = response.status === 429 || response.status >= 500;
+			if (isTransientStatus && index + 1 < candidateUrls.length) {
+				lastError = error;
+				continue;
+			}
+			throw error;
+		} catch (error) {
+			throwIfLoginCancelled(signal);
+			if (error instanceof AIError.LoginCancelledError) throw error;
+			if (error instanceof AIError.OAuthError && error.kind !== "timeout") {
+				throw error;
+			}
+			lastError = error;
+			if (index + 1 >= candidateUrls.length) {
+				throw error;
+			}
+		}
 	}
-	return response.json();
+	throw lastError;
 }
 
 async function postLoadCodeAssist(
@@ -217,11 +259,12 @@ function describeOperationError(error: OperationError): string {
 function selectOnboardingTierId(payload: LoadCodeAssistResponse): string {
 	const allowed = payload.allowedTiers;
 	if (!allowed || allowed.length === 0) return FREE_TIER_ID;
-	if (allowed.some(tier => tier.id === FREE_TIER_ID)) return FREE_TIER_ID;
 	const defaultTier = allowed.find(tier => tier.isDefault && tier.id);
 	if (defaultTier?.id) return defaultTier.id;
-	const firstNamed = allowed.find(tier => tier.id);
-	return firstNamed?.id ?? FREE_TIER_ID;
+	const paidOrStandardTier = allowed.find(tier => tier.id && tier.id !== FREE_TIER_ID);
+	if (paidOrStandardTier?.id) return paidOrStandardTier.id;
+	if (allowed.some(tier => tier.id === FREE_TIER_ID)) return FREE_TIER_ID;
+	return FREE_TIER_ID;
 }
 
 async function onboardUser(context: CloudCodeContext, tierId = FREE_TIER_ID): Promise<string | undefined> {
@@ -333,7 +376,15 @@ async function discoverProject(
 /** Resolves the Antigravity project after login and preserves it across refresh responses. */
 export const googleAntigravityProjectHook: AfterExchangeHook = async (credentials, context) => {
 	if (context.phase === "refresh") {
-		return context.stored?.projectId ? { ...credentials, projectId: context.stored.projectId } : credentials;
+		if (context.stored?.projectId) {
+			return { ...credentials, projectId: context.stored.projectId };
+		}
+		try {
+			const projectId = await discoverProject(credentials.access, context.onProgress, context.signal);
+			return { ...credentials, projectId };
+		} catch {
+			return credentials;
+		}
 	}
 	const raw = context.raw;
 	if (

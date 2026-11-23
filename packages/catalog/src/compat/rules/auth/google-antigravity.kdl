@@ -22,7 +22,6 @@ auth "google-antigravity" {
 		after-exchange hook="google-antigravity-project"
 	}
 	refresh {
-		require "projectId"
 		after-refresh hook="google-antigravity-project"
 	}
 	api-key-format "structured"

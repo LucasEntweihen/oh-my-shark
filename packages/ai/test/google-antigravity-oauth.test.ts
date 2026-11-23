@@ -337,4 +337,67 @@ describe("Antigravity OAuth login", () => {
 			metadata: ANTIGRAVITY_LOAD_CODE_ASSIST_METADATA,
 		});
 	});
+
+	it("prefers paid/default tier over free-tier and fails over across endpoints on 503", async () => {
+		const seenUrls: string[] = [];
+		const responses: Response[] = [
+			new Response("unavailable", { status: 503, statusText: "Service Unavailable" }),
+			jsonResponse({
+				allowedTiers: [{ id: "free-tier" }, { id: "g1-pro-tier", isDefault: true }],
+				ineligibleTiers: [{ reasonCode: "FREE_DISABLED", reasonMessage: "Free tier unavailable" }],
+			}),
+			jsonResponse({
+				name: "operations/onboard-paid",
+				done: true,
+				response: { cloudaicompanionProject: "paid-proj-789" },
+			}),
+			jsonResponse({ currentTier: { id: "g1-pro-tier" }, paidTier: { id: "g1-pro-tier" } }),
+		];
+		const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(
+			Object.assign(
+				async (input: string | URL | Request) => {
+					seenUrls.push(String(input instanceof Request ? input.url : input));
+					const next = responses.shift();
+					if (!next) throw new Error("Unexpected request");
+					return next;
+				},
+				{ preconnect: fetch.preconnect },
+			),
+		);
+
+		const credentials = await discoverAntigravityProject();
+		expect(credentials.projectId).toBe("paid-proj-789");
+		expect(seenUrls[0]).toBe(LOAD_CODE_ASSIST_URL);
+		expect(seenUrls[1]).toBe("https://daily-cloudcode-pa.sandbox.googleapis.com/v1internal:loadCodeAssist");
+		expect(JSON.parse(String(fetchSpy.mock.calls[2]?.[1]?.body))).toEqual({
+			tierId: "g1-pro-tier",
+			metadata: ANTIGRAVITY_LOAD_CODE_ASSIST_METADATA,
+		});
+	});
+
+	it("recovers missing projectId on refresh when stored credential omits it", async () => {
+		vi.spyOn(globalThis, "fetch").mockImplementation(
+			Object.assign(
+				async () =>
+					jsonResponse({
+						currentTier: { id: "standard-tier" },
+						paidTier: { id: "standard-tier" },
+						cloudaicompanionProject: "recovered-proj-1",
+					}),
+				{ preconnect: fetch.preconnect },
+			),
+		);
+
+		const refreshed = await googleAntigravityProjectHook(
+			{ access: "new-access", refresh: "new-refresh", expires: 1234 },
+			{
+				phase: "refresh",
+				provider: "google-antigravity",
+				raw: {},
+				stored: { access: "old-access", refresh: "old-refresh", expires: 0 },
+			},
+		);
+
+		expect(refreshed.projectId).toBe("recovered-proj-1");
+	});
 });
