@@ -1823,6 +1823,47 @@ describe("antigravity discovery collapsing", () => {
 		expect(resolveWireModelId(hydrogen!, Effort.XHigh)).toBe("gemini-4-hydrogen-xhigh");
 	});
 
+	it("parses string thinking levels, infers full-capacity Gemini 4 / Claude 5.5 limits, and emits imageGenerationModelIds", async () => {
+		const fetcher = Object.assign(
+			(input: string | URL | Request, _init?: RequestInit) =>
+				Promise.resolve(
+					String(input).includes(":fetchAvailableModels")
+						? Response.json({
+								models: {
+									"gemini-4-neon-xhigh": {
+										displayName: "Gemini 4 Neon (xhigh)",
+										supportsThinking: true,
+										thinkingLevel: "xhigh",
+									},
+									"claude-sonnet-5-5": {
+										displayName: "Claude Sonnet 5.5",
+										supportsThinking: true,
+										thinkingLevel: "HIGH",
+									},
+								},
+								imageGenerationModelIds: ["gemini-3.1-flash-image"],
+							})
+						: new Response("version: 2.34.0\n"),
+				),
+			{ preconnect: fetch.preconnect },
+		);
+
+		const models = (await fetchAntigravityDiscoveryModels({ token: "t", fetcher }))?.models;
+		const neon = models?.find(model => model.id === "gemini-4-neon");
+		expect(neon?.contextWindow).toBe(1_048_576);
+		expect(neon?.maxTokens).toBe(262_144);
+		expect(neon?.antigravityWireProfiles?.["gemini-4-neon-xhigh"]?.thinkingLevel).toBe("xhigh");
+
+		const claude55 = models?.find(model => model.id === "claude-sonnet-5-5");
+		expect(claude55?.contextWindow).toBe(1_000_000);
+		expect(claude55?.maxTokens).toBe(128_000);
+		expect(claude55?.antigravityWireProfiles?.["claude-sonnet-5-5"]?.thinkingLevel).toBe("HIGH");
+
+		const imageModel = models?.find(model => model.id === "gemini-3.1-flash-image");
+		expect(imageModel?.kind).toBe("image");
+		expect(imageModel?.input).toEqual(["text", "image"]);
+	});
+
 	it("drops bundled rows the account roster does not serve, and keeps them when discovery fails", async () => {
 		const roster = {
 			models: {
