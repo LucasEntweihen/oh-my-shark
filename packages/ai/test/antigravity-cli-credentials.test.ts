@@ -358,3 +358,27 @@ describe("Antigravity CLI refresh", () => {
 		}
 	});
 });
+
+it("parses numeric epoch seconds and milliseconds token expiry in consumer grants", () => {
+	const futureSeconds = Math.floor((Date.now() + 3_600_000) / 1000);
+	const fromSeconds = parseAgyStoredCredentials({
+		auth_method: "consumer",
+		token: {
+			access_token: "acc-sec",
+			refresh_token: "ref-sec",
+			expiry: futureSeconds,
+		},
+	});
+	expect(fromSeconds.expires).toBe(futureSeconds * 1000);
+
+	const futureMillis = Date.now() + 7_200_000;
+	const fromStringMillis = parseAgyStoredCredentials({
+		auth_method: "consumer",
+		token: {
+			access_token: "acc-ms",
+			refresh_token: "ref-ms",
+			expiry: String(futureMillis),
+		},
+	});
+	expect(fromStringMillis.expires).toBe(futureMillis);
+});

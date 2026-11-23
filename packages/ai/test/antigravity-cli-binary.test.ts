@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from "bun:test";
 import * as path from "node:path";
 import { TempDir } from "@oh-my-pi/pi-utils";
-import { ensureAgyInstalled, updateAgyBinary } from "../src/providers/antigravity-cli/binary";
+import { ensureAgyInstalled, resolveAgyBinary, updateAgyBinary } from "../src/providers/antigravity-cli/binary";
 import type { FetchImpl } from "../src/types";
 
 /** Serves a release manifest and archive in memory without running an installer or contacting Google. */
@@ -138,4 +138,33 @@ it("installs a direct executable download (Windows-style .exe) into its version 
 	};
 	const binary = await ensureAgyInstalled(directory, fetchImpl);
 	expect(await Bun.file(binary).text()).toBe("direct-executable-bytes");
+});
+
+it("extracts nested agy or antigravity executables from release archives", async () => {
+	using temp = TempDir.createSync("@omp-agy-nested-");
+	const directory = temp.join("bin");
+	const entryName = process.platform === "win32" ? "nested/bin/agy.exe" : "nested/bin/agy";
+	const payload = await new Bun.Archive({ [entryName]: "nested-agy-bytes" }, { compress: "gzip" }).bytes();
+	const manifest = {
+		version: "1.5.14",
+		url: "https://storage.googleapis.com/antigravity-public/1.5.14/cli-nested.tar.gz",
+		sha512: new Bun.CryptoHasher("sha512").update(payload).digest("hex"),
+	};
+	const fetchImpl: FetchImpl = async input => {
+		const url = input instanceof Request ? input.url : String(input);
+		return url.endsWith(".json") ? Response.json(manifest) : new Response(payload);
+	};
+	const binary = await ensureAgyInstalled(directory, fetchImpl);
+	expect(await Bun.file(binary).text()).toBe("nested-agy-bytes");
+});
+
+it("resolveAgyBinary respects PI_AGY_PATH and falls back to PATH binary when offline", async () => {
+	const previousOverride = process.env.PI_AGY_PATH;
+	process.env.PI_AGY_PATH = "/custom/agy-override";
+	try {
+		expect(await resolveAgyBinary()).toBe("/custom/agy-override");
+	} finally {
+		if (previousOverride === undefined) delete process.env.PI_AGY_PATH;
+		else process.env.PI_AGY_PATH = previousOverride;
+	}
 });

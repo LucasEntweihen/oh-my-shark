@@ -942,7 +942,7 @@ function modelValues(options: SessionConfigOption[] | null | undefined): string[
  */
 function agyModelValue(model: Model, effort: string | undefined, advertised: string[] | undefined): string {
 	if (!advertised || advertised.includes(model.id)) return model.id;
-	for (const level of [effort, model.thinking?.defaultLevel]) {
+	for (const level of [effort, model.thinking?.defaultLevel, "high", "medium", "low"]) {
 		if (level && advertised.includes(`${model.id}-${level}`)) return `${model.id}-${level}`;
 	}
 	return model.id;

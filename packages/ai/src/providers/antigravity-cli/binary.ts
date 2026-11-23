@@ -1,7 +1,7 @@
 /** Managed agy releases, installed from Google's manifest without running its shell-profile installer. */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { $env, formatBytes, getAntigravityCliDir, isEnoent, logger, withFileLock } from "@oh-my-pi/pi-utils";
+import { $env, $which, formatBytes, getAntigravityCliDir, isEnoent, logger, withFileLock } from "@oh-my-pi/pi-utils";
 import type { FetchImpl } from "../../types";
 
 const MANIFEST_BASE_URL = "https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests";
@@ -30,7 +30,39 @@ export function agyGeminiDir(): string {
 export async function resolveAgyBinary(fetchImpl: FetchImpl = fetch): Promise<string> {
 	const override = $env.PI_AGY_PATH;
 	if (override) return override;
-	return ensureAgyInstalled(path.join(getAntigravityCliDir(), "bin"), fetchImpl);
+	try {
+		return await ensureAgyInstalled(path.join(getAntigravityCliDir(), "bin"), fetchImpl);
+	} catch (error) {
+		const systemBinary = $which("agy") ?? $which("antigravity");
+		if (systemBinary) {
+			logger.warn("Managed Antigravity CLI download failed; using system binary", {
+				binary: systemBinary,
+				error: String(error),
+			});
+			return systemBinary;
+		}
+		throw error;
+	}
+}
+
+function findExecutableInArchive(files: Map<string, Blob>): Blob | undefined {
+	const candidates =
+		process.platform === "win32"
+			? ["antigravity.exe", "agy.exe", "antigravity", "agy"]
+			: ["antigravity", "agy", "antigravity.exe", "agy.exe"];
+	for (const candidate of candidates) {
+		const exact = files.get(candidate);
+		if (exact) return exact;
+	}
+	for (const candidate of candidates) {
+		for (const [entryPath, blob] of files) {
+			const normalized = entryPath.replaceAll("\\", "/");
+			if (path.posix.basename(normalized) === candidate) {
+				return blob;
+			}
+		}
+	}
+	return undefined;
 }
 
 /** Installs a verified release into `directory`; versioned paths keep running processes valid during updates. */
@@ -113,8 +145,7 @@ async function install(directory: string, fetchImpl: FetchImpl): Promise<string>
 				try {
 					if (url.pathname.endsWith(".tar.gz") || url.pathname.endsWith(".zip")) {
 						const files = await new Bun.Archive(payload).files();
-						const executableName = process.platform === "win32" ? "antigravity.exe" : "antigravity";
-						const executable = files.get(executableName) ?? files.get("antigravity");
+						const executable = findExecutableInArchive(files);
 						if (!executable) throw new Error("Antigravity CLI archive has no antigravity executable");
 						await Bun.write(staging, executable);
 					} else {

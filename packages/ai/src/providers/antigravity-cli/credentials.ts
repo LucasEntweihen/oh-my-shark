@@ -69,6 +69,21 @@ function identity(idToken: unknown): Pick<OAuthCredentials, "email" | "accountId
 	}
 }
 
+function parseTokenExpiry(expiry: unknown): number {
+	if (typeof expiry === "number" && Number.isFinite(expiry)) {
+		return expiry > 0 && expiry < 1_000_000_000_000 ? expiry * 1000 : expiry;
+	}
+	if (typeof expiry === "string") {
+		const trimmed = expiry.trim();
+		if (/^\d+$/.test(trimmed)) {
+			const numeric = Number(trimmed);
+			return numeric > 0 && numeric < 1_000_000_000_000 ? numeric * 1000 : numeric;
+		}
+		return Date.parse(trimmed);
+	}
+	return Number.NaN;
+}
+
 /** Parse the native consumer grant, not Gemini CLI's oauth_creds.json. */
 export function parseAgyStoredCredentials(value: unknown): OAuthCredentials {
 	const stored = record(value);
@@ -76,7 +91,7 @@ export function parseAgyStoredCredentials(value: unknown): OAuthCredentials {
 	if (stored?.auth_method !== "consumer") {
 		throw invalid("Antigravity CLI requires a consumer OAuth login; sign in with Google again");
 	}
-	const expires = typeof token?.expiry === "string" ? Date.parse(token.expiry) : Number.NaN;
+	const expires = parseTokenExpiry(token?.expiry);
 	if (!nonempty(token?.access_token) || !Number.isFinite(expires) || expires <= 0) {
 		throw invalid("Antigravity CLI did not export a valid access token and expiry; sign in again");
 	}
