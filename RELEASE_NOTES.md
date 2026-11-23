@@ -1,3 +1,19 @@
+# OhMyShark v0.1.5 — Full Antigravity AI Ecosystem, Unrestricted Gemini 4 / Claude 5.5 Capacity & Universal Release
+
+Release completa consolidando o ecossistema **Google Antigravity** (`google-antigravity` e `antigravity-cli`) em capacidade total e garantindo builds cross-platform integradas (CLI + Native Desktop GUI + instaladores).
+
+## Destaques
+
+### 1. Sistema Completo de Login e Consumo Antigravity (`google-antigravity` & `antigravity-cli`)
+- **Provisionamento e Failover Multi-Endpoint (`packages/ai/src/registry/oauth/google-antigravity.ts`, `usage/google-antigravity.ts`)**: failover automático entre `daily-cloudcode-pa.googleapis.com`, `daily-cloudcode-pa.sandbox.googleapis.com` e `cloudcode-pa.googleapis.com` em falhas transitórias; preferência pelo tier pago/`isDefault` em contas Pro/Ultra; recuperação automática de `projectId` no refresh de tokens importados.
+- **Capacidade Irrestrita e Todos os Modelos (`packages/catalog`)**: versão do cliente Antigravity atualizada (`2.34.0`), suporte a `thinkingLevel` em string (`xhigh`, `HIGH`, `MEDIUM`, `LOW`), descoberta automática de `imageGenerationModelIds`, perfis completos e paridade no catálogo para **Gemini 4 Carbon** (1M / 262k), **Gemini 4 Hydrogen** (1M / 262k + `xhigh`), **Gemini 4 Neon** (1M / 262k + `xhigh`), **Gemini 4 Argon**, **Claude 5.5 Opus/Sonnet** (1M / 128k), **Gemini 3.x** e **GPT-OSS 120B**.
+- **Resiliência do `antigravity-cli` & Importação (`antigravity-cli/binary.ts`, `credentials.ts`, `host.ts`, `auth-broker-cli.ts`, `login-cli.ts`)**: busca recursiva por `agy`/`antigravity` em arquivos compactados, fallback para binário no PATH, suporte a `expiry` em epoch numérico, preservação de `project_id` no `auth-broker import` e exibição imediata da contagem de modelos desbloqueados após o login.
+
+### 2. Engenharia de Release & Auto-Updater (`omsk update`)
+- **Resiliência de Rede e Integridade (`packages/coding-agent/src/cli/update-cli.ts`)**: retry com backoff em erros transitórios de DNS/rede (`ENOTFOUND`, `EAI_AGAIN`, `ECONNRESET`, `ETIMEDOUT`), fallback automático para web redirect e `SHA256SUMS.txt`, e aborto imediato em divergências determinísticas de tamanho/hash.
+- **Correção de CI & Empacotamento Cross-Platform**: `bun.lock` sincronizado para `--frozen-lockfile` e metadados `homepage` adicionados em `@ohms/gui` para viabilizar pacotes Linux (`.deb` / AppImage) junto aos binários CLI (`omsk-*` / `ohms-*` Windows/Linux/macOS x64/arm64) e instaladores.
+
+---
 # OhMyShark v0.1.2 — Correção de Inicialização Windows VT & Restauração do Design OMSK
 
 Release de correção imediata garantindo execução limpa do binário compilado `omsk` / `ohms` e restauração integral da identidade visual OMSK na inicialização do terminal.
