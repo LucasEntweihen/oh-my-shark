@@ -1,3 +1,20 @@
+# OhMyShark v0.2.0 — Liquid Glass GUI Overhaul, ASCII Shark Ocean Aquarium & Cross-Platform Optimization
+
+Release major da experiência **OhMyShark (`omsk` / `ohms`)**, trazendo remodelação técnica e visual completa da GUI Desktop nativa junto aos binários autônomos e instaladores cross-platform.
+
+## Destaques
+
+### 1. GUI Desktop OhMyShark (`packages/gui`)
+- **Aquário ASCII Oceânico & Liquid Glass**: cada conversa e cada aba vazia gera proceduralmente um fundo marinho ASCII exclusivo (variações de água, raios volumétricos, corais, algas, cardumes, bolhas e múltiplos tubarões animados em diferentes espécies e comportamentos) visto por trás de uma camada óptica de **Liquid Glass** com refração SVG e desfoque configurável.
+- **Identidade 100% OMSK & Novo Ícone**: remoção integral de referências legadas de interface ao sistema anterior em todos os 5 idiomas (`en`, `pt`, `zh`, `ru`, `th`), menus nativos e metadados; adoção do novo brasão `OMSK logo.png` em `.ico`, `.icns`, `.png` e tray.
+- **Tema Escuro Padrão, Presets & Studio de Cores**: inicialização escura nativa (`Shark Ocean` sem flash claro), novos presets escuros (`Bioluminescent Reef`, `Crimson Trench`, `Midnight Obsidian`) e customizador manual ao vivo de cores, oceano, tubarões e vidro.
+- **Navegação por Abas Completa & Layout Otimizado**: fixar abas (`Pin`), renomeação inline com duplo clique, duplicar, reabrir aba fechada, setas de rolagem horizontal, filtro no seletor de abas, botões táteis modernizados e efeitos sonoros sintetizados opcionais.
+
+### 2. Manutenção, Testes & Empacotamento Cross-Platform
+- Correção completa das suítes Vitest da GUI em Windows/macOS/Linux (incluindo fallback seguro de SQLite sem `fts5`, execução de fixtures via Bun e paridade total nos 5 idiomas).
+- Empacotamento completo pela pipeline de release com os 6 binários CLI (`omsk-*` / `ohms-*`), instaladores nativos desktop (Windows Setup/Portable, Linux AppImage/DEB, macOS DMG/ZIP), configurações, `SHA256SUMS.txt` e attestations.
+
+---
 # OhMyShark v0.1.5 — Full Antigravity AI Ecosystem, Unrestricted Gemini 4 / Claude 5.5 Capacity & Universal Release
 
 Release completa consolidando o ecossistema **Google Antigravity** (`google-antigravity` e `antigravity-cli`) em capacidade total e garantindo builds cross-platform integradas (CLI + Native Desktop GUI + instaladores).

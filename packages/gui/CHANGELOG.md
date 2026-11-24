@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-24
+
+### Added
+
+- Procedural ASCII Ocean Shark Aquarium backdrop uniquely generated per empty tab and started chat, viewed behind an SVG-refracted Liquid Glass layer.
+- New curated dark ocean presets (`Bioluminescent Reef`, `Crimson Trench`, `Midnight Obsidian`) and live manual Color & Glass Customizer studio inside the Theme Picker.
+- Complete tab navigation upgrades: tab pinning, double-click inline rename, duplicate tab, close other tabs, horizontal overflow scroll buttons, reopened closed tab history, and filtered Tab Search switcher.
+- Synthesized Web Audio underwater and glass UI sound effects with quick TitleBar mute toggle and Settings preference.
+- Cross-platform Windows, macOS, and Linux `.png` / `.ico` / `.icns` icon generation from the official `OMSK logo.png` hammerhead crest.
+
+### Changed
+
+- Dark-first default experience (`sharkOcean` dark theme across pre-paint, renderer, and native window chrome).
+- Space-optimized workspace reading widths, compact chrome height, modern tactile button states, and consistent `1.5px`/`1.65px` stroke Lucide icons.
+- Complete OhMyShark (`OMSK`) rebranding across menus, dialogs, system prompts, and all five UI locales (`en`, `pt`, `zh`, `ru`, `th`).
+
+### Fixed
+
+- Cross-platform GUI Vitest stability across Windows SQLite fallback (`ConversationIndex`), `.ts` test sidecar runners, locale parity, and `TabBar` timing.
+
 ## [1.0.2] - 2026-11-21
 
 ### Added
