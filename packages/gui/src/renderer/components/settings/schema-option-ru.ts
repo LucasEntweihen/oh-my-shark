@@ -22,7 +22,7 @@ export const RU_SCHEMA_OPTION_TEXT: Readonly<Record<string, string>> = {
 		"Сохранять модели ролей в конфигурации активного профиля (текущее поведение)",
 	"Per-project": "Для каждого проекта",
 	"Save project role models in .omp/config.yml; missing project roles use global defaults":
-		"Сохранять модели ролей проекта в .omp/config.yml; для отсутствующих ролей проекта использовать глобальные значения по умолчанию",
+		"Сохранять модели ролей проекта в .omsk/config.yml; для отсутствующих ролей проекта использовать глобальные значения по умолчанию",
 	Unicode: "Unicode",
 	"Standard symbols (default)": "Стандартные символы (по умолчанию)",
 	"Nerd Font": "Nerd Font",
@@ -997,7 +997,7 @@ export const RU_SCHEMA_OPTION_TEXT: Readonly<Record<string, string>> = {
 	"Share only when /collab is run": "Публиковать только после запуска /collab",
 	View: "Просмотр",
 	"Auto-host; the registry hands out view-only links (omp collab link --view)":
-		"Автоматическая публикация; реестр выдаёт ссылки только для просмотра (omp collab link --view)",
+		"Автоматическая публикация; реестр выдаёт ссылки только для просмотра (OhMyShark collab link --view)",
 	Control: "Управление",
 	"Auto-host; the registry hands out control links that can prompt the session":
 		"Автоматическая публикация; реестр выдаёт ссылки для управления, позволяющие отправлять запросы в сессию",

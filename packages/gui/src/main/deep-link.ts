@@ -1,5 +1,5 @@
 /**
- * Registers omsk://, ohms://, and omp:// protocols and handles deep links.
+ * Registers omsk:// and ohms:// protocols and handles deep links.
  * Supports <scheme>://session/<id> and <scheme>://new.
  */
 import { isAbsolute, resolve } from "node:path";
@@ -8,7 +8,7 @@ import { type DeepLinkPayload, IPC_EVENTS } from "../shared/ipc-types";
 import { launchArguments, launchFolder, parseLaunchArgv } from "./launch-argv";
 import type { SpawnWindow, WindowManager } from "./window";
 
-const PROTOCOLS = ["omsk", "ohms", "omp"] as const;
+const PROTOCOLS = ["omsk", "ohms"] as const;
 
 /**
  * macOS delivers the launch URL while the app is still starting, and `setupDeepLinks`

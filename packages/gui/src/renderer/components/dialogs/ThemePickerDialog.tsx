@@ -342,7 +342,7 @@ export function ThemePickerDialog() {
 				</div>
 				<div className="flex items-center gap-3 border-t border-[var(--omp-border-muted)] px-4 py-2.5">
 					<span className="min-w-0 flex-1 text-omp-sm text-[var(--omp-dim)]">
-						{t("themePicker.custom.hint", { dir: customDir ? shortenPath(customDir) : "~/.omp/gui/themes" })}
+						{t("themePicker.custom.hint", { dir: customDir ? shortenPath(customDir) : "~/.omsk/gui/themes" })}
 					</span>
 					<Button size="sm" variant="secondary" onClick={() => openThemeEditor()}>
 						<Palette size={13} />

@@ -973,7 +973,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
 		async (event, options: IpcBenchmarkRunOptions): Promise<IpcBenchmarkRunResult> => {
 			const binaryPath = deps.benchmarkBinaryPath;
 			const cwd = cwdFor(deps, event);
-			if (!binaryPath) return { success: false, error: "Bundled omp is unavailable" };
+			if (!binaryPath) return { success: false, error: "Bundled OMSK is unavailable" };
 			if (!cwd) return { success: false, error: "No active workspace" };
 			const senderId = event.sender.id;
 			const runner = benchmarkRunners.get(senderId) ?? new BenchmarkRunner();

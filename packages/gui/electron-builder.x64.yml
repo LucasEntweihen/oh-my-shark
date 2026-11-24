@@ -11,13 +11,12 @@ extraResources:
   - from: resources/omsk.x64
     to: omsk
 # Must match electron-builder.yml: the x64 bundle is a separate config, so the
-# `omsk://` / `ohms://` / `omp://` schemes have to be declared here too or Intel Macs get no deep links.
+# `omsk://` / `ohms://` schemes have to be declared here too or Intel Macs get no deep links.
 protocols:
   - name: omsk
     schemes:
       - omsk
       - ohms
-      - omp
 asar: true
 compression: maximum
 

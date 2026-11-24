@@ -43,7 +43,7 @@ export const ZH_SCHEMA_OPTION_TEXT: Readonly<Record<string, string>> = {
 		"将角色模型保存在当前配置文件的配置中（当前行为）",
 	"Per-project": "按项目",
 	"Save project role models in .omp/config.yml; missing project roles use global defaults":
-		"将项目角色模型保存在 .omp/config.yml 中；缺失的项目角色使用全局默认值",
+		"将项目角色模型保存在 .omsk/config.yml 中；缺失的项目角色使用全局默认值",
 	Unicode: "Unicode",
 	"Standard symbols (default)": "标准符号（默认）",
 	"Nerd Font": "Nerd Font",
@@ -821,7 +821,7 @@ export const ZH_SCHEMA_OPTION_TEXT: Readonly<Record<string, string>> = {
 	View: "只读视图",
 	"Share only when /collab is run": "仅在执行 /collab 时共享",
 	"Auto-host; the registry hands out view-only links (omp collab link --view)":
-		"自动托管；注册表分发只读链接（omp collab link --view）",
+		"自动托管；注册表分发只读链接（OhMyShark collab link --view）",
 	"Any error": "任意错误",
 	"Every provider error may switch models": "任何提供商错误都可以切换模型",
 	"Usage limits only": "仅用量限制",

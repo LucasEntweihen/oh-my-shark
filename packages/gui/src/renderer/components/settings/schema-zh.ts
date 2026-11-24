@@ -86,7 +86,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"update.channel": {
 		label: "Core 更新通道",
-		description: "omp update 与 Core 启动更新检查使用的通道。桌面应用更新在“更新”页面管理。",
+		description: "OhMyShark update 与 Core 启动更新检查使用的通道。桌面应用更新在“更新”页面管理。",
 	},
 	"edit.autoRepair.enabled": {
 		label: "自动修复解析错误",
@@ -102,7 +102,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"commit.cacheTtlDays": { label: "提交分析缓存天数" },
 	"extensionHandlers.toolCallTimeoutMs": {
 		label: "扩展工具调用超时（毫秒）",
-		description: "扩展 tool_call 处理器的有效工作超时；等待 OMP 对话框期间不计时，无效值回退为 30000 毫秒。",
+		description: "扩展 tool_call 处理器的有效工作超时；等待 OMSK 对话框期间不计时，无效值回退为 30000 毫秒。",
 	},
 	// ── appearance ──────────────────────────────────────────────────────────
 	"theme.dark": { label: "深色主题", description: "TUI 与 GUI 使用深色外观时的主题配色" },
@@ -388,7 +388,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 		description: "正常交互式启动时显示完整的动画设置画面，而不重新运行设置。静默启动仍会抑制它。",
 	},
 	"startup.setupWizard": { label: "设置向导", description: "每个设置版本展示一次新增的入门引导步骤" },
-	"startup.checkUpdate": { label: "检查更新", description: "启动时检查 omp 更新" },
+	"startup.checkUpdate": { label: "检查更新", description: "启动时检查 OhMyShark 更新" },
 	"marketplace.autoUpdate": { label: "插件市场自动更新", description: "启动时检查插件更新" },
 	"startup.changelogMode": { label: "启动更新日志", description: "选择更新说明以摘要、完整详情开始，或保持隐藏" },
 	"magicKeywords.enabled": {
@@ -479,7 +479,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"chat.systemPrompt": {
 		label: "聊天系统提示词",
 		description:
-			"未单独设置的聊天（omp --chat、GUI 聊天标签页）默认使用的系统提示词，替换内置的聊天提示词。留空则使用内置提示词",
+			"未单独设置的聊天（OhMyShark --chat、GUI 聊天标签页）默认使用的系统提示词，替换内置的聊天提示词。留空则使用内置提示词",
 	},
 	"chat.history": {
 		label: "聊天历史",
@@ -856,7 +856,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"github.cache.enabled": {
 		label: "GitHub 视图缓存",
-		description: "把渲染好的 issue/PR 视图输出缓存到 ~/.omp/cache/github-cache.db，重复读取零开销",
+		description: "把渲染好的 issue/PR 视图输出缓存到 ~/.omsk/cache/github-cache.db，重复读取零开销",
 	},
 	"github.cache.softTtlSec": {
 		label: "GitHub 缓存软 TTL",
@@ -869,7 +869,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"web_search.enabled": { label: "网络搜索", description: "启用 web_search 工具获取实时网络结果" },
 	"security.enabled": {
 		label: "安全",
-		description: "启用 OMP 原生安全扫描的规划、执行，以及只读的 security:// 资源命名空间",
+		description: "启用 OMSK 原生安全扫描的规划、执行，以及只读的 security:// 资源命名空间",
 	},
 	"ask.enabled": { label: "Ask", description: "启用 ask 工具进行交互式用户提问" },
 	"browser.enabled": { label: "浏览器", description: "启用 browser 工具进行脚本化 Chromium 自动化（puppeteer）" },
@@ -941,7 +941,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"dev.autoqaPush.endpoint": {
 		label: "自动 QA 推送端点",
-		description: "接收自动 QA JSON 报告的完整 URL（默认 https://qa.omp.sh/v1/grievances）",
+		description: "接收自动 QA JSON 报告的完整 URL（默认 https://qa.ohmyshark.dev/v1/grievances）",
 	},
 
 	// ── tasks ───────────────────────────────────────────────────────────────
@@ -980,7 +980,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"worktree.base": {
 		label: "Worktree 基础目录",
 		description:
-			"Agent 管理的 worktree 的基础目录——任务隔离副本、`github` PR 检出和 `omp worktree` 清理都位于此处。未设置时使用 ~/.omp/wt。必须是绝对路径或 ~ 相对路径；相对路径会被忽略。OMP_WORKTREE_DIR 环境变量可覆盖此项。",
+			"Agent 管理的 worktree 的基础目录——任务隔离副本、`github` PR 检出和 `omsk worktree` 清理都位于此处。未设置时使用 ~/.omsk/wt。必须是绝对路径或 ~ 相对路径；相对路径会被忽略。OMP_WORKTREE_DIR 环境变量可覆盖此项。",
 	},
 	"task.eager": { label: "优先任务委派", description: "推动把工作委派给子代理的力度" },
 	"task.batch": {
@@ -1081,7 +1081,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"tts.localVoice": { label: "本地 TTS 音色", description: "本地 TTS 后端使用的 Kokoro 音色（美式/英式，女声/男声）" },
 	"tts.localSpeed": {
 		label: "本地 TTS 语速",
-		description: "本地 TTS 后端（tts 工具、omp say）的语速。1 = 正常；限制在 0.5–2.5",
+		description: "本地 TTS 后端（tts 工具、OhMyShark say）的语速。1 = 正常；限制在 0.5–2.5",
 	},
 	"speech.enabled": { label: "语音朗读", description: "助手输出在流式到达时通过扬声器朗读出来" },
 	"speech.mode": {
@@ -1174,7 +1174,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	setupVersion: { label: "设置向导版本", description: "记录最近运行过的设置向导版本，用于按版本只展示新增的引导步骤" },
 	"auth.broker.url": {
 		label: "认证代理 URL",
-		description: "远程 `omp auth-broker serve` 主机地址，凭据经它代理；通常由 OMP_AUTH_BROKER_URL 环境变量设置",
+		description: "远程 `omsk auth-broker serve` 主机地址，凭据经它代理；通常由 OMP_AUTH_BROKER_URL 环境变量设置",
 	},
 	"auth.broker.token": {
 		label: "认证代理令牌",
@@ -1336,7 +1336,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"hindsight.retainContext": {
 		label: "Hindsight 留存上下文标签",
-		description: "留存文档附带的上下文标签（默认 omp）",
+		description: "留存文档附带的上下文标签（默认 OhMyShark）",
 	},
 	"hindsight.recallBudget": { label: "Hindsight 召回预算", description: "召回深度档位：low、mid 或 high（默认 mid）" },
 	"hindsight.recallMaxTokens": {
@@ -1433,8 +1433,8 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"skills.enableCodexUser": { label: "Codex 用户技能", description: "从 ~/.codex/skills 加载技能" },
 	"skills.enableClaudeUser": { label: "Claude 用户技能", description: "从 ~/.claude/skills 加载技能" },
 	"skills.enableClaudeProject": { label: "Claude 项目技能", description: "从 .claude/skills 加载技能" },
-	"skills.enablePiUser": { label: "Pi 用户技能", description: "从 ~/.omp/agent/skills 加载技能" },
-	"skills.enablePiProject": { label: "Pi 项目技能", description: "从 .omp/skills 加载技能" },
+	"skills.enablePiUser": { label: "Pi 用户技能", description: "从 ~/.omsk/agent/skills 加载技能" },
+	"skills.enablePiProject": { label: "Pi 项目技能", description: "从 .omsk/skills 加载技能" },
 	"skills.enableAgentsUser": {
 		label: "Agents 用户技能",
 		description: "从 ~/.agent/skills 与 ~/.agents/skills 加载技能",
@@ -1483,9 +1483,9 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 			"是否同意分享自动工具问题报告：unset = 首次上报时询问；granted = 记录并（配置推送时）发送；denied = 静默忽略",
 	},
 	// 存储 GC
-	"gc.blobs": { label: "GC 清理 Blob", description: "`omp gc` 时清理不再被引用的会话 blob" },
-	"gc.archive": { label: "GC 归档冷会话", description: "`omp gc` 时将长期未活动的会话移入归档" },
-	"gc.wal": { label: "GC 处理 WAL", description: "`omp gc` 时处理会话存储的预写日志（WAL）" },
+	"gc.blobs": { label: "GC 清理 Blob", description: "`omsk gc` 时清理不再被引用的会话 blob" },
+	"gc.archive": { label: "GC 归档冷会话", description: "`omsk gc` 时将长期未活动的会话移入归档" },
+	"gc.wal": { label: "GC 处理 WAL", description: "`omsk gc` 时处理会话存储的预写日志（WAL）" },
 	"gc.coldArchiveAfterDays": { label: "冷归档天数", description: "未活动超过此天数的会话才会被归档（默认 30）" },
 	"gc.retainNewestGlobal": {
 		label: "全局保留最新会话数",
@@ -1521,16 +1521,16 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"lsp.shared": {
 		label: "共享语言服务器",
-		description: "通过守护进程代理，让同一项目的 omp 实例共享语言服务器；不可用时回退到私有服务器",
+		description: "通过守护进程代理，让同一项目的 OhMyShark 实例共享语言服务器；不可用时回退到私有服务器",
 	},
 	"browser.relay": {
 		label: "浏览器中继",
 		description:
-			"通过 omp 浏览器中继控制自己的 Chrome 标签页。只需安装一次扩展（`omp browser-relay install`）；浏览器工具需要时会自动启动中继服务器。它优先于浏览器 CDP URL；可设置 PI_BROWSER_RELAY=0 或 PI_BROWSER_RELAY=1 覆盖。",
+			"通过 OhMyShark 浏览器中继控制自己的 Chrome 标签页。只需安装一次扩展（`omsk browser-relay install`）；浏览器工具需要时会自动启动中继服务器。它优先于浏览器 CDP URL；可设置 PI_BROWSER_RELAY=0 或 PI_BROWSER_RELAY=1 覆盖。",
 	},
 	"browser.relayUrl": {
 		label: "浏览器中继 URL",
-		description: "omp 浏览器中继端点（默认 http://127.0.0.1:9224）",
+		description: "OhMyShark 浏览器中继端点（默认 http://127.0.0.1:9224）",
 	},
 	"providers.webSearchTimeoutSeconds": {
 		label: "网络搜索超时",
@@ -1544,11 +1544,11 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"browser.freezeOnTurnEnd": {
 		label: "回合结束时冻结浏览器标签",
-		description: "回合结束时冻结由 OMP 管理的浏览器标签，避免后台标签继续活动。",
+		description: "回合结束时冻结由 OMSK 管理的浏览器标签，避免后台标签继续活动。",
 	},
 	"browser.idleCloseSec": {
 		label: "浏览器空闲关闭超时",
-		description: "空闲多久后关闭由 OMP 启动的浏览器（秒）；0 表示从不关闭。",
+		description: "空闲多久后关闭由 OMSK 启动的浏览器（秒）；0 表示从不关闭。",
 	},
 	"collab.autoStart": {
 		label: "协作自动启动",
@@ -1618,7 +1618,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"stream.serverUrl": {
 		label: "直播服务器",
-		description: "omp stream 使用的直播服务器地址。",
+		description: "OhMyShark stream 使用的直播服务器地址。",
 	},
 	"task.agentServiceTierOverrides": {
 		label: "子任务服务层级覆盖",
@@ -1698,7 +1698,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"telemetry.otlpExportEnabled": {
 		label: "OTLP 遥测导出",
-		description: "允许 OMP 通过 OTEL_* 端点导出 trace、日志与指标；更改在下次启动时生效。",
+		description: "允许 OMSK 通过 OTEL_* 端点导出 trace、日志与指标；更改在下次启动时生效。",
 	},
 	// advisor
 	"advisor.reviewMode": {
@@ -1758,7 +1758,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"worktree.onExit": {
 		label: "退出时处理 Worktree",
-		description: "退出时如何处理 omp 启动以来（启动时或通过 /wt）创建的 worktree。",
+		description: "退出时如何处理 OhMyShark 启动以来（启动时或通过 /wt）创建的 worktree。",
 	},
 	"task.speculativeLaunch": {
 		label: "投机式任务启动",
@@ -1788,12 +1788,12 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"skills.registryUrl": {
 		label: "技能注册表",
-		description: "`omp skill` 用于安装、搜索与发布技能的 Skillshare 注册表（https://host[:port]）。",
+		description: "`omsk skill` 用于安装、搜索与发布技能的 Skillshare 注册表（https://host[:port]）。",
 	},
 	"browser.tern": {
 		label: "Tern 浏览器",
 		description:
-			"在 Tern 面板中把浏览器标签以画中画覆盖在 omp 面板上（原生 WebView），而非无头 Chromium；无可用 Tern 窗口时回退 Chromium。显式 app 选项、relay 与浏览器 CDP URL 优先；app.tern:false 可单独退出。可用 PI_BROWSER_TERN=0 或 =1 覆盖。",
+			"在 Tern 面板中把浏览器标签以画中画覆盖在 OhMyShark 面板上（原生 WebView），而非无头 Chromium；无可用 Tern 窗口时回退 Chromium。显式 app 选项、relay 与浏览器 CDP URL 优先；app.tern:false 可单独退出。可用 PI_BROWSER_TERN=0 或 =1 覆盖。",
 	},
 	"ida.enabled": {
 		label: "IDA Pro",
@@ -1810,7 +1810,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"ida.maxOpen": {
 		label: "IDA 同时打开上限",
 		description:
-			"每个项目最多同时打开的 IDA 数据库数（omp ps 中的 omp.ida.* 守护进程）；再打开时保存并关闭最久未用的空闲库。",
+			"每个项目最多同时打开的 IDA 数据库数（OhMyShark ps 中的 omsk.ida.* 守护进程）；再打开时保存并关闭最久未用的空闲库。",
 	},
 	"ida.idleCloseSec": {
 		label: "IDA 空闲关闭超时",
@@ -1823,7 +1823,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	// advanced（无 ui 元数据，归入 Advanced 选项卡）
 	"auth.accountPolicies": {
 		label: "账号策略",
-		description: "按账号的认证路由与配额策略（JSON 数组），通常由 omp auth-gateway / usage 工作流写入。",
+		description: "按账号的认证路由与配额策略（JSON 数组），通常由 OhMyShark auth-gateway / usage 工作流写入。",
 	},
 	modelPresets: {
 		label: "模型预设",
@@ -1831,7 +1831,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"gc.stale": {
 		label: "GC 清理陈旧文件",
-		description: "`omp gc --apply` 时同时删除陈旧的用户可见文件（过期调试报告、协作副本、悬空标记等）；默认关闭。",
+		description: "`omsk gc --apply` 时同时删除陈旧的用户可见文件（过期调试报告、协作副本、悬空标记等）；默认关闭。",
 	},
 	"gc.staleRetainNewest": {
 		label: "陈旧清理保留最新数",
@@ -1964,11 +1964,11 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"browser.webkitPath": {
 		label: "浏览器 WebKit 路径",
 		description:
-			"omp 的 WebKit 引擎：它的宿主可执行文件，或包含它（名为 ABHost，Windows 上为 ABHost.exe）的 ABKit 引擎目录。未设置时运行已安装的引擎 ~/.o2/lib/abkit/ABHost（Windows 上为 ABHost.exe）。支持 ~。PI_BROWSER_WEBKIT_PATH 可覆盖它。",
+			"OhMyShark 的 WebKit 引擎：它的宿主可执行文件，或包含它（名为 ABHost，Windows 上为 ABHost.exe）的 ABKit 引擎目录。未设置时运行已安装的引擎 ~/.o2/lib/abkit/ABHost（Windows 上为 ABHost.exe）。支持 ~。PI_BROWSER_WEBKIT_PATH 可覆盖它。",
 	},
 	"mcp.builtinTransforms": {
 		label: "MCP 内置替换",
-		description: "跳过已被 omp 自带工具取代的 MCP 服务器（例如 eval 运行 JavaScript 时的 Codex node_repl）",
+		description: "跳过已被 OhMyShark 自带工具取代的 MCP 服务器（例如 eval 运行 JavaScript 时的 Codex node_repl）",
 	},
 	"mcp.evalNamespaces": {
 		label: "MCP eval 命名空间",
@@ -1989,7 +1989,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	},
 	"task.crossInstance": {
 		label: "跨实例代理消息",
-		description: "允许同一文件夹中的其他 omp 实例读取代理输出，并发送可唤醒代理的消息",
+		description: "允许同一文件夹中的其他 OhMyShark 实例读取代理输出，并发送可唤醒代理的消息",
 	},
 	"composer.predictions": {
 		label: "输入框预测",

@@ -34,7 +34,7 @@ function setRecording(next: boolean): void {
 
 function timestampName(): string {
 	// 2026-02-14T15-30-00 — colons are illegal in macOS/Windows filenames.
-	return `omp-${new Date().toISOString().replace(/[:]/g, "-").slice(0, 19)}.webm`;
+	return `omsk-${new Date().toISOString().replace(/[:]/g, "-").slice(0, 19)}.webm`;
 }
 
 async function finish(save: boolean): Promise<void> {

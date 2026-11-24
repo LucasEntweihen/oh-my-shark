@@ -116,7 +116,7 @@ export function WorktreeDialog() {
 				/>
 				{validName && (
 					<p className="text-omp-sm text-(--omp-dim)">
-						{t("worktree.branchPreview", { branch: `omp/gui/${slug}` })}
+						{t("worktree.branchPreview", { branch: `omsk/gui/${slug}` })}
 					</p>
 				)}
 				<p className="text-omp-sm text-(--omp-muted)">{t("worktree.baseScope")}</p>

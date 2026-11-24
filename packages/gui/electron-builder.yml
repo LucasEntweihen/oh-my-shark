@@ -10,7 +10,7 @@ files:
 extraResources:
   - from: resources/omsk
     to: omsk
-# `omsk://` / `ohms://` / `omp://` deep links only work if LaunchServices sees CFBundleURLTypes, which
+# `omsk://` / `ohms://` deep links only work if LaunchServices sees CFBundleURLTypes, which
 # this block is the only thing that writes. Without it `open-url` never fires in
 # an installed build and the handler in src/main/deep-link.ts is dead code.
 protocols:
@@ -18,7 +18,6 @@ protocols:
     schemes:
       - omsk
       - ohms
-      - omp
 asar: true
 compression: maximum
 

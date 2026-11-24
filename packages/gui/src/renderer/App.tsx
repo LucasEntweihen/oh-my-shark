@@ -168,7 +168,7 @@ function FocusedSessionEffects() {
 	const colorBlindMode = useUiStore(s => s.colorBlindMode);
 
 	useEffect(() => {
-		const name = titleSessionName ?? "omp";
+		const name = titleSessionName ?? "OhMyShark";
 		document.title = !titleRunState ? name : titleAwaiting ? `! ${name}` : titleStreaming ? `● ${name}` : `› ${name}`;
 	}, [titleRunState, titleAwaiting, titleStreaming, titleSessionName]);
 	useEffect(() => startVoiceAutoSpeak(), []);

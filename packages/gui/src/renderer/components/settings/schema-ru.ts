@@ -413,11 +413,11 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	},
 	"startup.checkUpdate": {
 		label: "Проверять обновления",
-		description: "Проверять обновления omp при запуске",
+		description: "Проверять обновления OhMyShark при запуске",
 	},
 	"update.channel": {
 		label: "Канал обновлений",
-		description: "Канал обновлений, используемый командами omp update и проверкой обновлений при запуске",
+		description: "Канал обновлений, используемый командами OhMyShark update и проверкой обновлений при запуске",
 	},
 	"marketplace.autoUpdate": {
 		label: "Автообновление Marketplace",
@@ -794,7 +794,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"tts.localSpeed": {
 		label: "Скорость локального TTS",
 		description:
-			"Скорость речи локального обработчика TTS (инструменты tts, omp say). 1 = обычная; ограничена диапазоном 0.5–2.5",
+			"Скорость речи локального обработчика TTS (инструменты tts, OhMyShark say). 1 = обычная; ограничена диапазоном 0.5–2.5",
 	},
 	"speech.enabled": {
 		label: "Озвучивание речи",
@@ -888,7 +888,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"telemetry.otlpExportEnabled": {
 		label: "Экспорт телеметрии OTLP",
 		description:
-			"Разрешить OMP экспортировать трассировки, журналы и метрики через конечные точки OTEL_*. Изменение вступит в силу при следующем запуске.",
+			"Разрешить OMSK экспортировать трассировки, журналы и метрики через конечные точки OTEL_*. Изменение вступит в силу при следующем запуске.",
 	},
 	"advisor.enabled": {
 		label: "Включить Advisor",
@@ -948,7 +948,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"chat.systemPrompt": {
 		label: "Системный промпт чата",
 		description:
-			"Системный промпт по умолчанию для чатов (omp --chat, вкладки чата в GUI), в которых не задан свой; заменяет встроенный промпт чата. Оставьте пустым, чтобы использовать встроенный",
+			"Системный промпт по умолчанию для чатов (OhMyShark --chat, вкладки чата в GUI), в которых не задан свой; заменяет встроенный промпт чата. Оставьте пустым, чтобы использовать встроенный",
 	},
 	"chat.history": {
 		label: "История чата",
@@ -1608,7 +1608,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"github.cache.enabled": {
 		label: "Кеш представлений GitHub",
 		description:
-			"Кешировать отображение issue/PR в ~/.omp/cache/github-cache.db, чтобы повторное чтение не требовало запросов",
+			"Кешировать отображение issue/PR в ~/.omsk/cache/github-cache.db, чтобы повторное чтение не требовало запросов",
 	},
 	"github.cache.softTtlSec": {
 		label: "Мягкий TTL кеша GitHub",
@@ -1627,7 +1627,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"security.enabled": {
 		label: "Безопасность",
 		description:
-			"Включить планирование и выполнение проверок безопасности средствами OMP, а также пространство ресурсов security:// только для чтения",
+			"Включить планирование и выполнение проверок безопасности средствами OMSK, а также пространство ресурсов security:// только для чтения",
 	},
 	"ask.enabled": {
 		label: "Спрашивать",
@@ -1692,7 +1692,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"dev.autoqaPush.endpoint": {
 		label: "Адрес отправки Auto QA",
 		description:
-			"Полный URL для получения отчётов Auto QA в формате JSON (по умолчанию https://qa.omp.sh/v1/grievances)",
+			"Полный URL для получения отчётов Auto QA в формате JSON (по умолчанию https://qa.ohmyshark.dev/v1/grievances)",
 	},
 	"dev.autoqaPush.token": {
 		label: "dev.autoqaPush.token",
@@ -1712,7 +1712,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"lsp.shared": {
 		label: "Общие языковые серверы",
 		description:
-			"Запускать языковые серверы через брокер демонов проекта. Для каждого подключения запускается отдельный сервер. Пока в проекте работает другой экземпляр omp, освобождённый сервер остаётся активным, и следующее подключение использует его вместо холодного запуска (если брокер недоступен, используются отдельные серверы)",
+			"Запускать языковые серверы через брокер демонов проекта. Для каждого подключения запускается отдельный сервер. Пока в проекте работает другой экземпляр OhMyShark, освобождённый сервер остаётся активным, и следующее подключение использует его вместо холодного запуска (если брокер недоступен, используются отдельные серверы)",
 	},
 	"lsp.formatOnWrite": {
 		label: "Форматировать при записи",
@@ -1868,7 +1868,8 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	},
 	"worktree.onExit": {
 		label: "Worktree при выходе",
-		description: "Что делать при выходе с worktree, созданными после запуска omp (при старте или командой `/wt`)",
+		description:
+			"Что делать при выходе с worktree, созданными после запуска OhMyShark (при старте или командой `/wt`)",
 	},
 	"task.isolation.apply": {
 		label: "Применять изолированные изменения",
@@ -1886,7 +1887,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"worktree.base": {
 		label: "Базовая папка Worktree",
 		description:
-			"Base directory for agent-managed worktrees вЂ” task-isolation copies, `github` PR checkouts, and `omp worktree` cleanup all live here. Unset uses ~/.omp/wt. Must be an absolute or ~-relative path; relative paths are ignored. The OMP_WORKTREE_DIR env var overrides this.",
+			"Base directory for agent-managed worktrees вЂ” task-isolation copies, `github` PR checkouts, and `omsk worktree` cleanup all live here. Unset uses ~/.omsk/wt. Must be an absolute or ~-relative path; relative paths are ignored. The OMP_WORKTREE_DIR env var overrides this.",
 	},
 	"task.eager": {
 		label: "Предпочитать делегирование задач",
@@ -2005,7 +2006,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"plan.autosaveDir": {
 		label: "Папка автосохранения",
 		description:
-			"Папка для автоматически сохранённых планов. Поддерживаются пути с ~, абсолютные пути и пути относительно cwd. Если оставить поле пустым, используется <project>/.omp/plans/.",
+			"Папка для автоматически сохранённых планов. Поддерживаются пути с ~, абсолютные пути и пути относительно cwd. Если оставить поле пустым, используется <project>/.omsk/plans/.",
 	},
 	"goal.enabled": {
 		label: "Режим цели",
@@ -2043,7 +2044,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"skills.registryUrl": {
 		label: "Реестр Skills",
 		description:
-			"Реестр Skillshare, который команда `omp skill` использует для установки, поиска и публикации Skills (https://host[:port])",
+			"Реестр Skillshare, который команда `omsk skill` использует для установки, поиска и публикации Skills (https://host[:port])",
 	},
 	"skills.enabled": {
 		label: "skills.enabled",
@@ -2101,7 +2102,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"extensionHandlers.toolCallTimeoutMs": {
 		label: "Тайм-аут обработчика вызова инструмента (мс)",
 		description:
-			"Положительный конечный тайм-аут активной работы обработчиков tool_call расширений; для недопустимых значений используется 30000 мс, а время ожидания диалогов OMP не учитывается",
+			"Положительный конечный тайм-аут активной работы обработчиков tool_call расширений; для недопустимых значений используется 30000 мс, а время ожидания диалогов OMSK не учитывается",
 	},
 	"exa.enabled": {
 		label: "Exa",
@@ -2150,11 +2151,11 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"browser.relay": {
 		label: "Ретранслятор браузера",
 		description:
-			"Управляйте своими вкладками Chrome через ретранслятор браузера omp. Установите расширение один раз (`omp browser-relay install`); сервер ретранслятора запускается автоматически, когда он нужен browser prelude. Имеет приоритет над URL CDP браузера; задайте PI_BROWSER_RELAY=0 или PI_BROWSER_RELAY=1, чтобы переопределить настройку.",
+			"Управляйте своими вкладками Chrome через ретранслятор браузера OhMyShark. Установите расширение один раз (`omsk browser-relay install`); сервер ретранслятора запускается автоматически, когда он нужен browser prelude. Имеет приоритет над URL CDP браузера; задайте PI_BROWSER_RELAY=0 или PI_BROWSER_RELAY=1, чтобы переопределить настройку.",
 	},
 	"browser.relayUrl": {
 		label: "URL ретранслятора браузера",
-		description: "Конечная точка ретранслятора браузера omp (по умолчанию http://127.0.0.1:9224).",
+		description: "Конечная точка ретранслятора браузера OhMyShark (по умолчанию http://127.0.0.1:9224).",
 	},
 	"browser.headless": {
 		label: "Браузер в фоновом режиме",
@@ -2168,17 +2169,17 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"browser.tern": {
 		label: "Браузер Tern",
 		description:
-			"В области Tern открывать вкладки браузера как окна «картинка в картинке» поверх области omp (встроенное веб-представление) вместо Chromium в фоновом режиме; если окно Tern недоступно, использовать Chromium. Параметры app, заданные явно, ретранслятор и URL CDP браузера имеют приоритет; app.tern:false отключает этот режим для одного открытия. Задайте PI_BROWSER_TERN=0 или PI_BROWSER_TERN=1, чтобы переопределить настройку.",
+			"В области Tern открывать вкладки браузера как окна «картинка в картинке» поверх области OhMyShark (встроенное веб-представление) вместо Chromium в фоновом режиме; если окно Tern недоступно, использовать Chromium. Параметры app, заданные явно, ретранслятор и URL CDP браузера имеют приоритет; app.tern:false отключает этот режим для одного открытия. Задайте PI_BROWSER_TERN=0 или PI_BROWSER_TERN=1, чтобы переопределить настройку.",
 	},
 	"browser.freezeOnTurnEnd": {
 		label: "Приостанавливать вкладки браузера по завершении ответа",
 		description:
-			"Приостанавливать фоновые вкладки браузера, которыми управляет OMP, после завершения ответа, чтобы анимация на страницах не расходовала CPU/GPU в режиме ожидания. При следующем использовании вкладки возобновляются автоматически; укажите persist:true при открытии, чтобы исключить вкладку из этого режима.",
+			"Приостанавливать фоновые вкладки браузера, которыми управляет OMSK, после завершения ответа, чтобы анимация на страницах не расходовала CPU/GPU в режиме ожидания. При следующем использовании вкладки возобновляются автоматически; укажите persist:true при открытии, чтобы исключить вкладку из этого режима.",
 	},
 	"browser.idleCloseSec": {
 		label: "Тайм-аут закрытия браузера в режиме ожидания",
 		description:
-			"Закрывать фоновые вкладки браузера OMP и окна браузера «картинка в картинке» Tern, если они простаивают дольше указанного числа секунд (0 = никогда; при завершении сессии они всё равно закрываются). Не затрагивает браузеры ретранслятора, CDP и запущенные отдельно, а также вкладки других сессий.",
+			"Закрывать фоновые вкладки браузера OMSK и окна браузера «картинка в картинке» Tern, если они простаивают дольше указанного числа секунд (0 = никогда; при завершении сессии они всё равно закрываются). Не затрагивает браузеры ретранслятора, CDP и запущенные отдельно, а также вкладки других сессий.",
 	},
 	"browser.screenshotDir": {
 		label: "Папка для снимков экрана",
@@ -2203,7 +2204,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"ida.maxOpen": {
 		label: "Максимум открытых баз данных IDA",
 		description:
-			"Максимальное число одновременно открытых баз данных IDA для проекта (демоны omp.ida.* в omp ps); при открытии следующей сохраняется и закрывается простаивающая база, к которой дольше всего не обращались",
+			"Максимальное число одновременно открытых баз данных IDA для проекта (демоны omsk.ida.* в OhMyShark ps); при открытии следующей сохраняется и закрывается простаивающая база, к которой дольше всего не обращались",
 	},
 	"ida.idleCloseSec": {
 		label: "Тайм-аут закрытия баз IDA в режиме ожидания",
@@ -2305,7 +2306,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"collab.autoStart": {
 		label: "Автозапуск",
 		description:
-			"При запуске каждой интерактивной сессии размещать её через collab.relayUrl и публиковать в локальном реестре (omp collab list); при переключении сессии комнаты меняются",
+			"При запуске каждой интерактивной сессии размещать её через collab.relayUrl и публиковать в локальном реестре (OhMyShark collab list); при переключении сессии комнаты меняются",
 	},
 	"share.serverUrl": {
 		label: "Сервер публикации",
@@ -2324,7 +2325,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"stream.serverUrl": {
 		label: "Сервер потоковой передачи",
 		description:
-			"Сервер трансляции для `omp stream` (https://host[:port]); зрители смотрят её по адресу <base>/<ваше имя пользователя Stencil>",
+			"Сервер трансляции для `omsk stream` (https://host[:port]); зрители смотрят её по адресу <base>/<ваше имя пользователя Stencil>",
 	},
 	"stream.redactPatterns": {
 		label: "Дополнительные шаблоны удаления",
@@ -2494,12 +2495,12 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"browser.webkitPath": {
 		label: "Путь к WebKit браузера",
 		description:
-			"Движок WebKit от omp: его исполняемый файл-хост или каталог движка ABKit (в нём он называется ABHost, ABHost.exe в Windows). Если не задан, omp запускает установленный движок ~/.o2/lib/abkit/ABHost (ABHost.exe в Windows). Поддерживает ~. PI_BROWSER_WEBKIT_PATH переопределяет его.",
+			"Движок WebKit от OhMyShark: его исполняемый файл-хост или каталог движка ABKit (в нём он называется ABHost, ABHost.exe в Windows). Если не задан, OhMyShark запускает установленный движок ~/.o2/lib/abkit/ABHost (ABHost.exe в Windows). Поддерживает ~. PI_BROWSER_WEBKIT_PATH переопределяет его.",
 	},
 	"mcp.builtinTransforms": {
 		label: "Встроенные замены MCP",
 		description:
-			"Пропускать распознанные MCP-серверы, которые заменяют собственные инструменты omp (node_repl из Codex, пока eval выполняет JavaScript)",
+			"Пропускать распознанные MCP-серверы, которые заменяют собственные инструменты OhMyShark (node_repl из Codex, пока eval выполняет JavaScript)",
 	},
 	"mcp.evalNamespaces": {
 		label: "Пространства имён MCP в eval",
@@ -2524,6 +2525,6 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"task.crossInstance": {
 		label: "Сообщения агентов между экземплярами",
 		description:
-			"Разрешить другим экземплярам omp в этой папке читать вывод агентов и отправлять сообщения, которые могут их будить",
+			"Разрешить другим экземплярам OhMyShark в этой папке читать вывод агентов и отправлять сообщения, которые могут их будить",
 	},
 };

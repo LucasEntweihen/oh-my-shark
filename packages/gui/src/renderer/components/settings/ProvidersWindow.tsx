@@ -621,7 +621,7 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 						</div>
 						<div className="text-omp-xs leading-[1.5] text-[var(--omp-muted)]">
 							{t("providers.customHelp", {
-								file: "~/.omp/agent/models.yml",
+								file: "~/.omsk/agent/models.yml",
 								baseUrl: "baseUrl",
 								apiKey: "apiKey",
 								models: "models",

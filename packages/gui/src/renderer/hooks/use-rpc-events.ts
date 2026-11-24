@@ -161,7 +161,7 @@ function notifyOnAgentEnd(tabId: string, event: Extract<AgentSessionEvent, { typ
 	const sessionName =
 		sessionRuntimeStore<SessionStore>(tabId, "session")?.getState().sessionName ||
 		useSessionStore.getState().sessionName ||
-		"Oh My Pi";
+		"OhMyShark";
 	if (last?.stopReason === "error") {
 		const message =
 			typeof last.errorMessage === "string" && last.errorMessage
@@ -922,7 +922,7 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 			if (!BLOCKING_UI_METHODS[request.method]) return;
 			const tabId = sourceTabId ?? focusedTabId();
 			const tab = useTabsStore.getState().tabs.find(item => item.id === tabId);
-			const sessionName = tab?.title || "Oh My Pi";
+			const sessionName = tab?.title || "OhMyShark";
 			const body =
 				"title" in request && typeof request.title === "string" && request.title
 					? request.title

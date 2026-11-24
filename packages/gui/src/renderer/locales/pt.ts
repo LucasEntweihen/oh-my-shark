@@ -1013,7 +1013,7 @@ export const pt: Record<string, string> = {
 	"onboarding.custom.description":
 		"Adicione um endpoint compatível e pelo menos um ID de modelo exato. A GUI escreve o registro em models.yml para você.",
 	"onboarding.custom.location":
-		"Salvo em ~/.omsk/agent/models.yml (ou ~/.omp/agent/models.yml) e recarregado ao vivo pelo agente.",
+		"Salvo em ~/.omsk/agent/models.yml (ou ~/.omsk/agent/models.yml) e recarregado ao vivo pelo agente.",
 	"onboarding.custom.action": "Configurar provedor personalizado",
 	"onboarding.parameters.title": "Como funcionam os parâmetros personalizados",
 	"onboarding.parameters.description":

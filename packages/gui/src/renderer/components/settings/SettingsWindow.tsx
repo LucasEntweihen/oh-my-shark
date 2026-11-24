@@ -727,7 +727,7 @@ export function SettingsWindow() {
 			else effective[field] = value;
 		}
 		const suffix = flagsToCommandLine(profileToFlags(effective));
-		return suffix === "" ? "omp --mode rpc-ui" : `omp --mode rpc-ui ${suffix}`;
+		return suffix === "" ? "omsk --mode rpc-ui" : `omsk --mode rpc-ui ${suffix}`;
 	}, [launchProfile, launchDrafts]);
 
 	const general = tab === GUI_TAB_ID;

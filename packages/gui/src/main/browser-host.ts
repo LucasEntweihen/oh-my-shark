@@ -80,7 +80,7 @@ const RECONNECT_MAX_MS = 5_000;
 const GRANTED_PERMISSIONS = new Set(["clipboard-sanitized-write"]);
 const CAPTURE_JPEG_QUALITY = 85;
 const MINIMIZED_CAPTURE_ERROR =
-	"The omp window is minimized, so this page cannot be captured until the user restores the window. Other page commands still work.";
+	"The OhMyShark window is minimized, so this page cannot be captured until the user restores the window. Other page commands still work.";
 /**
  * Group id reported for pages the agent drives. The relay groups exactly the
  * pages a client created or adopted; the panel has no tab groups, so it reads
