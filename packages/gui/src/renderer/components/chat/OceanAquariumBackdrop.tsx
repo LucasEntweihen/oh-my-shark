@@ -15,7 +15,10 @@ interface OceanAquariumBackdropProps {
 
 function readOceanCssOverrides(): OceanThemeOverrides {
 	if (typeof document === "undefined") return {};
-	const style = getComputedStyle(document.documentElement);
+	const computeStyle = typeof getComputedStyle === "function" ? getComputedStyle : window?.getComputedStyle;
+	const style =
+		typeof computeStyle === "function" ? computeStyle(document.documentElement) : document.documentElement.style;
+	if (!style) return {};
 	const waterTop = style.getPropertyValue("--omsk-ocean-top").trim();
 	const waterBottom = style.getPropertyValue("--omsk-ocean-bottom").trim();
 	const sharkTint = style.getPropertyValue("--omsk-shark-color").trim();
