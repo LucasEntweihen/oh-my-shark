@@ -4,6 +4,7 @@
  */
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { playSound } from "../../lib/sound-effects";
 import { Spinner } from "./Spinner";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
@@ -48,6 +49,7 @@ export function Button({
 	className,
 	children,
 	type,
+	onClick,
 	...rest
 }: ButtonProps) {
 	return (
@@ -55,6 +57,10 @@ export function Button({
 			type={type ?? "button"}
 			className={`inline-flex select-none items-center justify-center border font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,filter,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omp-accent) active:scale-[0.97] active:translate-y-px disabled:cursor-not-allowed disabled:opacity-65 disabled:shadow-none disabled:active:scale-100 disabled:active:translate-y-0 ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className ?? ""}`.trim()}
 			disabled={disabled || loading}
+			onClick={event => {
+				playSound("click");
+				onClick?.(event);
+			}}
 			{...rest}
 		>
 			{loading ? <Spinner size="sm" /> : icon}

@@ -50,6 +50,7 @@ import { basename, cx } from "../../lib/format";
 import { useT } from "../../lib/i18n";
 import { actionChords, KEYMAP_ACTION_BY_ID, onEscape } from "../../lib/keymap";
 import { sessionHasContent } from "../../lib/session-title";
+import { playSound } from "../../lib/sound-effects";
 import { scrollStripOnWheel } from "../../lib/strip-scroll";
 import { type LiveTabRuntime, performTabClose, tabNeedsCloseConfirm } from "../../lib/tab-close";
 import { tabSignalPresentation } from "../../lib/tab-signal";
@@ -163,6 +164,7 @@ function TabChip({
 	const pageShown = useAgentPagesStore(s => (s.shown[tab.id] ?? null) !== null);
 	const selected = active && !pageShown;
 	const select = () => {
+		playSound("tab");
 		if (pageShown) useAgentPagesStore.getState().show(tab.id, null);
 		void switchTab(tab.id);
 	};

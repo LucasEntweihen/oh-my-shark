@@ -13,6 +13,8 @@ import {
 	PanelRight,
 	ScrollText,
 	Share2,
+	Volume2,
+	VolumeX,
 	Wrench,
 } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -76,6 +78,8 @@ export function TitleBar() {
 	const togglePanel = useUiStore(s => s.togglePanel);
 	const openCommandPalette = useUiStore(s => s.openCommandPalette);
 	const openThemePicker = useUiStore(s => s.openThemePicker);
+	const soundEffects = useUiStore(s => s.soundEffects);
+	const setSoundEffects = useUiStore(s => s.setSoundEffects);
 	const openUsage = useUiStore(s => s.openUsage);
 	const openStatsDashboard = useUiStore(s => s.openStatsDashboard);
 	const openImportDialog = useUiStore(s => s.openImportDialog);
@@ -480,6 +484,20 @@ export function TitleBar() {
 					))}
 				</span>
 			)}
+			<button
+				type="button"
+				aria-label={soundEffects ? t("titlebar.soundOn") : t("titlebar.soundOff")}
+				aria-pressed={soundEffects}
+				title={soundEffects ? t("titlebar.soundOn") : t("titlebar.soundOff")}
+				onClick={() => setSoundEffects(!soundEffects)}
+				className={iconButton}
+			>
+				{soundEffects ? (
+					<Volume2 aria-hidden="true" size={16} strokeWidth={1.65} />
+				) : (
+					<VolumeX aria-hidden="true" size={16} strokeWidth={1.65} />
+				)}
+			</button>
 			<button
 				type="button"
 				aria-label={t("titlebar.theme")}

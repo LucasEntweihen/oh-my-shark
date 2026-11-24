@@ -3722,6 +3722,11 @@ export const ru: Record<string, string> = {
 	"tools.websearch.searchRequests": "поиск: {count}",
 	"tools.websearch.sources": "Источники: {count}",
 	"tools.websearch.totalTokens": "всего: {count}",
+	"titlebar.soundOn": "Звуковые эффекты включены (нажмите для отключения)",
+	"titlebar.soundOff": "Звуковые эффекты выключены (нажмите для включения)",
+	"settings.gui.soundEffects": "Звуковые эффекты интерфейса",
+	"settings.gui.soundEffectsDesc":
+		"Мягкие синтезированные звуки при нажатиях, смене вкладок, отправке и завершении ответа.",
 	"titlebar.theme": "Темы и настройка цветов",
 	"themePicker.theme.bioluminescentReef.label": "Биолюминесцентный риф",
 	"themePicker.theme.bioluminescentReef.description":

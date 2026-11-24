@@ -3724,6 +3724,11 @@ export const pt: Record<string, string> = {
 	"themePicker.theme.deepAbyss.label": "Abismo Profundo",
 	"themePicker.theme.deepAbyss.description":
 		"Noite pelágica ultra-profunda com ciano bioluminescente, laranja chama e telemetria esmeralda.",
+	"titlebar.soundOn": "Efeitos sonoros ativados (clique para silenciar)",
+	"titlebar.soundOff": "Efeitos sonoros silenciados (clique para ativar)",
+	"settings.gui.soundEffects": "Efeitos sonoros de UI e oceano",
+	"settings.gui.soundEffectsDesc":
+		"Reproduzir sinais sonoros suaves ao clicar, trocar de aba, enviar mensagens e concluir execuções.",
 	"titlebar.theme": "Temas e cores personalizadas",
 	"themePicker.theme.bioluminescentReef.label": "Recife Bioluminescente",
 	"themePicker.theme.bioluminescentReef.description":

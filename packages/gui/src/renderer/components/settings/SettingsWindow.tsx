@@ -308,6 +308,8 @@ export function SettingsWindow() {
 	const panelTab = useUiStore(state => state.panelTab);
 	const notifications = useUiStore(state => state.notifications);
 	const notificationsWhenFocused = useUiStore(state => state.notificationsWhenFocused);
+	const soundEffects = useUiStore(state => state.soundEffects);
+	const setSoundEffects = useUiStore(state => state.setSoundEffects);
 	const thinkingExpanded = useUiStore(state => state.thinkingExpanded);
 	const sidebarQuotas = useUiStore(state => state.sidebarQuotas);
 	const confirmSessionDelete = useUiStore(state => state.confirmSessionDelete);
@@ -565,6 +567,9 @@ export function SettingsWindow() {
 	};
 	const applyNotificationsWhenFocused = (next: boolean) => {
 		return saveGuiPreference("notificationsWhenFocused", next, () => setNotificationsWhenFocused(next));
+	};
+	const applySoundEffects = (next: boolean) => {
+		return saveGuiPreference("soundEffects", next, () => setSoundEffects(next));
 	};
 	const applyThinkingExpanded = (next: boolean) => {
 		return saveGuiPreference("thinkingExpanded", next, () => useUiStore.getState().setThinkingExpanded(next));
@@ -1460,6 +1465,13 @@ export function SettingsWindow() {
 														disabled={!notifications}
 														label={t("settings.gui.notificationsWhenFocused")}
 														onChange={applyNotificationsWhenFocused}
+													/>
+													<Toggle
+														className="omp-settings-row"
+														checked={soundEffects}
+														description={t("settings.gui.soundEffectsDesc")}
+														label={t("settings.gui.soundEffects")}
+														onChange={applySoundEffects}
 													/>
 												</Section>
 												<Section

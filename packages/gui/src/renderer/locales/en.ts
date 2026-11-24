@@ -3902,6 +3902,11 @@ export const en: Record<string, string> = {
 	"themePicker.theme.deepAbyss.label": "Deep Abyss",
 	"themePicker.theme.deepAbyss.description":
 		"Ultra-deep pelagic night with bioluminescent cyan, flame orange, and emerald telemetry.",
+	"titlebar.soundOn": "Sound effects on (click to mute)",
+	"titlebar.soundOff": "Sound effects muted (click to unmute)",
+	"settings.gui.soundEffects": "UI & ocean sound effects",
+	"settings.gui.soundEffectsDesc":
+		"Play soft synthesized audio cues for clicks, tab switches, message sends, and completed runs.",
 	"titlebar.theme": "Themes & custom colors",
 	"themePicker.theme.bioluminescentReef.label": "Bioluminescent Reef",
 	"themePicker.theme.bioluminescentReef.description":

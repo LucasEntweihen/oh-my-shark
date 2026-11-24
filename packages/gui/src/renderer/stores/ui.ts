@@ -4,6 +4,7 @@ import { KEYMAP_DISABLED_PREF, KEYMAP_OVERRIDES_PREF } from "../../shared/hotkey
 import type { CustomProviderView, SessionInfo } from "../../shared/ipc-types";
 import type { SidecarRestartProgress } from "../../shared/rpc-types";
 import { effectiveOverrides, type KeymapOverrides, sanitizeDisabled, sanitizeOverrides } from "../lib/keymap";
+import { readSoundEffectsPref, setSoundEffectsPref } from "../lib/sound-effects";
 import { readPrepaintThemeMode, type ThemeMode } from "../lib/theme";
 import type { CustomThemeSelection } from "../lib/themes";
 import { useTabsStore } from "./tabs";
@@ -202,8 +203,11 @@ interface UiStore {
 	followAgentTheme: boolean;
 	/** Master switch for desktop notifications (Settings → GUI, default on). */
 	notifications: boolean;
-	/** Also notify while the omp window has focus (Settings → GUI, default off). */
+	/** Also notify while the OhMyShark window has focus (Settings → GUI, default off). */
 	notificationsWhenFocused: boolean;
+	/** Synthesized UI and ocean sound cues (Settings → GUI / TitleBar toggle). */
+	soundEffects: boolean;
+	setSoundEffects: (enabled: boolean) => void;
 	/** Expand reasoning (thinking) blocks by default (Settings → GUI, default off). */
 	thinkingExpanded: boolean;
 	/** Provider quotas above the sidebar footer (Settings → GUI, default off). */
@@ -406,6 +410,7 @@ export const useUiStore = create<UiStore>()((set, get) => ({
 	followAgentTheme: false,
 	notifications: true,
 	notificationsWhenFocused: false,
+	soundEffects: readSoundEffectsPref(),
 	thinkingExpanded: false,
 	sidebarQuotas: false,
 	confirmSessionDelete: true,
@@ -699,6 +704,10 @@ export const useUiStore = create<UiStore>()((set, get) => ({
 	setFontSize: size => set({ fontSize: size }),
 	setNotifications: enabled => set({ notifications: enabled }),
 	setNotificationsWhenFocused: enabled => set({ notificationsWhenFocused: enabled }),
+	setSoundEffects: enabled => {
+		setSoundEffectsPref(enabled);
+		set({ soundEffects: enabled });
+	},
 	setThinkingExpanded: enabled => set({ thinkingExpanded: enabled }),
 	setSidebarQuotas: enabled => set({ sidebarQuotas: enabled }),
 	setTranscriptDetail: detail => set({ transcriptDetail: detail }),

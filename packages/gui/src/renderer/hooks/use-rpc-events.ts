@@ -43,6 +43,7 @@ import { describeError, describeProviderError } from "../lib/errors";
 import { formatClock } from "../lib/format";
 import { translate } from "../lib/i18n";
 import { normalizeLoopUpdate } from "../lib/loop-mode";
+import { playSound } from "../lib/sound-effects";
 import { acceptsActiveTabEvents } from "../lib/tab-routing";
 import { useBtwStore } from "../stores/btw";
 import { useExtensionUiStore } from "../stores/extension-ui";
@@ -163,6 +164,7 @@ function notifyOnAgentEnd(tabId: string, event: Extract<AgentSessionEvent, { typ
 		useSessionStore.getState().sessionName ||
 		"OhMyShark";
 	if (last?.stopReason === "error") {
+		playSound("error");
 		const message =
 			typeof last.errorMessage === "string" && last.errorMessage
 				? translate("events.notificationErrorDetail", {
@@ -172,6 +174,7 @@ function notifyOnAgentEnd(tabId: string, event: Extract<AgentSessionEvent, { typ
 		void maybeNotify("error", sessionName, message, runtime.command);
 		return;
 	}
+	playSound("complete");
 	void maybeNotify("completion", sessionName, translate("events.notificationComplete"), runtime.command);
 }
 

@@ -43,6 +43,7 @@ import {
 } from "../../lib/paste-blobs";
 import { parseQueueShorthand, splitQueuedMessages } from "../../lib/queue-input";
 import { insertQuote } from "../../lib/quote-selection";
+import { playSound } from "../../lib/sound-effects";
 import { useTabRpc } from "../../lib/tab-rpc";
 import { composerFileKey, useComposerStore } from "../../stores/composer";
 import { useInputHistoryStore } from "../../stores/input-history";
@@ -1274,7 +1275,10 @@ export function InputArea() {
 								{(!isStreaming || hasDraft) && (
 									<button
 										type="button"
-										onClick={event => send(undefined, isFollowUpSend(event) ? "followUp" : "steer")}
+										onClick={event => {
+											playSound("send");
+											send(undefined, isFollowUpSend(event) ? "followUp" : "steer");
+										}}
 										disabled={
 											!routeReady ||
 											collabReadOnly ||
