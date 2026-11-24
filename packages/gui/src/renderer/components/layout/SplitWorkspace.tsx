@@ -14,14 +14,17 @@ import { useSessionList } from "../../hooks/use-session-list";
 import { cx } from "../../lib/format";
 import { useT } from "../../lib/i18n";
 import { useAgentPagesStore } from "../../stores/agent-pages";
+import { useMessagesStore } from "../../stores/messages";
 import { useSessionStore } from "../../stores/session";
-import { SessionRuntimeProvider } from "../../stores/session-runtime-context";
+import { SessionRuntimeProvider, useRuntimeTabId } from "../../stores/session-runtime-context";
 import { ensureTabRuntime } from "../../stores/tab-runtime";
 import { type SplitAxis, type SplitPlacement, tabDisplayTitle, useTabsStore } from "../../stores/tabs";
 import { AgentBeside } from "../agents/AgentBeside";
 import { AgentPage } from "../agents/AgentPage";
 import { ChatStream } from "../chat/ChatStream";
 import { WorkspaceDock } from "../chat/dock/WorkspaceDock";
+import { LiquidGlassLayer } from "../chat/LiquidGlassLayer";
+import { OceanAquariumBackdrop } from "../chat/OceanAquariumBackdrop";
 import { InputArea } from "./InputArea";
 import { useComposerFiles } from "./use-composer-files";
 
@@ -192,10 +195,17 @@ function SessionPaneBody({ tabId, label }: { tabId: string; label: string }) {
 function SessionConversation() {
 	const { attachFiles, readOnly } = useComposerFiles();
 	const [draggingFiles, setDraggingFiles] = useState(false);
+	const runtimeTabId = useRuntimeTabId() ?? "default";
+	const sessionId = useSessionStore(state => state.sessionId);
+	const firstMessageId = useMessagesStore(state => state.messages[0]?.id ?? null);
+	const aquariumSeed = firstMessageId
+		? `chat:${sessionId ?? runtimeTabId}:${firstMessageId}`
+		: `empty:${runtimeTabId}`;
+
 	return (
 		<div
 			className={cx(
-				"relative flex min-h-0 min-w-0 flex-1 flex-col",
+				"relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden",
 				draggingFiles &&
 					!readOnly &&
 					"after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-lg after:border-2 after:border-(--omp-accent)",
@@ -223,8 +233,12 @@ function SessionConversation() {
 				requestAnimationFrame(() => composer?.focus());
 			}}
 		>
-			<ChatStream footer={<WorkspaceDock />} />
-			<InputArea />
+			<OceanAquariumBackdrop seedKey={aquariumSeed} className="z-0" />
+			<LiquidGlassLayer className="z-[1]" />
+			<div className="relative z-[2] flex min-h-0 min-w-0 flex-1 flex-col">
+				<ChatStream footer={<WorkspaceDock />} />
+				<InputArea />
+			</div>
 		</div>
 	);
 }
