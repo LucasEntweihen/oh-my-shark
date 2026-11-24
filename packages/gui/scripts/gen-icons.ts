@@ -1,41 +1,67 @@
 /**
- * Generate the app icons from resources/icon-source.svg: a 1024px master PNG
- * (dev dock icon + Windows base), the macOS .icns (via an iconset + iconutil),
- * and the Linux resources/icons/*.png set. Run: `bun run scripts/gen-icons.ts`.
+ * Generate the OhMyShark (OMSK) app icons from resources/omsk-logo.png:
+ * - 1024px master PNG (`resources/icon.png`)
+ * - 256px renderer favicon/logo (`src/renderer/public/omsk-logo.png`)
+ * - Cross-platform macOS `.icns` (`resources/icon.icns`) using PNG-compressed icon chunks
+ * - Linux `resources/icons/*.png` set
+ * - Windows multi-resolution `resources/icon.ico`
+ *
+ * Run: `bun run scripts/gen-icons.ts` (from packages/gui).
  */
 
-import { execFileSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import sharp from "sharp";
 
-const resources = path.join(import.meta.dir, "..", "resources");
-const svgPath = path.join(resources, "icon-source.svg");
-const iconset = path.join(resources, "icon.iconset");
+const guiRoot = path.join(import.meta.dir, "..");
+const resources = path.join(guiRoot, "resources");
+const logoPngPath = path.join(resources, "omsk-logo.png");
+const fallbackSvgPath = path.join(resources, "icon-source.svg");
+const rendererPublicLogo = path.join(guiRoot, "src", "renderer", "public", "omsk-logo.png");
 
-// (name, px) pairs for the macOS iconset; @2x entries are double resolution.
-const ICONSET: [string, number][] = [
-	["icon_16x16.png", 16],
-	["icon_16x16@2x.png", 32],
-	["icon_32x32.png", 32],
-	["icon_32x32@2x.png", 64],
-	["icon_128x128.png", 128],
-	["icon_128x128@2x.png", 256],
-	["icon_256x256.png", 256],
-	["icon_256x256@2x.png", 512],
-	["icon_512x512.png", 512],
-	["icon_512x512@2x.png", 1024],
+const ICNS_CHUNKS: ReadonlyArray<readonly [type: string, px: number]> = [
+	["icp4", 16],
+	["icp5", 32],
+	["icp6", 64],
+	["ic07", 128],
+	["ic08", 256],
+	["ic09", 512],
+	["ic10", 1024],
 ];
-const LINUX_SIZES = [16, 32, 48, 64, 128, 256, 512, 1024];
-const ICO_SIZES = [16, 32, 48, 64, 128, 256];
+const LINUX_SIZES = [16, 32, 48, 64, 128, 256, 512, 1024] as const;
+const ICO_SIZES = [16, 32, 48, 64, 128, 256] as const;
 
-async function render(svg: Buffer, size: number): Promise<Buffer> {
-	// High density so the vector mark stays crisp when resized down.
-	return sharp(svg, { density: 384 })
-		.resize(size, size, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+function roundedMaskSvg(size: number): Buffer {
+	const radius = Math.round(size * 0.22);
+	return Buffer.from(
+		`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect x="0" y="0" width="${size}" height="${size}" rx="${radius}" ry="${radius}" fill="#ffffff"/></svg>`,
+	);
+}
+
+async function renderSquare(source: Buffer, size: number, rounded: boolean): Promise<Buffer> {
+	const base = sharp(source).resize(size, size, { fit: "cover", position: "centre" }).ensureAlpha();
+	if (!rounded) {
+		return base.png().toBuffer();
+	}
+	return base
+		.composite([{ input: roundedMaskSvg(size), blend: "dest-in" }])
 		.png()
 		.toBuffer();
+}
+
+function writeIcns(chunks: ReadonlyArray<{ type: string; data: Buffer }>, outPath: string): void {
+	const payload = chunks.map(({ type, data }) => {
+		const header = Buffer.alloc(8);
+		header.write(type, 0, 4, "ascii");
+		header.writeUInt32BE(8 + data.length, 4);
+		return Buffer.concat([header, data]);
+	});
+	const body = Buffer.concat(payload);
+	const fileHeader = Buffer.alloc(8);
+	fileHeader.write("icns", 0, 4, "ascii");
+	fileHeader.writeUInt32BE(8 + body.length, 4);
+	writeFileSync(outPath, Buffer.concat([fileHeader, body]));
 }
 
 function writeIco(frames: { size: number; data: Buffer }[], outPath: string): void {
@@ -61,33 +87,39 @@ function writeIco(frames: { size: number; data: Buffer }[], outPath: string): vo
 }
 
 async function main(): Promise<void> {
-	const svg = await fs.readFile(svgPath);
+	const sourcePath = existsSync(logoPngPath) ? logoPngPath : fallbackSvgPath;
+	const source = await fs.readFile(sourcePath);
 
-	// Master 1024px PNG (dev dock icon; also the base for Windows .ico).
-	await Bun.write(path.join(resources, "icon.png"), await render(svg, 1024));
+	// Master 1024px rounded squircle PNG for macOS dock & app bundle
+	await Bun.write(path.join(resources, "icon.png"), await renderSquare(source, 1024, true));
 
-	// macOS iconset → icon.icns.
-	await fs.rm(iconset, { recursive: true, force: true });
-	await fs.mkdir(iconset, { recursive: true });
-	for (const [name, px] of ICONSET) {
-		await Bun.write(path.join(iconset, name), await render(svg, px));
-	}
-	if (process.platform === "darwin") {
-		execFileSync("iconutil", ["-c", "icns", iconset, "-o", path.join(resources, "icon.icns")], { stdio: "inherit" });
-	}
-	await fs.rm(iconset, { recursive: true, force: true });
+	// 256px crisp rounded icon for renderer UI and HTML favicon
+	await fs.mkdir(path.dirname(rendererPublicLogo), { recursive: true });
+	await Bun.write(rendererPublicLogo, await renderSquare(source, 256, true));
 
-	// Linux PNG set.
+	// Cross-platform Apple .icns (PNG chunks inside icns container)
+	const icnsChunks = await Promise.all(
+		ICNS_CHUNKS.map(async ([type, px]) => ({
+			type,
+			data: await renderSquare(source, px, true),
+		})),
+	);
+	writeIcns(icnsChunks, path.join(resources, "icon.icns"));
+
+	// Linux PNG set
 	const linuxDir = path.join(resources, "icons");
 	await fs.mkdir(linuxDir, { recursive: true });
 	for (const px of LINUX_SIZES) {
-		await Bun.write(path.join(linuxDir, `${px}x${px}.png`), await render(svg, px));
+		await Bun.write(path.join(linuxDir, `${px}x${px}.png`), await renderSquare(source, px, true));
 	}
 
-	const icoFrames = await Promise.all(ICO_SIZES.map(async size => ({ size, data: await render(svg, size) })));
+	// Windows multi-resolution .ico (rounded squircle with transparent outer corners)
+	const icoFrames = await Promise.all(
+		ICO_SIZES.map(async size => ({ size, data: await renderSquare(source, size, true) })),
+	);
 	writeIco(icoFrames, path.join(resources, "icon.ico"));
 
-	console.log("Generated icon.png, icon.icns (mac), icon.ico, and resources/icons/*.png");
+	console.log("Generated OMSK icon.png, icon.icns, icon.ico, resources/icons/*.png, and renderer omsk-logo.png");
 }
 
 await main();

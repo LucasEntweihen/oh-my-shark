@@ -1,27 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none">
-  <!-- omp app icon: a deep-navy tile with a luminous π. The crossbar arches, the
-       left leg is straight and the right foot flicks outward, so the mark reads as
-       a pi and not as a letter. The in-app PiLogo uses the same geometry. -->
+  <!-- OhMyShark (OMSK) vector emblem: deep ocean tile with front-facing hammerhead shark -->
   <defs>
-    <linearGradient id="tile" x1="512" y1="92" x2="512" y2="932" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#1d2a4f"/>
-      <stop offset="1" stop-color="#0b1122"/>
+    <linearGradient id="ocean" x1="512" y1="0" x2="512" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#074463"/>
+      <stop offset="0.55" stop-color="#061f38"/>
+      <stop offset="1" stop-color="#040b18"/>
     </linearGradient>
-    <linearGradient id="glyph" x1="300" y1="320" x2="720" y2="720" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#b4dcff"/>
-      <stop offset="1" stop-color="#5b8cff"/>
+    <linearGradient id="sharkBody" x1="512" y1="290" x2="512" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1967d2"/>
+      <stop offset="1" stop-color="#083d8c"/>
     </linearGradient>
-    <radialGradient id="glow" cx="512" cy="300" r="460" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#5b8cff" stop-opacity="0.28"/>
-      <stop offset="1" stop-color="#5b8cff" stop-opacity="0"/>
-    </radialGradient>
+    <linearGradient id="sharkBelly" x1="512" y1="540" x2="512" y2="680" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9cc0ee"/>
+      <stop offset="1" stop-color="#6b9bd9"/>
+    </linearGradient>
   </defs>
-  <rect x="92" y="92" width="840" height="840" rx="190" fill="url(#tile)"/>
-  <rect x="92" y="92" width="840" height="840" rx="190" fill="url(#glow)"/>
-  <rect x="93" y="93" width="838" height="838" rx="189" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
-  <g stroke="url(#glyph)" stroke-width="80" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M292 352 Q512 316 732 352"/>
-    <path d="M420 346 V690"/>
-    <path d="M604 346 V610 C604 664 628 690 676 690"/>
-  </g>
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#ocean)"/>
+  <path d="M180 64L340 64L210 420L120 420Z" fill="#38bdf8" fill-opacity="0.08"/>
+  <path d="M400 64L590 64L430 480L290 480Z" fill="#38bdf8" fill-opacity="0.1"/>
+  <!-- Dorsal fin -->
+  <path d="M512 280L422 500H602L512 280Z" fill="url(#sharkBody)" stroke="#7cc4ff" stroke-opacity="0.45" stroke-width="6" stroke-linejoin="round"/>
+  <!-- Pectoral fins -->
+  <path d="M360 510C285 560 225 630 225 670C225 690 250 675 295 635L390 580Z" fill="#0d4db2" stroke="#7cc4ff" stroke-opacity="0.4" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M664 510C739 560 799 630 799 670C799 690 774 675 729 635L634 580Z" fill="#0d4db2" stroke="#7cc4ff" stroke-opacity="0.4" stroke-width="5" stroke-linejoin="round"/>
+  <!-- Belly -->
+  <ellipse cx="512" cy="595" rx="165" ry="75" fill="url(#sharkBelly)" stroke="#b6d8ff" stroke-opacity="0.55" stroke-width="5"/>
+  <!-- Hammerhead bridge -->
+  <rect x="330" y="455" width="364" height="115" rx="34" fill="url(#sharkBody)" stroke="#7cc4ff" stroke-opacity="0.45" stroke-width="5"/>
+  <!-- Left & Right cephalofoil lobes -->
+  <rect x="236" y="388" width="170" height="224" rx="82" fill="#093f94" stroke="#7cc4ff" stroke-opacity="0.5" stroke-width="5"/>
+  <rect x="618" y="388" width="170" height="224" rx="82" fill="#093f94" stroke="#7cc4ff" stroke-opacity="0.5" stroke-width="5"/>
+  <circle cx="321" cy="510" r="50" fill="#0077ff" fill-opacity="0.35"/>
+  <circle cx="703" cy="510" r="50" fill="#0077ff" fill-opacity="0.35"/>
+  <rect x="64" y="64" width="896" height="896" rx="200" stroke="#7cc4ff" stroke-opacity="0.18" stroke-width="4"/>
 </svg>

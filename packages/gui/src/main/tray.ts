@@ -48,13 +48,16 @@ let tooltip = "omp";
 function buildIcon(): Electron.NativeImage {
 	// macOS status items are template images: the system applies the correct
 	// foreground color for light/dark and selected menu-bar states. Render at
-	// 2× so the small π mark remains crisp on Retina displays. The run status is
-	// text (tooltip + menu header); painting it here would turn the app mark
-	// into a large, visually noisy traffic-light dot.
+	// 2× so the OMSK shark emblem stays crisp on Retina displays.
 	const logicalSize = 18;
 	const scaleFactor = 2;
 	const pixelSize = logicalSize * scaleFactor;
 	const canvas = Buffer.alloc(pixelSize * pixelSize * 4, 0);
+	const fillPixel = (x: number, y: number) => {
+		if (x < 0 || x >= pixelSize || y < 0 || y >= pixelSize) return;
+		const index = (y * pixelSize + x) * 4;
+		canvas[index + 3] = 255;
+	};
 	const fillRoundedRect = (left: number, top: number, right: number, bottom: number, radius: number) => {
 		for (let y = top; y < bottom; y++) {
 			for (let x = left; x < right; x++) {
@@ -62,18 +65,21 @@ function buildIcon(): Electron.NativeImage {
 				const nearestY = Math.max(top + radius, Math.min(y + 0.5, bottom - radius));
 				const dx = x + 0.5 - nearestX;
 				const dy = y + 0.5 - nearestY;
-				if (dx * dx + dy * dy > radius * radius) continue;
-				const index = (y * pixelSize + x) * 4;
-				canvas[index + 3] = 255;
+				if (dx * dx + dy * dy <= radius * radius) fillPixel(x, y);
 			}
 		}
 	};
-
-	// A compact filled π: one cap, two stems and a short inward foot.
-	fillRoundedRect(4, 6, 32, 12, 3);
-	fillRoundedRect(9, 9, 15, 31, 3);
-	fillRoundedRect(21, 9, 28, 27, 3);
-	fillRoundedRect(16, 23, 28, 30, 3);
+	// Dorsal fin silhouette + hammerhead bridge + lateral lobes
+	for (let y = 5; y <= 18; y++) {
+		const halfW = ((y - 5) / 13) * 5.2;
+		for (let x = Math.floor(18 - halfW); x <= Math.ceil(18 + halfW); x++) {
+			fillPixel(x, y);
+		}
+	}
+	fillRoundedRect(5, 14, 13, 25, 4); // left hammer lobe
+	fillRoundedRect(23, 14, 31, 25, 4); // right hammer lobe
+	fillRoundedRect(10, 17, 26, 23, 2); // bridge
+	fillRoundedRect(11, 22, 25, 29, 5); // lower jaw
 
 	const image = nativeImage.createFromBuffer(canvas, {
 		width: pixelSize,

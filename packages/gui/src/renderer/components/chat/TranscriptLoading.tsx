@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { translate, useT } from "../../lib/i18n";
-import { PiLogo } from "../common";
+import { OmskLogo } from "../common";
 
 /** Below this the wait is not worth a clock. */
 const ELAPSED_VISIBLE_MS = 3_000;
@@ -41,7 +41,7 @@ export function TranscriptLoading() {
 			</span>
 			<div aria-hidden className="flex flex-col items-center gap-5 text-center">
 				<div className="omp-loading-mark">
-					<PiLogo size={30} />
+					<OmskLogo size={42} tile />
 				</div>
 				<div className="flex flex-col items-center gap-2">
 					<p className="omp-shimmer-text font-display text-omp-2xl font-semibold tracking-[-0.01em]">

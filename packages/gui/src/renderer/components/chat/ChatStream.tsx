@@ -37,7 +37,7 @@ import { type TodoSnapshot, useTodoStore } from "../../stores/todo";
 import { type ToolEntry, toolEntryKey, useToolsStore } from "../../stores/tools";
 import { TRANSCRIPT_FOCUS_TTL_MS, useTranscriptFocusStore } from "../../stores/transcript-focus";
 import { useUiStore } from "../../stores/ui";
-import { LongTaskStatus, PiLogo } from "../common";
+import { LongTaskStatus, OmskLogo } from "../common";
 import { buildEditCandidates } from "../panels/DiffPanel";
 import { DiffStat } from "../panels/workspace-ui";
 import { ReadGroupCard } from "../tools/ReadGroupCard";
@@ -802,8 +802,8 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 					{awaitingTranscript && rows.length === 0 && !switchPending && <TranscriptLoading />}
 					{!awaitingTranscript && rows.length === 0 && !isStreaming && !switchPending && readOnly === null && (
 						<div className="omp-empty-canvas flex min-h-full flex-col justify-center pb-20">
-							<div className="omp-empty-logo mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--omp-border-muted)] bg-[var(--omp-selected-bg)] text-[var(--omp-accent)]">
-								<PiLogo size={22} />
+							<div className="omp-empty-logo mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--omp-border-accent)]/35 bg-[var(--omp-selected-bg)] p-1 shadow-[0_0_28px_-8px_var(--omp-accent-glow)]">
+								<OmskLogo size={46} />
 							</div>
 							<h1 className="font-display text-omp-display font-semibold leading-tight tracking-[-0.025em] text-[var(--omp-text)]">
 								{isChat ? t("chat.empty.title.chat") : t("chat.empty.title")}

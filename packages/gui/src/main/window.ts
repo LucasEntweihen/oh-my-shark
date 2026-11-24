@@ -3,6 +3,7 @@
  * Creates sandboxed BrowserWindows with persisted state via electron-store.
  */
 
+import * as fsSync from "node:fs";
 import * as fs from "node:original-fs";
 import { join } from "node:path";
 import {
@@ -131,6 +132,7 @@ export class WindowManager {
 						displayWorkAreas(),
 					);
 
+		const appIconPath = join(app.getAppPath(), "resources", "icon.png");
 		const win = new BrowserWindow({
 			x: geometry.x,
 			y: geometry.y,
@@ -139,6 +141,7 @@ export class WindowManager {
 			minWidth: MIN_WIDTH,
 			minHeight: MIN_HEIGHT,
 			show: false,
+			...(process.platform !== "darwin" && fsSync.existsSync(appIconPath) ? { icon: appIconPath } : {}),
 			...this.#captionOptions(),
 			webPreferences: {
 				contextIsolation: true,
