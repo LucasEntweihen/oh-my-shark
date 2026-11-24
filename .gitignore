@@ -113,3 +113,14 @@ packages/coding-agent/bench/boot-baseline.json
 *.lnk
 
 .ohms-natives-*/
+
+# Production-only guides, design specs, skills, and visual references (not needed for installation)
+SKILLS.md
+REFERENCIAS_GUI/
+AGENTS.md
+packages/gui/AGENTS.md
+DESIGN.md
+ICON_SYSTEM.md
+ESPECIFICACAO_DE_RELEASES.md
+OHMS_ENGINEERING_PRINCIPLES.md
+newUpdateLog.md

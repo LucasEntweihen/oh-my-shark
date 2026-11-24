@@ -9,7 +9,9 @@ node_modules/
 out/
 dist/
 
-# Bundled agent sidecar binaries (build with `bun run build:omp`; >100MB, not committed)
+# Bundled agent sidecar binaries (build with `bun run build:omsk`; >100MB, not committed)
+resources/omsk
+resources/omsk.*
 resources/omp
 resources/omp.*
 
