@@ -656,10 +656,15 @@ kbd,
 
 .omp-pressable {
 	transition:
+		transform var(--omp-motion-instant) var(--omp-ease),
 		background-color var(--omp-motion-instant) var(--omp-ease),
 		border-color var(--omp-motion-instant) var(--omp-ease),
 		color var(--omp-motion-instant) var(--omp-ease),
 		box-shadow var(--omp-motion-instant) var(--omp-ease);
+}
+
+.omp-pressable:active:not(:disabled) {
+	transform: scale(0.97);
 }
 
 /* Hover, focus and selection color changes were instant on every control that

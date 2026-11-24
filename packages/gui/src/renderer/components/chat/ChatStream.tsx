@@ -821,12 +821,12 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 												new CustomEvent("omp:fill-composer", { detail: { text: prompt, tabId } }),
 											)
 										}
-										className="omp-starter-card omp-lift group flex min-h-20 items-start gap-3 rounded-2xl border border-[var(--omp-border)] p-4 text-left shadow-[var(--omp-shadow-sm)] hover:border-[var(--omp-border-accent)] hover:bg-[var(--omp-bg-secondary)]"
+										className="omp-starter-card omp-lift group flex min-h-20 items-start gap-3.5 rounded-2xl border border-[var(--omp-border)] p-4 text-left shadow-[var(--omp-shadow-sm)] hover:border-[var(--omp-border-accent)]"
 									>
-										<span className="omp-starter-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--omp-selected-bg)] text-[var(--omp-accent)]">
-											<Icon size={17} />
+										<span className="omp-starter-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--omp-border-accent)]/30 bg-[var(--omp-selected-bg)] text-[var(--omp-accent)] transition-transform duration-150 ease-out group-hover:scale-105">
+											<Icon size={17} strokeWidth={1.65} />
 										</span>
-										<span>
+										<span className="min-w-0 flex-1">
 											<span className="block text-omp-lg font-semibold text-[var(--omp-text)]">{title}</span>
 											<span className="mt-1 block text-omp-lg leading-snug text-[var(--omp-muted)]">
 												{prompt}

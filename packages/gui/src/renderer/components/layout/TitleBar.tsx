@@ -494,7 +494,7 @@ export function TitleBar() {
 				}}
 				className={iconButton}
 			>
-				<MoreHorizontal aria-hidden="true" size={17} />
+				<MoreHorizontal aria-hidden="true" size={16} strokeWidth={1.65} />
 			</button>
 			{actionsMenu && (
 				<ContextMenu
@@ -513,11 +513,12 @@ export function TitleBar() {
 				onClick={togglePanel}
 				title={reviewLabel}
 				className={cx(
-					"omp-review-toggle no-drag omp-pressable flex h-8 min-w-8 shrink-0 items-center justify-center gap-1.5 rounded-lg px-2 text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]",
-					panelVisible && "bg-[var(--omp-selected-bg)] text-[var(--omp-text)]",
+					"omp-review-toggle no-drag omp-pressable flex h-8 min-w-8 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-transparent px-2.5 text-[var(--omp-muted)] hover:border-[var(--omp-border-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]",
+					panelVisible &&
+						"border-[var(--omp-border-accent)]/40 bg-[var(--omp-selected-bg)] text-[var(--omp-text)]",
 				)}
 			>
-				<PanelRight size={17} />
+				<PanelRight size={16} strokeWidth={1.65} />
 				{changeCount != null && changeCount > 0 && (
 					<span className="omp-review-count font-mono text-omp-sm tabular-nums" aria-hidden="true">
 						{changeCount > 99 ? "99+" : changeCount}

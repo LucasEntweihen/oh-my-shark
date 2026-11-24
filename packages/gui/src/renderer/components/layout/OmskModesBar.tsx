@@ -242,11 +242,11 @@ export function OmskModesBar({ disabled = false }: { disabled?: boolean }) {
 						)}
 					>
 						{mode.id === "xlr8" ? (
-							<Zap size={10} />
+							<Zap size={11} strokeWidth={1.7} />
 						) : mode.id === "promaxthink" ? (
-							<Flame size={10} />
+							<Flame size={11} strokeWidth={1.7} />
 						) : mode.id === "deepseaneuron" ? (
-							<Gauge size={10} />
+							<Gauge size={11} strokeWidth={1.7} />
 						) : null}
 						<span>{mode.label}</span>
 						{isXlr8Steer && <span className="text-omp-xxs opacity-85">steer</span>}
