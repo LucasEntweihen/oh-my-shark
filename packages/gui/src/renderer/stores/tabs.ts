@@ -95,6 +95,18 @@ export interface SessionTab {
 	 * (gui#29). Renderer-only.
 	 */
 	browsing?: boolean;
+	/** User-pinned tab anchored toward the start of the strip. Renderer-only. */
+	pinned?: boolean;
+	/** User-supplied inline tab label override. Renderer-only. */
+	customTitle?: string;
+}
+
+export interface ClosedTabSnapshot {
+	cwd: string;
+	kind: SessionKind;
+	title?: string;
+	customTitle?: string;
+	sessionPath?: string;
 }
 
 export type SplitAxis = "columns" | "rows";
@@ -274,6 +286,8 @@ export function tabChipLabel(tab: SessionTab, tabs: readonly SessionTab[]): stri
 	// cwd basename is the hash-suffixed dir (gui-<name>-<hash7>), unreadable.
 	// Untitled chats are global: their internal process cwd must never masquerade
 	// as a selected workspace in the tab strip.
+	const custom = tab.customTitle?.trim();
+	if (custom) return custom;
 	const untitledBase = (entry: SessionTab) =>
 		entry.kind === "chat"
 			? translate("sidebar.newSession")
@@ -282,7 +296,7 @@ export function tabChipLabel(tab: SessionTab, tabs: readonly SessionTab[]): stri
 	if (tab.title) return base;
 	let occurrence = 0;
 	for (const entry of tabs) {
-		if (entry.title) continue;
+		if (entry.customTitle?.trim() || entry.title) continue;
 		if (untitledBase(entry) !== base) continue;
 		occurrence += 1;
 		if (entry.id === tab.id) break;
@@ -297,6 +311,8 @@ export function tabDisplayTitle(
 	indexedSession: Pick<SessionInfo, "title" | "firstMessage"> | undefined,
 	untitled: string,
 ): string {
+	const custom = tab.customTitle?.trim();
+	if (custom) return custom;
 	return indexedSession ? sessionDisplayTitle(indexedSession, untitled) : tabChipLabel(tab, tabs);
 }
 
@@ -322,6 +338,8 @@ function tabKindOf(state: Pick<TabsStore, "tabs" | "activeTabId">, tabId: string
 export interface TabsStore {
 	tabs: SessionTab[];
 	activeTabId: string | null;
+	/** Stack of recently closed non-placeholder tabs (newest last, capped at 8). */
+	recentlyClosed: ClosedTabSnapshot[];
 	/** Deprecated compatibility field for older test/setup call sites. Runtime state is no longer bundled. */
 	bundles: Map<unknown, unknown>;
 	/** The window's split pairs. Selecting either tab of one shows both. */
@@ -364,6 +382,14 @@ export interface TabsStore {
 	moveTab: (id: string, targetId: string, side: TabDropSide) => void;
 	/** Close a tab (keeps ≥1). Closing the active tab activates its neighbor first. */
 	closeTab: (id: string) => Promise<void>;
+	/** Toggle pin state and keep pinned tabs grouped near the strip start. */
+	togglePinTab: (id: string) => void;
+	/** Set or clear a custom inline title for a tab. */
+	renameTab: (id: string, title: string) => void;
+	/** Open a duplicate tab in the same workspace and session kind. */
+	duplicateTab: (id: string) => Promise<string | null>;
+	/** Reopen the most recently closed non-placeholder tab. */
+	reopenClosedTab: () => Promise<string | null>;
 	/** Merge a TAB_STATUS push: upsert the entry, stamp unreadDone when a
 	 * background run settles (running → ready while not active). */
 	applyTabStatus: (payload: IpcTabStatusPayload) => void;
@@ -451,6 +477,7 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 	return {
 		tabs: [],
 		activeTabId: null,
+		recentlyClosed: [],
 		bundles: new Map(),
 		groups: [],
 		split: null,
@@ -503,6 +530,8 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 								: (info.attention ?? undefined),
 						pendingSessionPath: existing?.pendingSessionPath,
 						browsing: info.status === "running" ? undefined : existing?.browsing,
+						pinned: existing?.pinned,
+						customTitle: existing?.customTitle,
 					};
 				});
 				// Entries the reply doesn't know (a spawn reply raced this reconcile)
@@ -739,12 +768,24 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 				if (neighbor) await get().switchTab(neighbor.id);
 			}
 			// A pair in the background loses this tab too; main drops it on release.
+			const closingTab = state.tabs[index];
+			const snapshot: ClosedTabSnapshot | null =
+				closingTab && !closingTab.placeholder
+					? {
+							cwd: closingTab.cwd,
+							kind: closingTab.kind,
+							title: closingTab.title,
+							customTitle: closingTab.customTitle,
+							sessionPath: closingTab.sessionPath,
+						}
+					: null;
 			set(current => {
 				const groups = withoutPairsOf(current.groups, [id]);
 				return {
 					tabs: current.tabs.filter(tab => tab.id !== id),
 					groups,
 					split: groupOf(groups, current.activeTabId),
+					recentlyClosed: snapshot ? [...current.recentlyClosed, snapshot].slice(-8) : current.recentlyClosed,
 				};
 			});
 			closedTabIds.add(id);
@@ -754,6 +795,48 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 			} catch {
 				// Pre-tabs main (dev mismatch) tolerance; the entry is already gone.
 			}
+		},
+
+		togglePinTab: id => {
+			const state = get();
+			const target = state.tabs.find(tab => tab.id === id);
+			if (!target) return;
+			const nextPinned = !target.pinned;
+			const updated = state.tabs.map(tab => (tab.id === id ? { ...tab, pinned: nextPinned || undefined } : tab));
+			const pinnedTabs = updated.filter(tab => tab.pinned);
+			const regularTabs = updated.filter(tab => !tab.pinned);
+			const tabs = orderedWithPairs([...pinnedTabs, ...regularTabs], state.groups);
+			set({ tabs });
+			if (!sameOrder(state.tabs, tabs)) syncTabOrder(tabs);
+		},
+
+		renameTab: (id, title) => {
+			const clean = title.trim();
+			set(current => ({
+				tabs: current.tabs.map(tab => (tab.id === id ? { ...tab, customTitle: clean || undefined } : tab)),
+			}));
+		},
+
+		duplicateTab: async id => {
+			const source = get().tabs.find(tab => tab.id === id);
+			if (!source) return null;
+			return get().openTab({ cwd: source.cwd || undefined, kind: source.kind });
+		},
+
+		reopenClosedTab: async () => {
+			const current = get().recentlyClosed;
+			const last = current.at(-1);
+			if (!last) return null;
+			set({ recentlyClosed: current.slice(0, -1) });
+			const openedId = await get().openTab({
+				cwd: last.cwd || undefined,
+				kind: last.kind,
+				sessionPath: last.sessionPath,
+			});
+			if (openedId && last.customTitle) {
+				get().renameTab(openedId, last.customTitle);
+			}
+			return openedId;
 		},
 
 		applyTabStatus: payload => {
@@ -816,6 +899,8 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 					pendingSessionPath: previous?.pendingSessionPath,
 					// A turn makes it a tab the user is working in.
 					browsing: payload.status === "running" ? undefined : previous?.browsing,
+					pinned: previous?.pinned,
+					customTitle: previous?.customTitle,
 				};
 				if (index === -1) return { tabs: [...current.tabs, next] };
 				const tabs = [...current.tabs];
@@ -864,7 +949,7 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 			routedGroupsKey = "[]";
 			setFocusedSessionRuntime(null);
 			resetTabRoute();
-			set({ tabs: [], activeTabId: null, bundles: new Map(), groups: [], split: null });
+			set({ tabs: [], activeTabId: null, recentlyClosed: [], bundles: new Map(), groups: [], split: null });
 		},
 	};
 });

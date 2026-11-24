@@ -4,9 +4,10 @@
  * with…" to pick the partner. A split pair is one row, like its merged chip.
  */
 
-import { Check, Columns2, Rows2, Search } from "lucide-react";
+import { Check, Columns2, GitBranch, MessageCircle, Pin, RotateCcw, Rows2, Search } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import type { SessionKind } from "../../../shared/ipc-types";
 import { cx } from "../../lib/format";
 import { useT } from "../../lib/i18n";
 import { isImeKeyEvent } from "../../lib/ime";
@@ -23,13 +24,22 @@ export interface TabSearchEntry {
 	/** Set for a pair: how its panes sit. */
 	axis?: SplitAxis;
 	current: boolean;
+	kind?: SessionKind;
+	worktree?: boolean;
+	pinned?: boolean;
+	running?: boolean;
+	shortcutHint?: string;
 }
+
+type TabFilter = "all" | "agent" | "chat" | "running";
 
 export function TabSearchMenu({
 	x,
 	y,
 	title,
 	entries,
+	hasClosedTabs,
+	onReopenClosed,
 	onPick,
 	onClose,
 }: {
@@ -38,26 +48,32 @@ export function TabSearchMenu({
 	y: number;
 	title?: string;
 	entries: readonly TabSearchEntry[];
+	hasClosedTabs?: boolean;
+	onReopenClosed?: () => void;
 	onPick: (tabId: string) => void;
 	onClose: () => void;
 }) {
 	const t = useT();
 	const menuRef = useRef<HTMLDivElement>(null);
 	const [query, setQuery] = useState("");
+	const [filter, setFilter] = useState<TabFilter>("all");
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [pos, setPos] = useState({ left: x, top: y });
+
 	const matches = useMemo(() => {
 		const needle = query.trim().toLowerCase();
-		if (!needle) return entries;
-		return entries.filter(entry => [...entry.labels, entry.detail].some(text => text.toLowerCase().includes(needle)));
-	}, [entries, query]);
+		return entries.filter(entry => {
+			if (filter === "agent" && entry.kind === "chat") return false;
+			if (filter === "chat" && entry.kind !== "chat") return false;
+			if (filter === "running" && !entry.running) return false;
+			if (!needle) return true;
+			return [...entry.labels, entry.detail].some(text => text.toLowerCase().includes(needle));
+		});
+	}, [entries, filter, query]);
 
 	useLayoutEffect(() => {
 		const menu = menuRef.current;
 		if (!menu) return;
-		// Layout size, not the bounding box: the pop-in animation is still
-		// scaling the menu down when this measures, so the box reads too small
-		// and the menu would hang off the window's right edge.
 		const left = Math.min(x, window.innerWidth - (menu.offsetWidth || 0) - 8);
 		const top = Math.min(y, window.innerHeight - (menu.offsetHeight || 0) - 8);
 		setPos({ left: Math.max(8, left), top: Math.max(8, top) });
@@ -89,6 +105,13 @@ export function TabSearchMenu({
 		onPick(entry.tabId);
 	};
 
+	const filters: ReadonlyArray<{ id: TabFilter; label: string }> = [
+		{ id: "all", label: t("tabs.filter.all") },
+		{ id: "agent", label: t("tabs.filter.agent") },
+		{ id: "chat", label: t("tabs.filter.chat") },
+		{ id: "running", label: t("tabs.filter.running") },
+	];
+
 	return createPortal(
 		<div
 			ref={menuRef}
@@ -97,8 +120,6 @@ export function TabSearchMenu({
 			style={{ left: pos.left, top: pos.top }}
 			onKeyDown={event => {
 				if (isImeKeyEvent(event)) return;
-				// Escape closes the list, and the list owns it: unclaimed, App
-				// would abort the focused session's run.
 				if (onEscape(event, onClose)) {
 					event.stopPropagation();
 					return;
@@ -116,11 +137,11 @@ export function TabSearchMenu({
 					pick(matches[activeIndex]);
 				}
 			}}
-			className="omp-pop-in fixed z-50 flex max-h-[min(28rem,70vh)] w-80 flex-col overflow-hidden rounded-xl border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] shadow-xl"
+			className="omp-pop-in fixed z-50 flex max-h-[min(30rem,74vh)] w-84 flex-col overflow-hidden rounded-xl border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] shadow-xl backdrop-blur-md"
 		>
 			{title && <div className="truncate px-3 pt-2.5 text-omp-xs font-medium text-[var(--omp-dim)]">{title}</div>}
 			<label className="flex shrink-0 items-center gap-2 border-b border-[var(--omp-border-muted)] px-3 py-2">
-				<Search aria-hidden size={13} className="shrink-0 text-[var(--omp-dim)]" />
+				<Search aria-hidden size={13} strokeWidth={1.65} className="shrink-0 text-[var(--omp-dim)]" />
 				<input
 					autoFocus
 					value={query}
@@ -133,9 +154,32 @@ export function TabSearchMenu({
 					className="min-w-0 flex-1 bg-transparent text-omp-md text-[var(--omp-text)] outline-none placeholder:text-[var(--omp-dim)]"
 				/>
 			</label>
+			{entries.length > 2 && (
+				<div className="flex shrink-0 items-center gap-1 border-b border-[var(--omp-border-muted)] px-2.5 py-1.5">
+					{filters.map(item => (
+						<button
+							key={item.id}
+							type="button"
+							aria-pressed={filter === item.id}
+							onClick={() => {
+								setFilter(item.id);
+								setActiveIndex(0);
+							}}
+							className={cx(
+								"omp-pressable rounded-md px-2 py-0.5 text-omp-xs font-medium",
+								filter === item.id
+									? "bg-[var(--omp-selected-bg)] text-[var(--omp-accent)]"
+									: "text-[var(--omp-dim)] hover:text-[var(--omp-text)]",
+							)}
+						>
+							{item.label}
+						</button>
+					))}
+				</div>
+			)}
 			<div role="listbox" aria-label={title ?? t("tabs.allTabs")} className="min-h-0 overflow-y-auto py-1">
 				{matches.length === 0 ? (
-					<div className="px-3 py-2 text-omp-sm text-[var(--omp-dim)]">{t("tabs.searchEmpty")}</div>
+					<div className="px-3 py-3 text-omp-sm text-[var(--omp-dim)]">{t("tabs.searchEmpty")}</div>
 				) : (
 					matches.map((entry, index) => {
 						const PairIcon = entry.axis === "rows" ? Rows2 : Columns2;
@@ -156,8 +200,20 @@ export function TabSearchMenu({
 							>
 								{entry.axis ? (
 									<PairIcon aria-hidden size={12} className="shrink-0 text-[var(--omp-accent)]" />
+								) : entry.pinned ? (
+									<Pin aria-hidden size={11} className="shrink-0 text-[var(--omp-accent)]" />
+								) : entry.worktree ? (
+									<GitBranch aria-hidden size={11} className="shrink-0 text-[var(--omp-accent)]" />
+								) : entry.kind === "chat" ? (
+									<MessageCircle aria-hidden size={11} className="shrink-0 text-[var(--omp-muted)]" />
 								) : (
-									<span aria-hidden className="w-3 shrink-0" />
+									<span
+										aria-hidden
+										className={cx(
+											"h-1.5 w-1.5 shrink-0 rounded-full",
+											entry.running ? "bg-[var(--omp-accent)]" : "bg-[var(--omp-dim)]/40",
+										)}
+									/>
 								)}
 								<span className="flex min-w-0 flex-1 flex-col leading-tight">
 									<span className="flex min-w-0 items-center gap-1.5 text-[var(--omp-text)]">
@@ -174,6 +230,11 @@ export function TabSearchMenu({
 									</span>
 									<span className="truncate text-omp-xs text-[var(--omp-dim)]">{entry.detail}</span>
 								</span>
+								{entry.shortcutHint && (
+									<kbd className="shrink-0 rounded border border-[var(--omp-border-muted)] px-1 font-mono text-omp-xxs text-[var(--omp-dim)]">
+										{entry.shortcutHint}
+									</kbd>
+								)}
 								{entry.current && (
 									<Check
 										aria-label={t("tabs.current")}
@@ -186,6 +247,21 @@ export function TabSearchMenu({
 					})
 				)}
 			</div>
+			{hasClosedTabs && onReopenClosed && (
+				<div className="border-t border-[var(--omp-border-muted)] p-1.5">
+					<button
+						type="button"
+						onClick={() => {
+							onClose();
+							onReopenClosed();
+						}}
+						className="omp-pressable flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-omp-sm font-medium text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+					>
+						<RotateCcw size={12} strokeWidth={1.65} />
+						<span>{t("tabs.menu.reopenClosed")}</span>
+					</button>
+				</div>
+			)}
 		</div>,
 		document.body,
 	);

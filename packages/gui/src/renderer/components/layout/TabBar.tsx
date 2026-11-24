@@ -15,13 +15,19 @@
 import {
 	Check,
 	ChevronDown,
+	ChevronLeft,
+	ChevronRight,
 	Columns2,
+	Copy,
 	GitBranch,
 	GitBranchPlus,
 	MessageCircle,
 	MessageCirclePlus,
 	MoreHorizontal,
+	Pencil,
+	Pin,
 	Plus,
+	RotateCcw,
 	Rows2,
 	SplitSquareHorizontal,
 	Unlink,
@@ -105,9 +111,13 @@ function TabChip({
 	workspaceLabel,
 	width,
 	paired,
+	renaming,
 	dropProps,
 	confirmingClose,
 	closeNeedsConfirm,
+	onStartRename,
+	onCommitRename,
+	onCancelRename,
 	onArmClose,
 	onConfirmClose,
 	onCancelClose,
@@ -122,10 +132,14 @@ function TabChip({
 	width: TabWidth;
 	/** A half of a merged split-pair chip: the pair draws the frame and takes drops. */
 	paired: boolean;
+	renaming: boolean;
 	/** Reorder drop target wiring for a single chip (a pair's frame takes it instead). */
 	dropProps?: ChipDropProps;
 	confirmingClose: boolean;
 	closeNeedsConfirm: boolean;
+	onStartRename: () => void;
+	onCommitRename: (nextTitle: string) => void;
+	onCancelRename: () => void;
 	onArmClose: () => void;
 	onConfirmClose: () => void;
 	onCancelClose: () => void;
@@ -135,6 +149,10 @@ function TabChip({
 	const t = useT();
 	const switchTab = useTabsStore(s => s.switchTab);
 	const closable = useTabsStore(s => s.tabs.length > 1);
+	const [draftTitle, setDraftTitle] = useState(label);
+	useEffect(() => {
+		if (renaming) setDraftTitle(label);
+	}, [renaming, label]);
 	// The active tab's live stream state sharpens the signal between status pushes.
 	const activeRuntime = useSessionStore(s =>
 		active ? s.isStreaming || s.isCompacting || s.isBackgroundCompacting : false,
@@ -153,12 +171,27 @@ function TabChip({
 		<div
 			id={`omp-tab-${tab.id}`}
 			role="tab"
-			draggable
+			draggable={!renaming}
 			aria-selected={selected}
 			tabIndex={active ? 0 : -1}
 			data-tab-unit={paired ? undefined : ""}
+			data-tab-pinned={tab.pinned ? "true" : undefined}
 			{...dropProps}
-			onClick={select}
+			onClick={() => {
+				if (!renaming) select();
+			}}
+			onDoubleClick={event => {
+				if (confirmingClose || paired) return;
+				event.stopPropagation();
+				onStartRename();
+			}}
+			onAuxClick={event => {
+				if (event.button !== 1 || !closable) return;
+				event.preventDefault();
+				event.stopPropagation();
+				if (closeNeedsConfirm) onArmClose();
+				else onConfirmClose();
+			}}
 			onContextMenu={onContextMenu}
 			onDragStart={(event: ReactDragEvent<HTMLDivElement>) => {
 				event.dataTransfer.effectAllowed = "move";
@@ -182,13 +215,13 @@ function TabChip({
 					onKeyboardNavigate(event.key);
 				}
 			}}
-			title={`${label} — ${workspaceLabel}${tab.worktree ? ` — ${tab.worktree.branch}` : ""}`}
+			title={`${label} — ${workspaceLabel}${tab.worktree ? ` — ${tab.worktree.branch}` : ""}${tab.pinned ? ` (${t("tabs.pinned")})` : ""}`}
 			className={cx(
-				"no-drag group relative flex shrink cursor-pointer items-center gap-2 overflow-hidden text-omp-md select-none",
-				CHIP_WIDTH[width],
-				paired ? "h-7 rounded-md px-2" : "omp-tab-unit h-8 rounded-lg px-3",
+				"no-drag group relative flex shrink cursor-pointer items-center gap-1.5 overflow-hidden text-omp-md select-none transition-[background-color,border-color,color,box-shadow] duration-150",
+				tab.pinned && !paired ? "min-w-24 max-w-40" : CHIP_WIDTH[width],
+				paired ? "h-7 rounded-md px-2" : "omp-tab-unit h-8 rounded-lg px-2.5",
 				selected
-					? "bg-[var(--omp-selected-bg)] font-medium text-[var(--omp-text)]"
+					? "bg-[var(--omp-selected-bg)] font-medium text-[var(--omp-text)] after:pointer-events-none after:absolute after:inset-x-2.5 after:bottom-0 after:h-[2px] after:rounded-full after:bg-[var(--omp-accent)]"
 					: visible || active
 						? paired
 							? "text-[var(--omp-text)] hover:bg-[var(--omp-sidebar-item-hover)]"
@@ -204,6 +237,7 @@ function TabChip({
 				data-idle={(!signal.active && signal.color === "var(--omp-dim)") || undefined}
 				style={{ color: signal.color }}
 			/>
+			{tab.pinned && <Pin size={10} className="shrink-0 text-[var(--omp-accent)]" aria-label={t("tabs.pinned")} />}
 			{tab.worktree && (
 				<GitBranch size={11} className="shrink-0 text-[var(--omp-accent)]" aria-label={t("tabs.kind.worktree")} />
 			)}
@@ -214,6 +248,26 @@ function TabChip({
 				<span className="min-w-0 truncate text-[var(--omp-error)]" title={t("tabs.confirmClose")}>
 					{t("tabs.confirmClose")}
 				</span>
+			) : renaming ? (
+				<input
+					autoFocus
+					value={draftTitle}
+					onChange={event => setDraftTitle(event.target.value)}
+					onClick={event => event.stopPropagation()}
+					onKeyDown={event => {
+						event.stopPropagation();
+						if (event.key === "Enter") {
+							event.preventDefault();
+							onCommitRename(draftTitle);
+						} else if (event.key === "Escape") {
+							event.preventDefault();
+							onCancelRename();
+						}
+					}}
+					onBlur={() => onCommitRename(draftTitle)}
+					aria-label={t("tabs.menu.rename")}
+					className="min-w-0 flex-1 rounded bg-[var(--omp-input-bg)] px-1 text-omp-md text-[var(--omp-text)] outline-1 outline-[var(--omp-accent)]"
+				/>
 			) : (
 				<span className="min-w-0 flex-1 leading-tight">
 					{/* Long titles truncate; the chip's tooltip carries the full title. */}
@@ -325,6 +379,11 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 	const split = useTabsStore(s => s.split);
 	const groupAliases = useSidebarPrefs(s => s.groupAliases);
 	const closeTab = useTabsStore(s => s.closeTab);
+	const togglePinTab = useTabsStore(s => s.togglePinTab);
+	const renameTab = useTabsStore(s => s.renameTab);
+	const duplicateTab = useTabsStore(s => s.duplicateTab);
+	const reopenClosedTab = useTabsStore(s => s.reopenClosedTab);
+	const recentlyClosedCount = useTabsStore(s => s.recentlyClosed.length);
 	const openTab = useTabsStore(s => s.openTab);
 	const splitTab = useTabsStore(s => s.splitTab);
 	const unsplit = useTabsStore(s => s.unsplit);
@@ -349,6 +408,7 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 	const armCloseTab = useUiStore(s => s.armCloseTab);
 	const cancelCloseTab = useUiStore(s => s.cancelCloseTab);
 	const [tabMenu, setTabMenu] = useState<{ anchor: ContextMenuAnchor; tabId: string } | null>(null);
+	const [renamingTabId, setRenamingTabId] = useState<string | null>(null);
 	/** The all-tabs list ("switch"), or the partner picker for one tab's "Split with…". */
 	const [searchMenu, setSearchMenu] = useState<{ anchor: ContextMenuAnchor; pairWith: string | null } | null>(null);
 	const [dragTabId, setDragTabId] = useState<string | null>(null);
@@ -605,9 +665,16 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 			workspaceLabel={workspaceOf(tab)}
 			width={tabWidth}
 			paired={paired}
+			renaming={renamingTabId === tab.id}
 			dropProps={dropProps}
 			confirmingClose={armedCloseTab?.tabId === tab.id}
 			closeNeedsConfirm={tabNeedsCloseConfirm(tab, liveRuntime)}
+			onStartRename={() => setRenamingTabId(tab.id)}
+			onCommitRename={nextTitle => {
+				renameTab(tab.id, nextTitle);
+				setRenamingTabId(null);
+			}}
+			onCancelRename={() => setRenamingTabId(null)}
 			onArmClose={() => armCloseTab(tab.id)}
 			onConfirmClose={() => confirmClose(tab.id)}
 			onCancelClose={cancelCloseTab}
@@ -638,10 +705,16 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 						labels: [labelOf(tab)],
 						detail: workspaceOf(tab),
 						current: tab.id === activeTabId,
+						kind: tab.kind,
+						worktree: Boolean(tab.worktree),
+						pinned: Boolean(tab.pinned),
+						running: tab.status === "running",
 					}))
-			: units.flatMap(unit => {
+			: units.flatMap((unit, index) => {
 					const tabId = unitFocusTabId(unit);
 					if (!tabId) return [];
+					const lead = unit.tabs[0];
+					const shortcutHint = index < 8 ? String(index + 1) : index === units.length - 1 ? "9" : undefined;
 					return [
 						{
 							tabId,
@@ -649,12 +722,20 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 							detail: [...new Set(unit.tabs.map(workspaceOf))].join(" · "),
 							axis: unit.group?.axis,
 							current: unit.tabs.some(tab => tab.id === activeTabId),
+							kind: lead?.kind,
+							worktree: unit.tabs.some(tab => Boolean(tab.worktree)),
+							pinned: unit.tabs.some(tab => Boolean(tab.pinned)),
+							running: unit.tabs.some(tab => tab.status === "running"),
+							shortcutHint,
 						},
 					];
 				});
 
 	const iconButtonClass =
 		"no-drag omp-pressable flex h-6 shrink-0 items-center justify-center gap-0.5 rounded-lg text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]";
+	const scrollStripBy = (delta: number) => {
+		stripRef.current?.scrollBy?.({ left: delta, behavior: "smooth" });
+	};
 	const anchorBelow = (element: HTMLElement): ContextMenuAnchor => {
 		const rect = element.getBoundingClientRect();
 		return {
@@ -673,6 +754,17 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 			>
 				{/* Only the chips scroll: the tab actions and "+" stay pinned at the end,
 				    reachable however many tabs are open. */}
+				{!multiRow && overflow.start && (
+					<button
+						type="button"
+						aria-label={t("tabs.scrollLeft")}
+						title={t("tabs.scrollLeft")}
+						onClick={() => scrollStripBy(-220)}
+						className={cx(iconButtonClass, "w-5")}
+					>
+						<ChevronLeft aria-hidden="true" size={14} strokeWidth={1.7} />
+					</button>
+				)}
 				<div
 					ref={stripRef}
 					role="tablist"
@@ -728,6 +820,17 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 						);
 					})}
 				</div>
+				{!multiRow && overflow.end && (
+					<button
+						type="button"
+						aria-label={t("tabs.scrollRight")}
+						title={t("tabs.scrollRight")}
+						onClick={() => scrollStripBy(220)}
+						className={cx(iconButtonClass, "w-5")}
+					>
+						<ChevronRight aria-hidden="true" size={14} strokeWidth={1.7} />
+					</button>
+				)}
 				{tabs.length > 1 && (
 					<button
 						type="button"
@@ -766,6 +869,8 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 						return anchorTab ? t("tabs.pickPartner", { title: labelOf(anchorTab) }) : undefined;
 					})()}
 					entries={searchEntries(searchMenu.pairWith)}
+					hasClosedTabs={!searchMenu.pairWith && recentlyClosedCount > 0}
+					onReopenClosed={() => void reopenClosedTab()}
 					onClose={() => setSearchMenu(null)}
 					onPick={tabId => {
 						if (searchMenu.pairWith) void splitTab(tabId, "right", searchMenu.pairWith);
@@ -780,6 +885,7 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 					if (!target || unitIndex < 0) return null;
 					const left = units.slice(0, unitIndex).flatMap(unit => unit.tabs);
 					const right = units.slice(unitIndex + 1).flatMap(unit => unit.tabs);
+					const others = tabs.filter(tab => tab.id !== target.id && !tab.pinned);
 					const targetPair = groupOf(groups, target.id);
 					const closeItems = (ids: readonly string[]) => {
 						setTabMenu(null);
@@ -800,17 +906,46 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 						{ id: "split-top", label: t("tabs.menu.splitTop"), icon: Rows2, placement: "top" },
 						{ id: "split-bottom", label: t("tabs.menu.splitBottom"), icon: Rows2, placement: "bottom" },
 					] as const;
-					const items: ContextMenuItem[] = placements.map(entry => ({
-						id: entry.id,
-						label: entry.label,
-						icon: entry.icon,
-						disabled: splitBlockedReason !== undefined,
-						disabledReason: splitBlockedReason,
-						onSelect: () => {
-							setTabMenu(null);
-							void splitTab(target.id, entry.placement);
+					const items: ContextMenuItem[] = [
+						{
+							id: "pin-tab",
+							label: target.pinned ? t("tabs.menu.unpin") : t("tabs.menu.pin"),
+							icon: Pin,
+							onSelect: () => {
+								setTabMenu(null);
+								togglePinTab(target.id);
+							},
 						},
-					}));
+						{
+							id: "rename-tab",
+							label: t("tabs.menu.rename"),
+							icon: Pencil,
+							onSelect: () => {
+								setTabMenu(null);
+								setRenamingTabId(target.id);
+							},
+						},
+						{
+							id: "duplicate-tab",
+							label: t("tabs.menu.duplicate"),
+							icon: Copy,
+							onSelect: () => {
+								setTabMenu(null);
+								void duplicateTab(target.id);
+							},
+						},
+						...placements.map(entry => ({
+							id: entry.id,
+							label: entry.label,
+							icon: entry.icon,
+							disabled: splitBlockedReason !== undefined,
+							disabledReason: splitBlockedReason,
+							onSelect: () => {
+								setTabMenu(null);
+								void splitTab(target.id, entry.placement);
+							},
+						})),
+					];
 					items.push({
 						id: "split-with",
 						label: t("tabs.menu.splitWith"),
@@ -833,7 +968,25 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 							},
 						});
 					}
+					if (recentlyClosedCount > 0) {
+						items.push({
+							id: "reopen-closed",
+							label: t("tabs.menu.reopenClosed"),
+							icon: RotateCcw,
+							onSelect: () => {
+								setTabMenu(null);
+								void reopenClosedTab();
+							},
+						});
+					}
 					items.push(
+						{
+							id: "close-others",
+							label: t("tabs.menu.closeOthers"),
+							disabled: others.length === 0 || others.some(protectedFromBatchClose),
+							disabledReason: others.some(protectedFromBatchClose) ? blockedReason : undefined,
+							onSelect: () => closeItems(others.map(tab => tab.id)),
+						},
 						{
 							id: "close-left",
 							label: t("tabs.menu.closeLeft"),

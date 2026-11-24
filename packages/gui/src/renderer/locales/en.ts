@@ -243,6 +243,19 @@ export const en: Record<string, string> = {
 	"tabs.newFailed": "Could not open tab",
 	"tabs.switchFailed": "Could not switch tab",
 	"tabs.confirmClose": "Close tab? The running task will be aborted",
+	"tabs.menu.pin": "Pin tab",
+	"tabs.menu.unpin": "Unpin tab",
+	"tabs.menu.rename": "Rename tab",
+	"tabs.menu.duplicate": "Duplicate tab",
+	"tabs.menu.closeOthers": "Close other tabs",
+	"tabs.menu.reopenClosed": "Reopen closed tab",
+	"tabs.scrollLeft": "Scroll tabs left",
+	"tabs.scrollRight": "Scroll tabs right",
+	"tabs.filter.all": "All",
+	"tabs.filter.agent": "Agent",
+	"tabs.filter.chat": "Chat",
+	"tabs.filter.running": "Running",
+	"tabs.pinned": "Pinned tab",
 
 	// Worktree create dialog (tab × worktree, plan/20)
 	"worktree.baseScope":
