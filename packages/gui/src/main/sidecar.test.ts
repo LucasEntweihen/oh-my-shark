@@ -104,7 +104,7 @@ describe("SidecarManager", () => {
 			expect(launch).toEqual(["--mode", "rpc-ui", "--session", sessionPath]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -133,7 +133,7 @@ describe("SidecarManager", () => {
 			expect(launch).toEqual(["--mode", "rpc-ui", "--no-auto-resume"]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -185,7 +185,7 @@ describe("SidecarManager", () => {
 			expect(commands[2]?.messageUpdates).toBe("delta");
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -209,7 +209,7 @@ describe("SidecarManager", () => {
 			expect(launch).toEqual(["--mode", "rpc-ui", "--chat"]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -239,7 +239,7 @@ describe("SidecarManager", () => {
 			expect(restartLaunch).toEqual(["--mode", "rpc-ui"]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -268,7 +268,7 @@ describe("SidecarManager", () => {
 			]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -291,12 +291,16 @@ describe("SidecarManager", () => {
 		// Discover the exact path through the same stack rather than hardcoding
 		// conf internals, then seed the workspace profile into it.
 		const originalHome = process.env.HOME;
+		const originalAppData = process.env.APPDATA;
+		const originalXdg = process.env.XDG_CONFIG_HOME;
 		process.env.HOME = fakeHome;
+		process.env.APPDATA = path.join(fakeHome, "AppData");
+		process.env.XDG_CONFIG_HOME = path.join(fakeHome, ".config");
 		const sidecar = new SidecarManager({ binaryPath, cwd: workspaceCwd });
 		try {
 			// Same options as the loader; a variable sidesteps the excess-property
 			// check on electron-store's Options type (projectName reaches conf).
-			const storeOptions = { name: "prefs", projectName: "omp-gui" };
+			const storeOptions = { name: "prefs", projectName: "omsk-gui" };
 			const probe = new Store(storeOptions);
 			await fs.mkdir(path.dirname(probe.path), { recursive: true });
 			await fs.writeFile(
@@ -335,8 +339,12 @@ describe("SidecarManager", () => {
 			]);
 		} finally {
 			process.env.HOME = originalHome;
+			if (originalAppData === undefined) delete process.env.APPDATA;
+			else process.env.APPDATA = originalAppData;
+			if (originalXdg === undefined) delete process.env.XDG_CONFIG_HOME;
+			else process.env.XDG_CONFIG_HOME = originalXdg;
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -369,8 +377,8 @@ describe("SidecarManager", () => {
 			expect(spawn.cwd).toBe(adoptedCwd);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
-			await fs.rm(adoptedCwd, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
+			await fs.rm(adoptedCwd, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -404,7 +412,7 @@ describe("SidecarManager", () => {
 			expect(statuses.filter(payload => payload.status === "ready")).toEqual([]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	}, 15_000);
 
@@ -444,7 +452,7 @@ describe("SidecarManager", () => {
 		} finally {
 			vi.unstubAllEnvs();
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -486,7 +494,7 @@ describe("SidecarManager", () => {
 			expect(await readPids()).toHaveLength(1);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	}, 15_000);
 
@@ -504,7 +512,7 @@ describe("SidecarManager", () => {
 			expect(statuses[0].message).not.toContain("build:omp");
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -516,16 +524,16 @@ describe("SidecarManager", () => {
 		try {
 			sidecar.start();
 			expect(statuses[0]).toMatchObject({ status: "error" });
-			expect(statuses[0].message).toContain("build:omp");
+			expect(statuses[0].message).toContain("build:omsk");
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
 	it("names the missing packaged binary by path", () => {
-		expect(missingSidecarMessage(true, "/Applications/omp.app/Contents/Resources")).toContain(
-			path.join("/Applications/omp.app/Contents/Resources", "omp"),
+		expect(missingSidecarMessage(true, "/Applications/OhMyShark.app/Contents/Resources")).toContain(
+			path.join("/Applications/OhMyShark.app/Contents/Resources", "omsk"),
 		);
 	});
 
@@ -573,7 +581,7 @@ describe("SidecarManager", () => {
 			expect(reportFailure).not.toHaveBeenCalled();
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -599,7 +607,7 @@ describe("SidecarManager", () => {
 			);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	}, 15_000);
 
@@ -638,7 +646,7 @@ describe("SidecarManager", () => {
 			]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	}, 15_000);
 });
@@ -672,7 +680,7 @@ describe("SidecarManager warm spare", () => {
 			expect((await fake.commands()).map(command => command.type)).toEqual(["set_ask_dialog", "switch_session"]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -702,7 +710,7 @@ describe("SidecarManager warm spare", () => {
 			expect(prompts).toEqual(["boot-prompt"]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -728,7 +736,7 @@ describe("SidecarManager warm spare", () => {
 			expect(await fake.spawns()).toHaveLength(1);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 
@@ -751,7 +759,7 @@ describe("SidecarManager warm spare", () => {
 			]);
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
 		}
 	});
 });

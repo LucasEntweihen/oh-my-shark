@@ -11,6 +11,7 @@ import { type ChildProcess, spawn } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { stripVTControlCharacters } from "node:util";
 import { dropUnsupportedProxies } from "./proxy-env";
+import { resolveBunExe } from "./sidecar";
 import { MAX_RESTART_ATTEMPTS, RestartBudget, type Revive } from "./stats-restart-policy";
 
 // Bind a private ephemeral port; separate GUI instances must not share an index or listener.
@@ -56,10 +57,13 @@ export class StatsServerManager extends EventEmitter {
 		// `omp stats --help`), not the camelCase --noOpen the oclif property
 		// name suggests — the latter is rejected as an unknown option.
 		const args = ["stats", "--host", "127.0.0.1", "--port", String(DEFAULT_PORT), "--no-open"];
-		console.log(`[stats-server] spawning: ${this.#binaryPath} ${args.join(" ")}`);
+		const isWinTs = process.platform === "win32" && this.#binaryPath.toLowerCase().endsWith(".ts");
+		const command = isWinTs ? resolveBunExe() : this.#binaryPath;
+		const spawnArgs = isWinTs ? [this.#binaryPath, ...args] : args;
+		console.log(`[stats-server] spawning: ${command} ${spawnArgs.join(" ")}`);
 		let child: ChildProcess;
 		try {
-			child = spawn(this.#binaryPath, args, {
+			child = spawn(command, spawnArgs, {
 				stdio: ["ignore", "pipe", "pipe"],
 				env: dropUnsupportedProxies({
 					...process.env,

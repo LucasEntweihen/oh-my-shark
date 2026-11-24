@@ -32,8 +32,13 @@ test("gives every file its own id and reads a linked theme", async () => {
 		await fs.writeFile(path.join(dir, ".json"), "{}");
 		await fs.writeFile(path.join(dir, "Dusk.json"), "{}");
 		await fs.writeFile(path.join(elsewhere, "linked.json"), '{ "extends": "nord" }');
-		await fs.symlink(path.join(elsewhere, "linked.json"), path.join(dir, "linked.json"));
-		await fs.symlink(elsewhere, path.join(dir, "folder.json"));
+		try {
+			await fs.symlink(path.join(elsewhere, "linked.json"), path.join(dir, "linked.json"));
+			await fs.symlink(elsewhere, path.join(dir, "folder.json"));
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === "EPERM" && process.platform === "win32") return;
+			throw error;
+		}
 
 		const { files } = await readCustomThemes(dir);
 		const byName = new Map(files.map(file => [file.fileName, file]));

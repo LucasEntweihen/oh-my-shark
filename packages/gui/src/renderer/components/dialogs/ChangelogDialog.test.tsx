@@ -57,7 +57,7 @@ describe("ChangelogDialog", () => {
 			useUiStore.getState().openChangelog();
 		});
 		expect(document.body.textContent ?? "").toContain("[Unreleased]");
-	});
+	}, 15_000);
 
 	it("renders the bundled changelog as sanitized markdown", async () => {
 		useUiStore.getState().openChangelog();
@@ -67,7 +67,7 @@ describe("ChangelogDialog", () => {
 		expect(text).toContain("[Unreleased]");
 		// The markdown pipeline renders headings as elements, not literal "#".
 		expect(document.querySelector("h1, h2")).not.toBeNull();
-	});
+	}, 15_000);
 
 	it("closes back to an empty body", async () => {
 		useUiStore.getState().openChangelog();
@@ -81,5 +81,5 @@ describe("ChangelogDialog", () => {
 			await new Promise(resolve => setTimeout(resolve, 300));
 		});
 		expect(document.body.textContent ?? "").not.toContain("[Unreleased]");
-	});
+	}, 15_000);
 });

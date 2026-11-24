@@ -76,7 +76,7 @@ describe("CapabilitiesHome", () => {
 			</I18nProvider>,
 		);
 
-		expect(html).toContain("Start with what makes OMP different");
+		expect(html).toContain("Start with what makes OMSK different");
 		expect(html.indexOf("Mid-stream correction · TTSR")).toBeLessThan(html.indexOf("Parallel subagents"));
 		expect(html).toContain("Configure rules");
 		expect(html).toContain("Open Agent Hub");

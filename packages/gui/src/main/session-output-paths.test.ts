@@ -70,12 +70,17 @@ describe("session output references", () => {
 		expect(await resolveSessionOutputPath(uri, session)).toBeNull();
 	});
 	it("rejects symlinks outside the local root, legacy links and redirected session roots", async () => {
-		await fs.symlink(path.join(dir, "active/42.bash.log"), path.join(dir, "active/local/escape.log"));
-		expect(await resolveSessionOutputPath("local://escape.log", session)).toBeNull();
-		await fs.writeFile(path.join(dir, "secret.log"), "secret");
-		await fs.symlink(path.join(dir, "secret.log"), path.join(dir, "active/99.bash.log"));
-		expect(await resolveSessionOutputPath("artifact://99", session)).toBeNull();
-		await fs.symlink(path.join(dir, "active"), path.join(dir, "redirect"));
-		expect(await resolveSessionOutputPath("local://0.log", path.join(dir, "redirect.jsonl"))).toBeNull();
+		try {
+			await fs.symlink(path.join(dir, "active/42.bash.log"), path.join(dir, "active/local/escape.log"));
+			expect(await resolveSessionOutputPath("local://escape.log", session)).toBeNull();
+			await fs.writeFile(path.join(dir, "secret.log"), "secret");
+			await fs.symlink(path.join(dir, "secret.log"), path.join(dir, "active/99.bash.log"));
+			expect(await resolveSessionOutputPath("artifact://99", session)).toBeNull();
+			await fs.symlink(path.join(dir, "active"), path.join(dir, "redirect"));
+			expect(await resolveSessionOutputPath("local://0.log", path.join(dir, "redirect.jsonl"))).toBeNull();
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === "EPERM" && process.platform === "win32") return;
+			throw error;
+		}
 	});
 });

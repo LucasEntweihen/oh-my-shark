@@ -65,10 +65,10 @@ describe("mac bundle configs", () => {
 		).toBe("electron-builder.x64.yml,electron-builder.yml");
 	});
 
-	it("registers the omp:// scheme that src/main/deep-link.ts handles", () => {
+	it("registers the omsk:// scheme that src/main/deep-link.ts handles", () => {
 		for (const { file, config } of configs) {
 			const schemes = (config.protocols ?? []).flatMap(protocol => protocol.schemes ?? []);
-			expect(schemes, `${file} ships no URL scheme`).toContain("omp");
+			expect(schemes, `${file} ships no URL scheme`).toContain("omsk");
 		}
 	});
 
@@ -78,8 +78,8 @@ describe("mac bundle configs", () => {
 			for (const key of PRIVACY_KEYS) {
 				const value = info[key];
 				// Electron's own default reads "This app needs access to the camera":
-				// a prompt that names no product and claims a capability omp never uses.
-				const namesApp = typeof value === "string" && /\bomp\b/.test(value);
+				// a prompt that names no product and claims a capability OhMyShark never uses.
+				const namesApp = typeof value === "string" && /\bOhMyShark\b/.test(value);
 				expect(namesApp, `${file} → ${key}`).toBe(true);
 			}
 		}
@@ -113,7 +113,7 @@ describe("mac bundle configs", () => {
 
 	it("restores ATS in the completed bundle after electron-builder enables arbitrary loads", async () => {
 		const directory = await fs.promises.mkdtemp(path.join(os.tmpdir(), "omp-bundle-policy-"));
-		const plistPath = path.join(directory, "omp.app", "Contents", "Info.plist");
+		const plistPath = path.join(directory, "OhMyShark.app", "Contents", "Info.plist");
 		const loopback = { NSExceptionAllowsInsecureHTTPLoads: true };
 		const original: PlistObject = {
 			CFBundleIdentifier: "sh.omp.gui",
@@ -155,8 +155,8 @@ describe("Windows package config", () => {
 		expect(
 			config.protocols?.flatMap(protocol => protocol.schemes ?? []),
 			`${file} ships no URL scheme`,
-		).toContain("omp");
-		expect(config.extraResources).toContainEqual({ from: "resources/omp.exe", to: "omp.exe" });
+		).toContain("omsk");
+		expect(config.extraResources).toContainEqual({ from: "resources/omsk.exe", to: "omsk.exe" });
 		expect(config.win?.target).toEqual([
 			{ target: "nsis", arch: ["x64"] },
 			{ target: "portable", arch: ["x64"] },

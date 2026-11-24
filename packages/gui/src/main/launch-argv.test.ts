@@ -54,7 +54,7 @@ describe("launchFolder", () => {
 		],
 		["a dev launch, past Electron's app directory", ["electron", "/Applications/omp.app", "/workspace/app"], true],
 	] as const)("opens the folder given to %s", (_name, argv, defaultApp) => {
-		expect(launchFolder(argv, defaultApp, "omp", exists)).toBe("/workspace/app");
+		expect(launchFolder(argv, defaultApp, "omp", exists)).toBe(path.resolve("/workspace/app"));
 	});
 
 	it("never mistakes the dev app directory for a workspace", () => {

@@ -205,9 +205,13 @@ function loadLaunchProfileFlags(cwd: string): string[] {
 }
 
 /** Resolve the bun executable for source-sidecar spawns (PATH fallback last). */
-function resolveBunExe(): string {
+export function resolveBunExe(): string {
 	if (process.env.OMSK_BUN || process.env.OMP_BUN) return process.env.OMSK_BUN || process.env.OMP_BUN!;
-	for (const candidate of [join(homedir(), ".bun", "bin", "bun"), "/opt/homebrew/bin/bun", "/usr/local/bin/bun"]) {
+	for (const candidate of [
+		join(homedir(), ".bun", "bin", process.platform === "win32" ? "bun.exe" : "bun"),
+		"/opt/homebrew/bin/bun",
+		"/usr/local/bin/bun",
+	]) {
 		if (existsSync(candidate)) return candidate;
 	}
 	return "bun";
@@ -380,9 +384,12 @@ export class SidecarManager extends EventEmitter {
 
 		// Source sidecar (monorepo dev): run the workspace coding-agent from
 		// source via bun so in-repo RPC fixes are live in the running GUI.
-		// Falls back to the installed binary when no workspace source exists.
-		const command = sourceCli ? resolveBunExe() : binaryPath;
-		const spawnArgs = sourceCli ? [sourceCli, ...args] : args;
+		// Also run `.ts` sidecar fixtures through bun on Windows (where shebangs don't execute).
+		const runViaBun =
+			sourceCli ??
+			(process.platform === "win32" && binaryPath.toLowerCase().endsWith(".ts") ? binaryPath : undefined);
+		const command = runViaBun ? resolveBunExe() : binaryPath;
+		const spawnArgs = runViaBun ? [runViaBun, ...args] : args;
 		console.log(`[sidecar] spawning ${sourceCli ? "source" : "bundled"} omp (${args.length} args, cwd: ${cwd})`);
 
 		let child: ChildProcess;

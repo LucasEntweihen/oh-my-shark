@@ -258,7 +258,7 @@ describe("Sidebar menus and pinned ordering", () => {
 		expect(more?.getAttribute("aria-expanded")).toBe("true");
 		const labels = menuItemLabels();
 		for (const label of [
-			"OMP capabilities",
+			"OMSK capabilities",
 			"Providers & login",
 			"Usage & quotas",
 			"Session stats",
@@ -267,7 +267,7 @@ describe("Sidebar menus and pinned ordering", () => {
 			expect(labels.some(item => item.includes(label))).toBe(true);
 		}
 		const capabilities = [...document.body.querySelectorAll('[role="menu"] button')].find(button =>
-			(button.textContent ?? "").includes("OMP capabilities"),
+			(button.textContent ?? "").includes("OMSK capabilities"),
 		);
 		await fire(capabilities as Element, "onClick");
 		expect(useUiStore.getState().settingsOpen).toBe(true);

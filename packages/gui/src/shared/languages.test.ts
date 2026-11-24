@@ -15,10 +15,11 @@ describe("interface languages", () => {
 		expect(languageFromLocale("de-DE")).toBe("en");
 	});
 	it("cycles through every language for tray shortcuts", () => {
-		expect(nextLanguage("en")).toBe("ru");
+		expect(nextLanguage("en")).toBe("pt");
+		expect(nextLanguage("pt")).toBe("ru");
 		expect(nextLanguage("ru")).toBe("zh");
 		expect(nextLanguage("zh")).toBe("th");
 		expect(nextLanguage("th")).toBe("en");
-		expect(LANGUAGES.map(language => language.name)).toEqual(["English", "Русский", "中文", "ไทย"]);
+		expect(LANGUAGES.map(language => language.name)).toEqual(["English", "Português (BR)", "Русский", "中文", "ไทย"]);
 	});
 });

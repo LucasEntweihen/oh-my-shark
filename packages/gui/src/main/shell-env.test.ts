@@ -69,22 +69,25 @@ afterEach(() => {
 });
 
 describe("resolveLoginShellEnv", () => {
-	it("extracts the env dump between markers even when the rc file prints noise", async () => {
-		const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-shell-env-"));
-		try {
-			const fakeShell = await writeFakeShell(
-				tempDir,
-				envDumpBody({ PATH: "/probed/bin:/usr/bin", VISUAL: "probed-editor", PROBED_ONLY_KEY: "k1" }, true),
-			);
-			setEnv("SHELL", fakeShell);
-			const result = await resolveLoginShellEnv();
-			expect(result.path).toBe("/probed/bin:/usr/bin");
-			expect(result.editor).toBe("probed-editor");
-			expect(result.env.PROBED_ONLY_KEY).toBe("k1");
-		} finally {
-			await fs.rm(tempDir, { recursive: true, force: true });
-		}
-	});
+	it.skipIf(process.platform === "win32")(
+		"extracts the env dump between markers even when the rc file prints noise",
+		async () => {
+			const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-shell-env-"));
+			try {
+				const fakeShell = await writeFakeShell(
+					tempDir,
+					envDumpBody({ PATH: "/probed/bin:/usr/bin", VISUAL: "probed-editor", PROBED_ONLY_KEY: "k1" }, true),
+				);
+				setEnv("SHELL", fakeShell);
+				const result = await resolveLoginShellEnv();
+				expect(result.path).toBe("/probed/bin:/usr/bin");
+				expect(result.editor).toBe("probed-editor");
+				expect(result.env.PROBED_ONLY_KEY).toBe("k1");
+			} finally {
+				await fs.rm(tempDir, { recursive: true, force: true });
+			}
+		},
+	);
 
 	it("degrades to empty fields when the shell probe fails", async () => {
 		setEnv("SHELL", path.join(os.tmpdir(), "omp-no-such-shell"));
@@ -93,19 +96,22 @@ describe("resolveLoginShellEnv", () => {
 });
 
 describe("spawnPath", () => {
-	it("puts inherited PATH entries first and appends the probed shell PATH", async () => {
-		const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-shell-env-"));
-		try {
-			const fakeShell = await writeFakeShell(tempDir, envDumpBody({ PATH: "/probed/bin" }, false));
-			setEnv("SHELL", fakeShell);
-			setEnv("PATH", "/inherited/bin:/usr/bin");
-			const result = await spawnPath();
-			expect(result.startsWith("/inherited/bin:/usr/bin")).toBe(true);
-			expect(result.split(":")).toContain("/probed/bin");
-		} finally {
-			await fs.rm(tempDir, { recursive: true, force: true });
-		}
-	});
+	it.skipIf(process.platform === "win32")(
+		"puts inherited PATH entries first and appends the probed shell PATH",
+		async () => {
+			const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-shell-env-"));
+			try {
+				const fakeShell = await writeFakeShell(tempDir, envDumpBody({ PATH: "/probed/bin" }, false));
+				setEnv("SHELL", fakeShell);
+				setEnv("PATH", "/inherited/bin:/usr/bin");
+				const result = await spawnPath();
+				expect(result.startsWith("/inherited/bin:/usr/bin")).toBe(true);
+				expect(result.split(":")).toContain("/probed/bin");
+			} finally {
+				await fs.rm(tempDir, { recursive: true, force: true });
+			}
+		},
+	);
 
 	it("falls back to existing well-known user bin dirs when the probe fails", async () => {
 		// homedir() differs across runners: node honors the stubbed $HOME while
@@ -119,7 +125,7 @@ describe("spawnPath", () => {
 		const homeBin = path.join(homedir(), ".local", "bin");
 		await fs.mkdir(homeBin, { recursive: true });
 		try {
-			const entries = (await spawnPath()).split(":");
+			const entries = (await spawnPath()).split(path.delimiter);
 			expect(entries).toContain(homeBin);
 			expect(entries[0]).toBe("/usr/bin");
 		} finally {
@@ -129,35 +135,38 @@ describe("spawnPath", () => {
 });
 
 describe("shellSpawnEnv", () => {
-	it("overlays shell-only keys (rc-exported API keys) but never keys the launch env defines", async () => {
-		const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-shell-env-"));
-		try {
-			const fakeShell = await writeFakeShell(
-				tempDir,
-				envDumpBody(
-					{
-						PATH: "/probed/bin",
-						SHELL_ONLY_API_KEY: "from-rc",
-						LAUNCH_WINS_KEY: "from-rc",
-						HTTPS_PROXY: "rc-proxy-must-not-leak",
-						PWD: "/rc/pwd/must/not/leak",
-					},
-					false,
-				),
-			);
-			setEnv("SHELL", fakeShell);
-			deleteEnv("SHELL_ONLY_API_KEY");
-			setEnv("LAUNCH_WINS_KEY", "from-launch");
-			const overlay = await shellSpawnEnv();
-			expect(overlay.SHELL_ONLY_API_KEY).toBe("from-rc");
-			expect(overlay.LAUNCH_WINS_KEY).toBeUndefined();
-			expect(overlay.HTTPS_PROXY).toBeUndefined();
-			expect(overlay.PWD).toBeUndefined();
-			expect(overlay.PATH.split(":")).toContain("/probed/bin");
-		} finally {
-			await fs.rm(tempDir, { recursive: true, force: true });
-		}
-	});
+	it.skipIf(process.platform === "win32")(
+		"overlays shell-only keys (rc-exported API keys) but never keys the launch env defines",
+		async () => {
+			const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "omp-shell-env-"));
+			try {
+				const fakeShell = await writeFakeShell(
+					tempDir,
+					envDumpBody(
+						{
+							PATH: "/probed/bin",
+							SHELL_ONLY_API_KEY: "from-rc",
+							LAUNCH_WINS_KEY: "from-rc",
+							HTTPS_PROXY: "rc-proxy-must-not-leak",
+							PWD: "/rc/pwd/must/not/leak",
+						},
+						false,
+					),
+				);
+				setEnv("SHELL", fakeShell);
+				deleteEnv("SHELL_ONLY_API_KEY");
+				setEnv("LAUNCH_WINS_KEY", "from-launch");
+				const overlay = await shellSpawnEnv();
+				expect(overlay.SHELL_ONLY_API_KEY).toBe("from-rc");
+				expect(overlay.LAUNCH_WINS_KEY).toBeUndefined();
+				expect(overlay.HTTPS_PROXY).toBeUndefined();
+				expect(overlay.PWD).toBeUndefined();
+				expect(overlay.PATH.split(":")).toContain("/probed/bin");
+			} finally {
+				await fs.rm(tempDir, { recursive: true, force: true });
+			}
+		},
+	);
 });
 
 describe("resolveEditorCommand", () => {
@@ -195,7 +204,7 @@ describe("SidecarManager spawn env", () => {
 			expect(env.KEY).toBe("present");
 		} finally {
 			sidecar.dispose();
-			await fs.rm(tempDir, { recursive: true, force: true });
+			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });
 		}
 	});
 });

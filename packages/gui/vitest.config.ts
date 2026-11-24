@@ -4,5 +4,11 @@ export default defineConfig({
 	test: {
 		include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.ts"],
 		setupFiles: ["./scripts/test-locale.ts"],
+		pool: "forks",
+		poolOptions: {
+			forks: {
+				execArgv: ["--experimental-sqlite"],
+			},
+		},
 	},
 });

@@ -3728,6 +3728,12 @@ export const ru: Record<string, string> = {
 	"settings.gui.soundEffectsDesc":
 		"Мягкие синтезированные звуки при нажатиях, смене вкладок, отправке и завершении ответа.",
 	"titlebar.theme": "Темы и настройка цветов",
+	"themePicker.theme.sharkOcean.label": "Акулий океан",
+	"themePicker.theme.sharkOcean.description":
+		"Глубокий обсидиан OMSK с телеметрическим цианом, аквамарином и огненным акцентом OMSK Flame.",
+	"themePicker.theme.deepAbyss.label": "Глубокая бездна",
+	"themePicker.theme.deepAbyss.description":
+		"Ультраглубокая пелагическая ночь с биолюминесцентным цианом и изумрудной телеметрией.",
 	"themePicker.theme.bioluminescentReef.label": "Биолюминесцентный риф",
 	"themePicker.theme.bioluminescentReef.description":
 		"Глубокий бирюзовый океан с электрической мятной и морской биолюминесценцией.",

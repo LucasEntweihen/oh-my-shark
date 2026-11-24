@@ -188,6 +188,7 @@ async function tailAt(handle: FileHandle, offset: number): Promise<string> {
 export class ConversationIndex {
 	readonly #db: DatabaseSync;
 	readonly #sessionsDir: string;
+	readonly #fts5: boolean;
 	#refreshing: Promise<void> | null = null;
 	#lastRefresh = 0;
 	#progress: { done: number; total: number } | null = null;
@@ -216,7 +217,14 @@ CREATE TABLE IF NOT EXISTS files (
 	title TEXT,
 	kind TEXT,
 	modified INTEGER NOT NULL
-);
+);`);
+		const existing = this.#db
+			.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'entries'")
+			.get() as { sql?: string } | undefined;
+		let hasFts5 = existing?.sql ? /USING\s+fts5/i.test(existing.sql) : true;
+		if (!existing) {
+			try {
+				this.#db.exec(`
 CREATE VIRTUAL TABLE IF NOT EXISTS entries USING fts5(
 	body,
 	path UNINDEXED,
@@ -225,6 +233,22 @@ CREATE VIRTUAL TABLE IF NOT EXISTS entries USING fts5(
 	ts UNINDEXED,
 	tokenize = 'trigram'
 );`);
+			} catch (error) {
+				const msg = error instanceof Error ? error.message : String(error);
+				if (!msg.toLowerCase().includes("fts5")) throw error;
+				hasFts5 = false;
+				this.#db.exec(`
+CREATE TABLE IF NOT EXISTS entries (
+	body TEXT NOT NULL,
+	path TEXT NOT NULL,
+	entry_id TEXT NOT NULL,
+	role TEXT NOT NULL,
+	ts INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS entries_path_idx ON entries(path);`);
+			}
+		}
+		this.#fts5 = hasFts5;
 	}
 
 	close(): void {
@@ -261,8 +285,8 @@ CREATE VIRTUAL TABLE IF NOT EXISTS entries USING fts5(
 		const status = { indexed, indexing: this.#progress ? { ...this.#progress } : null };
 		if (terms.length === 0) return { results: [], ...status };
 
-		const long = terms.filter(term => [...term].length >= 3);
-		const short = terms.filter(term => [...term].length < 3);
+		const long = this.#fts5 ? terms.filter(term => [...term].length >= 3) : [];
+		const short = this.#fts5 ? terms.filter(term => [...term].length < 3) : terms;
 		const where: string[] = [];
 		const params: Array<string | number> = [];
 		if (long.length > 0) {

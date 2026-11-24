@@ -752,13 +752,13 @@ describe("TabBar close confirm", () => {
 	it("the armed close auto-cancels after the timeout", async () => {
 		// Real timers + a short injected window (bun-test compatible).
 		seedRunning();
-		await mount(<TabBar confirmCloseMs={25} />);
+		await mount(<TabBar confirmCloseMs={120} />);
 
 		await click(chips()[1]!.querySelector('[aria-label="Close tab"]')!);
 		expect(chips()[1]?.textContent).toContain("Close tab? The running task will be aborted");
 
 		await act(async () => {
-			await sleep(60);
+			await sleep(200);
 		});
 
 		expect(omp.tabs.close).not.toHaveBeenCalled();

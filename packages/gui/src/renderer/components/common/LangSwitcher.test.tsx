@@ -122,9 +122,15 @@ describe("LangSwitcher", () => {
 		});
 		await flush();
 		const choices = [...document.querySelectorAll('[role="menuitem"]')];
-		expect(choices.map(choice => choice.textContent)).toEqual(["English✓", "Русский", "中文", "ไทย"]);
+		expect(choices.map(choice => choice.textContent)).toEqual([
+			"English✓",
+			"Português (BR)",
+			"Русский",
+			"中文",
+			"ไทย",
+		]);
 		await act(async () => {
-			choices[1].dispatchEvent(new Event("click", { bubbles: true }));
+			choices[2].dispatchEvent(new Event("click", { bubbles: true }));
 		});
 		expect(button.textContent).toContain("RU");
 		expect(document.documentElement.lang).toBe("ru");
@@ -135,7 +141,7 @@ describe("LangSwitcher", () => {
 		});
 		await flush();
 		await act(async () => {
-			document.querySelectorAll('[role="menuitem"]')[2].dispatchEvent(new Event("click", { bubbles: true }));
+			document.querySelectorAll('[role="menuitem"]')[3].dispatchEvent(new Event("click", { bubbles: true }));
 		});
 		expect(button.textContent).toContain("中文");
 	});

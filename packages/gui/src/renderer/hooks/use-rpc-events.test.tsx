@@ -1387,7 +1387,7 @@ describe("desktop notifications", () => {
 		await act(async () => {
 			emitTabBatch(settledTurn, "t0");
 		});
-		expect(notify).toHaveBeenCalledWith("Oh My Pi", "Complete");
+		expect(notify).toHaveBeenCalledWith("OhMyShark", "Complete");
 	});
 
 	it("notifies a focused window when the preference is on", async () => {
@@ -1400,7 +1400,7 @@ describe("desktop notifications", () => {
 		await act(async () => {
 			emitTabBatch(settledTurn, "t0");
 		});
-		expect(notify).toHaveBeenCalledWith("Oh My Pi", "Complete");
+		expect(notify).toHaveBeenCalledWith("OhMyShark", "Complete");
 	});
 
 	it("honours the master switch over the focused preference", async () => {

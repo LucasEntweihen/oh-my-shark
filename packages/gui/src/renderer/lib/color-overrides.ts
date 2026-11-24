@@ -77,55 +77,46 @@ export function clearColorOverrides(): void {
 	saveColorOverrides({});
 }
 
-const MANAGED_CSS_PROPS = [
-	"--omp-accent",
-	"--omp-accent-bright",
-	"--omp-accent-dim",
-	"--omp-accent-glow",
-	"--omp-border-accent",
-	"--omp-selected-bg",
-	"--omp-bg-primary",
-	"--omp-text",
-	"--omsk-ocean-top",
-	"--omsk-ocean-bottom",
-	"--omsk-shark-color",
-	"--omsk-glass-blur",
-	"--omsk-glass-opacity",
-] as const;
+const appliedOverrideKeys = new Set<string>();
 
 export function applyManualColorOverrides(overrides: ManualColorOverrides): void {
 	if (typeof document === "undefined") return;
 	const style = document.documentElement.style;
-	for (const prop of MANAGED_CSS_PROPS) {
+	for (const prop of appliedOverrideKeys) {
 		style.removeProperty(prop);
 	}
+	appliedOverrideKeys.clear();
+	const setProp = (prop: string, val: string) => {
+		style.setProperty(prop, val);
+		appliedOverrideKeys.add(prop);
+	};
 	if (isValidHex(overrides.accent)) {
-		style.setProperty("--omp-accent", overrides.accent);
-		style.setProperty("--omp-accent-bright", `color-mix(in srgb, ${overrides.accent} 80%, #ffffff)`);
-		style.setProperty("--omp-accent-dim", `color-mix(in srgb, ${overrides.accent} 16%, transparent)`);
-		style.setProperty("--omp-accent-glow", `color-mix(in srgb, ${overrides.accent} 32%, transparent)`);
-		style.setProperty("--omp-border-accent", `color-mix(in srgb, ${overrides.accent} 58%, transparent)`);
-		style.setProperty("--omp-selected-bg", `color-mix(in srgb, ${overrides.accent} 16%, transparent)`);
+		setProp("--omp-accent", overrides.accent);
+		setProp("--omp-accent-bright", `color-mix(in srgb, ${overrides.accent} 80%, #ffffff)`);
+		setProp("--omp-accent-dim", `color-mix(in srgb, ${overrides.accent} 16%, transparent)`);
+		setProp("--omp-accent-glow", `color-mix(in srgb, ${overrides.accent} 32%, transparent)`);
+		setProp("--omp-border-accent", `color-mix(in srgb, ${overrides.accent} 58%, transparent)`);
+		setProp("--omp-selected-bg", `color-mix(in srgb, ${overrides.accent} 16%, transparent)`);
 	}
 	if (isValidHex(overrides.bgPrimary)) {
-		style.setProperty("--omp-bg-primary", overrides.bgPrimary);
+		setProp("--omp-bg-primary", overrides.bgPrimary);
 	}
 	if (isValidHex(overrides.textPrimary)) {
-		style.setProperty("--omp-text", overrides.textPrimary);
+		setProp("--omp-text", overrides.textPrimary);
 	}
 	if (isValidHex(overrides.oceanTop)) {
-		style.setProperty("--omsk-ocean-top", overrides.oceanTop);
+		setProp("--omsk-ocean-top", overrides.oceanTop);
 	}
 	if (isValidHex(overrides.oceanBottom)) {
-		style.setProperty("--omsk-ocean-bottom", overrides.oceanBottom);
+		setProp("--omsk-ocean-bottom", overrides.oceanBottom);
 	}
 	if (isValidHex(overrides.sharkColor)) {
-		style.setProperty("--omsk-shark-color", overrides.sharkColor);
+		setProp("--omsk-shark-color", overrides.sharkColor);
 	}
 	if (typeof overrides.glassBlur === "number") {
-		style.setProperty("--omsk-glass-blur", `${overrides.glassBlur}px`);
+		setProp("--omsk-glass-blur", `${overrides.glassBlur}px`);
 	}
 	if (typeof overrides.glassOpacity === "number") {
-		style.setProperty("--omsk-glass-opacity", String(overrides.glassOpacity));
+		setProp("--omsk-glass-opacity", String(overrides.glassOpacity));
 	}
 }

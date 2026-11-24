@@ -107,12 +107,14 @@ afterEach(async () => {
 describe("ShortcutsSettingsPage", () => {
 	it("turns a shortcut off in the saved prefs and stops offering to change it", async () => {
 		await mount();
-		const toggle = byLabel("Show or hide the omp window");
+		const toggle = byLabel("Show or hide the OhMyShark window");
 		expect(toggle.getAttribute("aria-checked")).toBe("true");
 		await click(toggle);
 		expect(lastSaved("keymapDisabled")).toEqual(["window.toggle"]);
-		expect(byLabel("Show or hide the omp window").getAttribute("aria-checked")).toBe("false");
-		expect(byLabel("Change the shortcut for “Show or hide the omp window”").hasAttribute("disabled")).toBe(true);
+		expect(byLabel("Show or hide the OhMyShark window").getAttribute("aria-checked")).toBe("false");
+		expect(byLabel("Change the shortcut for “Show or hide the OhMyShark window”").hasAttribute("disabled")).toBe(
+			true,
+		);
 	});
 
 	it("saves the keys recorded for a shortcut", async () => {
