@@ -330,7 +330,7 @@ export function TitleBar() {
 	];
 
 	return (
-		<header className="omp-titlebar drag-region flex h-12 min-w-0 shrink-0 items-center gap-1 overflow-hidden bg-[var(--omp-titlebar-bg)] px-2.5">
+		<header className="omp-titlebar drag-region flex h-10 min-w-0 shrink-0 items-center gap-1 overflow-hidden bg-[var(--omp-titlebar-bg)] px-2.5">
 			{headerHasAppMenu() && (
 				<button
 					type="button"

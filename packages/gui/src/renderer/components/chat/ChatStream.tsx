@@ -801,17 +801,17 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 					)}
 					{awaitingTranscript && rows.length === 0 && !switchPending && <TranscriptLoading />}
 					{!awaitingTranscript && rows.length === 0 && !isStreaming && !switchPending && readOnly === null && (
-						<div className="omp-empty-canvas flex min-h-full flex-col justify-center pb-20">
-							<div className="omp-empty-logo mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[var(--omp-border-accent)]/35 bg-[var(--omp-selected-bg)] p-1 shadow-[0_0_28px_-8px_var(--omp-accent-glow)]">
-								<OmskLogo size={46} />
+						<div className="omp-empty-canvas flex min-h-full flex-col justify-center pt-4 pb-10">
+							<div className="omp-empty-logo mb-4 flex h-13 w-13 items-center justify-center rounded-2xl border border-[var(--omp-border-accent)]/35 bg-[var(--omp-selected-bg)] p-1 shadow-[0_0_28px_-8px_var(--omp-accent-glow)]">
+								<OmskLogo size={42} />
 							</div>
 							<h1 className="font-display text-omp-display font-semibold leading-tight tracking-[-0.025em] text-[var(--omp-text)]">
 								{isChat ? t("chat.empty.title.chat") : t("chat.empty.title")}
 							</h1>
-							<p className="mt-2 max-w-2xl text-omp-xl leading-relaxed text-[var(--omp-muted)]">
+							<p className="mt-1.5 max-w-2xl text-omp-xl leading-relaxed text-[var(--omp-muted)]">
 								{isChat ? t("chat.empty.subtitle.chat") : t("chat.empty.subtitle")}
 							</p>
-							<div className="omp-starter-grid mt-8 grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+							<div className="omp-starter-grid mt-6 grid grid-cols-2 gap-3 max-sm:grid-cols-1">
 								{starters.map(({ icon: Icon, title, prompt }) => (
 									<button
 										key={title}

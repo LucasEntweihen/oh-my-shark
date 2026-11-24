@@ -749,7 +749,7 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 			<div
 				className={cx(
 					"drag-region flex shrink-0 gap-1 border-b border-[var(--omp-border-muted)] bg-[var(--omp-titlebar-bg)] px-2.5",
-					multiRow ? "min-h-11 items-start py-1.5" : "h-11 items-center",
+					multiRow ? "min-h-10 items-start py-1" : "h-10 items-center",
 				)}
 			>
 				{/* Only the chips scroll: the tab actions and "+" stay pinned at the end,

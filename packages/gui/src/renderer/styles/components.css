@@ -437,9 +437,9 @@
 
 .omp-workspace-main,
 .settings-main-canvas {
-	--omp-column-pad: clamp(16px, 3vw, 40px);
-	--omp-column-reading: 48rem; /* ~95 characters of 15px transcript prose */
-	--omp-column-workspace: 104rem;
+	--omp-column-pad: clamp(12px, 2vw, 28px);
+	--omp-column-reading: clamp(48rem, 64vw, 60rem); /* balanced transcript & code measure */
+	--omp-column-workspace: 108rem;
 }
 
 .omp-column {

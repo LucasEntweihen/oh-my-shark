@@ -842,7 +842,13 @@ kbd,
 
 @media (min-width: 1120px) {
 	.omp-session-sidebar {
-		width: 248px;
+		width: 236px;
+	}
+}
+
+@media (min-width: 1520px) {
+	.omp-session-sidebar {
+		width: 256px;
 	}
 }
 
