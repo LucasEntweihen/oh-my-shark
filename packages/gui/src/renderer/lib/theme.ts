@@ -16,12 +16,12 @@ export const THEME_BACKGROUND_STORAGE_KEY = "omp.themeBackground";
 
 /** Synchronous boot mode mirrored by pre-paint.js before preferences IPC exists. */
 export function readPrepaintThemeMode(): ThemeMode {
-	if (typeof window === "undefined") return "light";
+	if (typeof window === "undefined") return "dark";
 	try {
 		const value = window.localStorage?.getItem(THEME_SCHEME_STORAGE_KEY);
-		return value === "dark" || value === "light" || value === "system" ? value : "light";
+		return value === "dark" || value === "light" || value === "system" ? value : "dark";
 	} catch {
-		return "light";
+		return "dark";
 	}
 }
 

@@ -3720,10 +3720,30 @@ export const pt: Record<string, string> = {
 	"tools.websearch.totalTokens": "total {count}",
 	"themePicker.theme.sharkOcean.label": "Shark Ocean",
 	"themePicker.theme.sharkOcean.description":
-		"Profundidade abissal OMSK com Telemetria Ciano, Shark Aqua e acentos Pi-Flame.",
+		"Profundidade abissal OMSK com Telemetria Ciano, Shark Aqua e acentos OMSK Flame.",
 	"themePicker.theme.deepAbyss.label": "Abismo Profundo",
 	"themePicker.theme.deepAbyss.description":
 		"Noite pelágica ultra-profunda com ciano bioluminescente, laranja chama e telemetria esmeralda.",
+	"titlebar.theme": "Temas e cores personalizadas",
+	"themePicker.theme.bioluminescentReef.label": "Recife Bioluminescente",
+	"themePicker.theme.bioluminescentReef.description":
+		"Azul-petróleo abissal iluminado por menta elétrica e bioluminescência marinha.",
+	"themePicker.theme.crimsonTrench.label": "Fossa Carmesim",
+	"themePicker.theme.crimsonTrench.description":
+		"Fossa vulcânica obsidiana com brilho coral-âmbar e ardósia oceânica.",
+	"themePicker.theme.midnightObsidian.label": "Obsidiana da Meia-Noite",
+	"themePicker.theme.midnightObsidian.description":
+		"Workspace escuro em carbono obsidiana com destaques ultravioleta e aqua.",
+	"themePicker.customizer.toggle": "Cores",
+	"themePicker.customizer.accent": "Destaque",
+	"themePicker.customizer.bgPrimary": "Fundo",
+	"themePicker.customizer.textPrimary": "Texto",
+	"themePicker.customizer.oceanTop": "Superfície",
+	"themePicker.customizer.oceanBottom": "Fundo do mar",
+	"themePicker.customizer.sharkColor": "Tubarões",
+	"themePicker.customizer.glassBlur": "Desfoque",
+	"themePicker.customizer.glassOpacity": "Vidro",
+	"themePicker.customizer.reset": "Redefinir",
 	"themePicker.theme.dark.label": "Grafite",
 	"themePicker.theme.dark.description": "Carvão neutro, texto prateado suave e destaque azul discreto.",
 	"themePicker.theme.light.label": "Porcelana",

@@ -219,8 +219,8 @@ export class WindowManager {
 			return { titleBarStyle: "hidden", trafficLightPosition: { x: 16, y: 17 } };
 		}
 		const fallback = nativeTheme.shouldUseDarkColors
-			? { color: "#1f1f1f", symbolColor: "#ececec" }
-			: { color: "#ffffff", symbolColor: "#0d0d0d" };
+			? { color: "#0a0c10", symbolColor: "#e2e8f0" }
+			: { color: "#0a0c10", symbolColor: "#e2e8f0" };
 		const colors = this.#store.get("captionColors") ?? fallback;
 		return { titleBarStyle: "hidden", titleBarOverlay: { ...colors, height: CAPTION_HEIGHT } };
 	}

@@ -3722,6 +3722,26 @@ export const ru: Record<string, string> = {
 	"tools.websearch.searchRequests": "поиск: {count}",
 	"tools.websearch.sources": "Источники: {count}",
 	"tools.websearch.totalTokens": "всего: {count}",
+	"titlebar.theme": "Темы и настройка цветов",
+	"themePicker.theme.bioluminescentReef.label": "Биолюминесцентный риф",
+	"themePicker.theme.bioluminescentReef.description":
+		"Глубокий бирюзовый океан с электрической мятной и морской биолюминесценцией.",
+	"themePicker.theme.crimsonTrench.label": "Багровая впадина",
+	"themePicker.theme.crimsonTrench.description":
+		"Вулканический обсидиан с кораллово-янтарным свечением и океаническим сланцем.",
+	"themePicker.theme.midnightObsidian.label": "Полуночный обсидиан",
+	"themePicker.theme.midnightObsidian.description":
+		"Углеродно-обсидиановая тёмная тема с ультрафиолетовыми и аква-акцентами.",
+	"themePicker.customizer.toggle": "Цвета",
+	"themePicker.customizer.accent": "Акцент",
+	"themePicker.customizer.bgPrimary": "Фон",
+	"themePicker.customizer.textPrimary": "Текст",
+	"themePicker.customizer.oceanTop": "Поверхность",
+	"themePicker.customizer.oceanBottom": "Глубина",
+	"themePicker.customizer.sharkColor": "Акулы",
+	"themePicker.customizer.glassBlur": "Размытие",
+	"themePicker.customizer.glassOpacity": "Стекло",
+	"themePicker.customizer.reset": "Сброс",
 	"themePicker.theme.dark.label": "Графит",
 	"themePicker.theme.dark.description":
 		"Нейтральный угольный фон, мягкий серебристый текст и ненавязчивый синий акцент.",

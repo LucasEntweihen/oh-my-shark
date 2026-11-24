@@ -8,8 +8,14 @@
  * "New theme" and a custom row's pencil open the theme editor.
  */
 
-import { AlertTriangle, Check, FolderOpen, Monitor, Palette, Pencil, Search } from "lucide-react";
+import { AlertTriangle, Check, FolderOpen, Monitor, Palette, Pencil, RotateCcw, Search, Sliders } from "lucide-react";
 import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
+import {
+	clearColorOverrides,
+	type ManualColorOverrides,
+	readColorOverrides,
+	saveColorOverrides,
+} from "../../lib/color-overrides";
 import { describeError } from "../../lib/errors";
 import { cx, shortenPath } from "../../lib/format";
 import { useT } from "../../lib/i18n";
@@ -69,8 +75,10 @@ export function ThemePickerDialog() {
 	const customEntries = useCustomThemesStore(s => s.entries);
 
 	const [query, setQuery] = useState("");
-	const [current, setCurrent] = useState<ThemeSelection>("system");
+	const [current, setCurrent] = useState<ThemeSelection>("sharkOcean");
 	const [active, setActive] = useState(0);
+	const [customizerOpen, setCustomizerOpen] = useState(false);
+	const [overrides, setOverrides] = useState<ManualColorOverrides>(() => readColorOverrides());
 	const inputRef = useRef<HTMLInputElement>(null);
 	const listRef = useRef<HTMLDivElement>(null);
 	const landingRef = useRef<NoticeLanding>("none");
@@ -125,6 +133,7 @@ export function ThemePickerDialog() {
 		let cancelled = false;
 		setQuery("");
 		setActive(0);
+		setOverrides(readColorOverrides());
 		landingRef.current = "none";
 		void getPersistedThemeSelection().then(sel => {
 			if (cancelled) return;
@@ -201,7 +210,95 @@ export function ThemePickerDialog() {
 						placeholder={t("themePicker.search")}
 						className="w-full bg-transparent text-omp-lg text-[var(--omp-text)] outline-none placeholder:text-[var(--omp-dim)]"
 					/>
+					<Button
+						size="sm"
+						variant={customizerOpen ? "primary" : "secondary"}
+						aria-pressed={customizerOpen}
+						onClick={() => setCustomizerOpen(prev => !prev)}
+					>
+						<Sliders size={13} />
+						{t("themePicker.customizer.toggle")}
+					</Button>
 				</div>
+				{customizerOpen && (
+					<div className="border-b border-[var(--omp-border-muted)] px-4 py-3">
+						<div className="grid grid-cols-3 gap-2.5 max-sm:grid-cols-2">
+							{(
+								[
+									{ key: "accent", label: t("themePicker.customizer.accent"), fallback: "#38bdf8" },
+									{ key: "bgPrimary", label: t("themePicker.customizer.bgPrimary"), fallback: "#0a0c10" },
+									{ key: "textPrimary", label: t("themePicker.customizer.textPrimary"), fallback: "#f1f5f9" },
+									{ key: "oceanTop", label: t("themePicker.customizer.oceanTop"), fallback: "#092136" },
+									{ key: "oceanBottom", label: t("themePicker.customizer.oceanBottom"), fallback: "#03070e" },
+									{ key: "sharkColor", label: t("themePicker.customizer.sharkColor"), fallback: "#38bdf8" },
+								] as const
+							).map(field => {
+								const val = overrides[field.key] ?? field.fallback;
+								return (
+									<label
+										key={field.key}
+										className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-[var(--omp-border-muted)] px-2.5 py-1.5 text-omp-xs text-[var(--omp-muted)] hover:border-[var(--omp-border)]"
+									>
+										<span className="truncate">{field.label}</span>
+										<input
+											type="color"
+											value={val}
+											onChange={event => {
+												const next = { ...overrides, [field.key]: event.target.value };
+												setOverrides(next);
+												saveColorOverrides(next);
+											}}
+											className="h-5 w-7 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
+										/>
+									</label>
+								);
+							})}
+						</div>
+						<div className="mt-2.5 flex flex-wrap items-center gap-4">
+							<label className="flex flex-1 items-center gap-2 text-omp-xs text-[var(--omp-muted)]">
+								<span className="shrink-0">{t("themePicker.customizer.glassBlur")}</span>
+								<input
+									type="range"
+									min={0}
+									max={20}
+									value={overrides.glassBlur ?? 7}
+									onChange={event => {
+										const next = { ...overrides, glassBlur: Number(event.target.value) };
+										setOverrides(next);
+										saveColorOverrides(next);
+									}}
+									className="w-full accent-[var(--omp-accent)]"
+								/>
+							</label>
+							<label className="flex flex-1 items-center gap-2 text-omp-xs text-[var(--omp-muted)]">
+								<span className="shrink-0">{t("themePicker.customizer.glassOpacity")}</span>
+								<input
+									type="range"
+									min={20}
+									max={85}
+									value={overrides.glassOpacity ?? 54}
+									onChange={event => {
+										const next = { ...overrides, glassOpacity: Number(event.target.value) };
+										setOverrides(next);
+										saveColorOverrides(next);
+									}}
+									className="w-full accent-[var(--omp-accent)]"
+								/>
+							</label>
+							<Button
+								size="sm"
+								variant="ghost"
+								onClick={() => {
+									setOverrides({});
+									clearColorOverrides();
+								}}
+							>
+								<RotateCcw size={12} />
+								{t("themePicker.customizer.reset")}
+							</Button>
+						</div>
+					</div>
+				)}
 				<div ref={listRef} className="omp-command-list overflow-y-auto p-2">
 					{filtered.length === 0 && (
 						<div className="px-3 py-8 text-center text-omp-lg text-[var(--omp-dim)]">

@@ -3898,10 +3898,30 @@ export const en: Record<string, string> = {
 	"tools.websearch.totalTokens": "total {count}",
 	"themePicker.theme.sharkOcean.label": "Shark Ocean",
 	"themePicker.theme.sharkOcean.description":
-		"OMSK void-obsidian depth with Telemetry Cyan, Shark Aqua, and Pi-Flame accents.",
+		"OMSK void-obsidian depth with Telemetry Cyan, Shark Aqua, and OMSK Flame accents.",
 	"themePicker.theme.deepAbyss.label": "Deep Abyss",
 	"themePicker.theme.deepAbyss.description":
 		"Ultra-deep pelagic night with bioluminescent cyan, flame orange, and emerald telemetry.",
+	"titlebar.theme": "Themes & custom colors",
+	"themePicker.theme.bioluminescentReef.label": "Bioluminescent Reef",
+	"themePicker.theme.bioluminescentReef.description":
+		"Deep pelagic teal illuminated by electric mint and sea-foam bioluminescence.",
+	"themePicker.theme.crimsonTrench.label": "Crimson Trench",
+	"themePicker.theme.crimsonTrench.description":
+		"Volcanic obsidian trench lit by coral-amber flare and deep ocean slate.",
+	"themePicker.theme.midnightObsidian.label": "Midnight Obsidian",
+	"themePicker.theme.midnightObsidian.description":
+		"Carbon obsidian dark workspace with electric ultraviolet and aqua highlights.",
+	"themePicker.customizer.toggle": "Colors",
+	"themePicker.customizer.accent": "Accent",
+	"themePicker.customizer.bgPrimary": "Background",
+	"themePicker.customizer.textPrimary": "Text",
+	"themePicker.customizer.oceanTop": "Ocean surface",
+	"themePicker.customizer.oceanBottom": "Ocean deep",
+	"themePicker.customizer.sharkColor": "Sharks",
+	"themePicker.customizer.glassBlur": "Glass blur",
+	"themePicker.customizer.glassOpacity": "Glass tint",
+	"themePicker.customizer.reset": "Reset",
 	"themePicker.theme.dark.label": "Graphite",
 	"themePicker.theme.dark.description": "Neutral charcoal, soft silver text, and a quiet blue accent.",
 	"themePicker.theme.light.label": "Porcelain",

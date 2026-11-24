@@ -21,6 +21,7 @@
  */
 
 import type { RpcThemeColorsResult } from "../../shared/rpc-types";
+import { applyManualColorOverrides, readColorOverrides } from "./color-overrides";
 import { saveGuiPreference } from "./display-preferences";
 import { acceptsActiveTabEvents, onActiveTabRouteSettled, onActiveTabRouteState } from "./tab-routing";
 import {
@@ -1694,7 +1695,7 @@ const rosePine: ThemeDefinition = {
 
 const sharkOcean: ThemeDefinition = {
 	label: "Shark Ocean",
-	description: "OMSK void-obsidian depth with Telemetry Cyan, Shark Aqua, and Pi-Flame accents.",
+	description: "OMSK void-obsidian depth with Telemetry Cyan, Shark Aqua, and OMSK Flame accents.",
 	scheme: "dark",
 	tokens: {
 		"--omp-accent": "#38BDF8",
@@ -1946,10 +1947,94 @@ const deepAbyss: ThemeDefinition = {
 	},
 };
 
+const bioluminescentReef: ThemeDefinition = {
+	label: "Bioluminescent Reef",
+	description: "Deep pelagic teal illuminated by electric mint and sea-foam bioluminescence.",
+	scheme: "dark",
+	tokens: {
+		...sharkOcean.tokens,
+		"--omp-accent": "#2DD4BF",
+		"--omp-accent-bright": "#5EEAD4",
+		"--omp-accent-dim": "rgba(45, 212, 191, 0.14)",
+		"--omp-accent-glow": "rgba(94, 234, 212, 0.24)",
+		"--omp-border": "#133238",
+		"--omp-border-accent": "rgba(45, 212, 191, 0.54)",
+		"--omp-border-muted": "#0D2429",
+		"--omp-bg-primary": "#051216",
+		"--omp-bg-secondary": "#0A1D23",
+		"--omp-bg-tertiary": "#102A32",
+		"--omp-bg-elevated": "#0C2128",
+		"--omp-selected-bg": "rgba(45, 212, 191, 0.16)",
+		"--omp-user-msg-bg": "#0B242B",
+		"--omp-user-msg-border": "#154954",
+		"--omp-code-bg": "#030B0E",
+		"--omp-panel-bg": "#040E12",
+		"--omp-titlebar-bg": "#051216",
+		"--omp-status-bg": "#040E12",
+	},
+};
+
+const crimsonTrench: ThemeDefinition = {
+	label: "Crimson Trench",
+	description: "Volcanic obsidian trench lit by coral-amber flare and deep ocean slate.",
+	scheme: "dark",
+	tokens: {
+		...sharkOcean.tokens,
+		"--omp-accent": "#FB7185",
+		"--omp-accent-bright": "#FDA4AF",
+		"--omp-accent-dim": "rgba(251, 113, 133, 0.14)",
+		"--omp-accent-glow": "rgba(255, 85, 0, 0.24)",
+		"--omp-border": "#2E1C24",
+		"--omp-border-accent": "rgba(251, 113, 133, 0.5)",
+		"--omp-border-muted": "#21141A",
+		"--omp-bg-primary": "#0B070A",
+		"--omp-bg-secondary": "#150D12",
+		"--omp-bg-tertiary": "#1F141B",
+		"--omp-bg-elevated": "#180F14",
+		"--omp-selected-bg": "rgba(251, 113, 133, 0.14)",
+		"--omp-user-msg-bg": "#1A1016",
+		"--omp-user-msg-border": "#442230",
+		"--omp-code-bg": "#060406",
+		"--omp-panel-bg": "#080507",
+		"--omp-titlebar-bg": "#0B070A",
+		"--omp-status-bg": "#080507",
+	},
+};
+
+const midnightObsidian: ThemeDefinition = {
+	label: "Midnight Obsidian",
+	description: "Carbon obsidian dark workspace with electric ultraviolet and aqua highlights.",
+	scheme: "dark",
+	tokens: {
+		...sharkOcean.tokens,
+		"--omp-accent": "#A855F7",
+		"--omp-accent-bright": "#C084FC",
+		"--omp-accent-dim": "rgba(168, 85, 247, 0.15)",
+		"--omp-accent-glow": "rgba(168, 85, 247, 0.26)",
+		"--omp-border": "#242038",
+		"--omp-border-accent": "rgba(192, 132, 252, 0.52)",
+		"--omp-border-muted": "#191628",
+		"--omp-bg-primary": "#07070D",
+		"--omp-bg-secondary": "#100F1B",
+		"--omp-bg-tertiary": "#171526",
+		"--omp-bg-elevated": "#121120",
+		"--omp-selected-bg": "rgba(168, 85, 247, 0.16)",
+		"--omp-user-msg-bg": "#141224",
+		"--omp-user-msg-border": "#302854",
+		"--omp-code-bg": "#040408",
+		"--omp-panel-bg": "#05050A",
+		"--omp-titlebar-bg": "#07070D",
+		"--omp-status-bg": "#05050A",
+	},
+};
+
 // Selection IDs remain stable so existing preferences survive the redesign.
 export const THEMES = {
 	sharkOcean,
 	deepAbyss,
+	bioluminescentReef,
+	crimsonTrench,
+	midnightObsidian,
 	dark,
 	titanium,
 	nord,
@@ -2098,18 +2183,19 @@ function showSelection(selection: ThemeSelection): ThemeDefinition | null | unde
 		applyTheme("system");
 	}
 	writeOverlay();
+	applyManualColorOverrides(readColorOverrides());
 	return theme;
 }
 
 /**
  * Reads the persisted selection: the `themeName` pref first, then the legacy
  * `theme` pref (dark/light/system written by older builds and the settings
- * window), falling back to "light" — the historical store default.
+ * window), falling back to "sharkOcean" — the dark-first default.
  */
 export async function getPersistedThemeSelection(prefs?: Readonly<Record<string, unknown>>): Promise<ThemeSelection> {
 	if (prefs) {
 		if (isThemeSelection(prefs.themeName)) return prefs.themeName;
-		return isThemeSelection(prefs.theme) ? prefs.theme : "light";
+		return isThemeSelection(prefs.theme) ? prefs.theme : "sharkOcean";
 	}
 	try {
 		const named = await window.omp.prefs.get("themeName");
@@ -2119,7 +2205,7 @@ export async function getPersistedThemeSelection(prefs?: Readonly<Record<string,
 	} catch {
 		// prefs IPC unavailable (tests, storybook) — use the default.
 	}
-	return "light";
+	return "sharkOcean";
 }
 
 /**

@@ -8,6 +8,7 @@ import {
 	Info,
 	Menu,
 	MoreHorizontal,
+	Palette,
 	PanelLeft,
 	PanelRight,
 	ScrollText,
@@ -74,6 +75,7 @@ export function TitleBar() {
 	const panelVisible = useUiStore(s => s.panelVisible);
 	const togglePanel = useUiStore(s => s.togglePanel);
 	const openCommandPalette = useUiStore(s => s.openCommandPalette);
+	const openThemePicker = useUiStore(s => s.openThemePicker);
 	const openUsage = useUiStore(s => s.openUsage);
 	const openStatsDashboard = useUiStore(s => s.openStatsDashboard);
 	const openImportDialog = useUiStore(s => s.openImportDialog);
@@ -478,6 +480,15 @@ export function TitleBar() {
 					))}
 				</span>
 			)}
+			<button
+				type="button"
+				aria-label={t("titlebar.theme")}
+				title={t("titlebar.theme")}
+				onClick={openThemePicker}
+				className={iconButton}
+			>
+				<Palette aria-hidden="true" size={16} strokeWidth={1.65} />
+			</button>
 			<NotificationBell className={iconButton} />
 			<button
 				type="button"
