@@ -26,6 +26,10 @@ const RUNTIME_ONLY_PROVIDERS = new Set([
 	// `bundle="never"` KDL seed; factoryDroidModelManagerOptions serves it
 	// offline and narrows it by account flags/org policy live.
 	"factory-droid",
+	// Runtime-seeded official Google Antigravity SDK & remote Interactions API providers;
+	// served by googleAntigravitySdkModelManagerOptions / antigravityInteractionsModelManagerOptions.
+	"google-antigravity-sdk",
+	"antigravity-interactions",
 	// Both SingularityAPI rosters are live and credential-scoped (one key sees
 	// only its own product's models — the pay-as-you-go catalog or the reserved
 	// lanes), so no rows are frozen into the bundled catalog.

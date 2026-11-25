@@ -13,7 +13,12 @@ import { providerEntries, providerEntry } from "../compat/providers";
 import type { Api } from "../types";
 import type { ModelManagerOptions } from "../model-manager";
 import type { ModelManagerConfig, ProviderDescriptor } from "./descriptor-types";
-import { googleModelManagerOptions, googleVertexModelManagerOptions } from "./google";
+import {
+	antigravityInteractionsModelManagerOptions,
+	googleAntigravitySdkModelManagerOptions,
+	googleModelManagerOptions,
+	googleVertexModelManagerOptions,
+} from "./google";
 import { ollamaCloudModelManagerOptions } from "./ollama";
 import {
 	abliterationModelManagerOptions,
@@ -112,6 +117,7 @@ const MODEL_MANAGER_FACTORIES: Readonly<Partial<Record<KnownProvider, ModelManag
 	"bedrock-mantle": config => bedrockMantleModelManagerOptions(config),
 	bifrost: config => bifrostModelManagerOptions(config),
 	anthropic: config => anthropicModelManagerOptions(config),
+	"antigravity-interactions": config => antigravityInteractionsModelManagerOptions(config),
 	cerebras: config => cerebrasModelManagerOptions(config),
 	"charm-hyper": config => charmHyperModelManagerOptions(config),
 	"cloudflare-ai-gateway": config => cloudflareAiGatewayModelManagerOptions(config),
@@ -130,6 +136,7 @@ const MODEL_MANAGER_FACTORIES: Readonly<Partial<Record<KnownProvider, ModelManag
 	"gitlab-duo-agent": config => gitLabDuoWorkflowModelManagerOptions(config),
 	"gmi-cloud": config => gmiCloudModelManagerOptions(config),
 	google: config => googleModelManagerOptions(config),
+	"google-antigravity-sdk": config => googleAntigravitySdkModelManagerOptions(config),
 	"google-vertex": config => googleVertexModelManagerOptions(config),
 	groq: config => groqModelManagerOptions(config),
 	helmcode: config => helmcodeModelManagerOptions(config),

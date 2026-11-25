@@ -63,6 +63,8 @@ const KNOWN_APIS = [
 	"devin-agent",
 	"factory-droid-agent",
 	"antigravity-acp",
+	"antigravity-sdk",
+	"antigravity-interactions",
 	"apple-foundation-models",
 ] as const satisfies readonly KnownApi[];
 type _MissingKnownApis = Exclude<KnownApi, (typeof KNOWN_APIS)[number]>;

@@ -1,0 +1,17 @@
+// Catalog entry for "antigravity-interactions": Google Gemini Interactions
+// API managed remote Antigravity sandbox agent (`antigravity-preview-09-2026`).
+provider "antigravity-interactions" {
+	default-model "antigravity-preview-09-2026"
+	env "GEMINI_API_KEY"
+	requires-native-tools #true
+
+	seed api="antigravity-interactions" base-url="https://generativelanguage.googleapis.com/v1beta" bundle="never" {
+		model "antigravity-preview-09-2026" name="Antigravity Managed Agent (Remote Sandbox)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=135000 max-tokens=65536
+			supports-tools #true
+		}
+	}
+}

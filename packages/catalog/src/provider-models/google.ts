@@ -2,13 +2,14 @@ import { logger } from "@oh-my-pi/pi-utils";
 import { isExcludedModel } from "../compat/behavior";
 import { reviewedCollapseTable } from "../compat/collapse";
 import { classifyModel } from "../compat/taxonomy";
-import { providerEntry } from "../compat/providers";
+import { providerEntry, seedModels } from "../compat/providers";
 import { fetchAntigravityDiscoveryModels } from "../discovery/antigravity";
 import { fetchGeminiModels } from "../discovery/gemini";
 import { fetchGeminiCliQuotaModels } from "../discovery/gemini-cli";
 import type { ModelManagerOptions } from "../model-manager";
 import type { FetchImpl, ModelSpec } from "../types";
 import { unionAccountCatalogs } from "./account-access";
+import { resolveModelCacheProviderId } from "./cache-provider-id";
 
 export interface GoogleModelManagerConfig {
 	apiKey?: string;
@@ -199,5 +200,71 @@ export function googleGeminiCliModelManagerOptions(
 					},
 				}
 			: undefined),
+	};
+}
+
+export interface GoogleAntigravitySdkModelManagerConfig {
+	apiKey?: string;
+	baseUrl?: string;
+	fetch?: FetchImpl;
+}
+
+/**
+ * Runtime model manager for the official `google-antigravity` Python SDK
+ * provider (`google-antigravity-sdk`): serves verified SDK/LiteRT seeds
+ * synchronously and merges live Gemini API models when an API key is available.
+ */
+export function googleAntigravitySdkModelManagerOptions(
+	config?: GoogleAntigravitySdkModelManagerConfig,
+): ModelManagerOptions<"antigravity-sdk"> {
+	const apiKey = config?.apiKey?.trim();
+	const baseUrl = config?.baseUrl?.trim();
+	const staticModels = seedModels<"antigravity-sdk">("google-antigravity-sdk").map(model =>
+		baseUrl ? { ...model, baseUrl } : model,
+	);
+	return {
+		providerId: "google-antigravity-sdk",
+		cacheProviderId: resolveModelCacheProviderId("google-antigravity-sdk", { baseUrl }),
+		staticModels,
+		...(apiKey
+			? {
+					fetchDynamicModels: async () => {
+						const discovered = await fetchGeminiModels({
+							apiKey,
+							baseUrl,
+							fetch: toDiscoveryFetch(config?.fetch),
+						});
+						if (!discovered) return null;
+						const seededIds = new Set(staticModels.map(model => model.id));
+						const extraModels: ModelSpec<"antigravity-sdk">[] = discovered
+							.filter(model => !seededIds.has(model.id))
+							.map(model => {
+								const { compat: _compat, remoteCompaction: _rc, ...rest } = model;
+								return {
+									...rest,
+									api: "antigravity-sdk",
+									provider: "google-antigravity-sdk",
+								};
+							});
+						return [...staticModels, ...extraModels];
+					},
+				}
+			: undefined),
+	};
+}
+
+/**
+ * Runtime model manager for the Gemini Interactions API managed Antigravity
+ * remote sandbox agent (`antigravity-interactions`).
+ */
+export function antigravityInteractionsModelManagerOptions(
+	config?: GoogleModelManagerConfig,
+): ModelManagerOptions<"antigravity-interactions"> {
+	const staticModels = seedModels<"antigravity-interactions">("antigravity-interactions");
+	return {
+		providerId: "antigravity-interactions",
+		cacheProviderId: resolveModelCacheProviderId("antigravity-interactions"),
+		staticModels,
+		...(config?.apiKey ? { dropCachedModelIdsOnStaticMismatch: [] } : undefined),
 	};
 }
