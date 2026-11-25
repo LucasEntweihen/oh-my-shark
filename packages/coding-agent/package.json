@@ -1,6 +1,6 @@
 {
 	"name": "@oh-my-pi/pi-coding-agent",
-	"version": "19.0.1",
+	"version": "19.1.1",
 	"description": "Coding agent CLI with read, bash, edit, write tools and session management",
 	"keywords": [
 		"agent",
@@ -15,10 +15,7 @@
 		"url": "https://github.com/can1357/oh-my-pi/issues"
 	},
 	"license": "MIT",
-	"author": {
-		"name": "Stencil Labs, Inc.",
-		"url": "https://stencil.so"
-	},
+	"author": { "name": "Stencil Labs, Inc.", "url": "https://stencil.so" },
 	"contributors": [
 		"Mario Zechner"
 	],
@@ -28,8 +25,6 @@
 		"directory": "packages/coding-agent"
 	},
 	"bin": {
-		"omsk": "src/cli.ts",
-		"ohms": "src/cli.ts",
 		"omp": "src/cli.ts"
 	},
 	"files": [
@@ -43,6 +38,7 @@
 		"dist/CHANGELOG-*.md",
 		"dist/*.node",
 		"dist/*.json-*.zst",
+		"dist/perturbation-pool.json-*.txt",
 		"scripts",
 		"examples",
 		"README.md",
@@ -174,8 +170,8 @@
 			"import": "./src/dap/*.ts"
 		},
 		"./debug": {
-			"types": "./src/debug/index.ts",
-			"import": "./src/debug/index.ts"
+			"types": "./src/debug/index.tsx",
+			"import": "./src/debug/index.tsx"
 		},
 		"./debug/*": {
 			"types": "./src/debug/*.ts",
@@ -425,10 +421,6 @@
 			"types": "./src/modes/acp/*.ts",
 			"import": "./src/modes/acp/*.ts"
 		},
-		"./modes/components": {
-			"types": "./src/modes/components/index.ts",
-			"import": "./src/modes/components/index.ts"
-		},
 		"./modes/components/*": {
 			"types": "./src/modes/components/*.ts",
 			"import": "./src/modes/components/*.ts"
@@ -580,13 +572,7 @@
 		"@opentelemetry/sdk-trace-base": "catalog:",
 		"@opentelemetry/sdk-trace-node": "catalog:",
 		"axe-core": "4.13.0",
-		"puppeteer-core": "catalog:",
-		"@oh-my-pi/pi-vibe-toolkit": "workspace:*",
-		"@ohms/kernel": "workspace:*",
-		"@ohms/project-intelligence": "workspace:*",
-		"@ohms/capability-registry": "workspace:*",
-		"@ohms/execution-engine": "workspace:*",
-		"@ohms/terminal-layout": "workspace:*"
+		"puppeteer-core": "catalog:"
 	},
 	"devDependencies": {
 		"@types/bun": "catalog:"

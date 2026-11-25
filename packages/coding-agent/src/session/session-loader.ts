@@ -22,13 +22,7 @@ import {
 	resolveImageDataUrlSync,
 } from "./blob-store";
 import { buildSessionContext } from "./session-context";
-import {
-	type FileEntry,
-	type RawFileEntry,
-	SESSION_TITLE_SLOT_BYTES,
-	type SessionEntry,
-	type SessionHeader,
-} from "./session-entries";
+import type { FileEntry, RawFileEntry, SessionEntry, SessionHeader } from "./session-entries";
 import { migrateToCurrentVersion } from "./session-migrations";
 import { isExternalizableImagePosition, isPersistenceTruncatedString } from "./session-persistence";
 import { FileSessionStorage, type SessionStorage } from "./session-storage";
@@ -209,23 +203,6 @@ export async function readSessionHeaderId(filePath: string): Promise<string | un
 		if (id !== HEADER_INCOMPLETE) return id;
 		const full = await peekFile(filePath, SESSION_HEADER_READ_LIMIT, prefix => sessionHeaderIdFromPrefix(prefix));
 		return full ?? undefined;
-	} catch (err) {
-		if (isEnoent(err) || isEnotdir(err) || isEisdir(err)) return undefined;
-		throw err;
-	}
-}
-
-/**
- * The title in `filePath`'s title slot, or `undefined` when there is no file
- * there, no slot or an empty title. One positioned read of the fixed-width slot.
- */
-export async function readSessionTitle(filePath: string): Promise<string | undefined> {
-	try {
-		return await peekFile(
-			filePath,
-			SESSION_TITLE_SLOT_BYTES,
-			prefix => titleUpdateFromSlot(parseTitleSlotFromContent(new TextDecoder().decode(prefix)))?.title || undefined,
-		);
 	} catch (err) {
 		if (isEnoent(err) || isEnotdir(err) || isEisdir(err)) return undefined;
 		throw err;

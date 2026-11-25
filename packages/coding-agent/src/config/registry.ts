@@ -24,7 +24,7 @@
  * (sections follow `TAB_GROUPS`), and `config/all-settings.ts` imports every domain in that order.
  */
 import { logger, parseFlag } from "@oh-my-pi/pi-utils";
-import type { AnyUiMetadata, SubmenuOption, UiBase } from "@oh-my-pi/pi-tui/overlays/settings-defs";
+import type { AnyUiMetadata, SubmenuOption, UiBase } from "./settings-defs";
 import type { SettingProvenance, Settings } from "./settings";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -102,13 +102,10 @@ interface DefinitionBase {
 	 * and `itemType` selects whether unscoped/nested entries are strings (default) or rule objects.
 	 */
 	pathScoped?: { valuesKey: string; itemType?: "string" | "object" };
-	/** Marks settings meaningful only in the terminal client (portable RPC/GUI metadata). */
-	tuiOnly?: true;
-	/** Marks settings cached at startup and requiring a restart to take effect. */
-	restartRequired?: true;
 	/**
-	 * Protocol hosts that start from this setting's default rather than the user's interactive
-	 * preference, unless the host configured a value itself.
+	 * Protocol hosts (RPC/ACP embedders) that start from this setting's default rather than the local
+	 * user's interactive preference: at startup the default is pinned as a runtime override unless
+	 * the host configured a value itself (caller overrides, project settings, `--config`, global config).
 	 */
 	protocolDefault?: readonly ProtocolHost[];
 	/**
@@ -472,7 +469,7 @@ class CombinedValue<R extends Record<string, Derived<unknown>>, T> extends Deriv
 
 	compute(inputs: readonly unknown[]): T {
 		const values: Record<string, unknown> = {};
-		for (let index = 0; index < this.#keys.length; index++) values[this.#keys[index]] = inputs[index];
+		for (let i = 0; i < this.#keys.length; i++) values[this.#keys[i]] = inputs[i];
 		return this.#fn(values as DerivedValues<R>);
 	}
 }
@@ -554,16 +551,6 @@ export class Setting<T, Id extends string = string> extends Derived<T> {
 	/** Settings-panel metadata; `undefined` for config-file-only settings. */
 	get ui(): AnyUiMetadata | undefined {
 		return this.definition.ui as AnyUiMetadata | undefined;
-	}
-
-	/** Whether this setting is meaningful only in the terminal client. */
-	get tuiOnly(): boolean {
-		return this.definition.tuiOnly === true;
-	}
-
-	/** Whether this setting is cached during startup and needs a restart to take effect. */
-	get restartRequired(): boolean {
-		return this.definition.restartRequired === true;
 	}
 
 	/** Whether the value is a credential (explicit marker or legacy `ui.secret`). */

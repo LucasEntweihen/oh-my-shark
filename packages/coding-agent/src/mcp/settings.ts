@@ -2,8 +2,7 @@
  * Settings declared by this domain (see `config/registry.ts`). Declaration order is the
  * settings-panel order; `config/all-settings.ts` registers every domain.
  */
-import { setMcpRenderMarkdownResults } from "@oh-my-pi/pi-tui/tools/mcp";
-import { effect, register } from "../config/registry";
+import { register } from "../config/registry";
 
 // MCP
 export const cfgMcpEnableProjectConfig = register({
@@ -64,7 +63,7 @@ export const cfgMcpEvalNamespaces = register({
 		group: "Discovery & MCP",
 		label: "MCP Eval Namespaces",
 		description:
-			"Expose each MCP server as an eval global (github.create_issue(...)) instead of top-level or xd:// tools",
+			"Expose each MCP server as an eval global (github.create_issue(...)) instead of top-level tools or tool commands",
 	},
 });
 
@@ -92,7 +91,6 @@ export const cfgMcpRenderMarkdownResults = register({
 		description: "Render non-JSON MCP text results as Markdown in the transcript",
 	},
 });
-effect(cfgMcpRenderMarkdownResults, setMcpRenderMarkdownResults);
 
 export const cfgMcpNotifications = register({
 	id: "mcp.notifications",
@@ -108,7 +106,6 @@ export const cfgMcpNotifications = register({
 
 export const cfgMcpNotificationDebounceMs = register({
 	id: "mcp.notificationDebounceMs",
-	restartRequired: true,
 	type: "number",
 	default: 500,
 	ui: {

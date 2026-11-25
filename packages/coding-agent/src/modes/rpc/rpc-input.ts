@@ -47,10 +47,9 @@ export async function readRpcInputFrames(
 	input: ReadableStream<Uint8Array>,
 	onFrame: (frame: unknown) => void,
 	onParseError: (message: string) => void,
-	signal?: AbortSignal,
 ): Promise<void> {
 	const decoder = new TextDecoder();
-	for await (const line of readLines(input, signal)) {
+	for await (const line of readLines(input)) {
 		const text = decoder.decode(line).trim();
 		if (!text) continue;
 		let parsed: unknown;

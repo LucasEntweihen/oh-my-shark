@@ -980,39 +980,26 @@ export class PluginManager {
 	/**
 	 * Set enabled features for a plugin.
 	 */
-	async setEnabledFeatures(
-		name: string,
-		features: string[] | null,
-		fallback?: { version: string; manifest: PluginManifest },
-	): Promise<void> {
+	async setEnabledFeatures(name: string, features: string[] | null): Promise<void> {
 		const config = await this.#ensureConfigLoaded();
-
-		// Marketplace packages deliberately do not appear in list(): their
-		// enable state lives in the marketplace registry, but feature selection
-		// still belongs in the shared runtime config consumed by the loader.
-		const plugin = fallback
-			? undefined
-			: await this.getPlugin(name, { path: path.join(getPluginsNodeModules(), name) });
-		const manifest = plugin?.manifest ?? fallback?.manifest;
-		if (!config.plugins[name] && !fallback) {
+		if (!config.plugins[name]) {
 			throw new Error(`Plugin ${name} not found in runtime config`);
 		}
 
-		if (features && features.length > 0 && manifest?.features) {
-			for (const feat of features) {
-				if (!(feat in manifest.features)) {
-					throw new Error(
-						`Unknown feature "${feat}" in ${name}. Available: ${Object.keys(manifest.features).join(", ")}`,
-					);
+		// Validate features if setting specific ones
+		if (features && features.length > 0) {
+			const plugin = await this.getPlugin(name, { path: path.join(getPluginsNodeModules(), name) });
+			if (plugin?.manifest.features) {
+				for (const feat of features) {
+					if (!(feat in plugin.manifest.features)) {
+						throw new Error(
+							`Unknown feature "${feat}" in ${name}. Available: ${Object.keys(plugin.manifest.features).join(", ")}`,
+						);
+					}
 				}
 			}
 		}
 
-		config.plugins[name] ??= {
-			version: fallback?.version ?? plugin?.version ?? "0.0.0",
-			enabledFeatures: null,
-			enabled: true,
-		};
 		config.plugins[name].enabledFeatures = features;
 		await this.#saveRuntimeConfig();
 	}

@@ -6,7 +6,7 @@ import { Command, Flags } from "@oh-my-pi/pi-utils/cli";
 import { statsHelp as commandHelp } from "../cli/command-help";
 import type { StatsCommandArgs } from "../cli/stats-cli";
 import * as statsCli from "../cli/stats-cli";
-import * as theme from "@oh-my-pi/pi-tui/theme";
+import { initTheme } from "../ui/theme/service";
 
 export default class Stats extends Command {
 	static description = commandHelp.description;
@@ -15,7 +15,6 @@ export default class Stats extends Command {
 		host: Flags.string({ description: "Host to bind", default: "127.0.0.1" }),
 		json: Flags.boolean({ char: "j", description: "Output stats as JSON", default: false }),
 		summary: Flags.boolean({ char: "s", description: "Print summary to console", default: false }),
-		"no-open": Flags.boolean({ description: "Start the server without opening a browser", default: false }),
 	};
 
 	async run(): Promise<void> {
@@ -26,10 +25,9 @@ export default class Stats extends Command {
 			host: flags.host ?? "127.0.0.1",
 			json: flags.json,
 			summary: flags.summary,
-			noOpen: flags["no-open"],
 		};
 
-		await theme.initTheme();
+		initTheme();
 		await statsCli.runStatsCommand(cmd);
 	}
 }

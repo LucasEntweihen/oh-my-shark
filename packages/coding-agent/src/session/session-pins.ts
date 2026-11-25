@@ -71,18 +71,13 @@ export async function toggleSessionPin(sessionId: string, agentDir: string = get
 	return !(await updateSessionPin(sessionId, pinned => !pinned, agentDir));
 }
 
-/**
- * Pin or unpin one session; a no-op when it is already in that state. Returns
- * the new pinned state (RPC hosts set an explicit state instead of toggling, so
- * a GUI and a CLI acting at once cannot undo each other).
- */
+/** Pin or unpin one session; a no-op when it is already in that state. */
 export async function setSessionPinned(
 	sessionId: string,
 	pinned: boolean,
 	agentDir: string = getAgentDir(),
-): Promise<boolean> {
+): Promise<void> {
 	await updateSessionPin(sessionId, () => pinned, agentDir);
-	return pinned;
 }
 
 /** Unpin one session; returns whether it was pinned. */

@@ -38,11 +38,6 @@ export const commands: CommandEntry[] = [
 		help: commandHelp.acpHelp,
 	},
 	{
-		name: "desktop",
-		load: () => import("./commands/desktop").then(m => m.default),
-		help: commandHelp.desktopHelp,
-	},
-	{
 		name: "auth",
 		load: () => import("./commands/auth").then(m => m.default),
 		help: commandHelp.authHelp,
@@ -332,7 +327,7 @@ for (const command of commands) {
 }
 
 /** Commands that accept launch-global flags before their command token. */
-export const LAUNCH_FLAG_COMMANDS: Readonly<Record<string, true>> = { launch: true, acp: true, desktop: true };
+export const LAUNCH_FLAG_COMMANDS: Readonly<Record<string, true>> = { launch: true, acp: true };
 
 /** Whether a token names a registered top-level command or alias. */
 export function isSubcommand(first: string | undefined): boolean {

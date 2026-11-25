@@ -79,15 +79,6 @@ selectors: CSS, or Puppeteer aria/… text/… xpath/… pierce/… label/… pl
   - `tab.route` persists until `tab.unroute` or tab close.
 - `allowed_domains`: exact hosts and `*.example.com` patterns (bare domain included); other navigation, subresource, fetch, and WebSocket requests abort.
 
-{{#if panel}}
-The omp app's browser panel (this session runs in the omp app):
-
-- It takes the place of omp's own browser in the choice below, ahead of Tern and cmux: with no `app` (or `app: "auto"`), an open creates a page there unless the relay or `browser.cdpUrl` applies first. The user watches it there and can take over. `headed: false` opens it in the background without changing what the user sees; prefer that for work the user did not ask to watch.
-- The panel keeps the user's sign-ins across sessions: sites attribute actions to the user, as with the relay.
-- `browser.targets()` lists the panel's pages (`shown`: the one on screen). When the user refers to a page they have open ("this page", "the docs I'm on"), adopt it with `target` set to its URL or a title substring instead of opening a copy. It is the user's page: opening with `url` navigates it, so do that only when asked. Closing releases it without closing it.
-- `app: "own"`, `"webkit"` or `"chromium"` opens omp's own browser outside the panel.
-
-{{/if}}
 Browser choice:
 
 - No `app` → the first that applies:
@@ -197,7 +188,6 @@ await tab.id(observed["elements"][0]["id"]).click()
 title = await tab.run("return await tab.title();", timeout=30)
 await tab.close()
 ```
-
 </examples>
 
 <critical>

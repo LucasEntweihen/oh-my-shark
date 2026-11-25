@@ -329,7 +329,7 @@
             parts.push(msg.role);
             if (msg.content) parts.push(extractContent(msg.content));
             if (msg.role === 'bashExecution' && msg.command) parts.push(msg.command);
-            if ((msg.role === 'pythonExecution' || msg.role === 'jsExecution') && msg.code) parts.push(msg.code);
+            if (msg.role === 'jsExecution' && msg.code) parts.push(msg.code);
             break;
           }
           case 'custom_message':
@@ -538,9 +538,9 @@
               const cmd = truncate(normalizeTreeText(msg.command || ''));
               return labelHtml + `<span class="tree-role-tool">[bash]:</span> ${escapeHtml(cmd)}`;
             }
-            if (msg.role === 'pythonExecution' || msg.role === 'jsExecution') {
+            if (msg.role === 'jsExecution') {
               const code = truncate(normalizeTreeText(msg.code || ''));
-              return labelHtml + `<span class="tree-role-tool">[${msg.role === 'pythonExecution' ? 'python' : 'js'}]:</span> ${escapeHtml(code)}`;
+              return labelHtml + `<span class="tree-role-tool">[js]:</span> ${escapeHtml(code)}`;
             }
             return labelHtml + `<span class="tree-muted">[${msg.role}]</span>`;
           }
@@ -1222,7 +1222,7 @@
             return html;
           }
 
-          if (msg.role === 'pythonExecution' || msg.role === 'jsExecution') {
+          if (msg.role === 'jsExecution') {
             const isError = msg.cancelled || (msg.exitCode !== 0 && msg.exitCode !== null);
             let html = `<div class="tool-execution ${isError ? 'error' : 'success'}" id="${entryId}">${tsHtml}`;
             html += `<div class="tool-command">$ ${escapeHtml(msg.code)}</div>`;

@@ -1,4 +1,4 @@
-import { truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui";
+import { truncate as truncateToWidth, visibleWidth } from "@oh-my-pi/pi-tui/text/width";
 import type {
 	OrchestratorPhase,
 	OrchestratorRun,

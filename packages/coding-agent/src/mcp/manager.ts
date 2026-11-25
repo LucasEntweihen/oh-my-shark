@@ -49,7 +49,7 @@ import type { MCPStoredOAuthCredential } from "./oauth-flow";
 import type { McpConnectionStatusEvent } from "./startup-events";
 import { resolveMCPStartupTimeoutMs } from "./timeout";
 
-import type { MCPToolDetails } from "@oh-my-pi/pi-tui/tools/mcp";
+import type { MCPToolDetails } from "../tools/details/mcp";
 import { type MCPReconnect, type MCPReconnectOptions, MCPTool, type MCPToolCallObserver } from "./tool-bridge";
 import type { MCPDroppedServer, MCPTransformContext } from "./transforms";
 import type {
@@ -310,14 +310,6 @@ export class MCPManager implements MCPManagerApi {
 	static instance(): MCPManagerApi | undefined {
 		if (MCPManager.#global) return MCPManager.#global.instance();
 		return MCPManager.#instance;
-	}
-
-	/**
-	 * The process-global instance when this thread owns it; undefined in a subagent worker, whose
-	 * {@link instance} is a remote view. RPC hosts add, remove and reconnect servers through it.
-	 */
-	static owned(): MCPManager | undefined {
-		return MCPManager.#global ? undefined : MCPManager.#instance;
 	}
 
 	/** Install or clear the process-global instance. */

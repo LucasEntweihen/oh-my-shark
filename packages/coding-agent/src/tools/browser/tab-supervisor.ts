@@ -14,13 +14,13 @@ import { resolveImageMaxEdge, resolveImageTokenization } from "@oh-my-pi/pi-cata
 import type { CDPSession, Page, Target, Viewport } from "puppeteer-core";
 import { callSessionTool } from "../../eval/js/tool-bridge";
 import { TOOL_TIMEOUTS } from "../tool-timeouts";
-import { webpExclusionForModel } from "@oh-my-pi/pi-tui/chat/image-loading";
+import { webpExclusionForModel } from "../../utils/image-input";
 import hiddenFramesNotice from "../../prompts/tools/browser-hidden-frames.md" with { type: "text" };
 import type { ToolSession } from "../index";
 import { expandPath } from "../path-utils";
 import { CELL_BUDGET_SLACK_MS } from "../run-scope";
 import { ToolAbortError, toWorkerErrorPayload } from "../tool-errors";
-import { ToolError } from "@oh-my-pi/pi-tui/tools/tool-errors";
+import { ToolError } from "../tool-errors";
 import { gracefulKillTreeOnce, isChromiumBrowserExecutable, pickElectronTarget } from "./attach";
 import type * as Cmux from "./cmux/cmux-tab";
 import { CmuxUnavailableError, mapWaitUntil } from "./cmux/rpc";
@@ -149,9 +149,7 @@ interface TabSessionBase<TBrowser extends BrowserHandle = BrowserHandle> {
 export interface WorkerTabSession extends TabSessionBase<PuppeteerBrowserHandle> {
 	backend: "worker";
 	worker: WorkerHandle;
-	/** A recycle gave the tab a worker that adopted its page instead of creating it; that worker's close leaves the page open. */
-	reattached?: boolean;
-	/** omp created this page (headless Chromium, a relay open without a target, or a page in the host's browser panel): closing the tab closes it. */
+	/** omp created this page (headless, or a relay open without a target): closing the tab closes it. */
 	ownsPage: boolean;
 	/**
 	 * omp created this page on a CDP endpoint that keeps pages per connection (Lightpanda): the page closes with its
@@ -212,8 +210,6 @@ export interface AcquireTabOptions {
 	waitUntil?: "load" | "domcontentloaded" | "networkidle0" | "networkidle2";
 	viewport?: Viewport;
 	target?: string;
-	/** Create a page in the host's browser panel without showing it. */
-	background?: boolean;
 	signal?: AbortSignal;
 	timeoutMs: number;
 	/**
@@ -2430,11 +2426,7 @@ async function buildInitPayload(browser: PuppeteerBrowserHandle, opts: AcquireTa
 	const safeDir = getPuppeteerDir();
 	const uploadDir = newUploadStagingDir();
 	const browserWSEndpoint = browser.wsEndpoint;
-	if (!browserWSEndpoint) throw new ToolError("Browser websocket endpoint is unavailable");
-	// The host's browser panel gives each open its own page, like a launched
-	// browser; naming a target adopts a page the user opened there instead.
-	const hostedPage = browser.kind.kind === "relay" && browser.kind.hosted === true && opts.target === undefined;
-	if (browser.kind.kind === "headless" || hostedPage) {
+	if (browser.kind.kind === "headless") {
 		return {
 			mode: "headless",
 			browserWSEndpoint,
@@ -2442,11 +2434,7 @@ async function buildInitPayload(browser: PuppeteerBrowserHandle, opts: AcquireTa
 			uploadDir,
 			// Visible launches still need an OMP-owned page, stealth setup, and
 			// independent lifecycle; only their fixed device emulation is disabled.
-			// A panel page keeps the panel's size unless the caller asked for one,
-			// and is a real browser, so it skips headless stealth.
-			emulateViewport: browser.kind.kind === "headless" ? browser.kind.headless : opts.viewport !== undefined,
-			stealth: browser.kind.kind === "headless",
-			background: hostedPage && opts.background === true,
+			emulateViewport: browser.kind.headless,
 			frontTab: frontTabSource(browser.kind),
 			browserPid: browser.pid,
 			viewport: opts.viewport,

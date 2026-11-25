@@ -4,10 +4,6 @@ export const acpHelp = {
 	description: "Run omp as an ACP (Agent Client Protocol) server over stdio",
 } satisfies CommandMetadata;
 
-export const desktopHelp = {
-	description: "Launch OhMyShark Desktop (OMSK Desktop Mission Control GUI)",
-} satisfies CommandMetadata;
-
 export const agentsHelp = { description: "Manage bundled task agents" } satisfies CommandMetadata;
 
 export const anonymizeHelp = {
@@ -107,10 +103,6 @@ export const installHelp = {
 export const joinHelp = { description: "Join a shared collab session (same as /join)" } satisfies CommandMetadata;
 
 export const modelsHelp = { description: "List, search, and refresh available models" } satisfies CommandMetadata;
-
-export const skillsHelp = {
-	description: "Universal Skills Engine: search, install, list, inspect, update, and diagnose agent skills",
-} satisfies CommandMetadata;
 
 export const pluginHelp = { description: "Manage plugins (install, uninstall, list, etc.)" } satisfies CommandMetadata;
 

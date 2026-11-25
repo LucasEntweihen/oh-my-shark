@@ -20,7 +20,6 @@ export const cfgLspEnabled = register({
 
 export const cfgLspLazy = register({
 	id: "lsp.lazy",
-	restartRequired: true,
 	type: "boolean",
 	default: true,
 	ui: {
@@ -34,7 +33,6 @@ export const cfgLspLazy = register({
 
 export const cfgLspShared = register({
 	id: "lsp.shared",
-	restartRequired: true,
 	type: "boolean",
 	default: true,
 	ui: {

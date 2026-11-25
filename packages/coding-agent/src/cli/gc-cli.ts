@@ -86,6 +86,8 @@ const HEADER_SNIFF_BYTES = 4096;
 const STALE_POINTER_GRACE_MS = DAY_MS;
 /** Sessions (and archived transcripts) stripped at once, so one's reads overlap another's writes. */
 const STRIP_CONCURRENCY = 8;
+/** How long a WAL checkpoint waits on active readers/writers before reporting the database busy. */
+const WAL_CHECKPOINT_BUSY_TIMEOUT_MS = 5000;
 
 export interface GcCommandFlags {
 	apply?: boolean;
@@ -110,6 +112,8 @@ export interface GcCommandArgs {
 	flags: GcCommandFlags;
 	/** Where to draw transient per-step progress bars; drawn only on a TTY, none when omitted. */
 	progress?: ProgressOutput;
+	/** SQLite busy timeout for WAL checkpoints; defaults to {@link WAL_CHECKPOINT_BUSY_TIMEOUT_MS}. Tests shorten it. */
+	walBusyTimeoutMs?: number;
 }
 
 export interface BlobGcResult {
@@ -266,6 +270,7 @@ interface ResolvedGcOptions {
 	staleRetainDays: number;
 	compressAfterDays: number;
 	stripAfterDays: number;
+	walBusyTimeoutMs: number;
 	/** Wraps each slow per-item loop in a progress bar. */
 	track: ProgressTracker;
 }
@@ -299,7 +304,11 @@ function numberSetting(value: number | undefined, fallback: unknown, defaultValu
 	return normalizeNumberSetting(fallback, defaultValue);
 }
 
-async function resolveOptions({ flags, progress }: GcCommandArgs): Promise<ResolvedGcOptions> {
+async function resolveOptions({
+	flags,
+	progress,
+	walBusyTimeoutMs = WAL_CHECKPOINT_BUSY_TIMEOUT_MS,
+}: GcCommandArgs): Promise<ResolvedGcOptions> {
 	const agentDir = path.resolve(flags.agentDir ?? getAgentDir());
 	const selected =
 		flags.blobs === true ||
@@ -365,6 +374,7 @@ async function resolveOptions({ flags, progress }: GcCommandArgs): Promise<Resol
 			cfgGcCompressAfterDays.default,
 		),
 		stripAfterDays: numberSetting(flags.stripAfterDays, read(cfgGcStripAfterDays), cfgGcStripAfterDays.default),
+		walBusyTimeoutMs,
 		track: createProgressTracker(progress),
 	};
 }
@@ -431,11 +441,11 @@ async function scanSessionLinesIfPresent(file: string, onLine: (line: Uint8Array
 		const stream = Bun.file(file).stream();
 		if (file.endsWith(COMPRESSED_SESSION_SUFFIX)) {
 			const gunzip = createGunzip();
-			await pipeline(Readable.fromWeb(stream as globalThis.ReadableStream<Uint8Array>), gunzip, async source => {
+			await pipeline(stream, gunzip, async (source: NodeJS.ReadableStream) => {
 				// Match the native stream's byte budget, not one arbitrary chunk or
 				// a default queue that counts each potentially large chunk as size 1.
 				await scan(
-					Readable.toWeb(source as Readable, {
+					Readable.toWeb(source, {
 						strategy: new ByteLengthQueuingStrategy({ highWaterMark: gunzip.readableHighWaterMark }),
 					}),
 				);
@@ -1064,7 +1074,7 @@ async function gzipSessionFile(source: string, destination: string): Promise<voi
 	let renamed = false;
 	try {
 		await pipeline(
-			Readable.fromWeb(Bun.file(source).stream() as globalThis.ReadableStream<Uint8Array>),
+			Bun.file(source).stream(),
 			createGzip({ level: 9 }),
 			(await fs.open(tempPath, "w")).createWriteStream(),
 		);
@@ -1082,11 +1092,7 @@ async function restoreGzipSessionFile(source: string, destination: string): Prom
 	await fs.mkdir(path.dirname(destination), { recursive: true });
 	const tempPath = `${destination}.${process.pid}.${Date.now()}.tmp`;
 	try {
-		await pipeline(
-			Readable.fromWeb(Bun.file(source).stream() as globalThis.ReadableStream<Uint8Array>),
-			createGunzip(),
-			(await fs.open(tempPath, "w")).createWriteStream(),
-		);
+		await pipeline(Bun.file(source).stream(), createGunzip(), (await fs.open(tempPath, "w")).createWriteStream());
 		await fs.rename(tempPath, destination);
 		await fs.unlink(source);
 	} catch (error) {
@@ -2208,7 +2214,7 @@ async function runStripGc(options: ResolvedGcOptions, archiveRoot: string): Prom
 	return result;
 }
 
-async function checkpointWal(dbPath: string, apply: boolean): Promise<WalCheckpointResult> {
+async function checkpointWal(dbPath: string, apply: boolean, busyTimeoutMs: number): Promise<WalCheckpointResult> {
 	const walPath = `${dbPath}-wal`;
 	let walBytes = 0;
 	try {
@@ -2230,7 +2236,7 @@ async function checkpointWal(dbPath: string, apply: boolean): Promise<WalCheckpo
 	const db = new Database(dbPath);
 	let checkpointAttempted = false;
 	try {
-		db.run("PRAGMA busy_timeout = 5000");
+		db.run(`PRAGMA busy_timeout = ${busyTimeoutMs}`);
 		using checkpointStmt = db.prepare("PRAGMA wal_checkpoint(TRUNCATE)");
 		const row = checkpointStmt.get() as WalCheckpointRow | null;
 		checkpointAttempted = true;
@@ -2256,7 +2262,7 @@ async function checkpointWal(dbPath: string, apply: boolean): Promise<WalCheckpo
 async function runWalGc(options: ResolvedGcOptions): Promise<WalGcResult> {
 	const databases = await Promise.all(
 		[getHistoryDbPath(options.agentDir), getModelDbPath(options.agentDir)].map(dbPath =>
-			checkpointWal(dbPath, options.apply),
+			checkpointWal(dbPath, options.apply, options.walBusyTimeoutMs),
 		),
 	);
 	return {

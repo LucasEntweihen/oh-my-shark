@@ -28,8 +28,8 @@ import { configureProviderStoreResponses } from "@oh-my-pi/pi-ai/providers/opena
 import { configureCodexAccessPrograms } from "@oh-my-pi/pi-ai/providers/openai-codex/access-programs";
 import { configureProviderMaxInFlightRequests } from "@oh-my-pi/pi-ai/stream";
 import { THINKING_EFFORTS } from "@oh-my-pi/pi-catalog/effort";
-import { formatKeyHint } from "@oh-my-pi/pi-tui/app-keybindings";
-import { AUTO_THINKING, getConfiguredThinkingLevelMetadata, getThinkingLevelMetadata } from "@oh-my-pi/pi-tui/thinking";
+import { formatKeyHint } from "../ui/keys/hints";
+import { AUTO_THINKING, getConfiguredThinkingLevelMetadata, getThinkingLevelMetadata } from "../thinking/levels";
 
 const EMPTY_NUMBER_RECORD: Record<string, number> = {};
 const EMPTY_STRING_ARRAYS_RECORD: Record<string, string[]> = {};
@@ -114,7 +114,8 @@ export const cfgPrewalkFrom = register({
 		tab: "model",
 		group: "Prewalk",
 		label: "Prewalk planning model",
-		description: "Model or role (default '@default') that /prewalk restart returns to for planning.",
+		description:
+			"Model or role (default '@default') to plan on: /prewalk restart returns to it, and Auto Prewalk's Escalate mode moves a front-loaded task to it before planning.",
 	},
 });
 
@@ -134,7 +135,7 @@ export const cfgPrewalkInto = register({
 export const cfgPrewalkAuto = register({
 	id: "prewalk.auto",
 	type: "enum",
-	values: ["off", "suggest", "on"] as const,
+	values: ["off", "suggest", "on", "escalate"] as const,
 	default: "off",
 	ui: {
 		tab: "model",
@@ -147,13 +148,20 @@ export const cfgPrewalkAuto = register({
 			{
 				value: "suggest",
 				label: "Suggest",
-				description: "Classify each task and report the decision without arming prewalk",
+				description:
+					"Classify each task and report the decision, and whether Escalate would plan on another model, without arming prewalk",
 			},
 			{
 				value: "on",
 				label: "On",
 				description:
 					"For confidently front-loaded tasks, arm a handoff from the active model to the auto target; the next task starts back on the planning model",
+			},
+			{
+				value: "escalate",
+				label: "Escalate",
+				description:
+					"Like On, but plan on the Prewalk planning model (prewalk.from) first: a confidently front-loaded task moves there before setup and hands off from it; the next task starts back where this one started. When the planning model is already active, this is On, except that '@initial' then has nothing to hand back to",
 			},
 		],
 	},
@@ -167,9 +175,13 @@ export const cfgPrewalkAutoTarget = register({
 		tab: "model",
 		group: "Prewalk",
 		label: "Auto-prewalk target",
-		description: "Model or role (default '@smol') auto-prewalk hands off to at the first edit/write.",
+		description:
+			"Model or role (default '@smol') auto-prewalk hands off to at the first edit/write. '@initial' (Escalate only) hands back to the model and thinking level the task started on.",
 	},
 });
+
+/** `prewalk.autoTarget` value that hands an `escalate` task back to the model and effort it started on. */
+export const PREWALK_INITIAL_TARGET = "@initial";
 
 function isPositiveLimit(limit: unknown): limit is number {
 	return typeof limit === "number" && Number.isFinite(limit) && limit > 0;
@@ -386,13 +398,12 @@ export const cfgModelToolCallLoopGuardExemptTools = register({
 		group: "Thinking",
 		label: "Tool-Call Loop Exempt Tools",
 		description:
-			"Tool names, or xd:// device names of write dispatches (for example mcp__peers_wait), that may repeat consecutively without triggering the cross-turn loop guard",
+			"Tool names, including tools run as commands through bash (for example mcp__peers_wait), that may repeat consecutively without triggering the cross-turn loop guard",
 	},
 });
 
 export const cfgInlineToolDescriptors = register({
 	id: "inlineToolDescriptors",
-	restartRequired: true,
 	type: "enum",
 	values: ["auto", "on", "off"] as const,
 	default: "auto",
@@ -478,7 +489,6 @@ export const systemPromptTemplatePatterns = cfgSystemPromptTemplates.map(templat
 
 export const cfgIncludeWorkspaceTree = register({
 	id: "includeWorkspaceTree",
-	restartRequired: true,
 	type: "boolean",
 	default: false,
 	ui: {
@@ -819,7 +829,7 @@ export const cfgRetryMaxDelayMs = register({
 		group: "Retry & Fallback",
 		label: "Max Retry Delay",
 		description:
-			"Maximum wait between retries, in ms. When the provider asks us to wait longer than this and no credential or model fallback succeeds, the request fails fast instead of sleeping (e.g. 3-hour Anthropic rate-limit windows). 0 disables the ceiling — to let the session auto-resume through provider-stated quota resets.",
+			"Maximum wait between retries, in ms. When the retry would wait longer and no credential or model fallback succeeds, the request fails fast instead of sleeping (e.g. 3-hour Anthropic rate-limit windows). 0 disables the ceiling.",
 	},
 });
 
@@ -832,7 +842,7 @@ export const cfgRetryWaitForUsageReset = register({
 		group: "Retry & Fallback",
 		label: "Wait For Usage Reset",
 		get description() {
-			return `When a provider reports usage-limit exhaustion with a reset time (5-hour or weekly quota windows on any provider), sleep until the reset instead of failing fast past retry.maxDelayMs. Waits are abortable (${formatKeyHint("escape")}) but also hold subagents, so leave off for unattended runs.`;
+			return `Usage-limit waits within retry.maxDelayMs are already allowed. Enable this to also wait past that cap when the provider reports a reset time, such as a 5-hour or weekly quota window. Waits are abortable (${formatKeyHint("escape")}) but also hold subagents, so leave off for unattended runs.`;
 		},
 	},
 });
@@ -1203,7 +1213,6 @@ export const cfgFeaturesUnexpectedStopDetection = register({
 
 export const cfgProvidersKimiApiFormat = register({
 	id: "providers.kimiApiFormat",
-	restartRequired: true,
 	type: "enum",
 	values: ["auto", "openai", "anthropic"] as const,
 	default: "auto",
@@ -1734,42 +1743,18 @@ export const cfgProviderAppendOnlyContext = register({
 	},
 });
 
-export const cfgThinkingBudgetsMinimal = register({
-	id: "thinkingBudgets.minimal",
-	restartRequired: true,
-	type: "number",
-	default: 1024,
-});
+export const cfgThinkingBudgetsMinimal = register({ id: "thinkingBudgets.minimal", type: "number", default: 1024 });
 
-export const cfgThinkingBudgetsLow = register({
-	id: "thinkingBudgets.low",
-	restartRequired: true,
-	type: "number",
-	default: 2048,
-});
+export const cfgThinkingBudgetsLow = register({ id: "thinkingBudgets.low", type: "number", default: 2048 });
 
-export const cfgThinkingBudgetsMedium = register({
-	id: "thinkingBudgets.medium",
-	restartRequired: true,
-	type: "number",
-	default: 8192,
-});
+export const cfgThinkingBudgetsMedium = register({ id: "thinkingBudgets.medium", type: "number", default: 8192 });
 
-export const cfgThinkingBudgetsHigh = register({
-	id: "thinkingBudgets.high",
-	restartRequired: true,
-	type: "number",
-	default: 16384,
-});
+export const cfgThinkingBudgetsHigh = register({ id: "thinkingBudgets.high", type: "number", default: 16384 });
 
-export const cfgThinkingBudgetsXhigh = register({
-	id: "thinkingBudgets.xhigh",
-	restartRequired: true,
-	type: "number",
-	default: 32768,
-});
+export const cfgThinkingBudgetsXhigh = register({ id: "thinkingBudgets.xhigh", type: "number", default: 32768 });
 
 export const cfgThinkingBudgetsMax = register({ id: "thinkingBudgets.max", type: "number", default: 32768 });
+
 /** Token budget per thinking level (`thinkingBudgets.*`) on transports that accept reasoning token budgets. */
 export const cfgThinkingBudgets = combine({
 	minimal: cfgThinkingBudgetsMinimal,

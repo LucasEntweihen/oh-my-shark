@@ -72,6 +72,15 @@ export const rpcCommands: readonly RpcCommandSpec[] = [
 		result: "AbortAndRestoreQueueResult",
 	},
 	{
+		name: "abort_and_deliver_queue",
+		doc: "Abort the current run and continue it with the queued user input (the TUI's empty Enter); `aborted` is false when no run was streaming with queued input.",
+		result: { aborted: "boolean" },
+	},
+	{
+		name: "resume",
+		doc: "Continue the agent (the TUI's `.`/`c` shortcut), interrupting a running turn first; queued input continues the run in place of the continue directive. Acknowledged once the continuation is under way.",
+	},
+	{
 		name: "new_session",
 		doc: "Start a new session.",
 		params: { "parentSession?": "string" },
@@ -87,8 +96,8 @@ export const rpcCommands: readonly RpcCommandSpec[] = [
 	{ name: "get_state", doc: "Snapshot the session state.", result: "SessionState" },
 	{
 		name: "set_fast_mode",
-		doc: "Set Fast or, when the model supports it, Ultrafast serving for the session.",
-		params: { enabled: "boolean", "ultrafast?": "boolean" },
+		doc: "Enable or disable fast mode for the session.",
+		params: { enabled: "boolean" },
 		result: "FastModeResult",
 	},
 	{
@@ -107,13 +116,7 @@ export const rpcCommands: readonly RpcCommandSpec[] = [
 	{
 		name: "set_ask_dialog",
 		doc: "Opt in to `ask` UI requests; returns the applied setting.",
-		params: {
-			enabled: "boolean",
-			"form?": doc(
-				"boolean",
-				"Also take the `ask` tool's whole form as one `form` request, instead of field by field.",
-			),
-		},
+		params: { enabled: "boolean" },
 		result: { enabled: "boolean" },
 		unwrap: "enabled",
 	},
@@ -228,7 +231,18 @@ export const rpcCommands: readonly RpcCommandSpec[] = [
 	{
 		name: "set_model",
 		doc: "Select a model by provider and id.",
-		params: { provider: "string", modelId: "string" },
+		params: {
+			provider: "string",
+			modelId: "string",
+			"thinkingLevel?": doc(
+				"ConfiguredThinkingLevel",
+				"Thinking level to run the model at, clamped to it; omitted re-applies the session's level.",
+			),
+			"role?": doc(
+				"string",
+				"Model role the switch records (a quick-role pick passes its role); default `default`. Nothing is persisted.",
+			),
+		},
 		result: "ModelInfo",
 	},
 	{ name: "cycle_model", doc: "Cycle to the next model.", result: "ModelCycleResult", nullable: true },
@@ -239,29 +253,19 @@ export const rpcCommands: readonly RpcCommandSpec[] = [
 		unwrap: "models",
 	},
 	{
-		name: "discover_provider_models",
-		doc: "List the models an endpoint offers, for a provider being configured. Saves nothing.",
+		name: "get_model_picker",
+		doc: "Model picker rows ordered and ranked as omp's session model picker shows them; a query starting with `@` lists quick roles.",
 		params: {
-			"provider?": doc(
-				"string",
-				"A saved provider whose credential authenticates the request when `apiKey` is absent.",
-			),
-			api: "string",
-			baseUrl: "string",
-			"apiKey?": "string",
-			"authHeader?": "boolean",
-			"headers?": "Record<string, string>",
-			"discoveryType?": doc(
-				"'ollama' | 'llama.cpp' | 'lm-studio' | 'openai-models-list' | 'proxy' | 'litellm'",
-				"The server's model-list protocol; `openai-models-list` by default.",
-			),
-			"timeoutMs?": "number.integer",
+			"query?": doc("string", "Search text; blank browses every model, `provider/` limits matches to a provider."),
+			"limit?": doc("number.integer", "Most rows to return; default 100."),
 		},
-		result: { models: "DiscoveredModel[]" },
-		unwrap: "models",
-		timeoutMs: 30_000,
+		result: "ModelPickerResult",
 	},
-	{ name: "set_thinking_level", doc: "Set the thinking level.", params: { level: "ThinkingLevel" } },
+	{
+		name: "set_thinking_level",
+		doc: "Set the thinking level.",
+		params: { level: doc("ConfiguredThinkingLevel", "`auto` lets omp pick the effort per turn.") },
+	},
 	{
 		name: "cycle_thinking_level",
 		doc: "Cycle to the next thinking level.",
@@ -399,13 +403,6 @@ export const rpcCommands: readonly RpcCommandSpec[] = [
 		timeoutMs: 600_000,
 	},
 	{
-		name: "set_api_key",
-		doc: "Store an API key the host collected itself as the provider's login credential, without running its login flow. Works for providers whose login asks for a secret, which `login` refuses over RPC.",
-		params: { providerId: "string", apiKey: "string" },
-		result: { providerId: "string" },
-		unwrap: "providerId",
-	},
-	{
 		name: "get_logout_accounts",
 		doc: "List the stored credentials `logout` can remove for a provider, active first.",
 		params: { providerId: "string" },
@@ -453,20 +450,5 @@ export const rpcCommands: readonly RpcCommandSpec[] = [
 		doc: "List the session's side-question records, newest first.",
 		result: { records: "BtwHistoryRecord[]" },
 		unwrap: "records",
-	},
-	{
-		name: "composer_prediction_request",
-		doc: "Predict the user's next message for the run that just finished; the alternatives arrive as a `composer_prediction` frame. A no-op when composer.predictions is off or the session is busy.",
-	},
-	{
-		name: "composer_prediction_feedback",
-		doc: "Report the current composer prediction as shown, inserted (`rank`: the alternative used), or dismissed; dismissing aborts a request still running.",
-		params: { action: "'shown' | 'accepted' | 'dismissed'", "rank?": "number.integer" },
-	},
-	{
-		name: "abort_compaction",
-		doc: "Cancel a running manual compaction, a background handoff included, without stopping the live turn; false when none was running.",
-		result: { aborted: "boolean" },
-		unwrap: "aborted",
 	},
 ];

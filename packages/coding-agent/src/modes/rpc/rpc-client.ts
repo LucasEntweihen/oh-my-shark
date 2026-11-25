@@ -8,18 +8,20 @@ import { isPromise } from "node:util/types";
 import type { AgentEvent, AgentMessage, AgentToolResult, ThinkingLevel } from "@oh-my-pi/pi-agent-core";
 import type { CompactionResult } from "@oh-my-pi/pi-agent-core/compaction";
 import type { ImageContent, Model } from "@oh-my-pi/pi-ai";
-import type { LogoutAccount } from "@oh-my-pi/pi-tui/overlays/logout-account-selector";
-import type { ConfiguredThinkingLevel } from "@oh-my-pi/pi-tui/thinking";
-import type { TodoPhase } from "@oh-my-pi/pi-tui/tools/todo";
 import { isRecord, ptree, readJsonl, toError } from "@oh-my-pi/pi-utils";
+import type { LogoutAccount } from "../view-model/overlays/logout-account-selector";
+import type { ConfiguredThinkingLevel } from "../../utils/render-utils";
+import type { TodoPhase } from "../../tools/details/todo";
 import type { FileSink } from "bun";
 import type { BashResult } from "../../exec/bash-executor";
 import type { AgentSessionEvent, SessionStats } from "../../session/agent-session";
 import type { CacheWarmingMode } from "../../session/cache-warmer";
+import type { WireSessionEvent } from "../../session/loop-end-wire";
 import type { SessionEntry, SessionTreeNode } from "../../session/session-entries";
 import type { SessionLeaseReport } from "../../session/session-storage";
 import { MAX_RPC_FRAME_BYTES, MAX_RPC_REASSEMBLED_BYTES, RpcFrameDecoder, type RpcProtocolVersion } from "./rpc-frame";
 import type { RpcGoalOp, RpcGoalResult } from "./rpc-goal";
+import type { RpcModelPickerResult } from "./rpc-model-picker";
 import {
 	RPC_MESSAGES_PAGE_BUSY_ERROR,
 	RPC_MESSAGES_PAGE_STALE_ERROR,
@@ -29,10 +31,10 @@ import {
 import type {
 	RpcAbortAndRestoreQueueResult,
 	RpcAvailableCommandsUpdateFrame,
-	RpcAvailableSlashCommand,
 	RpcBtwDeltaFrame,
 	RpcBtwHistoryRecord,
 	RpcBtwRecordFrame,
+	RpcAvailableSlashCommand,
 	RpcCommand,
 	RpcDictationFrame,
 	RpcExtensionUIRequest,
@@ -57,7 +59,6 @@ import type {
 	RpcSubagentProgressFrame,
 	RpcSubagentSnapshot,
 	RpcSubagentSubscriptionLevel,
-	RpcThinkingLevelState,
 } from "./rpc-types";
 
 /** Distributive Omit that works with union types */
@@ -149,42 +150,47 @@ export function defineRpcClientTool<
 	return tool;
 }
 
-const agentEventTypes = new Set<AgentEvent["type"]>([
-	"agent_start",
-	"agent_end",
-	"turn_start",
-	"turn_end",
-	"message_start",
-	"message_update",
-	"message_end",
-	"tool_execution_start",
-	"tool_execution_update",
-	"tool_stream_update",
-	"tool_execution_end",
-]);
+// Exhaustively keyed on the event-type unions so adding a session event without
+// listing it here fails type-checking instead of silently dropping the frame.
+const agentEventTypes: Record<AgentEvent["type"], true> = {
+	agent_start: true,
+	agent_end: true,
+	turn_start: true,
+	turn_end: true,
+	message_start: true,
+	message_update: true,
+	message_end: true,
+	tool_execution_start: true,
+	tool_execution_update: true,
+	tool_stream_update: true,
+	tool_execution_end: true,
+};
 
-const sessionEventTypes = new Set<AgentSessionEvent["type"]>([
+const sessionEventTypes: Record<WireSessionEvent["type"], true> = {
 	...agentEventTypes,
-	"auto_compaction_start",
-	"auto_compaction_end",
-	"manual_compaction_start",
-	"manual_compaction_end",
-	"auto_retry_start",
-	"auto_retry_end",
-	"cache_warming_start",
-	"cache_warming_end",
-	"retry_fallback_applied",
-	"retry_fallback_succeeded",
-	"ttsr_triggered",
-	"todo_reminder",
-	"todo_auto_clear",
-	"irc_message",
-	"notice",
-	"thinking_level_changed",
-	"model_changed",
-	"goal_updated",
-	"queue_update",
-]);
+	auto_compaction_start: true,
+	auto_compaction_end: true,
+	manual_compaction_start: true,
+	manual_compaction_end: true,
+	auto_retry_start: true,
+	auto_retry_end: true,
+	cache_warming_start: true,
+	cache_warming_end: true,
+	retry_fallback_applied: true,
+	retry_fallback_succeeded: true,
+	model_changed: true,
+	config_warnings_changed: true,
+	advisor_cost_changed: true,
+	advisor_yielded: true,
+	ttsr_triggered: true,
+	todo_reminder: true,
+	todo_auto_clear: true,
+	irc_message: true,
+	notice: true,
+	thinking_level_changed: true,
+	goal_updated: true,
+	queue_update: true,
+};
 
 function isRpcResponse(value: unknown): value is RpcResponse {
 	if (!isRecord(value)) return false;
@@ -212,14 +218,14 @@ function isAgentEvent(value: unknown): value is AgentEvent {
 	if (!isRecord(value)) return false;
 	const type = value.type;
 	if (typeof type !== "string") return false;
-	return agentEventTypes.has(type as AgentEvent["type"]);
+	return Object.hasOwn(agentEventTypes, type);
 }
 
 function isAgentSessionEvent(value: unknown): value is AgentSessionEvent {
 	if (!isRecord(value)) return false;
 	const type = value.type;
 	if (typeof type !== "string") return false;
-	return sessionEventTypes.has(type as AgentSessionEvent["type"]);
+	return Object.hasOwn(sessionEventTypes, type);
 }
 
 function isRpcSubagentLifecycleFrame(value: unknown): value is RpcSubagentLifecycleFrame {
@@ -502,11 +508,7 @@ export class RpcClient {
 				readyReject(error);
 				return;
 			}
-			await reapAfterOutputFailure(
-				new Error(`Agent output reader failed: ${error.message}`, {
-					cause: error,
-				}),
-			);
+			await reapAfterOutputFailure(new Error(`Agent output reader failed: ${error.message}`, { cause: error }));
 		});
 
 		// Also race against process exit (in case stdout closes before we read it)
@@ -536,10 +538,7 @@ export class RpcClient {
 			await readyPromise;
 			if (protocolV2Supported) {
 				protocolV2Enabled = true;
-				const response = await this.#send({
-					type: "negotiate_protocol",
-					protocolVersion: 2,
-				});
+				const response = await this.#send({ type: "negotiate_protocol", protocolVersion: 2 });
 				if (
 					!response.success ||
 					response.command !== "negotiate_protocol" ||
@@ -747,12 +746,7 @@ export class RpcClient {
 	 * completion under that id.
 	 */
 	async prompt(message: string, images?: ImageContent[], streamingBehavior?: "steer" | "followUp"): Promise<string> {
-		const response = await this.#send({
-			type: "prompt",
-			message,
-			images,
-			streamingBehavior,
-		});
+		const response = await this.#send({ type: "prompt", message, images, streamingBehavior });
 		this.#getData(response);
 		return response.id ?? "";
 	}
@@ -776,11 +770,7 @@ export class RpcClient {
 	 * A removed message's images are returned for restoring it to an editor.
 	 */
 	async removeQueuedMessage(message: string, queue: "steering" | "followUp"): Promise<RpcRemoveQueuedMessageResult> {
-		const response = await this.#send({
-			type: "remove_queued_message",
-			message,
-			queue,
-		});
+		const response = await this.#send({ type: "remove_queued_message", message, queue });
 		return this.#getData(response);
 	}
 
@@ -789,10 +779,7 @@ export class RpcClient {
 	 * A missing target returns false; retrying may promote another occurrence.
 	 */
 	async promoteQueuedMessage(message: string): Promise<{ promoted: boolean }> {
-		const response = await this.#send({
-			type: "promote_queued_message",
-			message,
-		});
+		const response = await this.#send({ type: "promote_queued_message", message });
 		return this.#getData(response);
 	}
 
@@ -811,6 +798,24 @@ export class RpcClient {
 	}
 
 	/**
+	 * Abort the current run and continue it with the queued input (the TUI's empty Enter).
+	 * Returns false, doing nothing, when no run was streaming with queued input.
+	 */
+	async abortAndDeliverQueue(): Promise<boolean> {
+		const response = await this.#send({ type: "abort_and_deliver_queue" });
+		return this.#getData<{ aborted: boolean }>(response).aborted;
+	}
+
+	/**
+	 * Continue the agent (the TUI's `.`/`c` shortcut), interrupting a running turn first.
+	 * Rejects when there is no conversation to continue.
+	 */
+	async resume(): Promise<void> {
+		const response = await this.#send({ type: "resume" });
+		this.#getData(response);
+	}
+
+	/**
 	 * Withdraw queued user steering/follow-up messages, then abort (the TUI Esc path).
 	 * Returns the withdrawn messages so the caller can restore them to its editor.
 	 */
@@ -826,11 +831,7 @@ export class RpcClient {
 	 * cannot be restored rejects with `Could not restore model <provider/id>`.
 	 */
 	async openSession(sessionDir: string, model?: { provider: string; modelId: string }): Promise<RpcOpenSessionResult> {
-		const response = await this.#send({
-			type: "open_session",
-			sessionDir,
-			...model,
-		});
+		const response = await this.#send({ type: "open_session", sessionDir, ...model });
 		return this.#getData(response);
 	}
 
@@ -876,8 +877,8 @@ export class RpcClient {
 	/**
 	 * Enable or disable fast mode for the active model family.
 	 */
-	async setFastMode(enabled: boolean, ultrafast?: boolean): Promise<{ enabled: boolean; active: boolean; ultrafast: boolean }> {
-		const response = await this.#send({ type: "set_fast_mode", enabled, ultrafast });
+	async setFastMode(enabled: boolean): Promise<{ enabled: boolean; active: boolean }> {
+		const response = await this.#send({ type: "set_fast_mode", enabled });
 		return this.#getData(response);
 	}
 
@@ -975,10 +976,7 @@ export class RpcClient {
 	 * "progress" emits lifecycle/progress frames; "events" additionally emits raw subagent session events.
 	 */
 	async setSubagentSubscription(level: RpcSubagentSubscriptionLevel): Promise<RpcSubagentSubscriptionLevel> {
-		const response = await this.#send({
-			type: "set_subagent_subscription",
-			level,
-		});
+		const response = await this.#send({ type: "set_subagent_subscription", level });
 		return this.#getData<{ level: RpcSubagentSubscriptionLevel }>(response).level;
 	}
 
@@ -1057,6 +1055,14 @@ export class RpcClient {
 	}
 
 	/**
+	 * Model picker rows as omp's session picker orders them; a query starting with `@` lists quick roles.
+	 */
+	async getModelPicker(query?: string, limit?: number): Promise<RpcModelPickerResult> {
+		const response = await this.#send({ type: "get_model_picker", query, limit });
+		return this.#getData<RpcModelPickerResult>(response);
+	}
+
+	/**
 	 * Get list of available slash commands.
 	 */
 	async getAvailableCommands(): Promise<RpcAvailableSlashCommand[]> {
@@ -1087,18 +1093,15 @@ export class RpcClient {
 	 * OMP-only `auto`/`inherit` selectors are omitted from discovery.
 	 */
 	async getAvailableThinkingLevels(): Promise<ThinkingLevel[]> {
-		const response = await this.#send({
-			type: "get_available_thinking_levels",
-		});
+		const response = await this.#send({ type: "get_available_thinking_levels" });
 		return this.#getData<{ levels: ThinkingLevel[] }>(response).levels;
 	}
 
 	/**
 	 * Set thinking level.
 	 */
-	async setThinkingLevel(level: ConfiguredThinkingLevel): Promise<RpcThinkingLevelState> {
-		const response = await this.#send({ type: "set_thinking_level", level });
-		return this.#getData(response);
+	async setThinkingLevel(level: ConfiguredThinkingLevel): Promise<void> {
+		await this.#send({ type: "set_thinking_level", level });
 	}
 
 	/**
@@ -1205,20 +1208,8 @@ export class RpcClient {
 
 	/** Cancel the running side question (only if it is `recordId`, when given). */
 	async cancelBtw(recordId?: string): Promise<boolean> {
-		const response = await this.#send({
-			type: "btw_cancel",
-			...(recordId === undefined ? {} : { recordId }),
-		});
+		const response = await this.#send({ type: "btw_cancel", ...(recordId === undefined ? {} : { recordId }) });
 		return this.#getData<{ cancelled: boolean }>(response).cancelled;
-	}
-
-	/**
-	 * Send topic `recordId`'s steering prompt (`btw.inject`) to the main session: a steer
-	 * while the agent runs, else a new turn. `sent` is false when the session refused it.
-	 */
-	async btwInject(recordId: string): Promise<{ sent: boolean; reason?: string }> {
-		const response = await this.#send({ type: "btw_inject", recordId });
-		return this.#getData<{ sent: boolean; reason?: string }>(response);
 	}
 
 	/** This session's side questions, newest first. */
@@ -1251,11 +1242,7 @@ export class RpcClient {
 		sessionPath: string,
 		model?: { provider: string; modelId: string },
 	): Promise<{ cancelled: boolean }> {
-		const response = await this.#send({
-			type: "switch_session",
-			sessionPath,
-			...model,
-		});
+		const response = await this.#send({ type: "switch_session", sessionPath, ...model });
 		return this.#getData(response);
 	}
 
@@ -1311,17 +1298,7 @@ export class RpcClient {
 	 */
 	async getBranchMessages(): Promise<Array<{ entryId: string; text: string }>> {
 		const response = await this.#send({ type: "get_branch_messages" });
-		return this.#getData<{
-			messages: Array<{ entryId: string; text: string }>;
-		}>(response).messages;
-	}
-
-	/**
-	 * Get configuration problems the session collected.
-	 */
-	async getConfigWarnings(): Promise<string[]> {
-		const response = await this.#send({ type: "get_config_warnings" });
-		return this.#getData<{ warnings: string[] }>(response).warnings;
+		return this.#getData<{ messages: Array<{ entryId: string; text: string }> }>(response).messages;
 	}
 
 	/**
@@ -1348,13 +1325,7 @@ export class RpcClient {
 
 	/** Report a shown suggestion the user accepted or typed past, with the text and cursor it was shown at. */
 	async predictWordFeedback(text: string, cursor: number, suggestion: string, accepted: boolean): Promise<void> {
-		const response = await this.#send({
-			type: "predict_word_feedback",
-			text,
-			cursor,
-			suggestion,
-			accepted,
-		});
+		const response = await this.#send({ type: "predict_word_feedback", text, cursor, suggestion, accepted });
 		this.#getData(response);
 	}
 
@@ -1362,18 +1333,7 @@ export class RpcClient {
 	 * Get one stable, byte-bounded message page.
 	 */
 	async getMessagesPage(options: RpcMessagesPageOptions = {}): Promise<RpcMessagesPage> {
-		const response = await this.#send({
-			type: "get_messages_page",
-			...options,
-		});
-		return this.#getData<RpcMessagesPage>(response);
-	}
-	/** Get one stable, byte-bounded full display transcript page. */
-	async getTranscriptPage(options: RpcMessagesPageOptions = {}): Promise<RpcMessagesPage> {
-		const response = await this.#send({
-			type: "get_transcript_page",
-			...options,
-		});
+		const response = await this.#send({ type: "get_messages_page", ...options });
 		return this.#getData<RpcMessagesPage>(response);
 	}
 
@@ -1413,22 +1373,10 @@ export class RpcClient {
 	/**
 	 * Get list of OAuth providers available for login, with their current authentication status.
 	 */
-	async getLoginProviders(): Promise<
-		Array<{
-			id: string;
-			name: string;
-			available: boolean;
-			authenticated: boolean;
-		}>
-	> {
+	async getLoginProviders(): Promise<Array<{ id: string; name: string; available: boolean; authenticated: boolean }>> {
 		const response = await this.#send({ type: "get_login_providers" });
 		return this.#getData<{
-			providers: Array<{
-				id: string;
-				name: string;
-				available: boolean;
-				authenticated: boolean;
-			}>;
+			providers: Array<{ id: string; name: string; available: boolean; authenticated: boolean }>;
 		}>(response).providers;
 	}
 
@@ -1467,27 +1415,13 @@ export class RpcClient {
 						if (req.method !== "input" || req.secret || !onManualCodeInput) return;
 						// The prompt can outlive the agent (e.g. a broken stdin pipe stops the client); drop the reply
 						// instead of throwing "Client not started" out of a detached promise chain.
-						void Promise.resolve(
-							onManualCodeInput({
-								title: req.title,
-								placeholder: req.placeholder,
-							}),
-						).then(
+						void Promise.resolve(onManualCodeInput({ title: req.title, placeholder: req.placeholder })).then(
 							value => {
-								if (this.#process)
-									this.#writeFrame({
-										type: "extension_ui_response",
-										id: req.id,
-										value,
-									});
+								if (this.#process) this.#writeFrame({ type: "extension_ui_response", id: req.id, value });
 							},
 							() => {
 								if (this.#process) {
-									this.#writeFrame({
-										type: "extension_ui_response",
-										id: req.id,
-										cancelled: true,
-									});
+									this.#writeFrame({ type: "extension_ui_response", id: req.id, cancelled: true });
 								}
 							},
 						);
@@ -1502,22 +1436,9 @@ export class RpcClient {
 		}
 	}
 
-	/**
-	 * Store an API key the host collected itself as the provider's login credential,
-	 * without running its login flow. Works for providers whose login asks for a
-	 * secret, which `login()` refuses over RPC.
-	 */
-	async setApiKey(providerId: string, apiKey: string): Promise<{ providerId: string }> {
-		const response = await this.#send({ type: "set_api_key", providerId, apiKey });
-		return this.#getData<{ providerId: string }>(response);
-	}
-
 	/** List the stored credentials `logout()` can remove for a provider, active first. */
 	async getLogoutAccounts(providerId: string): Promise<LogoutAccount[]> {
-		const response = await this.#send({
-			type: "get_logout_accounts",
-			providerId,
-		});
+		const response = await this.#send({ type: "get_logout_accounts", providerId });
 		return this.#getData<{ accounts: LogoutAccount[] }>(response).accounts;
 	}
 
@@ -1526,11 +1447,7 @@ export class RpcClient {
 	 * `remainingSource` names what still authenticates the provider (another stored credential, env var, config).
 	 */
 	async logout(providerId: string, credentialId: number): Promise<{ remainingSource?: string }> {
-		const response = await this.#send({
-			type: "logout",
-			providerId,
-			credentialId,
-		});
+		const response = await this.#send({ type: "logout", providerId, credentialId });
 		return this.#getData<{ remainingSource?: string }>(response);
 	}
 
@@ -1552,10 +1469,7 @@ export class RpcClient {
 			loadMode: tool.loadMode,
 			readsSkillUris: tool.readsSkillUris,
 		}));
-		const response = await this.#send({
-			type: "set_host_tools",
-			tools: definitions,
-		});
+		const response = await this.#send({ type: "set_host_tools", tools: definitions });
 		return this.#getData<{ toolNames: string[] }>(response).toolNames;
 	}
 
@@ -1847,12 +1761,7 @@ export class RpcClient {
 				type: "host_tool_result",
 				id: request.id,
 				result: {
-					content: [
-						{
-							type: "text",
-							text: `Host tool "${request.toolName}" is not registered`,
-						},
-					],
+					content: [{ type: "text", text: `Host tool "${request.toolName}" is not registered` }],
 					details: {},
 				},
 				isError: true,
@@ -1890,12 +1799,7 @@ export class RpcClient {
 				type: "host_tool_result",
 				id: request.id,
 				result: {
-					content: [
-						{
-							type: "text",
-							text: error instanceof Error ? error.message : String(error),
-						},
-					],
+					content: [{ type: "text", text: error instanceof Error ? error.message : String(error) }],
 					details: {},
 				},
 				isError: true,

@@ -13,6 +13,7 @@ import type { SpinnerFramesOverride, SymbolPreset } from "./schema";
 export type SymbolTable = Readonly<Record<string, string>>;
 
 const PRESETS: Readonly<Record<SymbolPreset, SymbolTable>> = SYMBOL_DATA.presets;
+export const SYMBOL_PRESETS = PRESETS;
 const SPINNERS: Readonly<
 	Record<SymbolPreset, { readonly status: readonly string[]; readonly activity: readonly string[] }>
 > = SYMBOL_DATA.spinners;

@@ -7,7 +7,6 @@ import { combine, register, type SettingValueOf } from "../config/registry";
 // TTSR
 export const cfgTtsrEnabled = register({
 	id: "ttsr.enabled",
-	restartRequired: true,
 	type: "boolean",
 	default: true,
 	ui: {
@@ -43,7 +42,6 @@ export const cfgTtsrJudge = register({
 
 export const cfgTtsrContextMode = register({
 	id: "ttsr.contextMode",
-	restartRequired: true,
 	type: "enum",
 	values: ["discard", "keep"] as const,
 	default: "discard",
@@ -57,7 +55,6 @@ export const cfgTtsrContextMode = register({
 
 export const cfgTtsrInterruptMode = register({
 	id: "ttsr.interruptMode",
-	restartRequired: true,
 	type: "enum",
 	values: ["never", "prose-only", "tool-only", "always"] as const,
 	default: "always",
@@ -77,7 +74,6 @@ export const cfgTtsrInterruptMode = register({
 
 export const cfgTtsrRepeatMode = register({
 	id: "ttsr.repeatMode",
-	restartRequired: true,
 	type: "enum",
 	values: ["once", "after-gap"] as const,
 	default: "once",
@@ -91,7 +87,6 @@ export const cfgTtsrRepeatMode = register({
 
 export const cfgTtsrRepeatGap = register({
 	id: "ttsr.repeatGap",
-	restartRequired: true,
 	type: "number",
 	default: 10,
 	ui: {
@@ -111,7 +106,6 @@ export const cfgTtsrRepeatGap = register({
 
 export const cfgTtsrBuiltinRules = register({
 	id: "ttsr.builtinRules",
-	restartRequired: true,
 	type: "boolean",
 	default: true,
 	ui: {
@@ -124,7 +118,6 @@ export const cfgTtsrBuiltinRules = register({
 
 export const cfgTtsrDisabledRules = register({
 	id: "ttsr.disabledRules",
-	restartRequired: true,
 	type: "array",
 	default: [] as string[],
 	ui: {

@@ -7,7 +7,7 @@ import { getBrowserProfilesDir, isRecord, untilAborted } from "@oh-my-pi/pi-util
 import type { Socket } from "bun";
 import type { Browser, Page, Target } from "puppeteer-core";
 import { throwIfAborted } from "../tool-errors";
-import { ToolError } from "@oh-my-pi/pi-tui/tools/tool-errors";
+import { ToolError } from "../tool-errors";
 import { isPuppeteerTimeout } from "./launch";
 
 const ATTACH_TARGET_SKIP_PATTERN =
@@ -488,7 +488,7 @@ export async function findReusableCdp(
 
 export interface PickTargetOptions {
 	matcher?: string;
-	/** Relay /json endpoint (e.g. http://127.0.0.1:9224); enables metadata-first target selection. */
+	/** Relay /json endpoint; enables metadata-first target selection. */
 	relayJson?: string;
 	signal?: AbortSignal;
 }
@@ -633,11 +633,10 @@ export function cdpTargets(entries: readonly unknown[]): CdpTarget[] {
 }
 
 /** The `browser.targets()` listing: `<source> (adopt one …):` then `- "Title" https://… (active)`. */
-export function describeCdpTargets(targets: readonly CdpTarget[], source: string, shownLabel = "active"): string {
+export function describeCdpTargets(targets: readonly CdpTarget[], source: string): string {
 	if (targets.length === 0) return `${source}: none to adopt.`;
-	const shown = ` (${shownLabel})`;
 	const list = targets
-		.map(entry => `- ${JSON.stringify(entry.title)} ${entry.url}${entry.shown ? shown : ""}`)
+		.map(entry => `- ${JSON.stringify(entry.title)} ${entry.url}${entry.shown ? " (active)" : ""}`)
 		.join("\n");
 	return `${source} (adopt one with target set to its URL or a title substring):\n${list}`;
 }

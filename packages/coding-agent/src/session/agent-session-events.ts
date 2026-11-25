@@ -3,11 +3,10 @@ import type { CompactionResult } from "@oh-my-pi/pi-agent-core/compaction";
 import type { Effort } from "@oh-my-pi/pi-ai";
 import type { Rule } from "../capability/rule";
 import type { RetryErrorUpdate } from "../extensibility/shared-events";
-import type { Goal } from "@oh-my-pi/pi-tui/tools/goal";
+import type { Goal } from "../tools/details/goal";
 import type { GoalModeState } from "../goals/state";
-import type { ConfiguredThinkingLevel } from "@oh-my-pi/pi-tui/thinking";
-import type { TodoItem } from "@oh-my-pi/pi-tui/tools/todo";
-import type { SessionQueuedMessage } from "./agent-session-types";
+import type { ConfiguredThinkingLevel } from "../utils/render-utils";
+import type { TodoItem } from "../tools/details/todo";
 import type { CustomMessage } from "./messages";
 import type { CacheWarmingRefreshEnd, CacheWarmingRefreshStart } from "./cache-warmer";
 
@@ -112,13 +111,14 @@ export type AgentSessionEvent =
 			resolved?: Effort;
 	  }
 	| { type: "goal_updated"; goal: Goal | null; state?: GoalModeState }
-	/**
-	 * Coalesced authoritative snapshot of the user-restorable queue whenever its
-	 * displayable contents change. Remote UIs subscribe instead of polling
-	 * get_queue; advisor cards and internal steers are deliberately absent (same
-	 * filter as get_queue).
-	 */
-	| { type: "queue_update"; steering: SessionQueuedMessage[]; followUp: SessionQueuedMessage[] };
+	// Coalesced snapshot of the displayable steering/follow-up queue: emitted
+	// whenever it differs from the last `queue_update` (enqueue, dequeue on
+	// delivery, remove, clear/restore, live-steering adoption/withdrawal, or
+	// session switch), never on a no-op mutation. Mirrors
+	// `AgentSession.getQueuedMessages()`; `liveSteered` counts the leading
+	// `steering` entries already sent into the streaming response, which
+	// `remove_queued_message` cannot reach.
+	| { type: "queue_update"; steering: string[]; followUp: string[]; liveSteered: number };
 
 /**
  * What can still resume a session's run without user input once its model loop

@@ -9,8 +9,8 @@
 import * as fs from "node:fs/promises";
 import path from "node:path";
 import type { AgentEvent, AgentIdentity, AgentMessage, AgentTelemetryConfig } from "@oh-my-pi/pi-agent-core";
-import { AgentBusyError, recordHandoff, resolveTelemetry } from "@oh-my-pi/pi-agent-core";
-import type { Api, Model, ServiceTierByFamily, Usage } from "@oh-my-pi/pi-ai";
+import { AgentBusyError, extractIntent, recordHandoff, resolveTelemetry } from "@oh-my-pi/pi-agent-core";
+import type { Api, AssistantMessageEvent, Model, ServiceTierByFamily, ToolCall, Usage } from "@oh-my-pi/pi-ai";
 import { isCursorExecResolved } from "@oh-my-pi/pi-ai/utils/block-symbols";
 import {
 	isRecord,
@@ -31,14 +31,10 @@ import {
 import type { Rule } from "../capability/rule";
 import type { EffectiveExtensionRoots } from "../capability/types";
 import { ModelRegistry } from "../config/model-registry";
-import { formatModelSelectorValue } from "@oh-my-pi/pi-tui/overlays/model-selector";
-import {
-	previewLine,
-	replaceTabs,
-	shortenToolArgumentPaths,
-	TRUNCATE_LENGTHS,
-} from "@oh-my-pi/pi-tui/render/render-utils";
-import { type EditMode, getEditInputPaths } from "@oh-my-pi/pi-tui/tools/edit";
+import { formatModelSelectorValue } from "../config/model-selector";
+import { previewLine, shortenToolArgumentPaths, TRUNCATE_LENGTHS } from "../utils/render-utils";
+import { replaceTabs } from "../utils/text-width";
+import { type EditMode, getEditInputPaths } from "../tools/details/edit";
 import {
 	formatModelStringWithRouting,
 	resolveAgentAdvisorRolePattern,
@@ -100,21 +96,21 @@ import { INTERRUPTED_TURN_ERROR } from "../session/exit-diagnostics";
 import { SKILL_PROMPT_MESSAGE_TYPE, usageContextTokens } from "../session/messages";
 import type { CompletionJournal } from "../session/model-usage-journal";
 import { hasConversationalHistory, SessionManager } from "../session/session-manager";
-import { truncateTail } from "@oh-my-pi/pi-tui/tools/streaming-output";
+import { truncateTail } from "../tools/streaming-output";
 import {
 	AUTO_THINKING,
 	assertModelSupportsEffortCeiling,
-	type ConfiguredThinkingLevel,
 	clampThinkingLevelToCeiling,
 	prewalkWouldBeNoop,
 	resolveTaskEffortLevel,
 	type TaskEffort,
-} from "@oh-my-pi/pi-tui/thinking";
+} from "../thinking/levels";
+import { type ConfiguredThinkingLevel } from "../utils/render-utils";
 import type { ContextFileEntry, ToolSession } from "../tools";
 import { resolveEvalBackends } from "../tools/eval-backends";
 import { isIrcEnabled } from "../irc/messaging";
-import { LIST_STATUS_ORDER } from "@oh-my-pi/pi-tui/tools/irc";
-import { DEFAULT_PEER_ROSTER_LIMIT } from "@oh-my-pi/pi-tui/tools/irc";
+import { LIST_STATUS_ORDER } from "../irc/irc-types";
+import { DEFAULT_PEER_ROSTER_LIMIT } from "../irc/irc-types";
 import { normalizeSchema } from "../tools/jtd-to-json-schema";
 import { buildOutputValidator, summarizeValidationFailure } from "../tools/output-schema-validator";
 import { ToolAbortError } from "../tools/tool-errors";
@@ -148,16 +144,17 @@ import {
 } from "./types";
 import {
 	type AgentProgress,
+	type AgentStreaming,
 	type SingleResult,
 	type StructuredSubagentOutput,
 	type StructuredSubagentSchemaMode,
 	type StructuredSubagentSchemaSource,
 	type TaskToolDetails,
 	type YieldItem,
-} from "@oh-my-pi/pi-tui/tools/task";
+} from "./task-details";
 import { yieldSectionShapes } from "./yield-assembly";
 import { assertPerCallModelApproved, PerCallModelError, type PerCallModelGrants } from "./model-approval";
-import { assembleYieldResult } from "@oh-my-pi/pi-tui/tools/task-yield-assembly";
+import { assembleYieldResult } from "./yield-sections";
 import {
 	cfgTaskPrewalk,
 	cfgTaskAgentPrewalk,
@@ -181,6 +178,7 @@ import {
 	cfgRetryFallbackChains,
 	cfgDefaultThinkingLevel,
 	cfgPrewalkAutoTarget,
+	PREWALK_INITIAL_TARGET,
 } from "../session/settings";
 import { type AutoPrewalkDecision, classifyAutoPrewalk } from "../auto-prewalk/classifier";
 import { type JudgmentUsage, journalJudgmentUsage, type NativeJudgmentDeps } from "../judgment";
@@ -193,7 +191,7 @@ import {
 	cfgCompactionThresholdTokens,
 } from "../session/context-settings";
 
-export type { YieldItem } from "@oh-my-pi/pi-tui/tools/task";
+export type { YieldItem } from "./task-details";
 
 const TASK_ABORT_CLEANUP_GRACE_MS = 10_000;
 
@@ -263,6 +261,10 @@ function formatSalvageSnippet(text: string, maxLength = 500): string {
 	const flattened = text.replace(/\s+/g, " ").trim();
 	return flattened.length > maxLength ? `${flattened.slice(0, maxLength - 1)}…` : flattened;
 }
+
+/** The model reasons, or writes prose: the stream states without a payload, shared by every snapshot. */
+const STREAMING_THINKING: AgentStreaming = { kind: "thinking" };
+const STREAMING_TEXT: AgentStreaming = { kind: "text" };
 
 /** Events the run monitor tracks: the core loop events plus the session's `agent_pause`. */
 type MonitoredEvent = AgentEvent | Extract<AgentSessionEvent, { type: "agent_pause" }>;
@@ -386,10 +388,7 @@ function installSubagentRetryFallbackChain(args: {
 	}
 
 	const role = subagentRetryFallbackRole(id);
-	installRetryFallbackRole(settings, role, {
-		primary: candidates[selectedIndex].selector,
-		chain: fallbackChain,
-	});
+	installRetryFallbackRole(settings, role, { primary: candidates[selectedIndex].selector, chain: fallbackChain });
 	return role;
 }
 
@@ -483,13 +482,6 @@ export interface ExecutorOptions {
 	index: number;
 	id: string;
 	parentToolCallId?: string;
-	/**
-	 * Registry id of the subagent whose session spawned this run (nested spawn);
-	 * absent for root spawns from the main session. Threaded onto lifecycle and
-	 * progress payloads so DAG surfaces can draw true parent→child edges instead
-	 * of inferring nesting from `parentToolCallId` ownership.
-	 */
-	parentSubagentId?: string;
 	/**
 	 * Spawn runs as a detached background job (parent turn not blocked on it).
 	 * Rides the subagent lifecycle/progress payloads so HUD-style surfaces can
@@ -822,12 +814,7 @@ export function finalizeSubprocessOutput(args: FinalizeSubprocessOutputArgs): Fi
 			if (!assembled || assembled.missingData) {
 				rawOutput = rawOutput ? `${SUBAGENT_WARNING_NULL_YIELD}\n\n${rawOutput}` : SUBAGENT_WARNING_NULL_YIELD;
 				if (includeStructuredOutput) {
-					structuredOutput = {
-						source,
-						mode,
-						status: "invalid",
-						error: SUBAGENT_WARNING_NULL_YIELD,
-					};
+					structuredOutput = { source, mode, status: "invalid", error: SUBAGENT_WARNING_NULL_YIELD };
 				}
 				// Strict mode promises a schema violation fails the run, not a
 				// warning-decorated success (exitCode 0); build the same
@@ -836,10 +823,7 @@ export function finalizeSubprocessOutput(args: FinalizeSubprocessOutputArgs): Fi
 				if (mode === "strict" && includeStructuredOutput) {
 					const { validator } = buildOutputValidator(outputSchema);
 					const outcome = buildSchemaViolationOutcome(
-						{
-							message: SUBAGENT_WARNING_NULL_YIELD,
-							missingRequired: [...(validator?.requiredFields ?? [])],
-						},
+						{ message: SUBAGENT_WARNING_NULL_YIELD, missingRequired: [...(validator?.requiredFields ?? [])] },
 						undefined,
 					);
 					rawOutput = outcome.rawOutput;
@@ -856,15 +840,9 @@ export function finalizeSubprocessOutput(args: FinalizeSubprocessOutputArgs): Fi
 					validation && !validation.success
 						? summarizeValidationFailure(validation, completeData, validator?.requiredFields ?? [])
 						: assembled.schemaOverridden
-							? {
-									message: SUBAGENT_WARNING_SCHEMA_OVERRIDDEN,
-									missingRequired: [],
-								}
+							? { message: SUBAGENT_WARNING_SCHEMA_OVERRIDDEN, missingRequired: [] }
 							: schemaError
-								? {
-										message: `invalid output schema: ${schemaError}`,
-										missingRequired: [],
-									}
+								? { message: `invalid output schema: ${schemaError}`, missingRequired: [] }
 								: undefined;
 				if (includeStructuredOutput) {
 					structuredOutput =
@@ -877,13 +855,7 @@ export function finalizeSubprocessOutput(args: FinalizeSubprocessOutputArgs): Fi
 									error: schemaError ? `invalid output schema: ${schemaError}` : undefined,
 								}
 							: failure
-								? {
-										source,
-										mode,
-										status: "invalid",
-										data: completeData,
-										error: failure.message,
-									}
+								? { source, mode, status: "invalid", data: completeData, error: failure.message }
 								: { source, mode, status: "valid", data: completeData };
 				}
 				const mustReject =
@@ -926,19 +898,11 @@ export function finalizeSubprocessOutput(args: FinalizeSubprocessOutputArgs): Fi
 		if (fallback) {
 			const { validator } = buildOutputValidator(outputSchema);
 			const completeData = parseStringifiedJson(fallback.data ?? null);
-			const result = validator?.validate(completeData) ?? {
-				success: true as const,
-			};
+			const result = validator?.validate(completeData) ?? { success: true as const };
 			if (!result.success) {
 				const summary = summarizeValidationFailure(result, completeData, validator?.requiredFields ?? []);
 				if (includeStructuredOutput) {
-					structuredOutput = {
-						source,
-						mode,
-						status: "invalid",
-						data: completeData,
-						error: summary.message,
-					};
+					structuredOutput = { source, mode, status: "invalid", data: completeData, error: summary.message };
 				}
 				const outcome = buildSchemaViolationOutcome(summary, completeData);
 				rawOutput = outcome.rawOutput;
@@ -975,14 +939,7 @@ export function finalizeSubprocessOutput(args: FinalizeSubprocessOutputArgs): Fi
 		}
 	}
 
-	return {
-		rawOutput,
-		exitCode,
-		stderr,
-		abortedViaYield,
-		hasYield,
-		structuredOutput,
-	};
+	return { rawOutput, exitCode, stderr, abortedViaYield, hasYield, structuredOutput };
 }
 
 function formatToolArgsPreview(value: string, key: string): { value: string; key: string } {
@@ -1103,12 +1060,7 @@ export function createMCPProxyTools(mcpManager: MCPManagerApi, scope: MCPToolSco
 					.find(t => t.mcpServerName === serverName && t.mcpToolName === mcpToolName);
 				if (!source?.execute) {
 					return {
-						content: [
-							{
-								type: "text" as const,
-								text: `MCP error: tool ${mcpToolName} no longer available`,
-							},
-						],
+						content: [{ type: "text" as const, text: `MCP error: tool ${mcpToolName} no longer available` }],
 						details: { serverName, mcpToolName, isError: true },
 					};
 				}
@@ -1406,7 +1358,6 @@ interface RunMonitorArgs {
 	eventBus?: EventBus;
 	subagentEventBus?: EventBus;
 	parentToolCallId?: string;
-	parentSubagentId?: string;
 	detached?: boolean;
 	sessionFile?: string;
 	/** Soft assistant-request budget; 0 disables the guard. */
@@ -1596,23 +1547,6 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 	const abortController = new AbortController();
 	const abortSignal = abortController.signal;
 	let activeSession: AgentSession | null = null;
-	// The label also titles the agent's transcript, so a host that rebuilds its
-	// roster from disk (an RPC session reopened in a new process) shows it too.
-	// An existing title wins: a follow-up turn re-attaches an already named
-	// session. Best-effort like the label itself: a fault never fails the run.
-	const nameSession = (session: AgentSession | null): void => {
-		const label = progress.description;
-		if (!session || !label) return;
-		(async () => {
-			if (session.sessionManager.getSessionName()) return;
-			await session.sessionManager.setSessionName(label, "auto", "task-label");
-		})().catch(err => {
-			logger.debug("Subagent transcript title failed", {
-				id,
-				error: err instanceof Error ? err.message : String(err),
-			});
-		});
-	};
 	let completionProbeStarted = false;
 	let yieldCalled = false;
 	let yieldCallPending = false;
@@ -1839,20 +1773,55 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 		progress.recentOutput = filtered.slice(-8).reverse();
 	};
 
+	/**
+	 * The tool call the model is writing, by its newest stream snapshot. Its preview is taken at the
+	 * emit boundary, as recentOutput is: a large edit's patch parses at most once per emit, not per delta.
+	 */
+	let streamingCall: ToolCall | undefined;
+	let streamingCallDirty = false;
+	const refreshStreamingCall = () => {
+		if (!streamingCallDirty || !streamingCall) return;
+		streamingCallDirty = false;
+		const { intent, strippedArgs } = extractIntent(isRecord(streamingCall.arguments) ? streamingCall.arguments : {});
+		const preview = previewToolArgs(streamingCall.name, strippedArgs);
+		progress.streaming = {
+			kind: "call",
+			tool: streamingCall.name,
+			args: preview?.value,
+			argsKey: preview?.key,
+			intent,
+		};
+	};
+	/** What the model now produces, other than a call it is writing; undefined once nothing streams. */
+	const setStreaming = (state: AgentStreaming | undefined) => {
+		streamingCall = undefined;
+		streamingCallDirty = false;
+		progress.streaming = state;
+	};
+
+	/** A call's argument preview, read as its tool reads it (an edit tool's mode decides its paths). */
+	const previewToolArgs = (toolName: string, args: Record<string, unknown>) => {
+		const editMode =
+			toolName === "apply_patch"
+				? "apply_patch"
+				: ((activeSession?.getToolByName(toolName) as { mode?: EditMode } | undefined)?.mode ?? undefined);
+		return extractToolArgsPreview(args, toolName, editMode);
+	};
+
 	const emitProgressNow = () => {
 		refreshRecentOutput();
+		refreshStreamingCall();
 		progress.durationMs = Date.now() - startTime;
 		onProgress?.({ ...progress });
 		const activityGist =
 			progress.lastIntent ?? (progress.currentTool ? `running ${progress.currentTool}` : undefined);
-		if (activityGist) AgentRegistry.global().setActivity(id, activityGist);
+		if (activityGist && activeSession) AgentRegistry.global().setActivity(id, activityGist, activeSession);
 		const progressPayload = {
 			index,
 			agent: agent.name,
 			agentSource: agent.source,
 			task,
 			parentToolCallId: args.parentToolCallId,
-			parentSubagentId: args.parentSubagentId,
 			detached: args.detached,
 			assignment,
 			progress: { ...progress },
@@ -1908,7 +1877,6 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 			.then(label => {
 				if (!label || abortSignal.aborted || progress.description) return;
 				progress.description = label;
-				nameSession(activeSession);
 				if (!resolved) scheduleProgress();
 			})
 			.catch(err => {
@@ -2009,13 +1977,7 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 	 */
 	const activeTools = new Map<
 		string,
-		{
-			tool: string;
-			args?: string;
-			argsKey?: string;
-			intent?: string;
-			startMs: number;
-		}
+		{ tool: string; args?: string; argsKey?: string; intent?: string; startMs: number }
 	>();
 	let visibleToolCallId: string | undefined;
 	// Providers that run the tool loop server-side (Cursor) execute tools while
@@ -2056,12 +2018,7 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 		// event processing (which escalates to terminate).
 		const notice = buildBudgetNotice(progress.requests, softRequestBudget);
 		void Promise.resolve()
-			.then(() =>
-				steerSession.sendUserMessage(notice, {
-					deliverAs: "steer",
-					attribution: "agent",
-				}),
-			)
+			.then(() => steerSession.sendUserMessage(notice, { deliverAs: "steer", attribution: "agent" }))
 			.catch(err => {
 				logger.warn("Subagent budget steer failed", {
 					error: err instanceof Error ? err.message : String(err),
@@ -2078,6 +2035,7 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 			case "message_start":
 				if (event.message?.role === "assistant") {
 					assistantStreaming = true;
+					setStreaming(undefined);
 					resetRecentOutput();
 				}
 				// An async-result follow-up injected after a recorded yield
@@ -2109,12 +2067,9 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 				} else if (isRecord(event.args)) {
 					startArgs = event.args;
 				}
-				const editMode =
-					event.toolName === "apply_patch"
-						? "apply_patch"
-						: ((activeSession?.getToolByName(event.toolName) as { mode?: EditMode } | undefined)?.mode ??
-							undefined);
-				const preview = extractToolArgsPreview(startArgs, event.toolName, editMode);
+				const preview = previewToolArgs(event.toolName, startArgs);
+				// The running call takes over from the one being written; calls written after it wait their turn.
+				setStreaming(undefined);
 				progress.currentToolArgs = preview?.value;
 				progress.currentToolArgsKey = preview?.key;
 				progress.currentToolStartMs = now;
@@ -2317,22 +2272,41 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 
 			case "message_update": {
 				if (event.message?.role !== "assistant") break;
-				const assistantEvent = (
-					event as AgentEvent & {
-						assistantMessageEvent?: { type?: string; delta?: string };
+				// Optional at runtime: a replayed content update carries no stream event.
+				const update: AssistantMessageEvent | undefined = event.assistantMessageEvent;
+				if (!update) {
+					const updateContent =
+						getMessageContent(event.message) || (event as AgentEvent & { content?: unknown }).content;
+					if (updateContent && Array.isArray(updateContent)) {
+						replaceRecentOutputFromContent(updateContent);
 					}
-				).assistantMessageEvent;
-				if (assistantEvent?.type === "text_delta" && typeof assistantEvent.delta === "string") {
-					appendRecentOutputTail(assistantEvent.delta);
 					break;
 				}
-				if (assistantEvent && assistantEvent.type !== "text_delta") {
-					break;
-				}
-				const updateContent =
-					getMessageContent(event.message) || (event as AgentEvent & { content?: unknown }).content;
-				if (updateContent && Array.isArray(updateContent)) {
-					replaceRecentOutputFromContent(updateContent);
+				switch (update.type) {
+					case "text_delta":
+						appendRecentOutputTail(update.delta);
+						setStreaming(STREAMING_TEXT);
+						break;
+					case "text_start":
+						setStreaming(STREAMING_TEXT);
+						break;
+					case "thinking_start":
+					case "thinking_delta":
+						setStreaming(STREAMING_THINKING);
+						break;
+					case "toolcall_start":
+					case "toolcall_delta": {
+						const block = update.partial.content[update.contentIndex];
+						if (block?.type === "toolCall" && block.name) {
+							streamingCall = block;
+							streamingCallDirty = true;
+						}
+						break;
+					}
+					case "toolcall_end":
+						streamingCall = update.toolCall;
+						streamingCallDirty = true;
+						break;
 				}
 				break;
 			}
@@ -2342,6 +2316,8 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 				const role = event.message?.role;
 				if (role === "assistant") {
 					assistantStreaming = false;
+					// Reasoning and prose end with the response; a call it wrote stays until it runs.
+					if (!streamingCall) setStreaming(undefined);
 					sawAssistantMessage = true;
 					progress.requests += 1;
 					const eventContent = isRecord(event) && "content" in event ? event.content : undefined;
@@ -2438,6 +2414,7 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 				// vanished after a pause ends with that paused loop's messages again.
 				const resent = event.type === "agent_end" && pausedLoopCollected;
 				pausedLoopCollected = event.type === "agent_pause";
+				setStreaming(undefined);
 				// Extract final content from assistant messages only (not user prompts).
 				if (!resent && Array.isArray(event.messages)) {
 					for (const msg of event.messages) {
@@ -2632,7 +2609,6 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 		resolveAbortReasonText,
 		setActiveSession: session => {
 			activeSession = session;
-			nameSession(session);
 			publishAdvisorState(session);
 			if (session && completionProbe && !completionProbeStarted) {
 				completionProbeStarted = true;
@@ -2820,13 +2796,7 @@ async function driveSessionToResult(
 		for (let attempt = 1; attempt <= MAX_PROMPT_DISPATCH_ATTEMPTS; attempt++) {
 			if (forceFinalYield) monitor.markFinalYieldForced(true);
 			try {
-				await awaitAbortable(
-					session.prompt(text, {
-						...promptOptions,
-						runCommands: false,
-						throwOnDrop: true,
-					}),
-				);
+				await awaitAbortable(session.prompt(text, { ...promptOptions, runCommands: false, throwOnDrop: true }));
 				return;
 			} catch (err) {
 				if (!(err instanceof PromptDroppedError)) throw err;
@@ -3163,13 +3133,7 @@ async function driveSessionToResult(
 
 interface FinalizeRunArgs {
 	monitor: SubagentRunMonitor;
-	done: {
-		exitCode: number;
-		error?: string;
-		aborted?: boolean;
-		abortReason?: string;
-		durationMs: number;
-	};
+	done: { exitCode: number; error?: string; aborted?: boolean; abortReason?: string; durationMs: number };
 	index: number;
 	id: string;
 	agent: AgentDefinition;
@@ -3187,7 +3151,6 @@ interface FinalizeRunArgs {
 	eventBus?: EventBus;
 	subagentEventBus?: EventBus;
 	parentToolCallId?: string;
-	parentSubagentId?: string;
 	detached?: boolean;
 	/**
 	 * This finalize is a revival/wake or explicit follow-up turn, not the initial
@@ -3371,7 +3334,6 @@ async function finalizeRunResult(args: FinalizeRunArgs): Promise<SingleResult> {
 		id,
 		agent: agent.name,
 		parentToolCallId: args.parentToolCallId,
-		parentSubagentId: args.parentSubagentId,
 		detached: args.detached,
 		agentSource: agent.source,
 		description: progress.description,
@@ -3432,7 +3394,6 @@ export interface IrcWakeTurnMonitorOptions {
 	eventBus?: EventBus;
 	subagentEventBus?: EventBus;
 	parentToolCallId?: string;
-	parentSubagentId?: string;
 	/** Fallback session file when the registry ref carries none. */
 	sessionFile?: string;
 	maxRuntimeMs?: number;
@@ -3476,10 +3437,7 @@ function wakeSources(records: AgentMessage[], selfId: string): WakeSource[] {
 		)
 			continue;
 		const messageId = details ? Reflect.get(details, "id") : undefined;
-		sources.push({
-			from,
-			messageId: typeof messageId === "string" ? messageId : undefined,
-		});
+		sources.push({ from, messageId: typeof messageId === "string" ? messageId : undefined });
 	}
 	return sources;
 }
@@ -3535,11 +3493,7 @@ async function relayWakeTurnOutput(args: {
 			wakeRelay: true,
 		});
 		if (receipt.outcome === "failed") {
-			logger.warn("IRC wake-turn relay failed", {
-				from: args.id,
-				to: source.from,
-				error: receipt.error,
-			});
+			logger.warn("IRC wake-turn relay failed", { from: args.id, to: source.from, error: receipt.error });
 		}
 	}
 }
@@ -3580,9 +3534,7 @@ export function buildWakeRelayBody(args: {
 	// artifact before failing must be reported, never contradicted.
 	const summary =
 		args.yielded && args.result?.outputPath
-			? formatTaskResultSummary(args.result, {
-					totalDurationMs: args.result.durationMs,
-				})
+			? formatTaskResultSummary(args.result, { totalDurationMs: args.result.durationMs })
 			: undefined;
 
 	const headline = args.error
@@ -3732,7 +3684,6 @@ export function attachIrcWakeTurnMonitor(session: AgentSession, options: IrcWake
 			eventBus: options.eventBus,
 			subagentEventBus: options.subagentEventBus,
 			parentToolCallId: options.parentToolCallId,
-			parentSubagentId: options.parentSubagentId,
 			detached: true,
 			sessionFile,
 			softRequestBudget,
@@ -3751,7 +3702,6 @@ export function attachIrcWakeTurnMonitor(session: AgentSession, options: IrcWake
 			id,
 			agent: agent.name,
 			parentToolCallId: options.parentToolCallId,
-			parentSubagentId: options.parentSubagentId,
 			detached: true,
 			agentSource: agent.source,
 			description: options.description,
@@ -3849,7 +3799,6 @@ export function attachIrcWakeTurnMonitor(session: AgentSession, options: IrcWake
 					eventBus: options.eventBus,
 					subagentEventBus: options.subagentEventBus,
 					parentToolCallId: options.parentToolCallId,
-					parentSubagentId: options.parentSubagentId,
 					detached: true,
 					followUpTurn: true,
 					publishMessageResult: ownerWoken || ownerPrompted || userPrompted,
@@ -4002,10 +3951,7 @@ export async function finalizeSubagentLifecycle(args: {
 		try {
 			await args.onRelease?.();
 		} catch (error) {
-			logger.warn("Subagent lifecycle resource cleanup failed", {
-				id: args.id,
-				error: String(error),
-			});
+			logger.warn("Subagent lifecycle resource cleanup failed", { id: args.id, error: String(error) });
 		}
 	};
 
@@ -4037,14 +3983,9 @@ export async function finalizeSubagentLifecycle(args: {
 				// decision is durable and a restart cannot rediscover the transcript
 				// as a revivable parked agent.
 				try {
-					await AgentLifecycleManager.global().release(args.id, ref, {
-						tombstone: true,
-					});
+					await AgentLifecycleManager.global().release(args.id, ref, { tombstone: true });
 				} catch (error) {
-					logger.warn("runSubagent: failed to persist kill tombstone", {
-						id: args.id,
-						error: String(error),
-					});
+					logger.warn("runSubagent: failed to persist kill tombstone", { id: args.id, error: String(error) });
 					registry.setStatus(args.id, "aborted", ref);
 					registry.detachSession(args.id, ref);
 					await disposeSession();
@@ -4111,7 +4052,6 @@ export interface FollowUpTurnOptions {
 	eventBus?: EventBus;
 	subagentEventBus?: EventBus;
 	parentToolCallId?: string;
-	parentSubagentId?: string;
 	/**
 	 * When set, a turn that yields or completes a successful, non-empty message
 	 * result when requested by the parent (re)writes `<artifactsDir>/<id>.md` so
@@ -4262,7 +4202,6 @@ async function driveFollowUpTurn(
 		eventBus: options.eventBus,
 		subagentEventBus: options.subagentEventBus,
 		parentToolCallId: options.parentToolCallId,
-		parentSubagentId: options.parentSubagentId,
 		detached: true,
 		sessionFile,
 		softRequestBudget,
@@ -4275,7 +4214,6 @@ async function driveFollowUpTurn(
 		id,
 		agent: agent.name,
 		parentToolCallId: options.parentToolCallId,
-		parentSubagentId: options.parentSubagentId,
 		detached: true,
 		agentSource: agent.source,
 		description: options.description,
@@ -4356,7 +4294,6 @@ async function driveFollowUpTurn(
 			eventBus: options.eventBus,
 			subagentEventBus: options.subagentEventBus,
 			parentToolCallId: options.parentToolCallId,
-			parentSubagentId: options.parentSubagentId,
 			detached: true,
 			followUpTurn: true,
 			publishMessageResult: true,
@@ -4549,11 +4486,7 @@ interface SubagentSettingsRecipe {
 }
 
 function captureSubagentSettings(parent: Settings, settings: SubagentChainSettings): SubagentSettingsRecipe {
-	return {
-		parent,
-		layers: settings.overlayLayers(),
-		rootThresholds: settings[kRootCompactionThresholds],
-	};
+	return { parent, layers: settings.overlayLayers(), rootThresholds: settings[kRootCompactionThresholds] };
 }
 
 function restoreSubagentSettings(recipe: SubagentSettingsRecipe): Settings {
@@ -4933,7 +4866,6 @@ async function runSubprocessOnThisThread(options: ExecutorOptions): Promise<Sing
 		eventBus: options.eventBus,
 		subagentEventBus: options.subagentEventBus,
 		parentToolCallId: options.parentToolCallId,
-		parentSubagentId: options.parentSubagentId,
 		detached: options.detached,
 		sessionFile: subtaskSessionFile,
 		softRequestBudget,
@@ -5230,10 +5162,12 @@ async function runSubprocessOnThisThread(options: ExecutorOptions): Promise<Sing
 				unconditionalPattern === undefined && !perCallModelGrants && !restrictToolNames
 					? cfgTaskAgentPrewalkAuto.get(settings)[agent.name]?.trim()
 					: undefined;
+			const autoTarget = cfgPrewalkAutoTarget.get(settings);
 			const autoPattern = autoEntry
 				? resolveAgentPrewalkPattern({
 						settingsOverride: autoEntry,
-						agentPrewalk: cfgPrewalkAutoTarget.get(settings),
+						// A subagent never moves to a planner, so there is no starting model to hand back to.
+						agentPrewalk: autoTarget === PREWALK_INITIAL_TARGET ? cfgPrewalkAutoTarget.default : autoTarget,
 					})
 				: undefined;
 			const prewalkPattern = unconditionalPattern ?? autoPattern;
@@ -5529,7 +5463,6 @@ async function runSubprocessOnThisThread(options: ExecutorOptions): Promise<Sing
 				id,
 				agent: agent.name,
 				parentToolCallId: options.parentToolCallId,
-				parentSubagentId: options.parentSubagentId,
 				detached: options.detached,
 				agentSource: agent.source,
 				description: options.description,
@@ -5562,7 +5495,7 @@ async function runSubprocessOnThisThread(options: ExecutorOptions): Promise<Sing
 				systemPrompt: session.agent.state.systemPrompt,
 				task,
 				tools: persistedSubagentTools,
-				mountedTools: session.getMountedXdevToolNames(),
+				mountedTools: session.getMountedToolCommandNames(),
 				agent: agent.name,
 				modelRole: modelRole ?? resolveExplicitModelRole(modelOverride ?? agent.model, subagentSettings),
 				resolvedModel: progress.resolvedModel,
@@ -5611,16 +5544,9 @@ async function runSubprocessOnThisThread(options: ExecutorOptions): Promise<Sing
 			const pendingExtensionMessages: Array<Promise<unknown>> = [];
 			await awaitAbortable(
 				initializeExtensions(session, {
-					reportSendError: (action, err) =>
-						logger.error("Extension send failed", {
-							action,
-							error: err.message,
-						}),
+					reportSendError: (action, err) => logger.error("Extension send failed", { action, error: err.message }),
 					reportRuntimeError: err =>
-						logger.error("Extension error", {
-							path: err.extensionPath,
-							error: err.error,
-						}),
+						logger.error("Extension error", { path: err.extensionPath, error: err.error }),
 					trackExtensionSend: task => {
 						pendingExtensionMessages.push(task.catch(() => {}));
 					},
@@ -5855,7 +5781,6 @@ async function runSubprocessOnThisThread(options: ExecutorOptions): Promise<Sing
 			eventBus: options.eventBus,
 			subagentEventBus: options.subagentEventBus,
 			parentToolCallId: options.parentToolCallId,
-			parentSubagentId: options.parentSubagentId,
 			detached: options.detached,
 			sessionFile: subtaskSessionFile,
 			startTime,

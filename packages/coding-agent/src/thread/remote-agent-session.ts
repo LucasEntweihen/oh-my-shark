@@ -34,10 +34,11 @@
  */
 import { type AgentMessage, type AgentTool, ThinkingLevel, Tokenizer } from "@oh-my-pi/pi-agent-core";
 import type { Effort, ImageContent, Model, ServiceTier, ToolResultMessage, UsageReport } from "@oh-my-pi/pi-ai";
-import { AUTO_THINKING, type ConfiguredThinkingLevel } from "@oh-my-pi/pi-tui/thinking";
-import type { IrcMessage } from "@oh-my-pi/pi-tui/tools/irc";
-import type { JobWidgetEntry } from "@oh-my-pi/pi-tui/tools/job-widget";
-import type { TodoPhase } from "@oh-my-pi/pi-tui/tools/todo";
+import { AUTO_THINKING } from "../thinking/levels";
+import { type ConfiguredThinkingLevel } from "../utils/render-utils";
+import type { IrcMessage } from "../irc/irc-types";
+import type { JobWidgetEntry } from "../tools/details/job-widget";
+import type { TodoPhase } from "../tools/details/todo";
 import { getBlobsDir, logger } from "@oh-my-pi/pi-utils";
 import type { AsyncJobManagerApi } from "../async";
 import type { EffectiveExtensionRoots } from "../capability/types";
@@ -77,7 +78,6 @@ import type {
 	SteerOptions,
 } from "../session/agent-session-types";
 import {
-	type AsyncJobSnapshotOptions,
 	asyncJobSnapshot,
 	asyncJobTree,
 	cancelOwnedAsyncJob,
@@ -639,11 +639,11 @@ export class RemoteAgentSession implements AgentViewSession {
 		return this.#command("fetchUsageReports", signal);
 	}
 
-	getAsyncJobSnapshot(options?: AsyncJobSnapshotOptions): AsyncJobSnapshot | null {
+	getAsyncJobSnapshot(options?: { recentLimit?: number }): AsyncJobSnapshot | null {
 		return this.#asyncJobs ? asyncJobSnapshot(this.#asyncJobs, this.agentId, options) : null;
 	}
 
-	getAsyncJobTree(options?: AsyncJobSnapshotOptions): AsyncJobTree | null {
+	getAsyncJobTree(options?: { recentLimit?: number }): AsyncJobTree | null {
 		return this.#asyncJobs ? asyncJobTree(this.#asyncJobs, this.agentId, options) : null;
 	}
 
@@ -970,7 +970,7 @@ export class RemoteAgentSession implements AgentViewSession {
 				this.#state = { ...this.#state, streamMessage: event.message };
 				const delta = event.assistantMessageEvent;
 				if (delta.type === "text_delta" || delta.type === "thinking_delta" || delta.type === "toolcall_delta") {
-					this.tokenRate.push(delta.delta);
+					this.tokenRate.push(delta.delta, delta.type);
 				}
 				return;
 			}

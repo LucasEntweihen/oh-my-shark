@@ -12,15 +12,15 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { setWelcomeCockpitRenderer } from "@oh-my-pi/pi-tui/prompt/welcome";
 import { PRODUCT_VERSION } from "@oh-my-pi/pi-utils";
-import { truncateToWidth } from "@oh-my-pi/pi-tui";
+import { truncate as truncateToWidth } from "@oh-my-pi/pi-tui/text/width";
 import { REST_FRAME } from "../modes/components/shark-logo";
 import type { ChangesSummary, FileChangeDiff } from "../edit/transactional-engine";
 import { getMenteEmTeiaStore } from "../memories/mente-em-teia-sqlite";
 import type { OrchestratorRun } from "../orchestrator/types";
 import { lookup as lookupSetting } from "../config/registry";
 import { settings } from "../config/settings";
+import "./cockpit-settings";
 
 export type CockpitDensity = "compact" | "standard" | "advanced";
 export type CockpitDensityMode = "auto" | "compact" | "standard" | "advanced";
@@ -588,6 +588,7 @@ export class DeepSeaCockpit {
 		this.lastGitSyncCwd = cwd;
 		this.lastGitSyncAt = now;
 		this.workspaceName = path.basename(cwd) || cwd;
+		if (process.env.NODE_ENV === "test" || process.env.BUN_ENV === "test") return;
 
 		try {
 			const statusProc = Bun.spawnSync(["git", "status", "--porcelain=v1", "-b"], {
@@ -1570,10 +1571,10 @@ export class DeepSeaCockpit {
 			}
 		}
 
-		const sidebarLines = this.renderSidebar(sidebarW, mainLines.length);
+		const sidebarLines = this.renderSidebar(sidebarW, Math.max(mainLines.length, 21));
 		const combinedLines: string[] = [];
 
-		for (let i = 0; i < mainLines.length; i++) {
+		for (let i = 0; i < Math.max(mainLines.length, sidebarLines.length); i++) {
 			const sLine = padToWidth(sidebarLines[i] ?? "", sidebarW);
 			const mLine = mainLines[i] ?? "";
 			combinedLines.push(`${sLine} ${style.borderBlue("│")} ${mLine}`);
@@ -1723,12 +1724,28 @@ export function getDeepSeaCockpit(options?: DeepSeaCockpitOptions): DeepSeaCockp
 	return activeCockpit;
 }
 
+export type WelcomeCockpitInput = {
+	version: string;
+	modelName: string;
+	providerName: string;
+	recentSessions: Array<{ name: string; timeAgo: string }>;
+	lspServers: Array<{ name: string; fileTypes: string[]; status: "connected" | "error" | "connecting" }>;
+	termWidth: number;
+	termHeight: number;
+	layoutMode?: string;
+};
+
+let welcomeCockpitRenderer: ((input: WelcomeCockpitInput) => string[]) | null = null;
+
+export function getWelcomeCockpitRenderer(): ((input: WelcomeCockpitInput) => string[]) | null {
+	return welcomeCockpitRenderer;
+}
+
 /**
- * Registers the OMSK Deep Sea Cockpit renderer on `@oh-my-pi/pi-tui`'s
- * {@link WelcomeComponent} without introducing a reverse package dependency.
+ * Registers the OMSK Deep Sea Cockpit renderer.
  */
 export function registerWelcomeCockpitRenderer(): void {
-	setWelcomeCockpitRenderer(input => {
+	welcomeCockpitRenderer = input => {
 		if (!activeCockpit) {
 			activeCockpit = new DeepSeaCockpit({
 				version: input.version,
@@ -1770,5 +1787,5 @@ export function registerWelcomeCockpitRenderer(): void {
 			return activeCockpit.render(input.termWidth);
 		}
 		return activeCockpit.renderFullCockpit(input.termWidth, input.termHeight);
-	});
+	};
 }

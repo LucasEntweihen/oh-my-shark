@@ -69,9 +69,10 @@ interface InFlight {
 
 /**
  * A non-forcing pending preview invoker. Registered by `queueResolveHandler`
- * (resolve previews) so a `write` to `xd://resolve` or `xd://reject` can
- * dispatch to a staged action WITHOUT this queue forcing `tool_choice`. The agent-loop's
- * SoftToolRequirement lifecycle (remind-then-escalate) owns any forcing.
+ * (resolve previews) so the `resolve` or `reject` tool, run as a `bash` command
+ * or called directly, can apply or discard a staged action WITHOUT this queue
+ * forcing `tool_choice`. The agent-loop's SoftToolRequirement lifecycle
+ * (remind-then-escalate) owns any forcing.
  */
 interface PendingInvoker {
 	/** Unique id for this staged preview; never reused (never clobbered by label). */
@@ -98,9 +99,9 @@ export class ToolChoiceQueue {
 	 */
 	#lastResolvedLabel: string | undefined;
 	/**
-	 * Non-forcing pending preview invokers, stacked by UNIQUE id. The
-	 * `xd://resolve` or `xd://reject` dispatch runs the head; the agent-loop's
-	 * soft-tool-requirement lifecycle drives resolution without this queue forcing `tool_choice`.
+	 * Non-forcing pending preview invokers, stacked by UNIQUE id. The `resolve`
+	 * or `reject` tool runs the head; the agent-loop's soft-tool-requirement
+	 * lifecycle drives resolution without this queue forcing `tool_choice`.
 	 */
 	#pendingInvokers: PendingInvoker[] = [];
 
@@ -226,8 +227,8 @@ export class ToolChoiceQueue {
 	}
 
 	// ── Non-forcing pending invokers ──────────────────────────────────────
-	// Preview producers (queueResolveHandler) register here so a resolve-device
-	// write can dispatch to a staged action WITHOUT a forced tool_choice (no
+	// Preview producers (queueResolveHandler) register here so `resolve` or
+	// `reject` can act on a staged action WITHOUT a forced tool_choice (no
 	// messages-cache bust). Stacked by UNIQUE id: a re-register replaces only the same id, so
 	// concurrent/sequential previews each survive and resolve independently.
 
@@ -257,7 +258,7 @@ export class ToolChoiceQueue {
 		return this.#pendingInvokers.length > 0;
 	}
 
-	/** The head (most-recently registered) pending invoker's handler, for resolve dispatch. */
+	/** The head (most-recently registered) pending invoker's handler, run by `resolve` or `reject`. */
 	peekPendingInvoker(): ((input: unknown) => Promise<unknown> | unknown) | undefined {
 		return this.#pendingInvokers.at(-1)?.onInvoked;
 	}
@@ -271,18 +272,12 @@ export class ToolChoiceQueue {
 
 	// ── Cleanup ───────────────────────────────────────────────────────────
 
-	/**
-	 * Remove all directives with the given label. Rejects in-flight if it
-	 * matches. One-yield replays carry a `<label>-requeued` name but keep the
-	 * original as sequenceRoot, so the filter matches the root label too —
-	 * otherwise an explicit removal would leave a replayed copy armed.
-	 */
+	/** Remove all directives with the given label. Rejects in-flight if it matches. */
 	removeByLabel(label: string): void {
-		const inFlightRoot = this.#inFlight?.directive.sequenceRoot ?? this.#inFlight?.directive;
-		if (this.#inFlight?.directive.label === label || inFlightRoot?.label === label) {
+		if (this.#inFlight?.directive.label === label) {
 			this.reject("removed");
 		}
-		this.#queue = this.#queue.filter(d => d.label !== label && (d.sequenceRoot ?? d).label !== label);
+		this.#queue = this.#queue.filter(d => d.label !== label);
 	}
 
 	/** Empty the queue and reject any in-flight yield. */

@@ -1,17 +1,10 @@
 import * as path from "node:path";
-import { isCompiledBinary, isRecord, logger, untilAborted, workerHostEntry } from "@oh-my-pi/pi-utils";
+import { isCompiledBinary, logger, untilAborted, workerHostEntry } from "@oh-my-pi/pi-utils";
 import type { Subprocess } from "bun";
 import type { Browser, CDPSession } from "puppeteer-core";
 import { ToolAbortError } from "../tool-errors";
-import { ToolError } from "@oh-my-pi/pi-tui/tools/tool-errors";
-import {
-	findFreeCdpPort,
-	findReusableCdp,
-	gracefulKillTreeOnce,
-	probeCdpResponse,
-	resolveSpawnArgs,
-	waitForCdp,
-} from "./attach";
+import { ToolError } from "../tool-errors";
+import { findFreeCdpPort, findReusableCdp, gracefulKillTreeOnce, resolveSpawnArgs, waitForCdp } from "./attach";
 import { type CmuxKind, CmuxUnavailableError } from "./cmux/rpc";
 import { CmuxSocketClient } from "./cmux/socket-client";
 import {
@@ -228,21 +221,6 @@ export async function acquireBrowser(kind: BrowserKind, opts: AcquireBrowserOpti
 	}
 }
 
-/** `webSocketDebuggerUrl` of a path-scoped discovery endpoint (the hosted relay). */
-async function hostedRelayWebSocketEndpoint(cdpUrl: string, signal?: AbortSignal): Promise<string> {
-	const response = await probeCdpResponse(`${cdpUrl}/json/version`, { timeoutMs: 2_000, signal });
-	let parsed: unknown;
-	try {
-		parsed = response?.status === 200 ? JSON.parse(response.body) : undefined;
-	} catch {
-		parsed = undefined;
-	}
-	if (!isRecord(parsed) || typeof parsed.webSocketDebuggerUrl !== "string") {
-		throw new ToolError("The omp app's browser panel did not report a CDP endpoint; restart the tab, then retry.");
-	}
-	return parsed.webSocketDebuggerUrl;
-}
-
 export function normalizeConnectedCdpUrl(rawCdpUrl: string): string {
 	const cdpUrl = rawCdpUrl.replace(/\/+$/, "");
 	if (/^wss?:\/\//i.test(cdpUrl)) {
@@ -328,12 +306,13 @@ async function openBrowserHandle(kind: BrowserKind, opts: AcquireBrowserOptions)
 		};
 	}
 	if (kind.kind === "relay") {
+		if (!kind.cdpUrl)
+			throw new ToolError(
+				"No local omp browser relay found. Open Chrome with the omp extension, or configure browser.relayUrl.",
+			);
 		const cdpUrl = normalizeConnectedCdpUrl(kind.cdpUrl);
 		// The omp extension's native host serves the relay while Chrome runs; nothing here starts it.
 		let outcome = await waitForRelayExtension(cdpUrl, opts.signal);
-		if (kind.hosted && outcome !== "ready") {
-			throw new ToolError("The omp app's browser panel is not connected to this session. Reopen the browser panel or restart the tab, then retry.");
-		}
 		// A host from an older omp keeps serving across upgrades. Restart an incompatible one from the installed omp,
 		// and a compatible older one only while no CDP client uses it; an older one that stays is still usable.
 		if ((outcome === "outdated-relay" || outcome === "idle-older-relay") && opts.restartRelay !== false) {
@@ -361,9 +340,7 @@ async function openBrowserHandle(kind: BrowserKind, opts: AcquireBrowserOptions)
 		}
 		const puppeteer = await loadPuppeteer();
 		const browser = await connectPuppeteer(puppeteer, {
-			...(kind.hosted
-				? { browserWSEndpoint: await hostedRelayWebSocketEndpoint(cdpUrl, opts.signal) }
-				: { browserURL: cdpUrl }),
+			browserURL: cdpUrl,
 			defaultViewport: null,
 			protocolTimeout: BROWSER_PROTOCOL_TIMEOUT_MS,
 		});

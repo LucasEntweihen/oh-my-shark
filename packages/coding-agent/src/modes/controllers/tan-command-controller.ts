@@ -12,6 +12,7 @@ import type { AgentSession } from "../../session/agent-session";
 import { escapeHarnessTags } from "../../session/harness-tags";
 import { BACKGROUND_TAN_DISPATCH_MESSAGE_TYPE, buildTitleDriftTurns } from "../../session/messages";
 import { isHiddenUserCompanion } from "../../session/queued-messages";
+import { TAN_FORK_BOUNDARY_CUSTOM_TYPE } from "../../session/session-entries";
 import { SessionManager } from "../../session/session-manager";
 import { createSubagentSettings, followMCPTools } from "../../task/executor";
 import { generateTaskName } from "../../task/name-generator";
@@ -105,12 +106,12 @@ async function removeCloneSession(cloneFile: string): Promise<void> {
 export class TanCommandController {
 	constructor(private readonly ctx: InteractiveModeContext) {}
 
-	/** Dispatch `work` to a background clone of this session; resolves the job id, or `undefined` when nothing was dispatched. */
-	async start(work: string, images?: ImageContent[]): Promise<string | undefined> {
+	/** Dispatch `work` to a background clone of this session; resolves `false` when nothing was dispatched. */
+	async start(work: string, images?: ImageContent[]): Promise<boolean> {
 		const trimmedWork = work.trim();
 		if (!trimmedWork) {
 			this.ctx.showStatus("Usage: /tan <work>");
-			return undefined;
+			return false;
 		}
 
 		const session = this.ctx.session;
@@ -118,19 +119,19 @@ export class TanCommandController {
 		const model = session.model;
 		if (!model) {
 			this.ctx.showError("No active model available for /tan.");
-			return undefined;
+			return false;
 		}
 
 		const manager = session.asyncJobManager;
 		if (!manager) {
 			this.ctx.showError("Background jobs are disabled; enable async jobs to use /tan.");
-			return undefined;
+			return false;
 		}
 
 		const parentFile = this.ctx.sessionManager.getSessionFile();
 		if (!parentFile) {
 			this.ctx.showError("/tan requires a persisted session.");
-			return undefined;
+			return false;
 		}
 
 		const parentSessionId = session.sessionId;
@@ -145,7 +146,7 @@ export class TanCommandController {
 		const parentMnemopiSessionState = session.getMnemopiSessionState?.();
 		const toolNames = session.getEnabledToolNames();
 		const activeToolNames = session.getActiveToolNames();
-		const mountedToolNames = session.getMountedXdevToolNames();
+		const mountedToolNames = session.getMountedToolCommandNames();
 		const modelRegistry = session.modelRegistry;
 		// Snapshot the parent's rebindable extensions and root policy at dispatch.
 		// The child rebinds these (skipping discovery) so it re-registers the
@@ -213,6 +214,7 @@ export class TanCommandController {
 				// parent's in-flight call as its own pending work (issue #11118).
 				repairInterruptedTail: true,
 			});
+			cloneManager.appendCustomEntry(TAN_FORK_BOUNDARY_CUSTOM_TYPE, cloneManager.getSessionId());
 
 			jobId = manager.register(
 				"task",
@@ -253,6 +255,7 @@ export class TanCommandController {
 								agentId: cloneId,
 								agentDisplayName: "tan",
 								parentTaskPrefix: cloneId,
+								tanFork: true,
 								asyncJobManager: manager,
 								parentAgentId: ownerId,
 								agentRegistry,
@@ -278,7 +281,7 @@ export class TanCommandController {
 							systemPrompt: clone.systemPrompt ?? systemPrompt,
 							task: trimmedWork,
 							tools: clone.getEnabledToolNames(),
-							mountedTools: clone.getMountedXdevToolNames(),
+							mountedTools: clone.getMountedToolCommandNames(),
 						});
 						const abortClone = () => {
 							void clone?.abort();
@@ -290,9 +293,13 @@ export class TanCommandController {
 						clone.setTodoPhases([]);
 						cloneManager.appendCustomEntry(USER_TODO_EDIT_CUSTOM_TYPE, { phases: [] });
 						const injectContextSwitch = () => {
-							clone?.agent.appendMessage({
+							const fork = clone;
+							if (!fork) return;
+							fork.agent.appendMessage({
 								role: "developer",
-								content: tanContextSwitchPrompt,
+								content: prompt.render(tanContextSwitchPrompt, {
+									waitTool: fork.getEnabledToolNames().includes("wait"),
+								}),
 								attribution: "agent",
 								timestamp: Date.now(),
 							});
@@ -406,7 +413,7 @@ export class TanCommandController {
 		} catch (error) {
 			if (cloneFile) await removeCloneSession(cloneFile);
 			this.ctx.showError(error instanceof Error ? error.message : String(error));
-			return undefined;
+			return false;
 		}
 
 		const content = prompt.render(backgroundTanDispatchPrompt, {
@@ -429,6 +436,6 @@ export class TanCommandController {
 			{ triggerTurn: false, deliverAs: "steer" },
 		);
 		this.ctx.showStatus(`Dispatched background tan ${jobId}`);
-		return jobId;
+		return true;
 	}
 }

@@ -20,9 +20,11 @@ import {
 import {
 	fetchLiteLLMRichModels,
 	fetchLmStudioNativeModelMetadata,
+	fetchOpenRouterChatModels,
 	isSelectableLiteLLMModelMode,
 	OPENAI_COMPAT_DISCOVERY_DEFAULT_CONTEXT_WINDOW,
 	OPENAI_COMPAT_DISCOVERY_DEFAULT_MAX_TOKENS,
+	OPENROUTER_BASE_URL,
 	resolveLiteLLMApi,
 } from "@oh-my-pi/pi-catalog/provider-models/openai-compat";
 import {
@@ -49,22 +51,6 @@ import type { ProviderDiscovery } from "./models-config-schema";
 // "socket connection was closed unexpectedly").
 export const DISCOVERY_DEFAULT_CONTEXT_WINDOW = OPENAI_COMPAT_DISCOVERY_DEFAULT_CONTEXT_WINDOW;
 export const DISCOVERY_DEFAULT_MAX_TOKENS = OPENAI_COMPAT_DISCOVERY_DEFAULT_MAX_TOKENS;
-
-/**
- * A discovered model's limits without the defaults discovery fills in when a
- * server reports none, for showing or saving: those are guesses, and a model
- * config that leaves them out gets the same default, or the catalog's real limit.
- */
-export function reportedModelLimits(model: Pick<Model<Api>, "contextWindow" | "maxTokens">): {
-	contextWindow: number | null;
-	maxTokens: number | null;
-} {
-	return {
-		contextWindow: model.contextWindow === DISCOVERY_DEFAULT_CONTEXT_WINDOW ? null : (model.contextWindow ?? null),
-		maxTokens: model.maxTokens === DISCOVERY_DEFAULT_MAX_TOKENS ? null : (model.maxTokens ?? null),
-	};
-}
-const MAX_MODEL_DISCOVERY_PAGES = 100;
 
 /**
  * A discovery HTTP failure carrying the response status as a structured field
@@ -208,8 +194,6 @@ export interface DiscoveryProviderConfig {
 	api: Api;
 	baseUrl?: string;
 	headers?: Record<string, string>;
-	/** Force bearer auth even when the selected protocol has a native key header. */
-	authHeader?: boolean;
 	compat?: ModelSpec<Api>["compat"];
 	remoteCompaction?: RemoteCompactionConfig<Api>;
 	discovery: ProviderDiscovery;
@@ -527,9 +511,45 @@ export function discoverModelsByProviderType(
 			return discoverProxyModels(providerConfig, ctx);
 		case "litellm":
 			return discoverLiteLLMModels(providerConfig, ctx);
+		case "openrouter":
+			return discoverOpenRouterModels(providerConfig, ctx);
 		case "apple-foundation-models":
 			return discoverAppleFoundationModels(providerConfig);
 	}
+}
+
+/**
+ * Lists OpenRouter's public chat roster for an endpoint that fronts OpenRouter
+ * under its own URL and auth. The roster comes from openrouter.ai without
+ * this provider's credentials; rows serve through the provider's `baseUrl`
+ * (OpenRouter itself when omitted) and `api`, under OpenRouter's wire policy.
+ */
+async function discoverOpenRouterModels(
+	providerConfig: DiscoveryProviderConfig,
+	ctx: DiscoveryContext,
+): Promise<Model<Api>[]> {
+	const specs = await fetchOpenRouterChatModels({
+		fetch: ctx.fetch,
+		timeoutMs: providerConfig.discovery.timeoutMs ?? REMOTE_DISCOVERY_TIMEOUT_MS,
+	});
+	if (!specs) throw new Error(`OpenRouter model list unavailable from ${OPENROUTER_BASE_URL}/models`);
+	const models: Model<Api>[] = [];
+	for (const spec of specs) {
+		const model = skipAmbiguousModel(providerConfig.provider, spec.id, () =>
+			buildDiscoveredModel(
+				{
+					...spec,
+					api: providerConfig.api,
+					provider: providerConfig.provider,
+					baseUrl: providerConfig.baseUrl ?? OPENROUTER_BASE_URL,
+					headers: providerConfig.headers,
+				},
+				"openrouter",
+			),
+		);
+		if (model) models.push(model);
+	}
+	return models;
 }
 
 /**
@@ -628,9 +648,7 @@ export async function discoverOllamaModels(
 		if (!response.ok) {
 			throw new DiscoveryHttpError(response.status, tagsUrl);
 		}
-		return (await response.json()) as {
-			models?: Array<{ name?: string; model?: string }>;
-		};
+		return (await response.json()) as { models?: Array<{ name?: string; model?: string }> };
 	});
 	const entries = (payload.models ?? []).flatMap(item => {
 		const id = item.model || item.name;
@@ -941,15 +959,23 @@ function extractOpenAIModelsListInputCapabilities(item: {
 
 /**
  * Map an explicit non-chat output modality onto the runner kind and API that
- * serves it. Only endpoint-unambiguous tasks are routed: a row whose sole
- * output is `embeddings` or an image answers through the `/embeddings` and
- * `/images/generations` surfaces of the same OpenAI-compatible root the
- * provider already serves its model list from.
+ * serves it, on the same OpenAI-compatible root the provider already serves
+ * its model list from. Only a sole output that names its task is routed:
+ * `embeddings` (`/embeddings`), `image` (`/images/generations`), and
+ * OpenRouter's `speech` (`/audio/speech`) and `transcription`
+ * (`/audio/transcriptions`). Outputs come from the row's arrays or
+ * OpenRouter's `architecture.modality` summary (`text->speech`).
  *
- * Anything else stays chat. Rows that also emit `text` are ordinary (multimodal)
- * chat models, and an `audio` or `video` output alone cannot distinguish a TTS
- * SKU from a music generator, or a chat response from a video-job API — those
- * need explicit task metadata this list shape does not carry.
+ * Anything else stays chat. Rows that also emit `text` are ordinary
+ * (multimodal) chat models, and an `audio` or `video` output alone cannot
+ * distinguish a TTS SKU from a music generator, or a chat response from a
+ * video-job API: Poe lists TTS voices, music generators and `gpt-audio` alike
+ * as `text->audio` and serves them all on `/chat/completions`. Text from audio
+ * input reads the same for a transcriber and an audio-understanding chat model.
+ * OpenRouter's `decisions` output is left alone too: it names a task but not
+ * the wire (OpenRouter's own `/decisions` takes the System One body, OpenAI's
+ * Decisions API another). A row that declares nothing keeps the provider's
+ * chat API.
  */
 function extractOpenAIModelsListOutputTask(item: {
 	output?: unknown;
@@ -957,15 +983,25 @@ function extractOpenAIModelsListOutputTask(item: {
 	architecture?: unknown;
 }): { kind: KindApiKind; api: Api } | undefined {
 	const architecture = isRecord(item.architecture) ? item.architecture : undefined;
-	const modalities = collectModalities([item.output, item.output_modalities, architecture?.output_modalities]);
-	if (modalities.size !== 1) return undefined;
-	const [modality] = modalities;
+	const summary = typeof architecture?.modality === "string" ? architecture.modality.split("->") : [];
+	const output = collectModalities([
+		item.output,
+		item.output_modalities,
+		architecture?.output_modalities,
+		summary.length === 2 ? summary[1].split("+") : undefined,
+	]);
+	if (output.size !== 1) return undefined;
+	const [modality] = output;
 	switch (modality) {
 		case "embedding":
 		case "embeddings":
 			return { kind: "embedding", api: "openai-embeddings" };
 		case "image":
 			return { kind: "image", api: "openai-images" };
+		case "speech":
+			return { kind: "tts", api: "openai-speech" };
+		case "transcription":
+			return { kind: "stt", api: "openai-transcriptions" };
 		default:
 			return undefined;
 	}
@@ -1217,15 +1253,6 @@ export async function discoverOpenAIModelsList(
 	const modelsUrl = appendModelsPath(baseUrl);
 
 	const baseHeaders: Record<string, string> = { ...providerConfig.headers };
-	// Anthropic's model list requires a version header. Like the bearer, it only
-	// authenticates this request: discovered models carry the configured headers alone.
-	const requestHeaders: Record<string, string> = { ...baseHeaders };
-	if (
-		providerConfig.api === "anthropic-messages" &&
-		!Object.keys(requestHeaders).some(name => name.toLowerCase() === "anthropic-version")
-	) {
-		requestHeaders["anthropic-version"] = "2023-06-01";
-	}
 	// LM Studio is a desktop server reached over loopback, so an unanswered
 	// probe means "not installed / not running", never "slow link": give it the
 	// same tight budget the other implicit local engines use instead of the
@@ -1237,71 +1264,47 @@ export async function discoverOpenAIModelsList(
 		providerConfig.discovery.type === "lm-studio"
 			? discoveryProbeTimeoutMs(baseUrl, 250, providerConfig.discovery.timeoutMs)
 			: (providerConfig.discovery.timeoutMs ?? REMOTE_DISCOVERY_TIMEOUT_MS);
-	type ModelListItem = {
-		id?: string;
-		display_name?: unknown;
-		max_model_len?: unknown;
-		context_length?: unknown;
-		max_input_tokens?: unknown;
-		max_output_tokens?: unknown;
-		max_completion_tokens?: unknown;
-		max_tokens?: unknown;
-		limits?: unknown;
-		top_provider?: unknown;
-		capabilities?: unknown;
-		input?: unknown;
-		input_modalities?: unknown;
-		output?: unknown;
-		output_modalities?: unknown;
-		architecture?: unknown;
-		mode?: unknown;
-		metadata?: unknown;
-		supported_reasoning_levels?: unknown;
-		default_reasoning_level?: unknown;
-		reasoning?: unknown;
-		reasoning_effort_map?: unknown;
-		reasoning_required?: unknown;
-		service_tiers?: unknown;
-	};
-	interface ModelListPayload {
-		data?: ModelListItem[];
-		has_more?: unknown;
-		last_id?: unknown;
-	}
 	const attempt = async (h: Record<string, string>) => {
 		const nativeMetadataPromise =
 			providerConfig.discovery.type === "lm-studio"
 				? withTimeoutSignal(timeoutMs, signal =>
-						fetchLmStudioNativeModelMetadata(baseUrl, ctx.fetch, {
-							headers: h,
-							signal,
-						}),
+						fetchLmStudioNativeModelMetadata(baseUrl, ctx.fetch, { headers: h, signal }),
 					)
 				: Promise.resolve(null);
 		const [payload, nativeMetadata] = await Promise.all([
 			withTimeoutSignal(timeoutMs, async signal => {
-				const data: ModelListItem[] = [];
-				const seenCursors = new Set<string>();
-				let pageUrl = modelsUrl;
-				for (let page = 0; page < MAX_MODEL_DISCOVERY_PAGES; page += 1) {
-					const res = await ctx.fetch(pageUrl, { headers: h, signal });
-					if (!res.ok) throw new DiscoveryHttpError(res.status, pageUrl);
-					const payload = (await res.json()) as ModelListPayload;
-					data.push(...(Array.isArray(payload.data) ? payload.data : []));
-					if (providerConfig.api !== "anthropic-messages" || payload.has_more !== true) {
-						return { data } satisfies ModelListPayload;
-					}
-					const fallbackCursor = data.at(-1)?.id;
-					const cursor = typeof payload.last_id === "string" ? payload.last_id : fallbackCursor;
-					if (!cursor || seenCursors.has(cursor)) {
-						throw new Error(`Invalid pagination cursor from ${pageUrl}`);
-					}
-					seenCursors.add(cursor);
-					const nextUrl = new URL(modelsUrl);
-					nextUrl.searchParams.set("after_id", cursor);
-					pageUrl = nextUrl.toString();
+				const res = await ctx.fetch(modelsUrl, {
+					headers: h,
+					signal,
+				});
+				if (!res.ok) {
+					throw new DiscoveryHttpError(res.status, modelsUrl);
 				}
-				throw new Error(`Model discovery exceeded ${MAX_MODEL_DISCOVERY_PAGES} pages from ${modelsUrl}`);
+				return (await res.json()) as {
+					data?: Array<{
+						id?: string;
+						max_model_len?: unknown;
+						context_length?: unknown;
+						max_output_tokens?: unknown;
+						max_completion_tokens?: unknown;
+						max_tokens?: unknown;
+						limits?: unknown;
+						top_provider?: unknown;
+						input?: unknown;
+						input_modalities?: unknown;
+						output?: unknown;
+						output_modalities?: unknown;
+						architecture?: unknown;
+						mode?: unknown;
+						metadata?: unknown;
+						supported_reasoning_levels?: unknown;
+						default_reasoning_level?: unknown;
+						reasoning?: unknown;
+						reasoning_effort_map?: unknown;
+						reasoning_required?: unknown;
+						service_tiers?: unknown;
+					}>;
+				};
 			}),
 			nativeMetadataPromise,
 		]);
@@ -1309,19 +1312,8 @@ export async function discoverOpenAIModelsList(
 	};
 	const apiKey = await ctx.getBearerApiKeyResolver(providerConfig.provider);
 	const [payload, nativeMetadata] = apiKey
-		? await withAuth(apiKey, key => {
-				if (providerConfig.api !== "anthropic-messages" || providerConfig.authHeader === true) {
-					return attempt({ ...requestHeaders, Authorization: `Bearer ${key}` });
-				}
-				// Anthropic's Messages-compatible model-list endpoint uses the same
-				// authentication contract as /v1/messages. Preserve custom headers,
-				// replace any stale key case-insensitively, and supply the required
-				// version unless the user configured one explicitly above.
-				const anthropicHeaders = new Headers(requestHeaders);
-				anthropicHeaders.set("x-api-key", key);
-				return attempt(Object.fromEntries(anthropicHeaders.entries()));
-			})
-		: await attempt(requestHeaders);
+		? await withAuth(apiKey, key => attempt({ ...baseHeaders, Authorization: `Bearer ${key}` }))
+		: await attempt(baseHeaders);
 	const models = payload.data ?? [];
 	const references = getBundledModelReferenceIndex();
 	const specs: ModelSpec<Api>[] = [];
@@ -1356,7 +1348,6 @@ export async function discoverOpenAIModelsList(
 			toPositiveNumberOrUndefined(item.context_length) ??
 			toPositiveNumberOrUndefined(metadata?.context_window) ??
 			reportedLimitsContextWindow ??
-			toPositiveNumberOrUndefined(item.max_input_tokens) ??
 			nativeMetadataForModel?.contextWindow ??
 			reference?.contextWindow ??
 			null;
@@ -1381,8 +1372,8 @@ export async function discoverOpenAIModelsList(
 				input,
 				supportsTools: false,
 				cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-				// Embeddings and judges cap their input by context; image jobs
-				// carry no token window. None produces output tokens.
+				// Embeddings, judges, speech and transcription cap their input by
+				// context; image jobs carry no token window. None produces output tokens.
 				contextWindow: task.kind === "image" ? null : reportedContextWindow,
 				maxTokens: null,
 				headers: baseHeaders,
@@ -1394,12 +1385,6 @@ export async function discoverOpenAIModelsList(
 				? resolveLiteLLMApi(item, id, providerConfig.api)
 				: providerConfig.api;
 		const contextWindow = reportedContextWindow ?? DISCOVERY_DEFAULT_CONTEXT_WINDOW;
-		const capabilities = isRecord(item.capabilities) ? item.capabilities : undefined;
-		const thinkingCapability = capabilities?.thinking ?? capabilities?.reasoning ?? capabilities?.extended_thinking;
-		const supportsThinking =
-			thinkingCapability === true || (isRecord(thinkingCapability) && thinkingCapability.supported === true);
-		const displayName =
-			typeof item.display_name === "string" && item.display_name.trim() ? item.display_name : undefined;
 		// A row that advertises its own reasoning ladder (codex-lb `metadata`
 		// fields, or the top-level equivalents) is authoritative for its route:
 		// ids absent from the bundled catalog would otherwise stay non-reasoning
@@ -1413,12 +1398,12 @@ export async function discoverOpenAIModelsList(
 		const serviceTiers = parseServiceTierIds(metadata?.service_tiers ?? item.service_tiers);
 		const spec = {
 			id,
-			name: displayName || advertisedName || reference?.name || id,
+			name: advertisedName || reference?.name || id,
 			api,
 			kind: runnerApiKind(api),
 			provider: providerConfig.provider,
 			baseUrl,
-			reasoning: supportsThinking || reference?.reasoning,
+			reasoning: reference?.reasoning,
 			thinking: inheritReferenceThinking(undefined, reference, providerConfig.provider),
 			input,
 			...(providerConfig.discovery.type === "lm-studio" ? { imageInputDecoder: "stb" as const } : {}),

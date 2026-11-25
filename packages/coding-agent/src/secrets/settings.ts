@@ -12,7 +12,6 @@ import { effect, register } from "../config/registry";
 // Secret handling
 export const cfgSecretsEnabled = register({
 	id: "secrets.enabled",
-	restartRequired: true,
 	type: "boolean",
 	default: false,
 	ui: {

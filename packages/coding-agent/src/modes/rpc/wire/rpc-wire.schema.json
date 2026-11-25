@@ -109,6 +109,28 @@
 				"clientOmit": []
 			},
 			{
+				"name": "abort_and_deliver_queue",
+				"doc": "Abort the current run and continue it with the queued user input (the TUI's empty Enter); `aborted` is false when no run was streaming with queued input.",
+				"params": null,
+				"result": "AbortAndDeliverQueueResult",
+				"nullable": false,
+				"unwrap": null,
+				"timeoutMs": null,
+				"completion": null,
+				"clientOmit": []
+			},
+			{
+				"name": "resume",
+				"doc": "Continue the agent (the TUI's `.`/`c` shortcut), interrupting a running turn first; queued input continues the run in place of the continue directive. Acknowledged once the continuation is under way.",
+				"params": null,
+				"result": null,
+				"nullable": false,
+				"unwrap": null,
+				"timeoutMs": null,
+				"completion": null,
+				"clientOmit": []
+			},
+			{
 				"name": "new_session",
 				"doc": "Start a new session.",
 				"params": "NewSessionParams",
@@ -143,7 +165,7 @@
 			},
 			{
 				"name": "set_fast_mode",
-				"doc": "Set Fast or, when the model supports it, Ultrafast serving for the session.",
+				"doc": "Enable or disable fast mode for the session.",
 				"params": "SetFastModeParams",
 				"result": "FastModeResult",
 				"nullable": false,
@@ -419,13 +441,13 @@
 				"clientOmit": []
 			},
 			{
-				"name": "discover_provider_models",
-				"doc": "List the models an endpoint offers, for a provider being configured. Saves nothing.",
-				"params": "DiscoverProviderModelsParams",
-				"result": "DiscoverProviderModelsResult",
+				"name": "get_model_picker",
+				"doc": "Model picker rows ordered and ranked as omp's session model picker shows them; a query starting with `@` lists quick roles.",
+				"params": "GetModelPickerParams",
+				"result": "ModelPickerResult",
 				"nullable": false,
-				"unwrap": "models",
-				"timeoutMs": 30000,
+				"unwrap": null,
+				"timeoutMs": null,
 				"completion": null,
 				"clientOmit": []
 			},
@@ -760,17 +782,6 @@
 				"clientOmit": []
 			},
 			{
-				"name": "set_api_key",
-				"doc": "Store an API key the host collected itself as the provider's login credential, without running its login flow. Works for providers whose login asks for a secret, which `login` refuses over RPC.",
-				"params": "SetApiKeyParams",
-				"result": "SetApiKeyResult",
-				"nullable": false,
-				"unwrap": "providerId",
-				"timeoutMs": null,
-				"completion": null,
-				"clientOmit": []
-			},
-			{
 				"name": "get_logout_accounts",
 				"doc": "List the stored credentials `logout` can remove for a provider, active first.",
 				"params": "GetLogoutAccountsParams",
@@ -843,39 +854,6 @@
 				"result": "GetBtwHistoryResult",
 				"nullable": false,
 				"unwrap": "records",
-				"timeoutMs": null,
-				"completion": null,
-				"clientOmit": []
-			},
-			{
-				"name": "composer_prediction_request",
-				"doc": "Predict the user's next message for the run that just finished; the alternatives arrive as a `composer_prediction` frame. A no-op when composer.predictions is off or the session is busy.",
-				"params": null,
-				"result": null,
-				"nullable": false,
-				"unwrap": null,
-				"timeoutMs": null,
-				"completion": null,
-				"clientOmit": []
-			},
-			{
-				"name": "composer_prediction_feedback",
-				"doc": "Report the current composer prediction as shown, inserted (`rank`: the alternative used), or dismissed; dismissing aborts a request still running.",
-				"params": "ComposerPredictionFeedbackParams",
-				"result": null,
-				"nullable": false,
-				"unwrap": null,
-				"timeoutMs": null,
-				"completion": null,
-				"clientOmit": []
-			},
-			{
-				"name": "abort_compaction",
-				"doc": "Cancel a running manual compaction, a background handoff included, without stopping the live turn; false when none was running.",
-				"params": null,
-				"result": "AbortCompactionResult",
-				"nullable": false,
-				"unwrap": "aborted",
 				"timeoutMs": null,
 				"completion": null,
 				"clientOmit": []
@@ -2693,15 +2671,22 @@
 				"thinkingLevel": {
 					"$ref": "#/$defs/ThinkingLevel"
 				},
+				"configuredThinkingLevel": {
+					"$ref": "#/$defs/ConfiguredThinkingLevel",
+					"description": "The user's thinking selector: `auto` while auto mode picks the effort, else `thinkingLevel`."
+				},
+				"thinkingLevels": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/ConfiguredThinkingLevel"
+					},
+					"description": "Selectors the active model accepts, as omp's thinking selector lists them: `off`, `auto`, then its efforts."
+				},
 				"isStreaming": {
 					"type": "boolean",
 					"default": false
 				},
 				"isCompacting": {
-					"type": "boolean",
-					"default": false
-				},
-				"isBackgroundCompacting": {
 					"type": "boolean",
 					"default": false
 				},
@@ -2732,10 +2717,6 @@
 					"default": false
 				},
 				"fastModeActive": {
-					"type": "boolean",
-					"default": false
-				},
-				"fastModeUltrafast": {
 					"type": "boolean",
 					"default": false
 				},
@@ -2910,6 +2891,14 @@
 				"workingDir": {
 					"type": "string"
 				},
+				"movedCwd": {
+					"type": "boolean",
+					"description": "The command ended in another directory than it started in; the next command starts in its own cwd."
+				},
+				"errexit": {
+					"type": "boolean",
+					"description": "The command ended with `set -e` on; the next command starts with it off."
+				},
 				"images": {
 					"type": "array",
 					"items": {
@@ -2977,9 +2966,6 @@
 				},
 				"active": {
 					"type": "boolean"
-				},
-				"ultrafast": {
-					"type": "boolean"
 				}
 			},
 			"required": [
@@ -3018,6 +3004,101 @@
 				"tokensBefore"
 			]
 		},
+		"ModelPickerRole": {
+			"type": "object",
+			"properties": {
+				"role": {
+					"type": "string"
+				},
+				"label": {
+					"type": "string",
+					"description": "The role's display tag."
+				},
+				"auto": {
+					"type": "boolean",
+					"description": "Auto-selected: the role has no configured model."
+				}
+			},
+			"required": [
+				"role",
+				"label"
+			],
+			"description": "A role a model holds, as picker rows chip it."
+		},
+		"ModelPickerRow": {
+			"type": "object",
+			"properties": {
+				"provider": {
+					"type": "string"
+				},
+				"id": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"role": {
+					"type": "string",
+					"description": "The quick role this row applies (`@` search); pass it to `set_model`."
+				},
+				"roles": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/ModelPickerRole"
+					},
+					"description": "Visible roles the model holds, built-in order first."
+				},
+				"thinking": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/ConfiguredThinkingLevel"
+					},
+					"description": "Steps of the model's thinking slider, low to high: `auto`, `off`, then its efforts. Absent when it has no effort to pick."
+				},
+				"thinkingLevel": {
+					"$ref": "#/$defs/ConfiguredThinkingLevel",
+					"description": "Model rows: the session's level as this model would run it (the untouched slider). Quick-role rows: the role's explicit level, which `set_model` should carry."
+				},
+				"overContext": {
+					"type": "boolean",
+					"description": "The session's context exceeds the model's window."
+				},
+				"current": {
+					"type": "boolean",
+					"description": "The session runs this row: its model, or under `@` its active quick role."
+				}
+			},
+			"required": [
+				"provider",
+				"id",
+				"name"
+			],
+			"description": "One row of omp's session model picker."
+		},
+		"ModelPickerResult": {
+			"type": "object",
+			"properties": {
+				"rows": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/ModelPickerRow"
+					}
+				},
+				"recent": {
+					"type": "integer",
+					"description": "Leading rows that are recently used or role-held (the picker's Recent block); 0 when there is no such split."
+				},
+				"total": {
+					"type": "integer",
+					"description": "Matching rows before `limit`."
+				}
+			},
+			"required": [
+				"rows",
+				"recent",
+				"total"
+			]
+		},
 		"ModelCycleResult": {
 			"type": "object",
 			"properties": {
@@ -3035,58 +3116,6 @@
 				"model",
 				"isScoped"
 			]
-		},
-		"DiscoveredModel": {
-			"type": "object",
-			"properties": {
-				"id": {
-					"type": "string"
-				},
-				"name": {
-					"type": "string"
-				},
-				"reasoning": {
-					"type": "boolean"
-				},
-				"input": {
-					"type": "array",
-					"items": {
-						"type": "string"
-					},
-					"description": "Accepted input modalities, e.g. `text`, `image`."
-				},
-				"contextWindow": {
-					"anyOf": [
-						{
-							"type": "integer"
-						},
-						{
-							"type": "null"
-						}
-					],
-					"description": "Null when the server does not report a limit."
-				},
-				"maxTokens": {
-					"anyOf": [
-						{
-							"type": "integer"
-						},
-						{
-							"type": "null"
-						}
-					],
-					"description": "Null when the server does not report a limit."
-				}
-			},
-			"required": [
-				"id",
-				"name",
-				"reasoning",
-				"input",
-				"contextWindow",
-				"maxTokens"
-			],
-			"description": "A model an endpoint offers, as `discover_provider_models` reports it."
 		},
 		"ThinkingLevelCycleResult": {
 			"type": "object",
@@ -3313,126 +3342,6 @@
 				"acuCost"
 			]
 		},
-		"PromptCacheColdReason": {
-			"type": "object",
-			"properties": {
-				"kind": {
-					"enum": [
-						"expired",
-						"refresh-missed",
-						"model",
-						"thinking",
-						"tools",
-						"system-prompt",
-						"retention",
-						"compaction"
-					],
-					"type": "string",
-					"description": "`refresh-missed`: omp's warm refresh found the entry gone."
-				},
-				"at": {
-					"type": "integer",
-					"description": "`expired`: when the entry lapsed (epoch ms)."
-				},
-				"from": {
-					"type": "string",
-					"description": "`model` / `thinking`: the value the entry was written under."
-				},
-				"to": {
-					"type": "string",
-					"description": "`model` / `thinking`: the value the next request uses."
-				}
-			},
-			"required": [
-				"kind"
-			]
-		},
-		"PromptCacheWarming": {
-			"type": "object",
-			"properties": {
-				"state": {
-					"enum": [
-						"scheduled",
-						"refreshing",
-						"inactive"
-					],
-					"type": "string",
-					"description": "`scheduled`: a refresh decision is armed; `refreshing`: a refresh is in flight."
-				},
-				"nextWarmAt": {
-					"type": "integer",
-					"description": "When the armed refresh decides (epoch ms)."
-				},
-				"stopsAt": {
-					"type": "integer",
-					"description": "When warming gives up (epoch ms)."
-				},
-				"reason": {
-					"type": "string",
-					"description": "Why nothing is scheduled."
-				}
-			},
-			"required": [
-				"state"
-			]
-		},
-		"PromptCacheStatus": {
-			"type": "object",
-			"properties": {
-				"state": {
-					"enum": [
-						"warm",
-						"cold"
-					],
-					"type": "string",
-					"description": "`cold`: the next request rewrites the cached prefix."
-				},
-				"inferred": {
-					"type": "boolean",
-					"description": "Read off the transcript of a reopened session, not a response this process saw."
-				},
-				"tier": {
-					"enum": [
-						"short",
-						"long"
-					],
-					"type": "string",
-					"description": "Retention tier the entry was written under: `short` (5m) or `long` (1h)."
-				},
-				"touchedAt": {
-					"type": "integer",
-					"description": "Send time of the last request that read or wrote the entry (epoch ms)."
-				},
-				"cachedTokens": {
-					"type": "integer",
-					"description": "Prompt tokens a warm cache serves."
-				},
-				"nextTokens": {
-					"type": "integer",
-					"description": "Estimated prompt tokens of the next request."
-				},
-				"reason": {
-					"$ref": "#/$defs/PromptCacheColdReason",
-					"description": "Why it is cold; absent while warm."
-				},
-				"ttlMs": {
-					"type": "integer",
-					"description": "Lifetime after the last touch; absent when the provider never expires it."
-				},
-				"warming": {
-					"$ref": "#/$defs/PromptCacheWarming",
-					"description": "omp's cache warmer; absent when the entry was inferred."
-				}
-			},
-			"required": [
-				"state",
-				"inferred",
-				"tier",
-				"touchedAt",
-				"cachedTokens",
-				"nextTokens"
-			]
-		},
 		"SessionStats": {
 			"type": "object",
 			"properties": {
@@ -3486,10 +3395,6 @@
 				},
 				"contextUsage": {
 					"$ref": "#/$defs/ContextUsage"
-				},
-				"promptCache": {
-					"$ref": "#/$defs/PromptCacheStatus",
-					"description": "What the next request finds in the prompt cache, as `/session` shows it; absent when omp cannot tell."
 				}
 			},
 			"required": [
@@ -5568,18 +5473,6 @@
 				"timeout": {
 					"type": "integer"
 				},
-				"authCodeFor": {
-					"type": "string",
-					"description": "Set on a pasted OAuth authorization-code prompt: the id of its `open_url` request. omp closes the prompt once the browser callback signs in."
-				},
-				"loginPromptFor": {
-					"type": "string",
-					"description": "Set on any other login prompt asked after an authorization URL, such as an API key: the id of that `open_url` request. The login waits for this answer, so a host must show the prompt while the `open_url` is still up."
-				},
-				"allowEmpty": {
-					"type": "boolean",
-					"description": "Set on a login prompt whose answer may be left blank."
-				},
 				"secret": {
 					"type": "boolean"
 				}
@@ -5650,316 +5543,6 @@
 			],
 			"description": "Every question of one extension `ui.askDialog` call; sent only after `set_ask_dialog` enables it."
 		},
-		"FormSpan": {
-			"type": "object",
-			"properties": {
-				"text": {
-					"type": "string"
-				},
-				"style": {
-					"enum": [
-						"code",
-						"strong",
-						"em"
-					],
-					"type": "string"
-				}
-			},
-			"required": [
-				"text"
-			],
-			"description": "A run of inline text; a newline inside `text` is a hard line break."
-		},
-		"FormChoiceOption": {
-			"type": "object",
-			"properties": {
-				"value": {
-					"type": "string"
-				},
-				"label": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/FormSpan"
-					}
-				},
-				"checked": {
-					"type": "boolean"
-				},
-				"disabled": {
-					"type": "boolean"
-				}
-			},
-			"required": [
-				"value",
-				"label",
-				"checked",
-				"disabled"
-			]
-		},
-		"FormChoiceField": {
-			"type": "object",
-			"properties": {
-				"kind": {
-					"const": "choice"
-				},
-				"name": {
-					"type": "string"
-				},
-				"multi": {
-					"type": "boolean"
-				},
-				"select": {
-					"type": "boolean"
-				},
-				"other": {
-					"type": "boolean",
-					"description": "Offer a free-text answer beside the options; its text is submitted as a value."
-				},
-				"label": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/FormSpan"
-					}
-				},
-				"options": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/FormChoiceOption"
-					}
-				},
-				"required": {
-					"type": "boolean"
-				}
-			},
-			"required": [
-				"kind",
-				"name",
-				"multi",
-				"select",
-				"other",
-				"label",
-				"options",
-				"required"
-			],
-			"description": "A radio group, checkbox group or select. Empty `label`: the question is the text block before it."
-		},
-		"FormTextField": {
-			"type": "object",
-			"properties": {
-				"kind": {
-					"const": "text"
-				},
-				"name": {
-					"type": "string"
-				},
-				"type": {
-					"type": "string"
-				},
-				"multiline": {
-					"type": "boolean"
-				},
-				"label": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/FormSpan"
-					}
-				},
-				"value": {
-					"type": "string"
-				},
-				"placeholder": {
-					"type": "string"
-				},
-				"required": {
-					"type": "boolean"
-				},
-				"rows": {
-					"type": "number"
-				},
-				"min": {
-					"type": "number"
-				},
-				"max": {
-					"type": "number"
-				},
-				"pattern": {
-					"type": "string"
-				},
-				"minLength": {
-					"type": "number"
-				},
-				"maxLength": {
-					"type": "number"
-				}
-			},
-			"required": [
-				"kind",
-				"name",
-				"type",
-				"multiline",
-				"label",
-				"value",
-				"placeholder",
-				"required",
-				"rows"
-			]
-		},
-		"FormField": {
-			"anyOf": [
-				{
-					"$ref": "#/$defs/FormChoiceField"
-				},
-				{
-					"$ref": "#/$defs/FormTextField"
-				}
-			]
-		},
-		"FormTextBlock": {
-			"type": "object",
-			"properties": {
-				"kind": {
-					"const": "text"
-				},
-				"spans": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/FormSpan"
-					}
-				},
-				"heading": {
-					"type": "boolean"
-				}
-			},
-			"required": [
-				"kind",
-				"spans",
-				"heading"
-			]
-		},
-		"FormListBlock": {
-			"type": "object",
-			"properties": {
-				"kind": {
-					"const": "list"
-				},
-				"items": {
-					"type": "array",
-					"items": {
-						"type": "array",
-						"items": {
-							"$ref": "#/$defs/FormSpan"
-						}
-					}
-				},
-				"ordered": {
-					"type": "boolean"
-				}
-			},
-			"required": [
-				"kind",
-				"items",
-				"ordered"
-			]
-		},
-		"FormPreBlock": {
-			"type": "object",
-			"properties": {
-				"kind": {
-					"const": "pre"
-				},
-				"text": {
-					"type": "string"
-				}
-			},
-			"required": [
-				"kind",
-				"text"
-			]
-		},
-		"FormTableBlock": {
-			"type": "object",
-			"properties": {
-				"kind": {
-					"const": "table"
-				},
-				"rows": {
-					"type": "array",
-					"items": {
-						"type": "array",
-						"items": {
-							"type": "array",
-							"items": {
-								"$ref": "#/$defs/FormSpan"
-							}
-						}
-					}
-				},
-				"headerRows": {
-					"type": "integer"
-				}
-			},
-			"required": [
-				"kind",
-				"rows",
-				"headerRows"
-			]
-		},
-		"FormFieldBlock": {
-			"type": "object",
-			"properties": {
-				"kind": {
-					"const": "field"
-				},
-				"field": {
-					"$ref": "#/$defs/FormField"
-				}
-			},
-			"required": [
-				"kind",
-				"field"
-			]
-		},
-		"FormBlock": {
-			"anyOf": [
-				{
-					"$ref": "#/$defs/FormTextBlock"
-				},
-				{
-					"$ref": "#/$defs/FormListBlock"
-				},
-				{
-					"$ref": "#/$defs/FormPreBlock"
-				},
-				{
-					"$ref": "#/$defs/FormTableBlock"
-				},
-				{
-					"$ref": "#/$defs/FormFieldBlock"
-				}
-			]
-		},
-		"FormSection": {
-			"type": "object",
-			"properties": {
-				"title": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/FormSpan"
-					}
-				},
-				"blocks": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/FormBlock"
-					}
-				}
-			},
-			"required": [
-				"title",
-				"blocks"
-			],
-			"description": "One titled part of a form. Pictures arrive as their alt text."
-		},
 		"FormUiRequest": {
 			"type": "object",
 			"properties": {
@@ -5975,12 +5558,6 @@
 				"html": {
 					"type": "string"
 				},
-				"sections": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/FormSection"
-					}
-				},
 				"timeout": {
 					"type": "integer"
 				}
@@ -5988,9 +5565,10 @@
 			"required": [
 				"type",
 				"id",
-				"method"
+				"method",
+				"html"
 			],
-			"description": "Exactly one representation: HTML by default, or parsed sections when the host enables structured forms with set_ask_dialog."
+			"description": "The HTML `<form>` of one `ui.formDialog` call (the `ask` tool or an extension); no opt-in is required."
 		},
 		"CancelUiRequest": {
 			"type": "object",
@@ -6328,28 +5906,6 @@
 			],
 			"description": "Answers an `ask` request: one `AskAnswer` per question, in question order."
 		},
-		"FormUiResponse": {
-			"type": "object",
-			"properties": {
-				"type": {
-					"const": "extension_ui_response"
-				},
-				"id": {
-					"type": "string"
-				},
-				"formData": {
-					"type": "object",
-					"properties": {},
-					"additionalProperties": {}
-				}
-			},
-			"required": [
-				"type",
-				"id",
-				"formData"
-			],
-			"description": "Answers a `form` request, by control `name`: a string, or a string array for a multi-choice field. Choice values are option `value`s, or free text where `other` is set."
-		},
 		"DataUiResponse": {
 			"type": "object",
 			"properties": {
@@ -6389,9 +5945,6 @@
 				},
 				{
 					"$ref": "#/$defs/DataUiResponse"
-				},
-				{
-					"$ref": "#/$defs/FormUiResponse"
 				}
 			],
 			"description": "Host reply to an extension UI request; variants share `type` and differ by their payload key."
@@ -6950,6 +6503,17 @@
 				"message"
 			]
 		},
+		"AbortAndDeliverQueueResult": {
+			"type": "object",
+			"properties": {
+				"aborted": {
+					"type": "boolean"
+				}
+			},
+			"required": [
+				"aborted"
+			]
+		},
 		"NewSessionParams": {
 			"type": "object",
 			"properties": {
@@ -6979,9 +6543,6 @@
 			"type": "object",
 			"properties": {
 				"enabled": {
-					"type": "boolean"
-				},
-				"ultrafast": {
 					"type": "boolean"
 				}
 			},
@@ -7033,10 +6594,6 @@
 			"properties": {
 				"enabled": {
 					"type": "boolean"
-				},
-				"form": {
-					"type": "boolean",
-					"description": "Also take the `ask` tool's whole form as one `form` request, instead of field by field."
 				}
 			},
 			"required": [
@@ -7398,6 +6955,14 @@
 				},
 				"modelId": {
 					"type": "string"
+				},
+				"thinkingLevel": {
+					"$ref": "#/$defs/ConfiguredThinkingLevel",
+					"description": "Thinking level to run the model at, clamped to it; omitted re-applies the session's level."
+				},
+				"role": {
+					"type": "string",
+					"description": "Model role the switch records (a quick-role pick passes its role); default `default`. Nothing is persisted."
 				}
 			},
 			"required": [
@@ -7419,72 +6984,25 @@
 				"models"
 			]
 		},
-		"DiscoverProviderModelsParams": {
+		"GetModelPickerParams": {
 			"type": "object",
 			"properties": {
-				"api": {
-					"type": "string"
-				},
-				"baseUrl": {
-					"type": "string"
-				},
-				"provider": {
+				"query": {
 					"type": "string",
-					"description": "A saved provider whose credential authenticates the request when `apiKey` is absent."
+					"description": "Search text; blank browses every model, `provider/` limits matches to a provider."
 				},
-				"apiKey": {
-					"type": "string"
-				},
-				"authHeader": {
-					"type": "boolean"
-				},
-				"headers": {
-					"type": "object",
-					"properties": {},
-					"additionalProperties": {
-						"type": "string"
-					}
-				},
-				"discoveryType": {
-					"enum": [
-						"ollama",
-						"llama.cpp",
-						"lm-studio",
-						"openai-models-list",
-						"proxy",
-						"litellm"
-					],
-					"type": "string",
-					"description": "The server's model-list protocol; `openai-models-list` by default."
-				},
-				"timeoutMs": {
-					"type": "integer"
+				"limit": {
+					"type": "integer",
+					"description": "Most rows to return; default 100."
 				}
-			},
-			"required": [
-				"api",
-				"baseUrl"
-			]
-		},
-		"DiscoverProviderModelsResult": {
-			"type": "object",
-			"properties": {
-				"models": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/DiscoveredModel"
-					}
-				}
-			},
-			"required": [
-				"models"
-			]
+			}
 		},
 		"SetThinkingLevelParams": {
 			"type": "object",
 			"properties": {
 				"level": {
-					"$ref": "#/$defs/ThinkingLevel"
+					"$ref": "#/$defs/ConfiguredThinkingLevel",
+					"description": "`auto` lets omp pick the effort per turn."
 				}
 			},
 			"required": [
@@ -7839,32 +7357,6 @@
 				"providerId"
 			]
 		},
-		"SetApiKeyParams": {
-			"type": "object",
-			"properties": {
-				"providerId": {
-					"type": "string"
-				},
-				"apiKey": {
-					"type": "string"
-				}
-			},
-			"required": [
-				"providerId",
-				"apiKey"
-			]
-		},
-		"SetApiKeyResult": {
-			"type": "object",
-			"properties": {
-				"providerId": {
-					"type": "string"
-				}
-			},
-			"required": [
-				"providerId"
-			]
-		},
 		"GetLogoutAccountsParams": {
 			"type": "object",
 			"properties": {
@@ -8025,36 +7517,6 @@
 			},
 			"required": [
 				"records"
-			]
-		},
-		"ComposerPredictionFeedbackParams": {
-			"type": "object",
-			"properties": {
-				"action": {
-					"enum": [
-						"shown",
-						"accepted",
-						"dismissed"
-					],
-					"type": "string"
-				},
-				"rank": {
-					"type": "integer"
-				}
-			},
-			"required": [
-				"action"
-			]
-		},
-		"AbortCompactionResult": {
-			"type": "object",
-			"properties": {
-				"aborted": {
-					"type": "boolean"
-				}
-			},
-			"required": [
-				"aborted"
 			]
 		}
 	}

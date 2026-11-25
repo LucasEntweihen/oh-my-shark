@@ -13,7 +13,6 @@ import {
 
 export const cfgTtsLocalVoice = register({
 	id: "tts.localVoice",
-	tuiOnly: true,
 	type: "enum",
 	values: TTS_LOCAL_VOICE_VALUES,
 	default: DEFAULT_TTS_VOICE,
@@ -72,7 +71,6 @@ export const cfgSpeechMode = register({
 
 export const cfgSpeechEnhanced = register({
 	id: "speech.enhanced",
-	tuiOnly: true,
 	type: "boolean",
 	default: false,
 	ui: {

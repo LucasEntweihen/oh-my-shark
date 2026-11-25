@@ -1,5 +1,5 @@
 import type { AgentMessage } from "@oh-my-pi/pi-agent-core";
-import { customMessageEntryMessage, isUserRequestEntry } from "@oh-my-pi/pi-tui/chat/transcript-entry";
+import { customMessageEntryMessage, isUserRequestEntry } from "./transcript/transcript-entry";
 import {
 	canReplayRemoteCompaction,
 	getAnthropicCompactionPayload,
@@ -19,6 +19,7 @@ import {
 	createCustomMessage,
 	INTERRUPTED_THINKING_MESSAGE_TYPE,
 	isEmptyErrorTurn,
+	PLAN_MODE_CONTEXT_MESSAGE_TYPE,
 	PREWALK_PLAN_MESSAGE_TYPE,
 	REWIND_REPORT_MESSAGE_TYPE,
 	VIBE_MODE_CONTEXT_MESSAGE_TYPE,
@@ -114,8 +115,6 @@ export function snapcompactHistoryBlockOptions(
 
 export interface SessionContext {
 	messages: AgentMessage[];
-	/** Persisted entry ids parallel to messages. Only populated in transcript mode. */
-	messageEntryIds?: string[];
 	thinkingLevel?: string;
 	/** Configured thinking selector (`"auto"` or a concrete level) from the latest change. */
 	configuredThinkingLevel?: string;
@@ -423,7 +422,6 @@ export function buildSessionContext(
 	// 2. Emit kept messages (from firstKeptEntryId up to compaction)
 	// 3. Emit messages after compaction
 	const messages: AgentMessage[] = [];
-	const messageEntryIds: string[] = [];
 	const cacheMissExplainedAt: boolean[] = [];
 	let pendingReset = false;
 	let currentMode = "none";
@@ -453,10 +451,9 @@ export function buildSessionContext(
 		return cacheMissExplained;
 	};
 
-	const pushMessage = (msg: AgentMessage, entryId?: string) => {
+	const pushMessage = (msg: AgentMessage) => {
 		messages.push(msg);
 		if (!options?.transcript) return;
-		messageEntryIds.push(entryId ?? "");
 		cacheMissExplainedAt.push(trackMessageCacheState(msg));
 	};
 
@@ -489,18 +486,20 @@ export function buildSessionContext(
 			) {
 				return;
 			}
-			pushMessage(entry.message, entry.id);
+			pushMessage(entry.message);
 		} else if (entry.type === "custom_message") {
 			if (
 				!options?.transcript &&
-				(entry.customType === PREWALK_PLAN_MESSAGE_TYPE || entry.customType === VIBE_MODE_CONTEXT_MESSAGE_TYPE)
+				(entry.customType === PREWALK_PLAN_MESSAGE_TYPE ||
+					entry.customType === VIBE_MODE_CONTEXT_MESSAGE_TYPE ||
+					entry.customType === PLAN_MODE_CONTEXT_MESSAGE_TYPE)
 			) {
 				return;
 			}
 			const message = customMessageEntryMessage(entry);
-			if (message) pushMessage(message, entry.id);
+			if (message) pushMessage(message);
 		} else if (entry.type === "branch_summary" && entry.summary && !rewindSummaryIds.has(entry.id)) {
-			pushMessage(createBranchSummaryMessage(entry.summary, entry.fromId, entry.timestamp), entry.id);
+			pushMessage(createBranchSummaryMessage(entry.summary, entry.fromId, entry.timestamp));
 		}
 	};
 
@@ -540,7 +539,6 @@ export function buildSessionContext(
 							tokensAfter: entry.tokensAfter,
 						},
 					),
-					entry.id,
 				);
 			} else {
 				appendMessage(entry);
@@ -627,7 +625,7 @@ export function buildSessionContext(
 		// Agent context (non-transcript): summary first so the LLM sees the
 		// compacted context before recent messages.
 		if (!options?.transcript) {
-			pushMessage(compactionSummaryMsg, compaction.id);
+			pushMessage(compactionSummaryMsg);
 		}
 
 		// Notes-backed windows do not summarize a discarded turn prefix. Recover
@@ -714,7 +712,7 @@ export function buildSessionContext(
 		// pre-compaction one — is marked as a cache miss.
 		if (options?.transcript) handleEntryResetTracking(compaction);
 		if (options?.transcript) {
-			pushMessage(compactionSummaryMsg, compaction.id);
+			pushMessage(compactionSummaryMsg);
 		}
 
 		// Emit messages after compaction
@@ -851,7 +849,6 @@ export function buildSessionContext(
 
 	return {
 		messages,
-		messageEntryIds: options?.transcript ? messageEntryIds : undefined,
 		cacheMissExplainedAt: options?.transcript ? cacheMissExplainedAt : undefined,
 		nextCacheMissExplained: options?.transcript ? pendingReset : undefined,
 		thinkingLevel,

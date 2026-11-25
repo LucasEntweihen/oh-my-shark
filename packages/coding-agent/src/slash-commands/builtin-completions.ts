@@ -1,24 +1,21 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AutocompleteItem } from "@oh-my-pi/pi-tui";
+import type { AutocompleteItem } from "../autocomplete/autocomplete";
 import { getMCPConfigPath, getProjectDir, logger, sanitizeText } from "@oh-my-pi/pi-utils";
 import { formatModelRoleAlias, getKnownRoleIds } from "../config/model-roles";
 import { cfgCycleOrder } from "../config/model-settings";
 import { readMCPConfigFile } from "../mcp/config-writer";
 import { collectMcpServerNames } from "../modes/controllers/mcp-command-controller";
 import { InternalUrlRouter } from "../internal-urls";
-import { replaceTabs } from "@oh-my-pi/pi-tui/render/render-utils";
+import { replaceTabs } from "../utils/text-width";
 import { sessionLocalProtocolOptions } from "../internal-urls/context";
 import { encodeLocalPath } from "../modes/local-file-editor";
 import { createModelBrowserSource } from "../modes/model-browser-source";
-import {
-	createModelMentionSource,
-	type ModelMentionCandidateSource,
-} from "@oh-my-pi/pi-tui/prompt/model-mention-autocomplete";
-import { getConfiguredThinkingLevelMetadata } from "@oh-my-pi/pi-tui/thinking";
+import { getConfiguredThinkingLevelMetadata } from "../thinking/levels";
 import { expandTilde } from "../tools/path-utils";
 import type { SubcommandDef, TuiSlashCommandRuntime } from "./types";
+import { createModelMentionSource, type ModelMentionCandidateSource } from "../autocomplete/model-mention";
 
 /** Options shared by the declarative subcommand completers. */
 interface SubcommandCompletionOptions {
@@ -105,7 +102,7 @@ export function buildEffortInlineHint(runtime: TuiSlashCommandRuntime): (argumen
 }
 
 /** /mcp subcommands whose argument is a server name (per their `usage: "<name>..."`). */
-export const MCP_SERVER_NAME_SUBCOMMANDS: Readonly<Record<string, true>> = {
+const MCP_SERVER_NAME_SUBCOMMANDS: Readonly<Record<string, true>> = {
 	enable: true,
 	disable: true,
 	test: true,
@@ -116,7 +113,7 @@ export const MCP_SERVER_NAME_SUBCOMMANDS: Readonly<Record<string, true>> = {
 };
 
 /** Subcommands that accept names found only in `userConfig.disabledServers`. */
-export const MCP_DISABLED_ONLY_ELIGIBLE_SUBCOMMANDS: Readonly<Record<string, true>> = {
+const MCP_DISABLED_ONLY_ELIGIBLE_SUBCOMMANDS: Readonly<Record<string, true>> = {
 	enable: true,
 	disable: true,
 };
@@ -126,7 +123,7 @@ export const MCP_DISABLED_ONLY_ELIGIBLE_SUBCOMMANDS: Readonly<Record<string, tru
  * `unauth` can clear persisted credentials without connecting; test,
  * reconnect, and reauth explicitly require an enabled server.
  */
-export const MCP_DISABLED_CONFIG_ELIGIBLE_SUBCOMMANDS: Readonly<Record<string, true>> = {
+const MCP_DISABLED_CONFIG_ELIGIBLE_SUBCOMMANDS: Readonly<Record<string, true>> = {
 	enable: true,
 	disable: true,
 	unauth: true,
@@ -190,11 +187,11 @@ export function buildMcpArgumentCompletions(
  * names, and a name that exists only in the user config is completed with
  * `--scope user` appended so the inserted command is directly executable.
  */
-export async function buildMcpRemoveCompletions(
+async function buildMcpRemoveCompletions(
 	rawSubcommand: string,
 	namePrefix: string,
-	cwd: string = getProjectDir(),
 ): Promise<AutocompleteItem[] | null> {
+	const cwd = getProjectDir();
 	let projectNames: string[];
 	let userNames: string[];
 	try {

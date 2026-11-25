@@ -3,7 +3,7 @@ import type { AgentToolResult } from "@oh-my-pi/pi-agent-core";
 import { getWebKitHostPath, isRecord, logger, untilAborted } from "@oh-my-pi/pi-utils";
 import type { EvalPreludeContext, HostEvalPreludeDefinition } from "../eval/preludes";
 import type { ToolSession } from "../sdk";
-import { enforceInlineByteCap } from "@oh-my-pi/pi-tui/tools/streaming-output";
+import { enforceInlineByteCap } from "./streaming-output";
 import { CmuxUnavailableError, resolveCmuxKind } from "./browser/cmux/rpc";
 import { type CdpTarget, describeCdpTargets, listCdpTargets, resolveSpawnArgs } from "./browser/attach";
 import {
@@ -20,7 +20,8 @@ import { chromiumNeedsDownload, ensureChromiumExecutable } from "./browser/launc
 import { type EmulationViewport, viewportSchema } from "./browser/emulation";
 import { sameAddress } from "./browser/navigation";
 import { resolveInitScriptSources } from "./browser/open-options";
-import { resolveHostedRelayKind, resolveRelayKind } from "./browser/relay/kind";
+import type { BrowserRelayGuidance } from "./browser/prelude-definition";
+import { isRelayOnly, resolveRelayKind } from "./browser/relay/kind";
 import { relayExtensionNotice } from "./browser/relay/probe";
 import { describeTernTargets, listTernBlocks, type TernTarget, ternTargets } from "./browser/tern/blocks";
 import { resolveTernKind } from "./browser/tern/kind";
@@ -31,7 +32,7 @@ import { installWebKitEngine, webKitEngineToInstall } from "./browser/webkit/ins
 import { resolveWebKitKind, VIEWER_PLATFORMS } from "./browser/webkit/kind";
 import type { AriaSnapshotOptions } from "./browser/aria/aria-snapshot";
 import type { ScreenshotResult } from "./browser/tab-protocol";
-import type { OutputMeta } from "@oh-my-pi/pi-tui/tools/output-meta";
+import type { OutputMeta } from "./output-meta-format";
 import type { Viewport } from "puppeteer-core";
 import {
 	type AcquireTabResult,
@@ -54,7 +55,7 @@ import { renderTabCall, tabCallBudgetSeconds } from "./browser/tab-call";
 import { resolveToCwd } from "./path-utils";
 import { renderFunctionRun, renderStatusCallChain } from "./run-code";
 import { ToolAbortError, throwIfAborted } from "./tool-errors";
-import { ToolError } from "@oh-my-pi/pi-tui/tools/tool-errors";
+import { ToolError } from "./tool-errors";
 import { toolResult } from "./tool-result";
 import { clampTimeout } from "./tool-timeouts";
 
@@ -102,7 +103,7 @@ export {
 	type AriaSnapshotDiffResult,
 	type SnapshotPostProcessOptions,
 } from "./browser/snapshot-plus";
-export { DEFAULT_RELAY_URL, type RelayKind, resolveRelayKind } from "./browser/relay/kind";
+export { isRelayOnly, type RelayKind, resolveRelayKind } from "./browser/relay/kind";
 export { type TernKind, resolveTernKind } from "./browser/tern/kind";
 export { resolveWebKitKind, type WebKitKind } from "./browser/webkit/kind";
 export type { Observation, ObservationEntry } from "./browser/tab-protocol";
@@ -142,9 +143,7 @@ const browserSchema = type({
 	"downloads?": type("string").describe("cwd-relative download directory"),
 	"user_agent?": type("string").describe("tab user agent override"),
 	"insecure?": type("boolean").describe("ignore invalid HTTPS certificates"),
-	"headed?": type("boolean").describe(
-		"override the configured display mode: a window for the tab (true) or none; in the omp app's browser panel, false opens a background page",
-	),
+	"headed?": type("boolean").describe("override the configured display mode: a window for the tab (true) or none"),
 	"code?": type("string").describe("js body to run in tab"),
 	"fn?": type("string").describe("serialized JavaScript function to run in tab"),
 	"args?": type("unknown[]").describe("arguments passed to a serialized function"),
@@ -173,14 +172,15 @@ interface BrowserPreludeDetails {
 /**
  * The browser an open drives, by precedence: an explicit `app` (an executable
  * path or CDP URL, or a keyword: `relay`, `tern`, `webkit`, `chromium`, `own`),
- * the relay, `browser.cdpUrl`, the RPC host's browser panel, Tern (inside a
- * Tern pane; `target` selects it over the `browser.tern` setting to adopt a
- * block; `headed` does not opt out), a cmux surface, then omp's own browser
- * ({@link ownBrowserKind}). `app: "auto"` is that chain without the relay. Tern
- * and cmux are automatic only while no other omp owns the terminal, and none of
- * the user's own surfaces (relay, Tern, cmux) is automatic for a subagent.
- * `app: "tern"` and `app: "webkit"` are explicit: they throw when Tern or
- * omp's WebKit host is unavailable.
+ * the relay, `browser.cdpUrl`, Tern (inside a Tern pane; `target` selects it
+ * over the `browser.tern` setting to adopt a block; `headed` does not opt out),
+ * a cmux surface, then omp's own browser ({@link ownBrowserKind}). `app: "auto"`
+ * is that chain without the relay. Tern and cmux are automatic only while no
+ * other omp owns the terminal, and none of the user's own surfaces (relay, Tern,
+ * cmux) is automatic for a subagent. With `PI_BROWSER_RELAY=only` (a session
+ * started from the extension's side panel) every open, a subagent's included,
+ * goes to the relay, and any `app` but `"relay"` throws. `app: "tern"` and `app: "webkit"` are explicit:
+ * they throw when Tern or omp's WebKit host is unavailable.
  */
 export function resolveBrowserKind(
 	params: BrowserParams,
@@ -188,6 +188,18 @@ export function resolveBrowserKind(
 	env: Record<string, string | undefined> = process.env,
 ): BrowserKind {
 	const app = params.app;
+	if (isRelayOnly(env)) {
+		if (app !== undefined && app !== "relay") {
+			throw new ToolError(
+				`This session drives the user's Chrome through the omp extension and has no other browser; app: ${JSON.stringify(app)} is unavailable. Omit app or pass app: "relay".`,
+			);
+		}
+		const relayKind = resolveRelayKind(
+			{ url: env.PI_PANEL_RELAY_URL ?? cfgBrowserRelayUrl.get(session.settings) },
+			env,
+		);
+		if (relayKind) return relayKind;
+	}
 	if (app !== undefined && URL_SCHEME.test(app)) {
 		return { kind: "connected", cdpUrl: app.replace(/\/+$/, "") };
 	}
@@ -251,10 +263,6 @@ export function resolveBrowserKind(
 	if (configuredCdpUrl) {
 		return { kind: "connected", cdpUrl: configuredCdpUrl.replace(/\/+$/, "") };
 	}
-	// The GUI's browser panel stands in for omp's own browser: pages open where
-	// the user can watch and take over (`headed: false` opens one in the background).
-	const hosted = resolveHostedRelayKind();
-	if (hosted) return hosted;
 	// Tern and cmux show the tab beside the omp drawn in that terminal. An omp started from that
 	// session's commands (`omp -p` from its bash tool, a script an eval cell runs) inherited the
 	// pane env, and its tabs would float over the other session's work. A subagent has no pane of
@@ -325,10 +333,12 @@ export function createBrowserPrelude(session: ToolSession): HostEvalPreludeDefin
 		invoke: (parameters: unknown, context: EvalPreludeContext) => invokeBrowser(session, parameters, context),
 		status: describeBrowserCall,
 		// The documentation promises omp's own browser for an open without `app`; while
-		// the relay takes that open, the prompt names where `app: "auto"` goes instead.
-		get relayFallback() {
+		// the relay takes that open, the prompt says so: the only browser in relay-only
+		// mode, otherwise naming where `app: "auto"` goes instead.
+		get relay(): BrowserRelayGuidance | undefined {
+			if (isRelayOnly()) return { mode: "only" };
 			return resolveBrowserKind({ action: "open" }, session).kind === "relay"
-				? resolveBrowserKind({ action: "open", app: "auto" }, session)
+				? { mode: "default", fallback: resolveBrowserKind({ action: "open", app: "auto" }, session) }
 				: undefined;
 		},
 	});
@@ -631,6 +641,8 @@ async function installWebKitForOpen(
 	params: BrowserParams,
 	signal?: AbortSignal,
 ): Promise<string | undefined> {
+	// The relay is the only browser: nothing omp runs itself needs installing (an explicit app throws at resolve).
+	if (isRelayOnly()) return undefined;
 	const explicit = params.app === "webkit";
 	const pending = await webKitEngineToInstall({
 		settingEnabled: explicit || cfgBrowserWebKit.get(session.settings),
@@ -776,7 +788,6 @@ async function openOnKind(
 					waitUntil: params.wait_until === "networkidle" ? "networkidle0" : params.wait_until,
 					viewport: params.viewport ? puppeteerViewport(params.viewport) : undefined,
 					target: params.target,
-					background: kind.kind === "relay" && kind.hosted === true && params.headed === false,
 					timeoutMs,
 					deadlineStartMs: deadlineStart,
 					dialogs: params.dialogs,
@@ -821,7 +832,6 @@ async function openOnKind(
 		const lines = [
 			opened,
 			...(tab.backend === "tern" ? ternNotes(tab, params.viewport) : []),
-			...(kind.kind === "relay" && kind.hosted ? panelNotes(params) : []),
 			...notes,
 			result.note,
 			relayNotice,
@@ -839,7 +849,7 @@ async function openOnKind(
 
 /**
  * The pages `target` can adopt, from the browser an open with `target` would drive: a Tern window's browser
- * blocks, the app's browser panel, the relay's Chrome pages, or the pages of an attached CDP endpoint. The relay and Tern are acquired as
+ * blocks, the relay's Chrome pages, or the pages of an attached CDP endpoint. The relay and Tern are acquired as
  * an open does (the loopback relay starts on demand) and released again; a CDP endpoint answers its `/json` list.
  */
 async function listTargets(
@@ -853,7 +863,7 @@ async function listTargets(
 	const kind = resolveBrowserKind({ ...params, target: params.target ?? "" }, session);
 	if (kind.kind !== "tern" && kind.kind !== "relay" && kind.kind !== "connected") {
 		throw new ToolError(
-			`No pages to adopt here (the browser would be ${describeKind(kind)}): targets exist only inside a Tern pane (its browser blocks), in the omp app's browser panel, with the omp relay (app: "relay" or the browser.relay setting), or at a CDP endpoint (app: "http://127.0.0.1:9222" or the browser.cdpUrl setting).`,
+			`No pages to adopt here (the browser would be ${describeKind(kind)}): targets exist only inside a Tern pane (its browser blocks), with the omp relay (app: "relay" or the browser.relay setting), or at a CDP endpoint (app: "http://127.0.0.1:9222" or the browser.cdpUrl setting).`,
 		);
 	}
 	details.browser = kind.kind;
@@ -877,11 +887,7 @@ async function listTargets(
 			let text: string;
 			if (kind.kind === "relay") {
 				targets = await untilAborted(listSignal, () => listCdpTargets(kind.cdpUrl, listSignal));
-				text = describeCdpTargets(
-					targets,
-					kind.hosted ? "Pages in the omp app's browser panel" : "Chrome pages via the relay",
-					kind.hosted ? "on screen" : "active",
-				);
+				text = describeCdpTargets(targets, "Chrome pages via the relay");
 			} else if ("tern" in browser) {
 				const blocks = await listTernBlocks(browser.tern, { timeoutMs, signal: listSignal });
 				const taken = ternBlocksTaken();
@@ -1022,24 +1028,8 @@ function describeBrowser(tab: TabSession): string {
 		case "connected":
 			return `connected ${handle.cdpUrl ?? handle.kind.cdpUrl}`;
 		case "relay":
-			return handle.kind.hosted ? "the omp app's browser panel" : `relay ${handle.cdpUrl ?? handle.kind.cdpUrl}`;
+			return `relay ${handle.cdpUrl ?? handle.kind.cdpUrl}`;
 	}
-}
-
-/** Where a page in the omp app's browser panel is for the user, and whose sign-ins it carries. */
-function panelNotes(params: BrowserParams): string[] {
-	if (params.target !== undefined) {
-		return [
-			"This is the user's own page in the omp app's browser panel; closing the tab releases it to the user without closing it.",
-		];
-	}
-	return [
-		// The panel may be closed or show another page: say where the page is, not that it is seen.
-		params.headed === false
-			? "It is in the background of the omp app's browser panel; the user's view did not change."
-			: "It is in the omp app's browser panel, where the user can watch it and take over.",
-		"The panel shares the user's sign-ins across sessions: sites attribute actions to the user.",
-	];
 }
 
 /** Where a Tern tab's page is for the user: whose block it is, whether it is on screen, and whether it got the size asked for. */
@@ -1082,7 +1072,7 @@ function describeKind(kind: BrowserKind): string {
 		case "connected":
 			return `connected:${kind.cdpUrl}`;
 		case "relay":
-			return kind.hosted ? "omp app browser panel" : `relay:${kind.cdpUrl}`;
+			return `relay:${kind.cdpUrl}`;
 		case "cmux":
 			return `cmux:${kind.surface ?? "split"}`;
 		case "tern":

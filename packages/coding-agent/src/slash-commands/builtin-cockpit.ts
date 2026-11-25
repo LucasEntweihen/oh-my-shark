@@ -71,7 +71,14 @@ export function formatCockpitHelp(): string {
 }
 
 function persistSettingSafe(settings: Settings | undefined, id: string, value: unknown): void {
-	if (!settings || typeof settings.writeValue !== "function") return;
+	if (!settings) return;
+	const legacySettings = settings as unknown as { set?: (key: string, val: unknown) => void };
+	if (typeof settings.writeValue !== "function") {
+		if (typeof legacySettings.set === "function") {
+			legacySettings.set(id, value);
+		}
+		return;
+	}
 	const setting = lookupSetting(id);
 	if (!setting) return;
 	try {

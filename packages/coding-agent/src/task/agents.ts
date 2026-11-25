@@ -8,16 +8,13 @@ import { parseFrontmatter, prompt } from "@oh-my-pi/pi-utils";
 import { parseAgentFields } from "../discovery/helpers";
 // Embed agent markdown files at build time
 import agentFrontmatterTemplate from "../prompts/agents/frontmatter.md" with { type: "text" };
-import doomaniaCriativoMd from "../prompts/agents/doomania-criativo.md" with { type: "text" };
-import doomaniaCriticoMd from "../prompts/agents/doomania-critico.md" with { type: "text" };
-import doomaniaPermissivoMd from "../prompts/agents/doomania-permissivo.md" with { type: "text" };
 import reviewerMd from "../prompts/agents/reviewer.md" with { type: "text" };
 import scoutMd from "../prompts/agents/scout.md" with { type: "text" };
 import securityReviewerMd from "../prompts/agents/security-reviewer.md" with { type: "text" };
 import taskMd from "../prompts/agents/task.md" with { type: "text" };
-import { AUTO_THINKING } from "@oh-my-pi/pi-tui/thinking";
+import { AUTO_THINKING } from "../thinking/levels";
 
-import type { AgentSource } from "@oh-my-pi/pi-tui/tools/task";
+import type { AgentSource } from "./task-details";
 import type { AgentDefinition } from "./types";
 
 interface AgentFrontmatter {
@@ -48,9 +45,6 @@ const EMBEDDED_AGENT_DEFS: EmbeddedAgentDef[] = [
 	{ fileName: "scout.md", template: scoutMd },
 	{ fileName: "reviewer.md", template: reviewerMd },
 	{ fileName: "security-reviewer.md", template: securityReviewerMd },
-	{ fileName: "doomania-critico.md", template: doomaniaCriticoMd },
-	{ fileName: "doomania-permissivo.md", template: doomaniaPermissivoMd },
-	{ fileName: "doomania-criativo.md", template: doomaniaCriativoMd },
 	{
 		fileName: "task.md",
 		frontmatter: {

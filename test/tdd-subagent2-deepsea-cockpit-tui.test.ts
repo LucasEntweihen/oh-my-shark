@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { visibleWidth, truncateToWidth } from "@oh-my-pi/pi-tui";
+import { visibleWidth, truncate as truncateToWidth } from "@oh-my-pi/pi-tui/text/width";
 import {
 	DeepSeaCockpit,
 	padToWidth,

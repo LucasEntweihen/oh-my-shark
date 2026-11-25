@@ -454,7 +454,6 @@ export const cfgSnapcompactToolResults = register({
 
 export const cfgToolsFormat = register({
 	id: "tools.format",
-	restartRequired: true,
 	type: "enum",
 	values: [
 		"auto",

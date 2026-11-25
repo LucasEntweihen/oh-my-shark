@@ -193,15 +193,6 @@ export const frameDefs = {
 		title: "string",
 		"placeholder?": "string",
 		"timeout?": "number.integer",
-		"authCodeFor?": doc(
-			"string",
-			"Set on a pasted OAuth authorization-code prompt: the id of its `open_url` request. omp closes the prompt once the browser callback signs in.",
-		),
-		"loginPromptFor?": doc(
-			"string",
-			"Set on any other login prompt asked after an authorization URL, such as an API key: the id of that `open_url` request. The login waits for this answer, so a host must show the prompt while the `open_url` is still up.",
-		),
-		"allowEmpty?": doc("boolean", "Set on a login prompt whose answer may be left blank."),
 		"secret?": "boolean",
 	},
 	EditorUiRequest: {
@@ -216,54 +207,9 @@ export const frameDefs = {
 		{ type: UI, id: "string", method: "'ask'", questions: "AskQuestion[]", "timeout?": "number.integer" },
 		"Every question of one extension `ui.askDialog` call; sent only after `set_ask_dialog` enables it.",
 	),
-	FormSpan: doc(
-		{ text: "string", "style?": "'code' | 'strong' | 'em'" },
-		"A run of inline text; a newline inside `text` is a hard line break.",
-	),
-	FormChoiceOption: { value: "string", label: "FormSpan[]", checked: "boolean", disabled: "boolean" },
-	FormChoiceField: doc(
-		{
-			kind: "'choice'",
-			name: "string",
-			multi: "boolean",
-			select: "boolean",
-			other: doc("boolean", "Offer a free-text answer beside the options; its text is submitted as a value."),
-			label: "FormSpan[]",
-			options: "FormChoiceOption[]",
-			required: "boolean",
-		},
-		"A radio group, checkbox group or select. Empty `label`: the question is the text block before it.",
-	),
-	FormTextField: {
-		kind: "'text'",
-		name: "string",
-		type: "string",
-		multiline: "boolean",
-		label: "FormSpan[]",
-		value: "string",
-		placeholder: "string",
-		required: "boolean",
-		"min?": "number",
-		"max?": "number",
-		"pattern?": "string",
-		"minLength?": "number",
-		"maxLength?": "number",
-		rows: "number",
-	},
-	FormField: "FormChoiceField | FormTextField",
-	FormTextBlock: { kind: "'text'", spans: "FormSpan[]", heading: "boolean" },
-	FormListBlock: { kind: "'list'", items: "FormSpan[][]", ordered: "boolean" },
-	FormPreBlock: { kind: "'pre'", text: "string" },
-	FormTableBlock: { kind: "'table'", rows: "FormSpan[][][]", headerRows: "number.integer" },
-	FormFieldBlock: { kind: "'field'", field: "FormField" },
-	FormBlock: "FormTextBlock | FormListBlock | FormPreBlock | FormTableBlock | FormFieldBlock",
-	FormSection: doc(
-		{ title: "FormSpan[]", blocks: "FormBlock[]" },
-		"One titled part of a form. Pictures arrive as their alt text.",
-	),
 	FormUiRequest: doc(
-		{ type: UI, id: "string", method: "'form'", "html?": "string", "sections?": "FormSection[]", "timeout?": "number.integer" },
-		"Exactly one representation: HTML by default, or parsed sections when the host enables structured forms with set_ask_dialog.",
+		{ type: UI, id: "string", method: "'form'", html: "string", "timeout?": "number.integer" },
+		"The HTML `<form>` of one `ui.formDialog` call (the `ask` tool or an extension); no opt-in is required.",
 	),
 	CancelUiRequest: doc(
 		{ type: UI, id: "string", method: "'cancel'", targetId: "string" },
@@ -325,10 +271,6 @@ export const frameDefs = {
 		{ type: "'extension_ui_response'", id: "string", answers: "AskAnswer[]" },
 		"Answers an `ask` request: one `AskAnswer` per question, in question order.",
 	),
-	FormUiResponse: doc(
-		{ type: "'extension_ui_response'", id: "string", formData: JSON_OBJECT },
-		"Answers a `form` request, by control `name`: a string, or a string array for a multi-choice field. Choice values are option `value`s, or free text where `other` is set.",
-	),
 	DataUiResponse: doc(
 		{
 			type: "'extension_ui_response'",
@@ -338,7 +280,7 @@ export const frameDefs = {
 		"Answers a `form` request with the submitted form data.",
 	),
 	ExtensionUiResponse: doc(
-		"ValueUiResponse | ConfirmUiResponse | CancelUiResponse | AnswersUiResponse | DataUiResponse | FormUiResponse",
+		"ValueUiResponse | ConfirmUiResponse | CancelUiResponse | AnswersUiResponse | DataUiResponse",
 		"Host reply to an extension UI request; variants share `type` and differ by their payload key.",
 	),
 

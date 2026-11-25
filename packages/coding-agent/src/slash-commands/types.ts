@@ -1,5 +1,5 @@
 import type { Settings } from "../config/settings";
-import type { SlashCommandIconName } from "@oh-my-pi/pi-tui/theme/symbols";
+import type { SlashCommandIconName } from "../modes/view-model/theme/symbols";
 import type { InteractiveModeContext, SubmittedUserInput } from "../modes/types";
 import type { ConversationPosition } from "../modes/utils/conversation-position";
 import type { MCPManager } from "../mcp/manager";
@@ -142,8 +142,6 @@ export interface SlashCommandRuntime {
 	 * (RPC) ignore the flag and always push.
 	 */
 	notifyConfigChanged?: (options?: { handledBySessionEvent?: boolean }) => Promise<void> | void;
-	/** Optional host layout/cockpit hooks when invoked from an interactive TUI host. */
-	ctx?: { syncTuiLayout?(): void; syncCockpit?(): void };
 }
 
 /**

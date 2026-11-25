@@ -46,12 +46,6 @@ export interface PluginManifest {
 
 	/** Settings schema for plugin configuration */
 	settings?: Record<string, PluginSettingSchema>;
-
-	/** GUI-contributed assets. Currently only declarative theme tokens. */
-	gui?: {
-		/** Path (relative to the plugin root) to a JSON map of GUI theme token values. */
-		theme?: string;
-	};
 }
 
 // =============================================================================

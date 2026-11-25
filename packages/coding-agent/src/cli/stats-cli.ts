@@ -4,16 +4,13 @@
  * Handles `omp stats` subcommand for viewing AI usage statistics.
  */
 
-import { formatKeyHint } from "@oh-my-pi/pi-tui/key-hint-format";
-import { truncateToWidth } from "@oh-my-pi/pi-tui/utils";
-import { $env, postmortem } from "@oh-my-pi/pi-utils";
+import { formatKeyHint } from "../ui/keys/hints";
+import { truncateToWidth } from "../utils/text-width";
+import { postmortem } from "@oh-my-pi/pi-utils";
 import chalk from "@oh-my-pi/pi-utils/chalk";
 import { openStandaloneJudge } from "../judgment/standalone";
-import { startParentWatchdog } from "../subprocess/parent-watchdog";
 import { openTernPage } from "../tools/browser/tern/user-page";
 import { openPath } from "../utils/open";
-
-const REUSED_DASHBOARD_POLL_MS = 2_000;
 
 /**
  * Single-line TTY progress bar. On a non-TTY stream we just stay quiet -
@@ -66,8 +63,6 @@ export interface StatsCommandArgs {
 	host: string;
 	json: boolean;
 	summary: boolean;
-	/** Run the dashboard server without opening a browser (headless / embedded use). */
-	noOpen: boolean;
 }
 
 // =============================================================================
@@ -81,7 +76,6 @@ export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 		formatStatsDashboardUrl,
 		getDashboardStats,
 		getTotalMessageCount,
-		isStatsDashboardAlive,
 		printStatsSummary,
 		refreshRollups,
 		setStatsCloseHandler,
@@ -106,12 +100,6 @@ export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 		return;
 	}
 
-	// A host embedding the dashboard (the GUI) names itself here. If it is
-	// force-killed or crashes it runs no cleanup, and nothing else would stop
-	// this server. A dashboard started by hand outlives its shell on purpose.
-	const ownerPid = Number($env.PI_STATS_OWNER_PID);
-	if (Number.isInteger(ownerPid) && ownerPid > 0) startParentWatchdog(ownerPid);
-
 	// The dashboard starts immediately and ingests sessions in the background,
 	// streaming progress to the page. The judge (settings, auth, registry)
 	// resolves on the first Frustration estimate/run and lives until exit.
@@ -124,16 +112,6 @@ export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 	});
 	const url = formatStatsDashboardUrl(hostname, port);
 	console.log(chalk.green(`Dashboard available at: ${url}`));
-
-	// Headless (e.g. embedded by the GUI) beside another process's dashboard: open
-	// nothing. No server here holds the process open, and an embedder reads this
-	// process's life as the dashboard's, so stay while it answers, then exit
-	// non-zero so the embedder starts its own.
-	if (reused && cmd.noOpen) {
-		while (await isStatsDashboardAlive(port, hostname)) await Bun.sleep(REUSED_DASHBOARD_POLL_MS);
-		await postmortem.quit(1);
-		return;
-	}
 
 	// Another process owns a reused dashboard: show it, never stop it.
 	if (reused) {
@@ -149,11 +127,11 @@ export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 
 	// Close is on before the page first loads, and off again for the system
 	// browser, where closing would leave a dead tab.
-	if (!cmd.noOpen) setStatsCloseHandler(() => void postmortem.quit(0));
-	const page = cmd.noOpen ? undefined : await openTernPage(url, "over");
+	setStatsCloseHandler(() => void postmortem.quit(0));
+	const page = await openTernPage(url, "over");
 	if (page) {
 		console.log("Showing it in place of this block: close it to stop\n");
-	} else if (!cmd.noOpen) {
+	} else {
 		setStatsCloseHandler(undefined);
 		openPath(url);
 		console.log(`Press ${formatKeyHint("ctrl+c")} to stop\n`);

@@ -104,9 +104,16 @@ export const stateDefs = {
 	SessionState: {
 		"model?": "ModelInfo",
 		"thinkingLevel?": "ThinkingLevel",
+		"configuredThinkingLevel?": doc(
+			"ConfiguredThinkingLevel",
+			"The user's thinking selector: `auto` while auto mode picks the effort, else `thinkingLevel`.",
+		),
+		"thinkingLevels?": doc(
+			"ConfiguredThinkingLevel[]",
+			"Selectors the active model accepts, as omp's thinking selector lists them: `off`, `auto`, then its efforts.",
+		),
 		isStreaming: absentAs("boolean", false),
 		isCompacting: absentAs("boolean", false),
-		isBackgroundCompacting: absentAs("boolean", false),
 		steeringMode: absentAs("QueueMode", "one-at-a-time"),
 		followUpMode: absentAs("QueueMode", "one-at-a-time"),
 		interruptMode: absentAs("InterruptMode", "immediate"),
@@ -116,7 +123,6 @@ export const stateDefs = {
 		autoCompactionEnabled: absentAs("boolean", false),
 		fastModeEnabled: absentAs("boolean", false),
 		fastModeActive: absentAs("boolean", false),
-		fastModeUltrafast: absentAs("boolean", false),
 		slowModeSupported: absentAs(doc("boolean", "`/slow` applies to the active model."), false),
 		slowModeEnabled: absentAs(
 			doc("boolean", "`/slow` is on for the active model; always `false` when `slowModeSupported` is `false`."),
@@ -182,6 +188,11 @@ export const stateDefs = {
 		"artifactError?": JSON_OBJECT,
 		"minimized?": JSON_OBJECT,
 		"workingDir?": "string",
+		"movedCwd?": doc(
+			"boolean",
+			"The command ended in another directory than it started in; the next command starts in its own cwd.",
+		),
+		"errexit?": doc("boolean", "The command ended with `set -e` on; the next command starts with it off."),
 		"images?": "ImageContent[]",
 		"trace?": doc(
 			JSON_OBJECT,
@@ -203,7 +214,7 @@ export const stateDefs = {
 		),
 	},
 	LineRange: { first: "number.integer", last: "number.integer" },
-	FastModeResult: { enabled: "boolean", active: "boolean", "ultrafast?": "boolean" },
+	FastModeResult: { enabled: "boolean", active: "boolean" },
 	CompactionResult: {
 		summary: "string",
 		"shortSummary?": "string",
@@ -213,18 +224,43 @@ export const stateDefs = {
 		"preserveData?": JSON_OBJECT,
 		"providerReplayThroughEntryId?": "string",
 	},
-	ModelCycleResult: { model: "ModelInfo", "thinkingLevel?": "ThinkingLevel", isScoped: "boolean" },
-	DiscoveredModel: doc(
+	ModelPickerRole: doc(
 		{
+			role: "string",
+			label: doc("string", "The role's display tag."),
+			"auto?": doc("boolean", "Auto-selected: the role has no configured model."),
+		},
+		"A role a model holds, as picker rows chip it.",
+	),
+	ModelPickerRow: doc(
+		{
+			provider: "string",
 			id: "string",
 			name: "string",
-			reasoning: "boolean",
-			input: doc("string[]", "Accepted input modalities, e.g. `text`, `image`."),
-			contextWindow: doc("number.integer | null", "Null when the server does not report a limit."),
-			maxTokens: doc("number.integer | null", "Null when the server does not report a limit."),
+			"role?": doc("string", "The quick role this row applies (`@` search); pass it to `set_model`."),
+			"roles?": doc("ModelPickerRole[]", "Visible roles the model holds, built-in order first."),
+			"thinking?": doc(
+				"ConfiguredThinkingLevel[]",
+				"Steps of the model's thinking slider, low to high: `auto`, `off`, then its efforts. Absent when it has no effort to pick.",
+			),
+			"thinkingLevel?": doc(
+				"ConfiguredThinkingLevel",
+				"Model rows: the session's level as this model would run it (the untouched slider). Quick-role rows: the role's explicit level, which `set_model` should carry.",
+			),
+			"overContext?": doc("boolean", "The session's context exceeds the model's window."),
+			"current?": doc("boolean", "The session runs this row: its model, or under `@` its active quick role."),
 		},
-		"A model an endpoint offers, as `discover_provider_models` reports it.",
+		"One row of omp's session model picker.",
 	),
+	ModelPickerResult: {
+		rows: "ModelPickerRow[]",
+		recent: doc(
+			"number.integer",
+			"Leading rows that are recently used or role-held (the picker's Recent block); 0 when there is no such split.",
+		),
+		total: doc("number.integer", "Matching rows before `limit`."),
+	},
+	ModelCycleResult: { model: "ModelInfo", "thinkingLevel?": "ThinkingLevel", isScoped: "boolean" },
 	ThinkingLevelCycleResult: { level: "Effort" },
 	CancellationResult: { cancelled: "boolean" },
 	OpenSessionResult: doc(
@@ -278,35 +314,6 @@ export const stateDefs = {
 		total: "number.integer",
 	},
 	SessionCredits: { cost: "number", committedCost: "number", acuCost: "number" },
-	PromptCacheColdReason: {
-		kind: doc(
-			"'expired' | 'refresh-missed' | 'model' | 'thinking' | 'tools' | 'system-prompt' | 'retention' | 'compaction'",
-			"`refresh-missed`: omp's warm refresh found the entry gone.",
-		),
-		"at?": doc("number.integer", "`expired`: when the entry lapsed (epoch ms)."),
-		"from?": doc("string", "`model` / `thinking`: the value the entry was written under."),
-		"to?": doc("string", "`model` / `thinking`: the value the next request uses."),
-	},
-	PromptCacheWarming: {
-		state: doc(
-			"'scheduled' | 'refreshing' | 'inactive'",
-			"`scheduled`: a refresh decision is armed; `refreshing`: a refresh is in flight.",
-		),
-		"nextWarmAt?": doc("number.integer", "When the armed refresh decides (epoch ms)."),
-		"stopsAt?": doc("number.integer", "When warming gives up (epoch ms)."),
-		"reason?": doc("string", "Why nothing is scheduled."),
-	},
-	PromptCacheStatus: {
-		state: doc("'warm' | 'cold'", "`cold`: the next request rewrites the cached prefix."),
-		"reason?": doc("PromptCacheColdReason", "Why it is cold; absent while warm."),
-		inferred: doc("boolean", "Read off the transcript of a reopened session, not a response this process saw."),
-		tier: doc("'short' | 'long'", "Retention tier the entry was written under: `short` (5m) or `long` (1h)."),
-		touchedAt: doc("number.integer", "Send time of the last request that read or wrote the entry (epoch ms)."),
-		"ttlMs?": doc("number.integer", "Lifetime after the last touch; absent when the provider never expires it."),
-		cachedTokens: doc("number.integer", "Prompt tokens a warm cache serves."),
-		nextTokens: doc("number.integer", "Estimated prompt tokens of the next request."),
-		"warming?": doc("PromptCacheWarming", "omp's cache warmer; absent when the entry was inferred."),
-	},
 	SessionStats: {
 		"sessionFile?": "string",
 		sessionId: "string",
@@ -322,10 +329,6 @@ export const stateDefs = {
 		"routedModels?": "Record<string, number>",
 		"editRejections?": doc("Record<string, number>", "Failed edits by the engine's `errorKind`."),
 		"contextUsage?": "ContextUsage",
-		"promptCache?": doc(
-			"PromptCacheStatus",
-			"What the next request finds in the prompt cache, as `/session` shows it; absent when omp cannot tell.",
-		),
 	},
 	MessagesPage: {
 		messages: "AgentMessage[]",

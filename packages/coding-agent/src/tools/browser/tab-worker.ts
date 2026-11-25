@@ -40,7 +40,7 @@ import {
 	withBrowserPromiseCombinatorTracking,
 } from "../run-scope";
 import { ToolAbortError, throwIfAborted } from "../tool-errors";
-import { ToolError } from "@oh-my-pi/pi-tui/tools/tool-errors";
+import { ToolError } from "../tool-errors";
 import {
 	type AriaSnapshotOptions,
 	assertSelectorString,
@@ -1612,7 +1612,6 @@ async function createTrackedPage(
 	browser: Browser,
 	attach: { nearTargetId?: string } | undefined,
 	reportTarget: (targetId: string) => void,
-	background: boolean,
 ): Promise<Page> {
 	let targetId: string;
 	if (attach) {
@@ -1625,12 +1624,6 @@ async function createTrackedPage(
 		};
 		({ targetId } = await browserConnection(browser).send("Target.createTarget", params));
 		reportTarget(targetId);
-	} else if (!browser.targets().some(target => target.type() === "browser")) {
-		// A browser relay (the omp app's browser panel) announces pages but no
-		// browser target; create through the root connection, which it serves.
-		const page = await browser.newPage({ background });
-		reportTarget(await targetIdForPage(page));
-		return page;
 	} else {
 		const session = await browser.target().createCDPSession();
 		try {
@@ -2230,14 +2223,9 @@ export class WorkerCore {
 						? { nearTargetId: payload.page.nearTargetId }
 						: undefined;
 				try {
-					this.#page = await createTrackedPage(
-						this.#browser,
-						attach,
-						targetId => {
-							this.#transport.send({ type: "page-created", targetId });
-						},
-						payload.mode === "headless" && payload.background === true,
-					);
+					this.#page = await createTrackedPage(this.#browser, attach, targetId => {
+						this.#transport.send({ type: "page-created", targetId });
+					});
 				} catch (error) {
 					if (!attach) throw error;
 					throw new ToolError(

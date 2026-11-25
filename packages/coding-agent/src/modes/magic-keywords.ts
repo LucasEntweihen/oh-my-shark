@@ -1,14 +1,9 @@
 import { prompt } from "@oh-my-pi/pi-utils";
 import chillaxNotice from "../prompts/system/chillax-notice.md" with { type: "text" };
-import deepseaneuronNotice from "../prompts/system/deepseaneuron-notice.md" with { type: "text" };
-import fastthinkworkerzNotice from "../prompts/system/fastthinkworkerz-notice.md" with { type: "text" };
 import jevifyNotice from "../prompts/system/jevify-notice.md" with { type: "text" };
-import learnerProjPrompt from "../prompts/system/learner-proj-prompt.md" with { type: "text" };
 import orchestrateNotice from "../prompts/system/orchestrate-notice.md" with { type: "text" };
-import promaxthinkNotice from "../prompts/system/promaxthink-notice.md" with { type: "text" };
 import ultrathinkNotice from "../prompts/system/ultrathink-notice.md" with { type: "text" };
 import workflowNotice from "../prompts/system/workflow-notice.md" with { type: "text" };
-import xlr8Notice from "../prompts/system/xlr8-notice.md" with { type: "text" };
 
 /**
  * Magic keywords: standalone lowercase prose words in a user prompt that
@@ -17,7 +12,7 @@ import xlr8Notice from "../prompts/system/xlr8-notice.md" with { type: "text" };
  * This table is the single source of truth. Every downstream surface derives
  * from it: the `magicKeywords.<id>` settings (`modes/settings.ts`), the notice
  * injection and `<id>-notice` message types (agent-session, queued-messages),
- * and the editor/bubble gradients (`setMagicKeywords` in pi-tui). Adding a
+ * and the composer/bubble gradients (`src/ui/composer/magic-keywords.ts`). Adding a
  * keyword means one row here plus its notice template under `prompts/system/`.
  */
 
@@ -69,21 +64,6 @@ export const CHILLAX_NOTICE: string = chillaxNotice.trim();
 
 /** Hidden notice for "jevify": bulk classification through the eval kernel's `judge()`. */
 export const JEVIFY_NOTICE: string = jevifyNotice.trim();
-
-/** Hidden notice for "promaxthink": maximum reasoning + adversarial self-verification. */
-export const PROMAXTHINK_NOTICE: string = promaxthinkNotice.trim();
-
-/** Hidden notice for "deepseaneuron": token density and efficiency optimization. */
-export const DEEPSEANEURON_NOTICE: string = deepseaneuronNotice.trim();
-
-/** Hidden notice for "fastthinkworkerz": radical execution acceleration and low latency. */
-export const FASTTHINKWORKERZ_NOTICE: string = fastthinkworkerzNotice.trim();
-
-/** Hidden notice for "xlr8": hyperspeed acceleration with optional autonomous solo mode. */
-export const XLR8_NOTICE: string = xlr8Notice.trim();
-
-/** Hidden notice for "learner-proj": deep pedagogical codebase exploration. */
-export const LEARNER_PROJ_NOTICE: string = learnerProjPrompt.trim();
 
 /** Hidden notice for "orchestrate", naming only the tools the session actually exposes. */
 export function renderOrchestrateNotice({ tools }: Pick<MagicKeywordContext, "tools">): string {
@@ -158,71 +138,6 @@ export const MAGIC_KEYWORDS = [
 		// The contract is entirely about the eval kernel's `judge()` helper.
 		requires: ["eval"],
 		notice: () => JEVIFY_NOTICE,
-	},
-	{
-		id: "promaxthink",
-		word: "promaxthink",
-		hue: [330, 380],
-		label: "ProMaxThink Keyword",
-		description: "Request maximum reasoning depth plus adversarial self-verification",
-		requires: [],
-		notice: () => PROMAXTHINK_NOTICE,
-	},
-	{
-		id: "deepseaneuron",
-		word: "deepseaneuron",
-		hue: [190, 280],
-		label: "DeepSeaNeuron Keyword",
-		description: "Maximize token signal density without degrading engineering rigor",
-		requires: [],
-		notice: () => DEEPSEANEURON_NOTICE,
-	},
-	{
-		id: "fastthinkworkerz",
-		word: "fastthinkworkerz",
-		hue: [45, 65],
-		label: "FastThinkWorkerz Keyword",
-		description: "Prioritize low-latency direct execution for straightforward tasks",
-		requires: [],
-		notice: () => FASTTHINKWORKERZ_NOTICE,
-	},
-	{
-		id: "xlr8",
-		word: "xlr8",
-		hue: [150, 220],
-		label: "XLR8 Acceleration Keyword",
-		description: "Hyperspeed acceleration with optional --basic solo mode",
-		requires: [],
-		notice: () => XLR8_NOTICE,
-	},
-	{
-		id: "doomania",
-		word: "doomania",
-		hue: [105, 160],
-		label: "Doomania Keyword",
-		description: "Highlight standalone doomania critical/permissive/creative directive",
-		requires: [],
-		notice: () =>
-			"<system-notice>Doomania multi-perspective mode active: evaluate critically, explore creatively, and deliver pragmatically.</system-notice>",
-	},
-	{
-		id: "vibecoding",
-		word: "vibecoding",
-		hue: [38, 275],
-		label: "VibeCoding Keyword",
-		description: "Activate Vibe Coding toolkit wave planning and quality gates",
-		requires: [],
-		notice: () =>
-			"<system-notice>Vibe Coding Toolkit active: enforce strict wave disjointness, small modular files (<=350 lines), and verified quality gates.</system-notice>",
-	},
-	{
-		id: "learnerProj",
-		word: "learner-proj",
-		hue: [180, 225],
-		label: "Learner Project Keyword",
-		description: "Pedagogical deep codebase walkthrough mode",
-		requires: [],
-		notice: () => LEARNER_PROJ_NOTICE,
 	},
 ] as const satisfies readonly MagicKeyword[];
 

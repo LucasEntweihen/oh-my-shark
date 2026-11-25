@@ -1,5 +1,5 @@
 /**
- * `/btw` side questions for RPC hosts: the `btw`, `btw_cancel`, `btw_inject` and
+ * `/btw` side questions for RPC hosts: the `btw`, `btw_cancel` and
  * `get_btw_history` commands plus the `btw_delta` / `btw_record` frames.
  *
  * Mirrors the TUI `BtwController` without its panels: one side question runs
@@ -7,65 +7,43 @@
  * turn is checkpointed into the session's BTW history sidecar, so the TUI and
  * RPC hosts read and continue the same topics.
  */
-import type { AssistantMessage } from "@oh-my-pi/pi-ai";
 import { logger, toError } from "@oh-my-pi/pi-utils";
 import type { AgentSession } from "../../session/agent-session";
-import { assistantMessageWithReplyText } from "../controllers/btw-controller";
 import {
-	BtwHistoryConflictError,
 	type BtwHistoryRecord,
-	BtwHistoryStore,
 	type BtwHistoryTurn,
+	BtwHistoryConflictError,
+	BtwHistoryStore,
 	getBtwLatestTurn,
-	getBtwRecordInject,
-	getBtwTurnKey,
 } from "../../session/btw-history";
 import { beginBtwTurn, patchLatestBtwTurn, runBtwTurn } from "../../session/btw-turn";
-import { cfgBtwInject } from "../settings";
-import type { RpcBtwDeltaFrame, RpcBtwHistoryRecord, RpcBtwInjectState, RpcBtwRecordFrame } from "./rpc-types";
+import type { RpcBtwDeltaFrame, RpcBtwHistoryRecord, RpcBtwRecordFrame } from "./rpc-types";
 
 type RpcBtwOutputFrame =
 	| RpcBtwDeltaFrame
 	| RpcBtwRecordFrame
 	| { type: "notice"; level: "error"; message: string; source: "btw-history" };
 
-/** Last successfully completed turn, kept so `btw_branch` can promote it. */
-interface CompletedBtw {
-	question: string;
-	assistantMessage: AssistantMessage;
-	leafId: string;
-	sessionId: string;
-}
-
 interface RunningBtw {
 	record: BtwHistoryRecord;
 	store: BtwHistoryStore;
 	abort: AbortController;
-	/** `btw.inject` when the question was asked: only such an answer's block can be sent. */
-	inject: boolean;
 }
-
-type BtwSession = Pick<
-	AgentSession,
-	"model" | "runEphemeralTurn" | "sessionManager" | "branchFromBtw" | "settings" | "prompt"
->;
 
 const CANCELLED_WHILE_STARTING = "The /btw question was cancelled before it started";
 
 /** The TUI-only `title` heading stays off the wire; hosts head a topic by its question. */
-function toRpcRecord({ title: _title, ...record }: BtwHistoryRecord, inject?: RpcBtwInjectState): RpcBtwHistoryRecord {
-	return inject ? { ...record, inject } : record;
+function toRpcRecord({ title: _title, ...record }: BtwHistoryRecord): RpcBtwHistoryRecord {
+	return record;
 }
 
 export class RpcBtwController {
-	readonly #session: BtwSession;
+	readonly #session: Pick<AgentSession, "model" | "runEphemeralTurn" | "sessionManager">;
 	readonly #output: (frame: RpcBtwOutputFrame) => void;
 	#store: BtwHistoryStore | undefined;
 	/** `sessionId \0 artifactsDir` the store was opened for. */
 	#storeKey: string | undefined;
 	#running: RunningBtw | undefined;
-	/** Completed turn eligible for `btw_branch` until the next question starts. */
-	#completed: CompletedBtw | undefined;
 	/** Topic of the `btw` command between validation and its first checkpoint (`null`: a new topic). */
 	#startingTopic: string | null | undefined;
 	/** Bumped by every cancel and session change; a `btw` still starting from before gives up. */
@@ -74,35 +52,13 @@ export class RpcBtwController {
 	readonly #writes = new Set<Promise<void>>();
 	/** Terminal checkpoints that failed, keyed by record id (latest wins); retried before any move. */
 	readonly #unsaved = new Map<string, RunningBtw>();
-	/**
-	 * Steering prompts by turn key (TUI parity): only answers asked here with `btw.inject` on get
-	 * an entry, so history from another process or an earlier run never sends.
-	 */
-	readonly #injects = new Map<string, RpcBtwInjectState>();
 
-	constructor(session: BtwSession, output: (frame: RpcBtwOutputFrame) => void) {
+	constructor(
+		session: Pick<AgentSession, "model" | "runEphemeralTurn" | "sessionManager">,
+		output: (frame: RpcBtwOutputFrame) => void,
+	) {
 		this.#session = session;
 		this.#output = output;
-	}
-
-	/**
-	 * Promote the last completed answer into a session branch (fork-only
-	 * `btw_branch` command; the TUI branches from its own controller).
-	 */
-	async branch(): Promise<{
-		cancelled: boolean;
-		sessionFile: string | undefined;
-	}> {
-		const completed = this.#completed;
-		if (!completed) throw new Error("No completed /btw answer is available to branch.");
-		const result = await this.#session.branchFromBtw(
-			completed.question,
-			completed.assistantMessage,
-			completed.leafId,
-			completed.sessionId,
-		);
-		if (!result.cancelled) this.#completed = undefined;
-		return result;
 	}
 
 	/**
@@ -116,7 +72,6 @@ export class RpcBtwController {
 			throw new Error("A /btw question is still running; cancel it first");
 		}
 		this.#startingTopic = recordId ?? null;
-		this.#completed = undefined;
 		const epoch = this.#epoch;
 		try {
 			await this.#settleWrites();
@@ -134,12 +89,7 @@ export class RpcBtwController {
 			} catch (error) {
 				throw new Error(`Could not save /btw history: ${toError(error).message}`, { cause: error });
 			}
-			const running: RunningBtw = {
-				record,
-				store,
-				abort: new AbortController(),
-				inject: cfgBtwInject.get(this.#session.settings),
-			};
+			const running: RunningBtw = { record, store, abort: new AbortController() };
 			this.#running = running;
 			this.#output({ type: "btw_record", record: toRpcRecord(record) });
 			if (epoch !== this.#epoch) {
@@ -182,59 +132,7 @@ export class RpcBtwController {
 		if (running?.store === store) records.set(running.record.id, running.record);
 		return [...records.values()]
 			.sort((a, b) => b.createdAt - a.createdAt || a.id.localeCompare(b.id))
-			.map(record => this.#toRpc(record));
-	}
-
-	/**
-	 * Send topic `recordId`'s steering prompt to the main session as a user message: a steer
-	 * while the agent runs, else a new turn, with templates and slash commands left unexpanded
-	 * (TUI parity). Resolves once the prompt is admitted or refused; a refused send turns back
-	 * to `ready` so it can be retried, and a sent one is never sent again.
-	 */
-	async inject(recordId: string): Promise<{ sent: boolean; reason?: string }> {
-		const store = await this.#openStore(false);
-		const record =
-			this.#unsaved.get(recordId)?.record ?? store.getRecords().find(candidate => candidate.id === recordId);
-		const text = record ? getBtwRecordInject(record) : undefined;
-		const key = record ? getBtwTurnKey(record) : undefined;
-		if (!record || !text || !key || this.#injects.get(key) === undefined) {
-			throw new Error("This /btw answer has no steering prompt to send");
-		}
-		if (this.#injects.get(key) !== "ready") return { sent: this.#injects.get(key) === "sent" };
-		const outcome = Promise.withResolvers<{ sent: boolean; reason?: string }>();
-		let settled = false;
-		let queued = false;
-		// The first outcome wins: the prompt's own promise also settles when the turn ends.
-		const settle = (sent: boolean, reason?: string): void => {
-			if (settled) return;
-			settled = true;
-			this.#injects.set(key, sent ? "sent" : "ready");
-			this.#output({ type: "btw_record", record: this.#toRpc(record) });
-			outcome.resolve(reason ? { sent, reason } : { sent });
-		};
-		this.#injects.set(key, "sending");
-		this.#output({ type: "btw_record", record: this.#toRpc(record) });
-		this.#session
-			.prompt(text, {
-				expandPromptTemplates: false,
-				streamingBehavior: "steer",
-				throwOnDrop: true,
-				onPromptQueued: () => {
-					queued = true;
-				},
-				onPromptAdmitted: () => settle(true),
-			})
-			.then(
-				// A drop while queueing resolves without admission: nothing was sent.
-				() => settle(false),
-				// Already in the steer queue: it was sent, so keep the mark.
-				(error: unknown) => (queued ? settle(true) : settle(false, toError(error).message)),
-			);
-		return outcome.promise;
-	}
-
-	#toRpc(record: BtwHistoryRecord): RpcBtwHistoryRecord {
-		return toRpcRecord(record, this.#injects.get(getBtwTurnKey(record)));
+			.map(toRpcRecord);
 	}
 
 	/**
@@ -264,12 +162,7 @@ export class RpcBtwController {
 					this.#unsaved.delete(id);
 					const message = `/btw answer ${id} was not saved: ${error.message}; it changed or was removed on disk`;
 					logger.error(message);
-					this.#output({
-						type: "notice",
-						level: "error",
-						message,
-						source: "btw-history",
-					});
+					this.#output({ type: "notice", level: "error", message, source: "btw-history" });
 					continue;
 				}
 				throw new Error(
@@ -322,10 +215,9 @@ export class RpcBtwController {
 	): Promise<void> {
 		if (this.#running !== running) return;
 		try {
-			const { replyText, assistantMessage } = await runBtwTurn(this.#session, {
+			const { replyText } = await runBtwTurn(this.#session, {
 				question,
 				history,
-				inject: running.inject,
 				conversationKey,
 				signal: running.abort.signal,
 				onTextDelta: delta => {
@@ -335,40 +227,12 @@ export class RpcBtwController {
 						answer: latest.answer + delta,
 						updatedAt: Date.now(),
 					});
-					this.#output({
-						type: "btw_delta",
-						recordId: running.record.id,
-						delta,
-					});
+					this.#output({ type: "btw_delta", recordId: running.record.id, delta });
 				},
 			});
-			// Cancelled (or superseded) while the reply resolved: the turn is not
-			// complete, so it must not become branchable.
-			if (this.#running !== running) return;
-			this.#finish(running, {
-				answer: replyText,
-				status: "complete",
-				updatedAt: Date.now(),
-			});
-			const leafId = running.record.leafId;
-			const sessionId = this.#session.sessionManager?.getSessionId() ?? null;
-			// A null leaf (ephemeral start) can't be branched — branchFromBtw requires it.
-			// Branch the visible answer (TUI parity), not raw provider parts.
-			this.#completed =
-				leafId && sessionId
-					? {
-							question,
-							assistantMessage: assistantMessageWithReplyText(assistantMessage, replyText),
-							leafId,
-							sessionId,
-						}
-					: undefined;
+			this.#finish(running, { answer: replyText, status: "complete", updatedAt: Date.now() });
 		} catch (error) {
-			this.#finish(running, {
-				status: "error",
-				error: toError(error).message,
-				updatedAt: Date.now(),
-			});
+			this.#finish(running, { status: "error", error: toError(error).message, updatedAt: Date.now() });
 		}
 	}
 
@@ -377,11 +241,7 @@ export class RpcBtwController {
 		if (this.#running !== running) return;
 		this.#running = undefined;
 		running.record = patchLatestBtwTurn(running.record, patch);
-		// Only an answer asked with the inject instruction can be sent, even if the setting is turned on later.
-		if (running.inject && getBtwRecordInject(running.record) !== undefined) {
-			this.#injects.set(getBtwTurnKey(running.record), "ready");
-		}
-		this.#output({ type: "btw_record", record: this.#toRpc(running.record) });
+		this.#output({ type: "btw_record", record: toRpcRecord(running.record) });
 		const write = running.store.upsert(running.record).then(
 			() => {
 				this.#unsaved.delete(running.record.id);
@@ -390,12 +250,7 @@ export class RpcBtwController {
 				this.#unsaved.set(running.record.id, running);
 				const message = `Could not save /btw history: ${toError(error).message}`;
 				logger.error(message);
-				this.#output({
-					type: "notice",
-					level: "error",
-					message,
-					source: "btw-history",
-				});
+				this.#output({ type: "notice", level: "error", message, source: "btw-history" });
 			},
 		);
 		this.#writes.add(write);

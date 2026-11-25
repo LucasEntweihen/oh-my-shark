@@ -1,6 +1,6 @@
 import type { ImageContent, TextContent } from "@oh-my-pi/pi-ai";
 import type { ImageTokenization } from "@oh-my-pi/pi-catalog/compat/image-tokenization";
-import { ToolError } from "@oh-my-pi/pi-tui/tools/tool-errors";
+import { ToolError } from "../tool-errors";
 import type { Viewport } from "puppeteer-core";
 import type { FrontTabSource } from "./native-windows";
 import type { HiddenFrame } from "./relay/protocol";
@@ -107,10 +107,6 @@ export type WorkerInitPayload =
 			uploadDir: string;
 			/** Keep the page tied to an OMP-owned worker without pinning a visible window's layout viewport. */
 			emulateViewport?: boolean;
-			/** Headless fingerprint patches (user agent, automation markers); `false` for a real visible browser. */
-			stealth?: boolean;
-			/** Create the page without showing it (a panel page the user keeps looking past). */
-			background?: boolean;
 			viewport?: Viewport;
 			dialogs?: "accept" | "dismiss";
 			/** Hostname patterns allowed for every page request. */

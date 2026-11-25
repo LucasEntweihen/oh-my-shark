@@ -31,7 +31,6 @@ import {
 	procmgr,
 } from "@oh-my-pi/pi-utils";
 import { withFileLock } from "@oh-my-pi/pi-utils/file-lock";
-import { isLightTheme } from "@oh-my-pi/pi-tui/theme/theme";
 import { JSONC, YAML } from "bun";
 import { invalidate as invalidateCapabilityFsCache } from "../capability/fs";
 import { type Settings as SettingsCapabilityItem, settingsCapability } from "../capability/settings";
@@ -57,6 +56,7 @@ import {
 import "./all-settings";
 import { cfgDisabledProviders, cfgModelRoles, cfgModelRoleStorage } from "./model-settings";
 import { cfgShellPath } from "../exec/settings";
+import { isLightTheme } from "../ui/theme/service";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -64,13 +64,6 @@ import { cfgShellPath } from "../exec/settings";
 
 /** Settings layer that supplies an effective value; see {@link Settings.getProvenance}. */
 export type SettingProvenance = "env" | "runtime" | "overlay" | "project" | "global" | "default";
-
-/** Detailed configured-layer provenance for GUI/configuration surfaces. */
-export interface SettingProvenanceDetails {
-	layers: ("global" | "project" | "overlay" | "runtime")[];
-	globalValue?: unknown;
-	globalPath?: string;
-}
 
 /** Raw settings object as stored in YAML */
 export interface RawSettings {
@@ -1213,27 +1206,6 @@ export class Settings {
 		return this.#parent?.getProvenance(setting) ?? "default";
 	}
 
-	/** Detailed configured layers for clients that need persistence/source information. */
-	getProvenanceDetails(setting: AnySetting): SettingProvenanceDetails {
-		this.#syncParent();
-		const inherited = this.#parent?.getProvenanceDetails(setting);
-		const ownLayers: SettingProvenanceDetails["layers"] = [];
-		const ownGlobalValue = configuredValue(this.#global, setting, this.#cwd);
-		if (ownGlobalValue !== undefined) ownLayers.push("global");
-		if (configuredValue(projectLayerForMerge(this.#project), setting, this.#cwd) !== undefined)
-			ownLayers.push("project");
-		if (configuredValue(this.#configOverlay, setting, this.#cwd) !== undefined) ownLayers.push("overlay");
-		if (configuredValue(this.#overrides, setting, this.#cwd) !== undefined) ownLayers.push("runtime");
-		const layers = (["global", "project", "overlay", "runtime"] as const).filter(
-			layer => inherited?.layers.includes(layer) || ownLayers.includes(layer),
-		);
-		return {
-			layers,
-			globalValue: ownGlobalValue !== undefined ? ownGlobalValue : inherited?.globalValue,
-			globalPath: ownGlobalValue !== undefined ? (this.#configPath ?? undefined) : inherited?.globalPath,
-		};
-	}
-
 	/**
 	 * Whether a runtime override — a CLI flag, a session-only write, an SDK override — sets `setting`
 	 * here or on an overlay parent. Such an override outranks the setting's environment variable; a
@@ -2216,6 +2188,45 @@ export class Settings {
 		this.#setProjectModelRoleValue(role, null);
 		this.#captureRuntimeModelRoleOverride(role);
 		this.#updateRuntimeModelRoleOverride(role, undefined);
+	}
+
+	/** Replace roles in the configured storage layer and synchronize runtime overrides. */
+	replaceModelRoles(modelRoles: ReadOnlyDict<string>): void {
+		const project = cfgModelRoleStorage.get(this) === "project";
+		const roles = new Set([...Object.keys(this.getModelRoles()), ...Object.keys(modelRoles)]);
+		for (const role of roles) {
+			const value = Object.hasOwn(modelRoles, role) ? modelRoles[role] : undefined;
+			if (project) {
+				if (value !== undefined) this.setProjectModelRole(role, value);
+				else if (this.getProjectModelRole(role) || this.getModelRoleProvenance(role) === "runtime") {
+					this.clearProjectModelRole(role);
+				}
+			} else if (
+				value !== undefined ||
+				this.getGlobalModelRole(role) !== undefined ||
+				this.getModelRoleProvenance(role) === "runtime"
+			) {
+				this.setModelRole(role, value);
+			}
+		}
+	}
+
+	/**
+	 * Detached in-memory copy with {@link replaceModelRoles} applied: same layer precedence, no saves,
+	 * no notifications. Read its roles and their provenance; never write through it.
+	 */
+	previewModelRoles(modelRoles: ReadOnlyDict<string>): Settings {
+		const preview = new Settings({ inMemory: true, cwd: this.#cwd, agentDir: this.#agentDir }, { projection: true });
+		preview.#parent = this.#parent;
+		// The role mutators replace their layer's modelRoles map instead of editing it in place.
+		preview.#global = { ...this.#global };
+		preview.#project = { ...this.#project };
+		preview.#configOverlay = this.#configOverlay;
+		preview.#overrides = { ...this.#overrides };
+		preview.#savedRuntimeModelRoleOverrides = new Map(this.#savedRuntimeModelRoleOverrides);
+		preview.#remerge();
+		preview.replaceModelRoles(modelRoles);
+		return preview;
 	}
 
 	/**
@@ -3730,7 +3741,7 @@ export class Settings {
 
 		// BM25 tool discovery removal: tools.discoveryMode / tools.essentialOverride /
 		// mcp.discoveryMode / mcp.discoveryDefaultServers are gone with no
-		// replacement (`tools.xdev` stays at its own default). Dead keys are
+		// replacement (`tools.commands` stays at its own default). Dead keys are
 		// deleted so they stop lingering in config.yml.
 		const toolsObj = raw.tools as Record<string, unknown> | undefined;
 		if (toolsObj) {
@@ -3801,11 +3812,7 @@ export class Settings {
 				const selector = bundledSelector(provider, model => model.webSearchModel);
 				return selector ? [selector] : [];
 			};
-			const geminiSelectors = (model: string): string[] => [
-				`google-gemini-cli/${model}`,
-				`google-antigravity/${model}`,
-				`google/${model}`,
-			];
+			const geminiSelectors = (model: string): string[] => [`google-antigravity/${model}`, `google/${model}`];
 			const webSelectors = (provider: string, geminiModel: string): string[] => {
 				switch (provider) {
 					case "gemini":
@@ -4046,6 +4053,21 @@ export class Settings {
 			}
 		}
 		delete raw["computer.backend"];
+
+		// computer.backgroundFallback became computer.takeover, which added the
+		// opt-in `foreground` and `always` modes. `refuse` carries over; the old
+		// `takeover` is the default `fallback`, so it is dropped.
+		const computerSettings = isRecord(raw.computer) ? raw.computer : undefined;
+		const fallback = computerSettings?.backgroundFallback ?? raw["computer.backgroundFallback"];
+		if (fallback === "refuse" && computerSettings?.takeover === undefined && raw["computer.takeover"] === undefined) {
+			if (computerSettings) computerSettings.takeover = "refuse";
+			else raw.computer = { takeover: "refuse" };
+		}
+		if (computerSettings) {
+			delete computerSettings.backgroundFallback;
+			if (Object.keys(computerSettings).length === 0) delete raw.computer;
+		}
+		delete raw["computer.backgroundFallback"];
 
 		delete raw["hindsight.mentalModelRefreshIntervalMs"];
 

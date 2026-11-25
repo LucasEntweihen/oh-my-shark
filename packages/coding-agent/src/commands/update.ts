@@ -3,10 +3,12 @@
  */
 
 import chalk from "@oh-my-pi/pi-utils/chalk";
-import { APP_NAME } from "@oh-my-pi/pi-utils/dirs";
 import { Command, Flags } from "@oh-my-pi/pi-utils/cli";
 import { updateHelp as commandHelp } from "../cli/command-help";
+import * as pluginCli from "../cli/plugin-cli";
+import * as updateCli from "../cli/update-cli";
 import { CliUsageError } from "../cli/usage-error";
+import { initTheme } from "../ui/theme/service";
 
 export default class Update extends Command {
 	static description = commandHelp.description;
@@ -18,21 +20,17 @@ export default class Update extends Command {
 		stable: Flags.boolean({ description: "Switch back to the stable channel", default: false }),
 	};
 
-	static examples = [`${APP_NAME} update`, `${APP_NAME} update --check`, `${APP_NAME} update --canary`];
+	static examples = ["omp update", "omp update --check", "omp update --canary"];
 
 	async run(): Promise<void> {
 		const { flags } = await this.parse(Update);
-		// The ordinary updater must remain separate from the native-backed plugin/theme graph:
-		// a missing pi_natives addon must not prevent the user from replacing the binary.
-		// Load plugin management only for the explicit --plugins branch.
+		initTheme();
 		if (flags.canary && flags.stable) throw new CliUsageError("--canary and --stable are mutually exclusive");
 		if (flags.plugins) {
-			const { runPluginCommand } = await import("../cli/plugin-cli");
-			await runPluginCommand({ action: "upgrade", args: [], flags: flags.check ? { dryRun: true } : {} });
+			await pluginCli.runPluginCommand({ action: "upgrade", args: [], flags: flags.check ? { dryRun: true } : {} });
 		} else {
 			try {
-				const { runUpdateCommand } = await import("../cli/update-cli");
-				await runUpdateCommand({
+				await updateCli.runUpdateCommand({
 					force: flags.force,
 					check: flags.check,
 					channel: flags.canary ? "canary" : flags.stable ? "stable" : undefined,

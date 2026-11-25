@@ -10,6 +10,7 @@ import type {
 	Usage,
 } from "@oh-my-pi/pi-ai";
 import {
+	$env,
 	directoryIsEnterable,
 	directoryIsMissing,
 	getBlobsDir,
@@ -27,8 +28,10 @@ import {
 	toError,
 	withLoopPhase,
 } from "@oh-my-pi/pi-utils";
-import { isTaskToolDetails, type StructuredSubagentSchemaMode } from "@oh-my-pi/pi-tui/tools/task";
-import type { ConfiguredThinkingLevel } from "@oh-my-pi/pi-tui/thinking";
+import { isTaskToolDetails, type StructuredSubagentSchemaMode } from "../task/task-details";
+import type { ConfiguredThinkingLevel } from "../utils/render-utils";
+import { isUserRequestEntry } from "./transcript/transcript-entry";
+import type { SessionTreePosition } from "../modes/view-model/status-line/host";
 import * as snapcompact from "@oh-my-pi/snapcompact";
 import { moveFileAcrossDevices } from "../utils/atomic-file";
 import { hasAnnotationDraftsSync } from "../extensibility/custom-commands/bundled/annotate/draft-store";
@@ -69,10 +72,12 @@ import {
 	type LabelEntry,
 	type ModeChangeEntry,
 	type ModelChangeEntry,
+	type ModelFallbackCause,
 	type ModelUsageEntry,
 	type ModelUsageRecord,
 	lastSelfSelectedLeafId,
 	type NewSessionOptions,
+	parseSessionOrigin,
 	type ResetBoundaryEntry,
 	type ServiceTierChangeEntry,
 	sessionEntryLeafId,
@@ -80,6 +85,7 @@ import {
 	type SessionHeader,
 	type SessionInitEntry,
 	type SessionMessageEntry,
+	type SessionOrigin,
 	type SessionTitleSource,
 	type SessionTreeNode,
 	type ThinkingLevelChangeEntry,
@@ -505,13 +511,8 @@ function resetNestedTaskBilling(extractedToolData: Record<string, unknown[]> | u
 	for (const task of tasks) resetTaskResultBilling(task);
 }
 
-function isDurableOutputEntry(entry: SessionEntry): boolean {
-	return (
-		entry.type === "message" &&
-		(entry.message.role === "assistant" ||
-			entry.message.role === "bashExecution" ||
-			entry.message.role === "pythonExecution")
-	);
+function isAssistantEntry(entry: SessionEntry): boolean {
+	return entry.type === "message" && entry.message.role === "assistant";
 }
 
 function isDraftOnlyMetadataEntry(entry: SessionEntry): boolean {
@@ -536,6 +537,15 @@ function isDraftOnlyMetadataEntry(entry: SessionEntry): boolean {
 
 function orderedByTimestamp(a: SessionTreeNode, b: SessionTreeNode): number {
 	return new Date(a.entry.timestamp).getTime() - new Date(b.entry.timestamp).getTime();
+}
+
+function entriesByTimestamp(a: SessionEntry, b: SessionEntry): number {
+	return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+}
+
+function sameTreePosition(a: SessionTreePosition | undefined, b: SessionTreePosition | undefined): boolean {
+	if (a === undefined || b === undefined) return a === b;
+	return a.ahead === b.ahead && a.branch?.index === b.branch?.index && a.branch?.count === b.branch?.count;
 }
 
 /**
@@ -593,10 +603,18 @@ export class SessionEntryIndex {
 	// change or rebuild starts a fresh array (the old one is never mutated).
 	#generation = 0;
 	#branchCache: { leaf: string | null | undefined; generation: number; branch: SessionEntry[] } | undefined;
+	/**
+	 * Ids of the entries whose subtree holds a user turn ({@link isUserRequestEntry}): the
+	 * branches a fork counts. Recovery paths that drop a failed reply branch the
+	 * session too, but leave no user turn behind, so they never read as forks.
+	 */
+	#withUserTurn = new Set<string>();
+	#treePositionMemo: { generation: number; position: SessionTreePosition | undefined } | undefined;
 
 	clear(): void {
 		this.#entriesById.clear();
 		this.#children.clear();
+		this.#withUserTurn.clear();
 		this.#labels.clear();
 		this.#leaf = null;
 		this.#usage = emptyUsageStatistics();
@@ -639,6 +657,10 @@ export class SessionEntryIndex {
 		const bucket = this.#children.get(entry.parentId);
 		if (bucket) bucket.push(entry);
 		else this.#children.set(entry.parentId, [entry]);
+		// A child indexed before its parent (an out-of-order journal) already holds a user turn.
+		if (isUserRequestEntry(entry) || this.#children.get(entry.id)?.some(child => this.#withUserTurn.has(child.id))) {
+			this.#markUserTurn(entry);
+		}
 
 		if (entry.type === "label") {
 			if (entry.label) this.#labels.set(entry.targetId, entry.label);
@@ -692,6 +714,62 @@ export class SessionEntryIndex {
 	 */
 	detachBranchView(): void {
 		this.#branchCache = undefined;
+	}
+
+	/** Mark `entry` and its ancestors as holding a user turn, stopping at the first already marked. */
+	#markUserTurn(entry: SessionEntry): void {
+		let cursor: SessionEntry | undefined = entry;
+		while (cursor && !this.#withUserTurn.has(cursor.id)) {
+			this.#withUserTurn.add(cursor.id);
+			cursor = cursor.parentId === null ? undefined : this.#entriesById.get(cursor.parentId);
+		}
+	}
+
+	/**
+	 * Where the active leaf sits in the tree: the branch it is on at the deepest
+	 * fork its path passes through, and the user turns on the newest
+	 * continuation below it. Undefined at the tip of a session without forks;
+	 * the same object while the position is unchanged.
+	 */
+	treePosition(): SessionTreePosition | undefined {
+		const memo = this.#treePositionMemo;
+		if (memo?.generation === this.#generation) return memo.position;
+		const next = this.#computeTreePosition();
+		const position = memo && sameTreePosition(memo.position, next) ? memo.position : next;
+		this.#treePositionMemo = { generation: this.#generation, position };
+		return position;
+	}
+
+	#computeTreePosition(): SessionTreePosition | undefined {
+		const path = this.branchView();
+		let branch: SessionTreePosition["branch"];
+		for (let index = path.length - 1; index >= 0 && branch === undefined; index--) {
+			const entry = path[index]!;
+			const siblings = this.#children.get(entry.parentId);
+			if (!siblings || siblings.length < 2) continue;
+			const branches = siblings.filter(sibling => sibling === entry || this.#withUserTurn.has(sibling.id));
+			if (branches.length < 2) continue;
+			branches.sort(entriesByTimestamp);
+			branch = { index: branches.indexOf(entry) + 1, count: branches.length };
+		}
+
+		let ahead = 0;
+		const seen = new Set<string>();
+		let cursor = this.#leaf;
+		while (true) {
+			const next = this.#children
+				.get(cursor)
+				?.filter(child => this.#withUserTurn.has(child.id))
+				.sort(entriesByTimestamp)
+				.at(-1);
+			if (!next || seen.has(next.id)) break;
+			seen.add(next.id);
+			if (isUserRequestEntry(next)) ahead++;
+			cursor = next.id;
+		}
+
+		if (branch === undefined) return ahead === 0 ? undefined : { ahead };
+		return { branch, ahead };
 	}
 
 	childrenOf(parentId: string): SessionEntry[] {
@@ -1057,6 +1135,12 @@ export class SessionManager {
 
 	#suppressBreadcrumb = false;
 	/**
+	 * Client this process serves, from `PI_SESSION_ORIGIN` (the Chrome extension's native host sets `chrome`): stamped
+	 * on every session file the manager starts, and such a process writes no terminal breadcrumb, so `--continue`
+	 * in a terminal never picks its sessions.
+	 */
+	readonly #origin: SessionOrigin | undefined;
+	/**
 	 * The last breadcrumb this manager wrote marked a lazy fresh session whose
 	 * JSONL is not yet on disk. Cleared (and the crumb re-stamped non-fresh) once
 	 * the session materializes, so a materialized-then-deleted session still falls
@@ -1089,13 +1173,14 @@ export class SessionManager {
 		this.#persist = persist;
 		this.#storage = storage;
 		this.#blobs = new BlobStore(getBlobsDir());
+		this.#origin = parseSessionOrigin($env.PI_SESSION_ORIGIN);
 
 		if (persist && sessionDir) this.#storage.ensureDirSync(this.#sessionDir);
 	}
 
 	#rememberBreadcrumb(cwd: string, sessionFile: string, fresh = false): void {
 		this.#breadcrumbFresh = fresh;
-		if (this.#suppressBreadcrumb) return;
+		if (this.#suppressBreadcrumb || this.#origin) return;
 		writeTerminalBreadcrumb(cwd, sessionFile, fresh, {
 			remoteStorage: !(this.#storage instanceof FileSessionStorage),
 		});
@@ -1672,12 +1757,12 @@ export class SessionManager {
 		return { lines, bytes, stamp };
 	}
 
-	#historyContainsDurableOutput(): boolean {
-		return this.#entries.some(isDurableOutputEntry);
+	#historyContainsAssistantMessage(): boolean {
+		return this.#entries.some(isAssistantEntry);
 	}
 
 	#shouldHaveSessionFile(): boolean {
-		return this.#forceFileCreation || this.#fileIsCurrent || this.#historyContainsDurableOutput();
+		return this.#forceFileCreation || this.#fileIsCurrent || this.#historyContainsAssistantMessage();
 	}
 
 	/**
@@ -2099,9 +2184,9 @@ export class SessionManager {
 			id: this.#sessionId,
 			timestamp,
 			cwd: this.#cwd,
+			origin: this.#origin,
 			parentSession: options?.parentSession,
 			providerPromptCacheKey: options?.providerPromptCacheKey,
-			kind: options?.kind,
 			taskPromptCacheKey: options?.taskPromptCacheKey,
 		};
 		const workspace = normalizeSessionWorkspace({
@@ -2562,6 +2647,7 @@ export class SessionManager {
 			titleSource: this.#header.titleSource ?? this.#titleSource,
 			timestamp,
 			cwd: this.#cwd,
+			origin: this.#origin,
 			additionalDirectories: this.#additionalDirectories.length > 0 ? [...this.#additionalDirectories] : undefined,
 			parentSession: parentSessionId,
 			providerPromptCacheKey: SessionManager.getInheritedProviderPromptCacheKey(this.#header),
@@ -2784,8 +2870,8 @@ export class SessionManager {
 
 			// Rewrite at the new location when the file already existed (update cwd) or
 			// there is in-memory output worth materializing; otherwise stay lazy.
-			const hasOutput = this.#historyContainsDurableOutput();
-			if (this.#persist && this.#sessionFile && (sessionFileExisted || hasOutput)) {
+			const hasAssistant = this.#historyContainsAssistantMessage();
+			if (this.#persist && this.#sessionFile && (sessionFileExisted || hasAssistant)) {
 				this.#forceFileCreation = true;
 				await this.#rewriteAtomically();
 			}
@@ -2811,18 +2897,13 @@ export class SessionManager {
 
 	/** Persist this session's transcript as a newly identified OMP session. */
 	async persistCopy(
-		options?: { sessionDir?: string; suppressBreadcrumb?: boolean; sessionFile?: string },
+		options?: { sessionDir?: string; suppressBreadcrumb?: boolean },
 		storage: SessionStorage = new FileSessionStorage(),
 	): Promise<SessionManager> {
 		const sessionDir = options?.sessionDir ?? SessionManager.getDefaultSessionDir(this.#cwd, undefined, storage);
 		const manager = new SessionManager(this.#cwd, sessionDir, true, storage);
 		manager.#suppressBreadcrumb = options?.suppressBreadcrumb === true;
-		// Kind inherits: a copy of a chat session must stay chat-stamped,
-		// or the copy would resume later with full tools (I1).
-		manager.#resetToNewSession(
-			{ kind: this.#header.kind, taskPromptCacheKey: this.#header.taskPromptCacheKey },
-			options?.sessionFile,
-		);
+		manager.#resetToNewSession({ taskPromptCacheKey: this.#header.taskPromptCacheKey });
 		manager.#sessionName = this.#sessionName;
 		manager.#titleSource = this.#titleSource;
 		manager.#titleUpdatedAt = this.#titleUpdatedAt;
@@ -3501,8 +3582,9 @@ export class SessionManager {
 		this.#notifyEntryAppended(entry);
 		await this.#persistTitleChangeEntry(entry, { title, source, updatedAt: timestamp });
 		// Keep the recent-sessions title index current so welcome-screen lookups
-		// never have to content-scan this session's file.
-		if (this.#persist && this.#storage instanceof FileSessionStorage) {
+		// never have to content-scan this session's file. Another client's session
+		// stays out: the picker lists indexed titles without reading the header.
+		if (this.#persist && this.#storage instanceof FileSessionStorage && !this.#header.origin) {
 			recordSessionTitle(this.#sessionId, title);
 		}
 
@@ -3692,15 +3774,16 @@ export class SessionManager {
 	 * Append a model change as a child of the current leaf, then advance the leaf.
 	 * @param model Model in "provider/modelId" format
 	 * @param role Optional role (default: "default")
-	 * @param resolvedModelIsFallback Whether this transition selected a retry-fallback model
+	 * @param options.fallback Why a retry fallback selected this model; it marks the entry `resolvedModelIsFallback`
 	 */
-	appendModelChange(model: string, role?: string, resolvedModelIsFallback = false): string {
+	appendModelChange(model: string, role?: string, options?: { fallback?: ModelFallbackCause }): string {
 		const entry: ModelChangeEntry = {
 			type: "model_change",
 			...this.#freshEntryFields(),
 			model,
 			role,
-			resolvedModelIsFallback,
+			resolvedModelIsFallback: options?.fallback !== undefined,
+			fallback: options?.fallback,
 		};
 		this.#recordEntry(entry);
 		return entry.id;
@@ -3934,6 +4017,11 @@ export class SessionManager {
 
 	getEntry(id: string): SessionEntry | undefined {
 		return this.#index.get(id);
+	}
+
+	/** The active leaf's place in the session tree ({@link SessionEntryIndex.treePosition}). */
+	getTreePosition(): SessionTreePosition | undefined {
+		return this.#index.treePosition();
 	}
 
 	/** All direct children of an entry. */
@@ -4202,11 +4290,11 @@ export class SessionManager {
 			id: newSessionId,
 			timestamp,
 			cwd: this.#cwd,
+			origin: this.#origin,
 			title: this.#sessionName,
 			titleSource: this.#titleSource,
 			parentSession: this.#persist ? sourceSessionFile : undefined,
 			additionalDirectories: this.#additionalDirectories.length > 0 ? [...this.#additionalDirectories] : undefined,
-			kind: this.#header.kind,
 		};
 
 		const labels: LabelEntry[] = [];
@@ -4258,64 +4346,6 @@ export class SessionManager {
 		return newSessionFile;
 	}
 
-	/**
-	 * Create an INDEPENDENT new session file containing only the path from root
-	 * to `leafId`, leaving this session untouched — the non-switching
-	 * counterpart of {@link createBranchedSession} (which converts this session
-	 * in place). Backs the `fork_from` RPC ("new session from this point").
-	 * Returns the new file path + session id, or undefined when not persisting.
-	 */
-	async copyBranchToNewSession(leafId: string): Promise<{ sessionPath: string; sessionId: string } | undefined> {
-		if (!this.#persist || !this.#sessionFile) return undefined;
-		const branchPath = this.getBranch(leafId);
-		if (branchPath.length === 0) throw new Error(`Entry ${leafId} not found`);
-
-		// Same keep-set/label-carry rules as createBranchedSession.
-		const entriesToKeep = branchPath.filter(entry => entry.type !== "label");
-		const keptIds = new Set(entriesToKeep.map(entry => entry.id));
-		const labelsToCarry: Array<{ targetId: string; label: string }> = [];
-		for (const [targetId, label] of this.#index.labelsInEffect()) {
-			if (keptIds.has(targetId)) labelsToCarry.push({ targetId, label });
-		}
-
-		const manager = new SessionManager(this.#cwd, this.#sessionDir, true, this.#storage);
-		manager.#suppressBreadcrumb = this.#suppressBreadcrumb;
-		// Kind inherits — same strict-isolation rule as persistCopy.
-		manager.#resetToNewSession({ parentSession: this.#sessionFile, kind: this.#header.kind });
-		manager.#sessionName = this.#sessionName;
-		manager.#titleSource = this.#titleSource;
-		manager.#titleUpdatedAt = this.#titleUpdatedAt;
-		manager.#header.title = this.#sessionName;
-		manager.#header.titleSource = this.#titleSource;
-		manager.#additionalDirectories = [...this.#additionalDirectories];
-		manager.#header.additionalDirectories =
-			manager.#additionalDirectories.length > 0 ? [...manager.#additionalDirectories] : undefined;
-
-		const labels: LabelEntry[] = [];
-		let parentId = entriesToKeep[entriesToKeep.length - 1]?.id ?? null;
-		for (const carried of labelsToCarry) {
-			const labelEntry: LabelEntry = {
-				type: "label",
-				id: generateId(new Set([...keptIds, ...labels.map(entry => entry.id)])),
-				parentId,
-				timestamp: nowIso(),
-				runtime: currentRuntimeIdentity(),
-				targetId: carried.targetId,
-				label: carried.label,
-			};
-			labels.push(labelEntry);
-			parentId = labelEntry.id;
-		}
-
-		manager.#entries = structuredClone([...entriesToKeep, ...labels]);
-		manager.#index.rebuild(manager.#entries);
-		manager.#forceFileCreation = true;
-		await manager.#rewriteAtomically();
-		if (manager.#sessionFile === undefined) return undefined;
-		await copySessionArtifacts(this.#sessionFile, manager.#sessionFile);
-		return { sessionPath: manager.#sessionFile, sessionId: manager.#sessionId };
-	}
-
 	/** Resolve the canonical default session directory for a cwd. */
 	static getDefaultSessionDir(
 		cwd: string,
@@ -4330,15 +4360,10 @@ export class SessionManager {
 	 * @param cwd Working directory (stored in the session header)
 	 * @param sessionDir Optional session directory; defaults to the cwd-derived dir.
 	 */
-	static create(
-		cwd: string,
-		sessionDir?: string,
-		storage: SessionStorage = new FileSessionStorage(),
-		options?: NewSessionOptions,
-	): SessionManager {
+	static create(cwd: string, sessionDir?: string, storage: SessionStorage = new FileSessionStorage()): SessionManager {
 		const dir = sessionDir ?? SessionManager.getDefaultSessionDir(cwd, undefined, storage);
 		const manager = new SessionManager(cwd, dir, true, storage);
-		manager.#resetToNewSession(options);
+		manager.#resetToNewSession();
 		return manager;
 	}
 
@@ -4411,7 +4436,6 @@ export class SessionManager {
 				parentSession: sourceHeader?.id,
 				providerPromptCacheKey: SessionManager.getInheritedProviderPromptCacheKey(sourceHeader),
 				taskPromptCacheKey: sourceHeader?.taskPromptCacheKey,
-				kind: sourceHeader?.kind,
 			},
 			options?.sessionFile,
 		);
@@ -4630,26 +4654,9 @@ export class SessionManager {
 		};
 	}
 	/**
-	 * Cold-read a session file's kind without taking a write lock. Returns
-	 * "chat" | "agent", with "agent" as the safe default on read failure.
-	 */
-	static async peekSessionKind(
-		filePath: string,
-		storage: SessionStorage = new FileSessionStorage(),
-	): Promise<"agent" | "chat"> {
-		let loaded: FileEntry[];
-		try {
-			loaded = await loadEntriesFromFile(filePath, storage);
-		} catch {
-			return "agent";
-		}
-		if (loaded.length === 0) return "agent";
-		const header = loaded.find(entry => entry.type === "session") as SessionHeader | undefined;
-		return header?.kind ?? "agent";
-	}
-
-	/**
-	 * Continue the most recent session, or create a new one if none exists.
+	 * Continue the most recent session, or create a new one if none exists or
+	 * another live omp process writes the one picked
+	 * ({@link SessionStorage.isSessionOwnedElsewhere}).
 	 *
 	 * When the chosen session's conversation went on in another file (it moved
 	 * off its file; see `findSessionContinuation`), this opens the copy to
@@ -4779,9 +4786,15 @@ export class SessionManager {
 			const continuation = fromBreadcrumb
 				? await findSessionContinuation(chosenSession, storage)
 				: await findRecentSessionContinuation(chosenSession, storage);
-			if (continuation) {
-				options.onSessionContinuation?.(continuation);
-				chosenSession = continuation.session.path;
+			const resumable = continuation?.session.path ?? chosenSession;
+			if (storage.isSessionOwnedElsewhere?.(resumable)) {
+				// Its first write would move it to a sibling, duplicating the
+				// conversation the running process keeps writing: start fresh.
+				logger.debug("Not continuing a session another omp process writes", { sessionFile: resumable });
+				chosenSession = null;
+			} else {
+				if (continuation) options.onSessionContinuation?.(continuation);
+				chosenSession = resumable;
 			}
 		}
 
@@ -4821,40 +4834,6 @@ export class SessionManager {
 		return sortPinnedFirst(sessions, await loadPinnedSessionIds());
 	}
 
-	/** Rename a managed, currently-unattached session without adopting it as the caller's session. */
-	static async renameStoredSession(
-		sessionPath: string,
-		name: string,
-		storage: SessionStorage = new FileSessionStorage(),
-	): Promise<boolean> {
-		const title = SessionManager.#cleanTitle(name);
-		if (!title) return false;
-
-		const target = path.resolve(sessionPath);
-		const sessionsRoot = path.resolve(getSessionsDir());
-		const relative = path.relative(sessionsRoot, target);
-		if (
-			!relative ||
-			relative === ".." ||
-			relative.startsWith(`..${path.sep}`) ||
-			path.isAbsolute(relative) ||
-			!target.endsWith(".jsonl") ||
-			!storage.existsSync(target)
-		) {
-			throw new Error("Session not found");
-		}
-
-		const manager = await SessionManager.open(target, path.dirname(target), storage, {
-			initialCwd: getProjectDir(),
-			suppressBreadcrumb: true,
-		});
-		try {
-			return await manager.setSessionName(title, "user", "external-rename");
-		} finally {
-			await manager.close();
-			manager.releaseRetainedEntries();
-		}
-	}
 	/**
 	 * Picker-facing project listing in recency order (the picker floats pins),
 	 * untitled empties dropped. Titled empties stay — a title is user intent worth resuming.
@@ -4964,11 +4943,7 @@ export async function cleanupEmptyMoveSession(
 	const sessionFile = sessionManager.getSessionFile();
 	if (!sessionFile || !movedFromEmptySessionFile) return;
 	if (path.resolve(sessionFile) !== path.resolve(movedFromEmptySessionFile)) return;
-	const entries = sessionManager.getEntries();
-	const hasRealMessages = entries.some(
-		e => isDurableOutputEntry(e) || (e.type === "message" && e.message.role === "user"),
-	);
-	if (hasRealMessages) return;
+	if (hasConversationalHistory(sessionManager.getEntries())) return;
 	try {
 		await sessionManager.dropSession(sessionFile);
 	} catch (err) {

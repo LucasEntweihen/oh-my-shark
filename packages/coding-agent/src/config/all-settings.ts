@@ -9,7 +9,6 @@ import * as sessionSettings from "../session/settings";
 import * as advisorSettings from "../advisor/settings";
 import * as configModelSettings from "./model-settings";
 import * as sessionContextSettings from "../session/context-settings";
-import * as chatSettings from "../session/chat-settings";
 import * as memoryBackendSettings from "../memory-backend/settings";
 import * as memoriesSettings from "../memories/settings";
 import * as sharpshooterSettings from "../sharpshooter/settings";
@@ -55,7 +54,6 @@ const DOMAINS: readonly Readonly<Record<string, unknown>>[] = [
 	telemetrySettings,
 	advisorSettings,
 	sessionContextSettings,
-	chatSettings,
 	memoryBackendSettings,
 	memoriesSettings,
 	sharpshooterSettings,

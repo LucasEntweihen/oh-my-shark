@@ -4,31 +4,15 @@
  * the main thread's mirror of a worker-homed session, which scopes the same
  * root manager to the child's agent id.
  */
-import type { PipeStreams } from "@oh-my-pi/pi-natives";
 import type { AsyncJob, AsyncJobManagerApi } from "../async";
-import { pipeSourceId } from "../job-widgets/pipe-source";
 import type { JobWidgetRegistry } from "../job-widgets/types";
 import { AgentRegistry } from "../registry/agent-registry";
-import type { JobsPanelStream } from "@oh-my-pi/pi-tui/overlays/jobs-panel";
-import type { JobWidgetEntry } from "@oh-my-pi/pi-tui/tools/job-widget";
+import { nativeShellStreams } from "../tools/shell-steps";
+import type { JobWidgetEntry } from "../tools/details/job-widget";
 import type { AsyncJobInspection, AsyncJobSnapshot, AsyncJobSnapshotItem, AsyncJobTree } from "./agent-session-types";
 
-/** Snapshot options: how many settled jobs to list, and whether to add bounded result/error previews. */
-export interface AsyncJobSnapshotOptions {
-	recentLimit?: number;
-	includeResults?: boolean;
-}
-
-/**
- * The public summary of `job` (see {@link AsyncJobSnapshotItem}): its caption shows only while widgets are on,
- * its widget view rides along for the GUI, and `includeResults` adds bounded result/error previews.
- */
-function jobSnapshotItem(
-	job: AsyncJob,
-	widgets: JobWidgetRegistry | undefined,
-	options?: AsyncJobSnapshotOptions,
-): AsyncJobSnapshotItem {
-	const widget = widgets?.view(job);
+/** The public summary of `job` (see {@link AsyncJobSnapshotItem}); its caption shows only while widgets are on. */
+function jobSnapshotItem(job: AsyncJob, widgets: JobWidgetRegistry | undefined): AsyncJobSnapshotItem {
 	return {
 		id: job.id,
 		type: job.type,
@@ -39,18 +23,8 @@ function jobSnapshotItem(
 		command: job.process?.command,
 		startTime: job.startTime,
 		endTime: job.endTime,
-		endedAt: job.endedAt,
 		agentId: job.agentId,
 		ownerId: job.ownerId,
-		cancellationPending: job.status === "cancelled" && job.endedAt === undefined,
-		...(options?.includeResults
-			? {
-					resultPreview: job.resultText?.slice(0, 20_000),
-					errorPreview: job.errorText?.slice(0, 20_000),
-					previewTruncated: (job.resultText?.length ?? 0) > 20_000 || (job.errorText?.length ?? 0) > 20_000,
-				}
-			: {}),
-		...(widget ? { widget } : {}),
 	};
 }
 
@@ -58,12 +32,13 @@ function jobSnapshotItem(
 export function asyncJobSnapshot(
 	manager: AsyncJobManagerApi,
 	agentId: string | undefined,
-	options?: AsyncJobSnapshotOptions,
+	options?: { recentLimit?: number },
 ): AsyncJobSnapshot {
 	const ownerFilter = agentId ? { ownerId: agentId } : undefined;
-	const summarize = (job: AsyncJob) => jobSnapshotItem(job, manager.widgets, options);
-	const running = manager.getRunningJobs(ownerFilter).map(summarize);
-	const recent = manager.getRecentJobs(options?.recentLimit ?? 5, ownerFilter).map(summarize);
+	const running = manager.getRunningJobs(ownerFilter).map(job => jobSnapshotItem(job, manager.widgets));
+	const recent = manager
+		.getRecentJobs(options?.recentLimit ?? 5, ownerFilter)
+		.map(job => jobSnapshotItem(job, manager.widgets));
 	const delivery = manager.getDeliveryState(ownerFilter);
 	return { running, recent, delivery };
 }
@@ -117,7 +92,7 @@ function inJobTree(job: AsyncJob, rootId: string | undefined, parents: ReadonlyM
 export function asyncJobTree(
 	manager: AsyncJobManagerApi,
 	rootId: string | undefined,
-	options?: AsyncJobSnapshotOptions,
+	options?: { recentLimit?: number },
 ): AsyncJobTree {
 	const parents = jobTreeParents(manager);
 	const running = manager.getRunningJobs().filter(job => inJobTree(job, rootId, parents));
@@ -132,8 +107,8 @@ export function asyncJobTree(
 		}
 	}
 	return {
-		running: running.map(job => jobSnapshotItem(job, manager.widgets, options)),
-		recent: recent.map(job => jobSnapshotItem(job, manager.widgets, options)),
+		running: running.map(job => jobSnapshotItem(job, manager.widgets)),
+		recent: recent.map(job => jobSnapshotItem(job, manager.widgets)),
 		rootId,
 		agents: [...agents.values()],
 	};
@@ -147,32 +122,6 @@ export function requestJobTreeCaptions(manager: AsyncJobManagerApi, rootId: stri
 	for (const job of manager.getRunningJobs()) {
 		if (inJobTree(job, rootId, parents)) widgets.requestCaption(job);
 	}
-}
-
-/** Bytes off a stream's end a job inspector reads: screens of text, not the megabyte a stream keeps. */
-const STREAM_TAIL_BYTES = 64 * 1024;
-
-/** The newest text of stream `id` from its first whole line on; undefined for binary data. */
-function streamTail(streams: PipeStreams, id: number, total: number): string | undefined {
-	const chunk = streams.read(id, Math.max(0, total - STREAM_TAIL_BYTES));
-	if (!chunk) return "";
-	if (chunk.data.indexOf(0) !== -1) return undefined;
-	const text = new TextDecoder().decode(chunk.data);
-	// A read that starts past the stream's head starts mid-line, maybe mid-character.
-	return chunk.start > 0 ? text.slice(text.indexOf("\n") + 1) : text;
-}
-
-/** A command's tapped pipes and redirected files as a job inspector lists them, oldest first. */
-function jobStreams(streams: PipeStreams): JobsPanelStream[] {
-	return streams.list().map(info => ({
-		id: pipeSourceId(info),
-		kind: info.file ? "file" : "pipe",
-		producer: info.producer,
-		consumer: info.consumer,
-		bytes: info.total,
-		open: info.open,
-		tail: () => streamTail(streams, info.id, info.total),
-	}));
 }
 
 /**
@@ -199,10 +148,11 @@ export function inspectAsyncJob(
 		pids: job.status === "running" ? (job.process?.pids() ?? []) : [],
 		exitCode,
 		output,
+		outputModified: job.process?.outputModified?.(),
 		artifactId: details?.meta?.truncation?.artifactId,
 		widget: manager.widgets?.view(job),
 		trace: job.process?.trace?.(),
-		streams: job.process?.streams && jobStreams(job.process.streams),
+		streams: job.process?.streams && nativeShellStreams(job.process.streams),
 	};
 }
 

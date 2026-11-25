@@ -493,9 +493,12 @@ export interface SessionState {
 	sessionId: string;
 	model?: ModelInfo;
 	thinkingLevel?: ThinkingLevel;
+	/** The user's thinking selector: `auto` while auto mode picks the effort, else `thinkingLevel`. */
+	configuredThinkingLevel?: ConfiguredThinkingLevel;
+	/** Selectors the active model accepts, as omp's thinking selector lists them: `off`, `auto`, then its efforts. */
+	thinkingLevels?: ConfiguredThinkingLevel[];
 	isStreaming?: boolean;
 	isCompacting?: boolean;
-	isBackgroundCompacting?: boolean;
 	steeringMode?: QueueMode;
 	followUpMode?: QueueMode;
 	interruptMode?: InterruptMode;
@@ -504,7 +507,6 @@ export interface SessionState {
 	autoCompactionEnabled?: boolean;
 	fastModeEnabled?: boolean;
 	fastModeActive?: boolean;
-	fastModeUltrafast?: boolean;
 	/** `/slow` applies to the active model. */
 	slowModeSupported?: boolean;
 	/** `/slow` is on for the active model; always `false` when `slowModeSupported` is `false`. */
@@ -557,6 +559,10 @@ export interface BashResult {
 	artifactError?: Record<string, unknown>;
 	minimized?: Record<string, unknown>;
 	workingDir?: string;
+	/** The command ended in another directory than it started in; the next command starts in its own cwd. */
+	movedCwd?: boolean;
+	/** The command ended with `set -e` on; the next command starts with it off. */
+	errexit?: boolean;
 	images?: ImageContent[];
 	/** The embedded shell's final `ShellTrace` of the run; only when the caller asked for one. */
 	trace?: Record<string, unknown>;
@@ -579,7 +585,6 @@ export interface LineRange {
 export interface FastModeResult {
 	enabled: boolean;
 	active: boolean;
-	ultrafast?: boolean;
 }
 
 export interface CompactionResult {
@@ -592,23 +597,46 @@ export interface CompactionResult {
 	providerReplayThroughEntryId?: string;
 }
 
+/** A role a model holds, as picker rows chip it. */
+export interface ModelPickerRole {
+	role: string;
+	/** The role's display tag. */
+	label: string;
+	/** Auto-selected: the role has no configured model. */
+	auto?: boolean;
+}
+
+/** One row of omp's session model picker. */
+export interface ModelPickerRow {
+	provider: string;
+	id: string;
+	name: string;
+	/** The quick role this row applies (`@` search); pass it to `set_model`. */
+	role?: string;
+	/** Visible roles the model holds, built-in order first. */
+	roles?: ModelPickerRole[];
+	/** Steps of the model's thinking slider, low to high: `auto`, `off`, then its efforts. Absent when it has no effort to pick. */
+	thinking?: ConfiguredThinkingLevel[];
+	/** Model rows: the session's level as this model would run it (the untouched slider). Quick-role rows: the role's explicit level, which `set_model` should carry. */
+	thinkingLevel?: ConfiguredThinkingLevel;
+	/** The session's context exceeds the model's window. */
+	overContext?: boolean;
+	/** The session runs this row: its model, or under `@` its active quick role. */
+	current?: boolean;
+}
+
+export interface ModelPickerResult {
+	rows: ModelPickerRow[];
+	/** Leading rows that are recently used or role-held (the picker's Recent block); 0 when there is no such split. */
+	recent: number;
+	/** Matching rows before `limit`. */
+	total: number;
+}
+
 export interface ModelCycleResult {
 	model: ModelInfo;
 	isScoped: boolean;
 	thinkingLevel?: ThinkingLevel;
-}
-
-/** A model an endpoint offers, as `discover_provider_models` reports it. */
-export interface DiscoveredModel {
-	id: string;
-	name: string;
-	reasoning: boolean;
-	/** Accepted input modalities, e.g. `text`, `image`. */
-	input: string[];
-	/** Null when the server does not report a limit. */
-	contextWindow: number | null;
-	/** Null when the server does not report a limit. */
-	maxTokens: number | null;
 }
 
 export interface ThinkingLevelCycleResult {
@@ -688,49 +716,6 @@ export interface SessionCredits {
 	acuCost: number;
 }
 
-export interface PromptCacheColdReason {
-	/** `refresh-missed`: omp's warm refresh found the entry gone. */
-	kind: "expired" | "refresh-missed" | "model" | "thinking" | "tools" | "system-prompt" | "retention" | "compaction";
-	/** `expired`: when the entry lapsed (epoch ms). */
-	at?: number;
-	/** `model` / `thinking`: the value the entry was written under. */
-	from?: string;
-	/** `model` / `thinking`: the value the next request uses. */
-	to?: string;
-}
-
-export interface PromptCacheWarming {
-	/** `scheduled`: a refresh decision is armed; `refreshing`: a refresh is in flight. */
-	state: "scheduled" | "refreshing" | "inactive";
-	/** When the armed refresh decides (epoch ms). */
-	nextWarmAt?: number;
-	/** When warming gives up (epoch ms). */
-	stopsAt?: number;
-	/** Why nothing is scheduled. */
-	reason?: string;
-}
-
-export interface PromptCacheStatus {
-	/** `cold`: the next request rewrites the cached prefix. */
-	state: "warm" | "cold";
-	/** Read off the transcript of a reopened session, not a response this process saw. */
-	inferred: boolean;
-	/** Retention tier the entry was written under: `short` (5m) or `long` (1h). */
-	tier: "short" | "long";
-	/** Send time of the last request that read or wrote the entry (epoch ms). */
-	touchedAt: number;
-	/** Prompt tokens a warm cache serves. */
-	cachedTokens: number;
-	/** Estimated prompt tokens of the next request. */
-	nextTokens: number;
-	/** Why it is cold; absent while warm. */
-	reason?: PromptCacheColdReason;
-	/** Lifetime after the last touch; absent when the provider never expires it. */
-	ttlMs?: number;
-	/** omp's cache warmer; absent when the entry was inferred. */
-	warming?: PromptCacheWarming;
-}
-
 export interface SessionStats {
 	sessionId: string;
 	userMessages: number;
@@ -747,8 +732,6 @@ export interface SessionStats {
 	/** Failed edits by the engine's `errorKind`. */
 	editRejections?: Record<string, number>;
 	contextUsage?: ContextUsage;
-	/** What the next request finds in the prompt cache, as `/session` shows it; absent when omp cannot tell. */
-	promptCache?: PromptCacheStatus;
 }
 
 export interface MessagesPage {
@@ -1391,12 +1374,6 @@ export interface InputUiRequest {
 	title: string;
 	placeholder?: string;
 	timeout?: number;
-	/** Set on a pasted OAuth authorization-code prompt: the id of its `open_url` request. omp closes the prompt once the browser callback signs in. */
-	authCodeFor?: string;
-	/** Set on any other login prompt asked after an authorization URL, such as an API key: the id of that `open_url` request. The login waits for this answer, so a host must show the prompt while the `open_url` is still up. */
-	loginPromptFor?: string;
-	/** Set on a login prompt whose answer may be left blank. */
-	allowEmpty?: boolean;
 	secret?: boolean;
 }
 
@@ -1418,94 +1395,12 @@ export interface AskUiRequest {
 	timeout?: number;
 }
 
-/** A run of inline text; a newline inside `text` is a hard line break. */
-export interface FormSpan {
-	text: string;
-	style?: "code" | "strong" | "em";
-}
-
-export interface FormChoiceOption {
-	value: string;
-	label: FormSpan[];
-	checked: boolean;
-	disabled: boolean;
-}
-
-/** A radio group, checkbox group or select. Empty `label`: the question is the text block before it. */
-export interface FormChoiceField {
-	kind: "choice";
-	name: string;
-	multi: boolean;
-	select: boolean;
-	/** Offer a free-text answer beside the options; its text is submitted as a value. */
-	other: boolean;
-	label: FormSpan[];
-	options: FormChoiceOption[];
-	required: boolean;
-}
-
-export interface FormTextField {
-	kind: "text";
-	name: string;
-	type: string;
-	multiline: boolean;
-	label: FormSpan[];
-	value: string;
-	placeholder: string;
-	required: boolean;
-	rows: number;
-	min?: number;
-	max?: number;
-	pattern?: string;
-	minLength?: number;
-	maxLength?: number;
-}
-
-export type FormField = FormChoiceField | FormTextField;
-
-export interface FormTextBlock {
-	kind: "text";
-	spans: FormSpan[];
-	heading: boolean;
-}
-
-export interface FormListBlock {
-	kind: "list";
-	items: FormSpan[][];
-	ordered: boolean;
-}
-
-export interface FormPreBlock {
-	kind: "pre";
-	text: string;
-}
-
-export interface FormTableBlock {
-	kind: "table";
-	rows: FormSpan[][][];
-	headerRows: number;
-}
-
-export interface FormFieldBlock {
-	kind: "field";
-	field: FormField;
-}
-
-export type FormBlock = FormTextBlock | FormListBlock | FormPreBlock | FormTableBlock | FormFieldBlock;
-
-/** One titled part of a form. Pictures arrive as their alt text. */
-export interface FormSection {
-	title: FormSpan[];
-	blocks: FormBlock[];
-}
-
-/** Exactly one representation: HTML by default, or parsed sections when the host enables structured forms with set_ask_dialog. */
+/** The HTML `<form>` of one `ui.formDialog` call (the `ask` tool or an extension); no opt-in is required. */
 export interface FormUiRequest {
 	type: "extension_ui_request";
 	id: string;
 	method: "form";
-	html?: string;
-	sections?: FormSection[];
+	html: string;
 	timeout?: number;
 }
 
@@ -1605,13 +1500,6 @@ export interface AnswersUiResponse {
 	answers: AskAnswer[];
 }
 
-/** Answers a `form` request, by control `name`: a string, or a string array for a multi-choice field. Choice values are option `value`s, or free text where `other` is set. */
-export interface FormUiResponse {
-	type: "extension_ui_response";
-	id: string;
-	formData: Record<string, unknown>;
-}
-
 /** Answers a `form` request with the submitted form data. */
 export interface DataUiResponse {
 	type: "extension_ui_response";
@@ -1621,7 +1509,7 @@ export interface DataUiResponse {
 }
 
 /** Host reply to an extension UI request; variants share `type` and differ by their payload key. */
-export type ExtensionUiResponse = ValueUiResponse | ConfirmUiResponse | CancelUiResponse | AnswersUiResponse | DataUiResponse | FormUiResponse;
+export type ExtensionUiResponse = ValueUiResponse | ConfirmUiResponse | CancelUiResponse | AnswersUiResponse | DataUiResponse;
 
 export interface HostToolCallRequest {
 	type: "host_tool_call";
@@ -1779,6 +1667,10 @@ export interface AbortAndPromptParams {
 	images?: ImageContent[];
 }
 
+export interface AbortAndDeliverQueueResult {
+	aborted: boolean;
+}
+
 export interface NewSessionParams {
 	parentSession?: string;
 }
@@ -1791,7 +1683,6 @@ export interface OpenSessionParams {
 
 export interface SetFastModeParams {
 	enabled: boolean;
-	ultrafast?: boolean;
 }
 
 export interface SetSlowModeParams {
@@ -1810,8 +1701,6 @@ export interface GoalParams {
 
 export interface SetAskDialogParams {
 	enabled: boolean;
-	/** Also take the `ask` tool's whole form as one `form` request, instead of field by field. */
-	form?: boolean;
 }
 
 export interface SetAskDialogResult {
@@ -1930,31 +1819,26 @@ export interface DictationStopResult {
 export interface SetModelParams {
 	provider: string;
 	modelId: string;
+	/** Thinking level to run the model at, clamped to it; omitted re-applies the session's level. */
+	thinkingLevel?: ConfiguredThinkingLevel;
+	/** Model role the switch records (a quick-role pick passes its role); default `default`. Nothing is persisted. */
+	role?: string;
 }
 
 export interface GetAvailableModelsResult {
 	models: ModelInfo[];
 }
 
-export interface DiscoverProviderModelsParams {
-	api: string;
-	baseUrl: string;
-	/** A saved provider whose credential authenticates the request when `apiKey` is absent. */
-	provider?: string;
-	apiKey?: string;
-	authHeader?: boolean;
-	headers?: Record<string, string>;
-	/** The server's model-list protocol; `openai-models-list` by default. */
-	discoveryType?: "ollama" | "llama.cpp" | "lm-studio" | "openai-models-list" | "proxy" | "litellm";
-	timeoutMs?: number;
-}
-
-export interface DiscoverProviderModelsResult {
-	models: DiscoveredModel[];
+export interface GetModelPickerParams {
+	/** Search text; blank browses every model, `provider/` limits matches to a provider. */
+	query?: string;
+	/** Most rows to return; default 100. */
+	limit?: number;
 }
 
 export interface SetThinkingLevelParams {
-	level: ThinkingLevel;
+	/** `auto` lets omp pick the effort per turn. */
+	level: ConfiguredThinkingLevel;
 }
 
 export interface GetAvailableThinkingLevelsResult {
@@ -2079,15 +1963,6 @@ export interface LoginResult {
 	providerId: string;
 }
 
-export interface SetApiKeyParams {
-	providerId: string;
-	apiKey: string;
-}
-
-export interface SetApiKeyResult {
-	providerId: string;
-}
-
 export interface GetLogoutAccountsParams {
 	providerId: string;
 }
@@ -2142,15 +2017,6 @@ export interface GetBtwHistoryResult {
 	records: BtwHistoryRecord[];
 }
 
-export interface ComposerPredictionFeedbackParams {
-	action: "shown" | "accepted" | "dismissed";
-	rank?: number;
-}
-
-export interface AbortCompactionResult {
-	aborted: boolean;
-}
-
 /** Every RPC command's parameters and successful response `data`. */
 export interface RpcWireCommands {
 	negotiate_protocol: { params: NegotiateProtocolParams; result: NegotiateProtocolResult };
@@ -2162,6 +2028,8 @@ export interface RpcWireCommands {
 	abort: { params: undefined; result: undefined };
 	abort_and_prompt: { params: AbortAndPromptParams; result: undefined };
 	abort_and_restore_queue: { params: undefined; result: AbortAndRestoreQueueResult };
+	abort_and_deliver_queue: { params: undefined; result: AbortAndDeliverQueueResult };
+	resume: { params: undefined; result: undefined };
 	new_session: { params: NewSessionParams; result: CancellationResult };
 	open_session: { params: OpenSessionParams; result: OpenSessionResult };
 	get_state: { params: undefined; result: SessionState };
@@ -2190,7 +2058,7 @@ export interface RpcWireCommands {
 	set_model: { params: SetModelParams; result: ModelInfo };
 	cycle_model: { params: undefined; result: ModelCycleResult | null };
 	get_available_models: { params: undefined; result: GetAvailableModelsResult };
-	discover_provider_models: { params: DiscoverProviderModelsParams; result: DiscoverProviderModelsResult };
+	get_model_picker: { params: GetModelPickerParams; result: ModelPickerResult };
 	set_thinking_level: { params: SetThinkingLevelParams; result: undefined };
 	cycle_thinking_level: { params: undefined; result: ThinkingLevelCycleResult | null };
 	get_available_thinking_levels: { params: undefined; result: GetAvailableThinkingLevelsResult };
@@ -2221,7 +2089,6 @@ export interface RpcWireCommands {
 	get_messages_page: { params: GetMessagesPageParams; result: MessagesPage };
 	get_login_providers: { params: undefined; result: GetLoginProvidersResult };
 	login: { params: LoginParams; result: LoginResult };
-	set_api_key: { params: SetApiKeyParams; result: SetApiKeyResult };
 	get_logout_accounts: { params: GetLogoutAccountsParams; result: GetLogoutAccountsResult };
 	logout: { params: LogoutParams; result: LogoutResult };
 	predict_word: { params: PredictWordParams; result: PredictWordResult };
@@ -2229,7 +2096,4 @@ export interface RpcWireCommands {
 	btw: { params: BtwParams; result: BtwResult };
 	btw_cancel: { params: BtwCancelParams; result: BtwCancelResult };
 	get_btw_history: { params: undefined; result: GetBtwHistoryResult };
-	composer_prediction_request: { params: undefined; result: undefined };
-	composer_prediction_feedback: { params: ComposerPredictionFeedbackParams; result: undefined };
-	abort_compaction: { params: undefined; result: AbortCompactionResult };
 }
