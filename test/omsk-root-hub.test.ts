@@ -25,7 +25,7 @@ describe("OMSK Root Ecosystem & Shared Architecture", () => {
 	afterEach(async () => {
 		try {
 			await fs.rm(tempDir, { recursive: true, force: true });
-		} catch {}
+		} catch { }
 	});
 
 	it("1. OmskSharedProviders initializes, persists API keys, syncs and exports JSON snapshot", async () => {

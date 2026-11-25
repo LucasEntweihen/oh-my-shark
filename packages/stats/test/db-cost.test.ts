@@ -656,8 +656,7 @@ describe("stats cache metrics", () => {
 		// 100 uncached + 800 reads at 0.1x + 100 writes at 1.25x = 305,
 		// versus 1,000 tokens at the uncached input rate.
 		expect(getOverallStats().cacheSavings).toBeCloseTo(0.695, 8);
-		// Cache writes are prompt tokens too, so the hit-rate denominator is 1,000.
-		expect(getOverallStats().cacheRate).toBeCloseTo(800 / 1_000, 8);
+		expect(getOverallStats().cacheRate).toBeCloseTo(800 / 900, 8);
 	});
 
 	it("reports cache writes without reads as negative savings", async () => {

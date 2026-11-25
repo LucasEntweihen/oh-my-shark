@@ -4,7 +4,12 @@
 import { Args, Command, Flags } from "@oh-my-pi/pi-utils/cli";
 import { skillsHelp as commandHelp } from "../cli/command-help";
 import { type SkillsAction, type SkillsCommandArgs, runSkillsCommand } from "../cli/skills-cli";
-import { initThemeSync as initTheme } from "@oh-my-pi/pi-tui/theme";
+import { loadThemeSync } from "@oh-my-pi/pi-tui/theme/loader";
+import { setCurrentTheme } from "@oh-my-pi/pi-tui/theme/runtime";
+
+function initTheme(name?: string): void {
+	setCurrentTheme(loadThemeSync(name ?? "dark"));
+}
 
 const ACTIONS: SkillsAction[] = [
 	"search",

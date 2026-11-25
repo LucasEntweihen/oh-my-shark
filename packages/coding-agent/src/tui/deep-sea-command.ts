@@ -1729,7 +1729,7 @@ export type WelcomeCockpitInput = {
 	modelName: string;
 	providerName: string;
 	recentSessions: Array<{ name: string; timeAgo: string }>;
-	lspServers: Array<{ name: string; fileTypes: string[]; status: "connected" | "error" | "connecting" }>;
+	lspServers: Array<{ name: string; fileTypes: string[]; status: "available" | "ready" | "error" | "connecting" }>;
 	termWidth: number;
 	termHeight: number;
 	layoutMode?: string;

@@ -13,7 +13,6 @@ import {
 	getProviderWindowStats,
 	getRecentErrors,
 	getRecentRequests,
-	getRequestPage,
 	getRequestDetails,
 	getTimeRangeConfig,
 	getToolDashboardStats,
@@ -284,22 +283,16 @@ export async function handleApi(req: Request): Promise<Response> {
 		return Response.json(stats);
 	}
 
-	if (path === "/api/stats/requests") {
-		try {
-			const limit = url.searchParams.get("limit");
-			return Response.json(
-				await getRequestPage(range ?? "24h", limit === null ? 50 : Number(limit), url.searchParams.get("cursor")),
-			);
-		} catch (cause) {
-			if (cause instanceof RangeError) return Response.json({ error: cause.message }, { status: 400 });
-			throw cause;
-		}
-	}
-
 	if (path === "/api/stats/recent") {
 		const limit = url.searchParams.get("limit");
 		const stats = await getRecentRequests(limit ? parseInt(limit, 10) : undefined);
 		return Response.json(stats);
+	}
+
+	if (path === "/api/stats/requests") {
+		const limit = url.searchParams.get("limit");
+		const items = await getRecentRequests(limit ? parseInt(limit, 10) : undefined);
+		return Response.json({ items, total: items.length, page: 1, pageSize: items.length });
 	}
 
 	if (path === "/api/stats/errors") {

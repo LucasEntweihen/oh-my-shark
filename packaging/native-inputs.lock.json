@@ -1,31 +1,31 @@
 {
 	"$comment": "OhMyShark native input lock (downstream-owned). Pins the exact MIT npm tarballs the release workflow installs as build inputs. Any change requires CODEOWNER review; upstream syncs never auto-select a native version. The workflow rejects divergence between this file and packages/natives/package.json (version) and the six package names below.",
 	"registry": "https://registry.npmjs.org",
-	"version": "19.0.1",
+	"version": "19.1.1",
 	"packages": {
 		"linux-x64": {
 			"name": "@oh-my-pi/pi-natives-linux-x64",
-			"integrity": "sha512-AARFjaugklIIVD719sFO1p+M+wiP/KaIt7XFldi19/yvzEmXonUx3kfYtsyiZX21i7rCTM1w4vI6faP4HAOqkA=="
+			"integrity": "sha512-nvjqK5xpnSVUPQX4QwSM0YBFf9FULwWpJtPz8cJsP5z0jMXTb+UFYxdKHy+lsC7A8rT8m3E10yJe6cmw5lNZPg=="
 		},
 		"linux-arm64": {
 			"name": "@oh-my-pi/pi-natives-linux-arm64",
-			"integrity": "sha512-Gbrq4WFLcFATq06ge76yiD7MFq16RnIMJSWbqcH+nvzDh/jAbtqa4asMgk9oM41GR2FKLLqzs9M0EI4owc6gog=="
+			"integrity": "sha512-hRjKslpfHwxRo1IXFhwsr6gIbkz/uPJ+U2GvvAaHdjlxLFtEbOu9dRMeve/MAPsqlAi/0XUkYLXWwBUNziLmNw=="
 		},
 		"darwin-x64": {
 			"name": "@oh-my-pi/pi-natives-darwin-x64",
-			"integrity": "sha512-g9V61F8sGAjpBlQpqfu4720sIRGawQsK9hH920brbHm7XwCqqHSXpoYcgbPwCW9VpIO3SJDhVR4Rk+A1a586MA=="
+			"integrity": "sha512-Sz1DIpAYmdqoGXKdRXmPE2kvDQ3GJ+1XuoaWBnYmO+QE1q+9c79lXDeSoVNBzsihAQao+yeT3NftY40l0n6rXA=="
 		},
 		"darwin-arm64": {
 			"name": "@oh-my-pi/pi-natives-darwin-arm64",
-			"integrity": "sha512-ZMSRGUEdJoZTL1CDdvHSlxb3V5OK/0qwBoanStdIgvIV4kK22bPn8odZBivkUyWNVHSz7tSnqJuiZ7m+czJ56A=="
+			"integrity": "sha512-J8r1c+Pr4HX3goKmnJrxN0WIh8bWPf+UXLhJ3Zk1evXWh9dtzCBtiCW4BhsXBKWuiyeKi+qVl5ulxEQs677HLg=="
 		},
 		"win32-x64": {
 			"name": "@oh-my-pi/pi-natives-win32-x64",
-			"integrity": "sha512-k4dvP7tpI7lgaqa/rtLDVanRM7NDBw5co2jzEjOBNC749w7quWGbcSq0cc4HqGwjwJLWmQbyYnwWYbjIbde+zQ=="
+			"integrity": "sha512-9BHP4lr/5eHl4vNLqtMxKYayvkxa6frw1cBttUMg/4UC5FMLr5+gabYY7O780Hx2wVK15nq3DIbxktLIBfhEcQ=="
 		},
 		"win32-arm64": {
 			"name": "@oh-my-pi/pi-natives-win32-arm64",
-			"integrity": "sha512-JSlSp89Y6GKTz8lQs2ddGo3bMnhMz0nqmA0DvzlKUtUhPbDb6NneNrP5NepSu/X9+9Yg1AqmZWv2qJlUark0+A=="
+			"integrity": "sha512-ao0GvI5wC+K+TsukisgiUx44CHzvVQauQLtPB3zy13aS2zufD2283KZUcu3jF2xl1vE7t5Ot8wofOBSOJIG8DQ=="
 		}
 	}
 }

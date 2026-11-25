@@ -592,8 +592,12 @@ function toolSource(database: Database, cutoff: number | null, fine: boolean): S
 }
 
 /** Run `select … FROM (<facts>) f <tail>` over the message facts for a window. */
-function queryMessages<T>(window: Pick<RangeWindow, "cutoff"> & { bucketMs?: number }, select: string, tail = ""): T[] {
-	const database = currentDb();
+function queryMessages<T>(
+	window: Pick<RangeWindow, "cutoff"> & { bucketMs?: number },
+	select: string,
+	tail = "",
+	database: Database | null = currentDb(),
+): T[] {
 	if (!database) return [];
 	const fine = window.bucketMs !== undefined && window.bucketMs < HOUR_MS;
 	const source = messageSource(database, normalizeCutoff(window.cutoff), fine);
@@ -687,8 +691,6 @@ function toAggregatedStats(row: AggregateRow | undefined): AggregatedStats {
 	const failedRequests = row?.failed ?? 0;
 	const totalInputTokens = row?.input_tokens ?? 0;
 	const totalCacheReadTokens = row?.cache_read_tokens ?? 0;
-	const totalCacheWriteTokens = row?.cache_write_tokens ?? 0;
-	const promptTokens = totalInputTokens + totalCacheReadTokens + totalCacheWriteTokens;
 	const noCacheInputCost = row?.no_cache_input_cost ?? 0;
 	const cachedPromptCost = row?.cached_prompt_cost ?? 0;
 	return {
@@ -699,8 +701,11 @@ function toAggregatedStats(row: AggregateRow | undefined): AggregatedStats {
 		totalInputTokens,
 		totalOutputTokens: row?.output_tokens ?? 0,
 		totalCacheReadTokens,
-		totalCacheWriteTokens,
-		cacheRate: promptTokens > 0 ? totalCacheReadTokens / promptTokens : 0,
+		totalCacheWriteTokens: row?.cache_write_tokens ?? 0,
+		cacheRate:
+			totalInputTokens + totalCacheReadTokens > 0
+				? totalCacheReadTokens / (totalInputTokens + totalCacheReadTokens)
+				: 0,
 		cacheSavings: noCacheInputCost > 0 ? (noCacheInputCost - cachedPromptCost) / noCacheInputCost : 0,
 		totalCost: row?.cost_total ?? 0,
 		unpricedRequests: row?.unpriced ?? 0,
@@ -967,21 +972,37 @@ export function getProviderHourlyBurn(cutoff: number | null = null): ProviderHou
 }
 
 /**
+ * Whether the stored rollup was built under this build's {@link ROLLUP_VERSION}.
+ * Only {@link ensureRollupSchema} rebuilds an older one, so a connection that
+ * skips it (the read-only `/usage` paint) must not trust the rollup otherwise.
+ */
+function rollupIsCurrent(database: Database): boolean {
+	const row = database
+		.query<{ value: string }, [string]>("SELECT value FROM meta WHERE key = ?")
+		.get(ROLLUP_VERSION_KEY);
+	return row?.value === ROLLUP_VERSION;
+}
+
+/**
  * Per-local-day request/token/cost totals since `cutoff`, oldest first, read
  * from the hourly rollup. Returns null when the local UTC offset is not a whole
  * hour (now or at `cutoff`), since hourly buckets then straddle local midnight,
- * or while the dirty backlog is too large for exact reads; callers then
- * aggregate the raw rows instead.
+ * when the stored rollup is missing or was built under another version, or
+ * while the dirty backlog is too large for exact reads; callers then aggregate
+ * the raw rows instead.
  */
-export function getDailyActivityFromRollup(cutoff: number): DailyActivityPoint[] | null {
+export function getDailyActivityFromRollup(
+	cutoff: number,
+	database: Database | null = currentDb(),
+): DailyActivityPoint[] | null {
 	if (new Date().getTimezoneOffset() % 60 !== 0 || new Date(cutoff).getTimezoneOffset() % 60 !== 0) return null;
-	const database = currentDb();
-	if (!database || !dirtyIsSmall(database)) return null;
+	if (!database || !rollupIsCurrent(database) || !dirtyIsSmall(database)) return null;
 	return queryMessages<{ day: string; cost: number; requests: number; total_tokens: number | null }>(
 		{ cutoff },
 		`date(f.bucket / 1000, 'unixepoch', 'localtime') AS day, TOTAL(f.cost_total) AS cost,
 		 SUM(f.requests) AS requests, SUM(f.total_tokens) AS total_tokens`,
 		"GROUP BY day ORDER BY day",
+		database,
 	).map(row => ({ day: row.day, cost: row.cost, requests: row.requests, totalTokens: row.total_tokens ?? 0 }));
 }
 

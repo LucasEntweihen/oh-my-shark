@@ -33,7 +33,7 @@ export function selectMacInstaller(
 			try {
 				const pathname = new URL(file.url, "https://updates.invalid").pathname;
 				name = decodeURIComponent(pathname.slice(pathname.lastIndexOf("/") + 1));
-			} catch {}
+			} catch { }
 			if (name === expectedName) return { name: expectedName, sha512: file.sha512, size: file.size };
 		}
 	}
@@ -72,7 +72,7 @@ const PARTIAL_SUFFIX = ".partial";
  * plus a partial suffix. Downloads is the user's directory, so anything else —
  * including a lookalike like `holiday.dmg.partial` — must survive the sweep.
  */
-const INSTALLER_DEBRIS = /^(?:OhMyShark|omsk)-[\d.]+(?:-arm64)?(?: \(\d+\))?\.dmg(?:\.partial|\.download-\d+)$/;
+const INSTALLER_DEBRIS = /^(?:OhMyShark|omp)-[\d.]+(?:-arm64)?(?: \(\d+\))?\.dmg(?:\.partial|\.download-\d+)$/;
 const HASH_CHUNK_BYTES = 1024 * 1024;
 
 /**
@@ -114,7 +114,7 @@ export async function sha512FileBase64(filePath: string): Promise<string> {
 	const buffer = new Uint8Array(HASH_CHUNK_BYTES);
 	try {
 		let position = 0;
-		for (;;) {
+		for (; ;) {
 			const { bytesRead } = await file.read(buffer, 0, buffer.length, position);
 			if (bytesRead === 0) break;
 			hash.update(buffer.subarray(0, bytesRead));

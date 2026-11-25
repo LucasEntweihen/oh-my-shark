@@ -75,13 +75,6 @@ export interface MessageStatsInput extends Omit<MessageStats, "usage" | "costUnp
 	usage: Omit<Usage, "cost"> & { cost?: Partial<Usage["cost"]> };
 }
 
-export interface RequestPage {
-	rows: MessageStats[];
-	total: number;
-	nextCursor: string | null;
-	snapshotAt: number;
-}
-
 /**
  * Full details of a request, including content.
  */

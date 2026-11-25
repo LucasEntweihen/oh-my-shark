@@ -1,4 +1,4 @@
-﻿# OhMyShark Coding Agent Installer for Windows
+# OhMyShark Coding Agent Installer for Windows
 # Verify first: gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/omsk-v0.0.33 --deny-self-hosted-runners
 # Then run: & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw)))
 # Or quick: irm https://ohmyshark.vercel.app/install.ps1 | iex

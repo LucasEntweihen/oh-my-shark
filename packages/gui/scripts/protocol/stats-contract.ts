@@ -20,7 +20,6 @@ export type ProviderWindows = Accepts<Gui.ProviderWindowsData, Wire<Server.Provi
 export type Errors = Accepts<Gui.ErrorRow, Wire<Server.MessageStats>>;
 export type Folders = Accepts<Gui.FolderRow, Wire<Server.FolderStats>>;
 export type Gain = Accepts<Gui.GainData, Wire<Server.GainDashboardStats>>;
-export type Requests = Accepts<Gui.RequestPage, Wire<Server.RequestPage>>;
 export type RequestDetail = Accepts<Gui.RequestDetail, Wire<Server.RequestDetails>>;
 export type Frustration = Accepts<Gui.FrustrationData, Wire<Server.FrustrationDashboardStats>>;
 export type Status = Accepts<Gui.LiveStatus, Wire<Server.LiveStatus>>;

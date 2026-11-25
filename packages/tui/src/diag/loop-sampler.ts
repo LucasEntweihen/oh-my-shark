@@ -6,13 +6,26 @@
  * stack every millisecond while it runs JS and nothing while the loop idles,
  * so the samples taken during a block name the code that caused it.
  */
-import { profile, type SamplingProfileStackTraces, samplingProfilerStackTraces, startSamplingProfiler } from "bun:jsc";
+import * as jsc from "bun:jsc";
 
-// Exported by bun:jsc at runtime but not yet declared by bun-types.
-declare module "bun:jsc" {
-	/** Returns the samples recorded since the previous call and clears the profiler's buffer. */
-	function samplingProfilerStackTraces(): SamplingProfileStackTraces;
+// Exported by bun:jsc at runtime but not yet declared in all bun-types versions.
+interface SamplingProfileFrame {
+	name: string;
+	sourceURL?: string;
+	line: number;
 }
+interface SamplingProfileTrace {
+	timestamp: number;
+	frames: SamplingProfileFrame[];
+}
+interface SamplingProfileStackTraces {
+	traces: SamplingProfileTrace[];
+}
+
+const { profile, startSamplingProfiler } = jsc;
+const samplingProfilerStackTraces = (
+	jsc as unknown as { samplingProfilerStackTraces?: () => SamplingProfileStackTraces }
+).samplingProfilerStackTraces;
 
 /** One stack frame of a {@link LoopSample}. `url` is "" for native frames. */
 export interface LoopSampleFrame {
@@ -83,6 +96,7 @@ export function createJscLoopSampler(): LoopSampler | null {
 			if (--runningSamplers === 0) profile(() => {});
 		},
 		drain(): LoopSample[] {
+			if (!samplingProfilerStackTraces) return [];
 			const { traces } = samplingProfilerStackTraces();
 			return traces.map((trace): LoopSample => ({
 				atMs: trace.timestamp * 1000,

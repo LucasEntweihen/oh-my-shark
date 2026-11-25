@@ -1,4 +1,8 @@
 {
 	"extends": "../../../../tsconfig.base.json",
+	"compilerOptions": {
+		"jsx": "react-jsx",
+		"jsxImportSource": "@oh-my-pi/pi-tui"
+	},
 	"files": ["contract.ts", "stats-contract.ts", "../../../coding-agent/src/bun-fetch-cache.d.ts"]
 }

@@ -11,7 +11,7 @@ export function decodeBody(bytes: Uint8Array, contentTypeHeader: string): string
 		// All charsets we can decode are ASCII-compatible in the prefix, so a
 		// latin1 view of the first 2KB is enough to find a <meta charset>.
 		label = /<meta[^>]+charset\s*=\s*["']?([\w-]+)/i.exec(
-			new TextDecoder("latin1").decode(bytes.subarray(0, 2048)),
+			new TextDecoder("latin1" as Bun.Encoding).decode(bytes.subarray(0, 2048)),
 		)?.[1];
 	}
 	if (label && !/^utf-?8$/i.test(label)) {

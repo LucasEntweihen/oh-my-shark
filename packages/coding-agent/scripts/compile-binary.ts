@@ -3,6 +3,7 @@
 import { USER_AGENT } from "@oh-my-pi/pi-utils/dirs";
 import { embeddedAddonFiles, type NativeEmbedTarget } from "../../natives/scripts/embed-native";
 import { buildDocsIndexPayload } from "./generate-docs-index";
+import { embeddedRelayExtensionFiles } from "./embed-relay-extension";
 import { createJsonParsePlugin } from "./json-parse-plugin";
 import { createLegacyPiVirtualModulePlugin } from "./legacy-pi-virtual-module";
 
@@ -34,8 +35,6 @@ export interface CodingAgentCompileOptions {
 	readonly minifyIdentifiers?: boolean;
 	/** Disable Bun's built-in Darwin signing before the caller re-signs. */
 	readonly skipBuiltinCodesign?: boolean;
-	/** Inline the generated HTML viewer for distributions without a hosted release asset. */
-	readonly exportViewer?: string;
 }
 
 /**
@@ -52,11 +51,13 @@ export async function compileCodingAgent(options: CodingAgentCompileOptions): Pr
 			entrypoints: [options.entrypoint],
 			root: options.repoRoot,
 			external: [...COMPILED_EXTERNAL_DEPENDENCIES],
-			files: options.native ? await embeddedAddonFiles(options.native) : {},
+			files: {
+				...(options.native ? await embeddedAddonFiles(options.native) : {}),
+				...(await embeddedRelayExtensionFiles()),
+			},
 			define: {
 				"process.env.PI_COMPILED": JSON.stringify("true"),
 				"process.env.PI_DOCS_EMBED": JSON.stringify((await buildDocsIndexPayload()).payload),
-				"process.env.PI_EXPORT_VIEWER_EMBED": JSON.stringify(options.exportViewer ?? ""),
 			},
 			// Precompiled bytecode skips parsing the ~20 MB bundle at boot:
 			// `omp --version` 256 ms -> 30 ms on M4 Max (+52 MB binary).
@@ -64,8 +65,11 @@ export async function compileCodingAgent(options: CodingAgentCompileOptions): Pr
 			format: "esm",
 			bytecode: true,
 			splitting: true,
-			// Discovery entry chunks can share a hash; include their source names to avoid collisions.
-			naming: { chunk: "chunks/[name]-[hash].[ext]" },
+			// The legacy Pi registry lazily imports every exported module, so side-effect-only
+			// modules (e.g. tui `painters/input.ts` and `widgets/input.ts`) become facade chunks
+			// holding only identical imports of shared chunks: same content, same hash. Mirror
+			// each source path so same-named modules in different directories never collide.
+			naming: { chunk: "chunks/[dir]/[name]-[hash].[ext]" },
 			minify: {
 				identifiers: options.minifyIdentifiers ?? false,
 				keepNames: true,

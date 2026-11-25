@@ -2,9 +2,15 @@
 
 ## [Unreleased]
 
+## [19.1.1] - 2026-11-23
+
+### Added
+
+- Added `readDailyActivity()` for reading stored daily activity without being blocked by another process writing to the stats database; it returns `null` when no stats database exists.
+
 ### Fixed
 
-- The overview and per-model cache hit rates count cache writes in the total prompt size.
+- Fixed Spotlight baseline and adjusted-net calculations to use consistent result sets, improving headline and step-row accuracy.
 
 ## [19.0.1] - 2026-11-19
 
@@ -172,11 +178,6 @@
 
 ### Fixed
 
-- Request history can be paged beyond 200 entries without duplicate or skipped rows when timestamps match or new data arrives.
-- Included cache-write tokens in the cache hit-rate denominator so the metric reflects all prompt tokens.
-- Ensure synchronization of session statistics is atomic, preventing duplicate entries during interrupted syncs
-- Sped up initial imports and repeat syncs in `omp stats`, including histories with tens of thousands of session files.
-- Fixed prolonged `omp stats` full replays on large, already-indexed session histories.
 - Fixed `omp stats` dashboard numbers following the browser locale while the rest of the UI is English (e.g. `546 B` meaning 546 thousand and `$38.003,33` on a Turkish browser); figures now always use en-US formatting ([#13640](https://github.com/can1357/oh-my-pi/pull/13640) by [@NaC-L](https://github.com/NaC-L))
 
 ## [18.4.1] - 2026-09-28

@@ -22,7 +22,6 @@ export { closeDb } from "./db";
 export { refreshRollups } from "./rollup";
 export type { StatsJudge, StatsJudgeProvider } from "./frustration";
 export { getGainDashboardStats } from "./gain-aggregator";
-export { isStatsDashboardAlive } from "./port-conflict";
 export { formatStatsDashboardUrl, type StartServerOptions, setStatsCloseHandler, startServer } from "./server";
 export type {
 	GainDashboardStats,
