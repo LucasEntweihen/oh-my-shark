@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { FsTreeEntry } from "../shared/ipc-types";
+import { isFastIgnoredDirName } from "./native-accel";
 import { resolveWithin } from "./workspace-paths";
 
 type IsIgnored = (relativePath: string, directory: boolean) => boolean;
@@ -14,6 +15,7 @@ async function readEntries(
 	const files: FsTreeEntry[] = [];
 	const folders: FsTreeEntry[] = [];
 	for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+		if (entry.isDirectory() && isFastIgnoredDirName(entry.name)) continue;
 		const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
 		let isDirectory = entry.isDirectory();
 		const symlink = entry.isSymbolicLink();
