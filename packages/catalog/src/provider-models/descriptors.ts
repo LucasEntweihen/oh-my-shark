@@ -5,7 +5,7 @@
  * the compiled entry (`src/compat/providers.ts`); this table holds only the
  * code half. Providers without a factory (`amazon-bedrock`, `azure`,
  * `gitlab-duo`, MiniMax, and the bespoke OAuth-driven managers
- * `google-antigravity` / `google-gemini-cli` / `openai-codex` built by the
+ * `google-antigravity` / `openai-codex` built by the
  * coding-agent runtime) still have a KDL entry but no runtime discovery here.
  */
 import type { KnownProvider } from "../compat/provider-ids";
@@ -13,12 +13,7 @@ import { providerEntries, providerEntry } from "../compat/providers";
 import type { Api } from "../types";
 import type { ModelManagerOptions } from "../model-manager";
 import type { ModelManagerConfig, ProviderDescriptor } from "./descriptor-types";
-import {
-	antigravityInteractionsModelManagerOptions,
-	googleAntigravitySdkModelManagerOptions,
-	googleModelManagerOptions,
-	googleVertexModelManagerOptions,
-} from "./google";
+import { googleModelManagerOptions, googleVertexModelManagerOptions } from "./google";
 import { ollamaCloudModelManagerOptions } from "./ollama";
 import {
 	abliterationModelManagerOptions,
@@ -35,6 +30,7 @@ import {
 	chutesModelManagerOptions,
 	clinePassModelManagerOptions,
 	cloudflareAiGatewayModelManagerOptions,
+	commandCodeModelManagerOptions,
 	coralbricksModelManagerOptions,
 	coreWeaveModelManagerOptions,
 	deepinfraModelManagerOptions,
@@ -86,6 +82,7 @@ import {
 	xaiOAuthModelManagerOptions,
 	xiaomiModelManagerOptions,
 	yoloAutoModelManagerOptions,
+	zaiModelManagerOptions,
 	zenmuxModelManagerOptions,
 	zhipuCodingPlanModelManagerOptions,
 } from "./openai-compat";
@@ -100,7 +97,6 @@ import {
 	naceModelManagerOptions,
 	typesafeModelManagerOptions,
 	webModelManagerOptions,
-	zaiModelManagerOptions,
 } from "./special";
 
 export type { KnownProvider } from "../compat/provider-ids";
@@ -117,11 +113,11 @@ const MODEL_MANAGER_FACTORIES: Readonly<Partial<Record<KnownProvider, ModelManag
 	"bedrock-mantle": config => bedrockMantleModelManagerOptions(config),
 	bifrost: config => bifrostModelManagerOptions(config),
 	anthropic: config => anthropicModelManagerOptions(config),
-	"antigravity-interactions": config => antigravityInteractionsModelManagerOptions(config),
 	cerebras: config => cerebrasModelManagerOptions(config),
 	"charm-hyper": config => charmHyperModelManagerOptions(config),
 	"cloudflare-ai-gateway": config => cloudflareAiGatewayModelManagerOptions(config),
 	"cloudflare-workers-ai": () => cloudflareWorkersAiModelManagerOptions(),
+	commandcode: config => commandCodeModelManagerOptions(config),
 	chutes: config => chutesModelManagerOptions(config),
 	coralbricks: config => coralbricksModelManagerOptions(config),
 	cursor: config => cursorModelManagerOptions(config),
@@ -136,7 +132,6 @@ const MODEL_MANAGER_FACTORIES: Readonly<Partial<Record<KnownProvider, ModelManag
 	"gitlab-duo-agent": config => gitLabDuoWorkflowModelManagerOptions(config),
 	"gmi-cloud": config => gmiCloudModelManagerOptions(config),
 	google: config => googleModelManagerOptions(config),
-	"google-antigravity-sdk": config => googleAntigravitySdkModelManagerOptions(config),
 	"google-vertex": config => googleVertexModelManagerOptions(config),
 	groq: config => groqModelManagerOptions(config),
 	helmcode: config => helmcodeModelManagerOptions(config),

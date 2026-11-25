@@ -2,25 +2,8 @@ import type { FetchImpl } from "@oh-my-pi/pi-utils";
 import type { AntigravityModelWireProfile } from "../types";
 
 /**
- * Build a User-Agent string that identifies as Gemini CLI to unlock higher rate limits.
- * Uses the same format as the official Gemini CLI (v0.35+):
- * GeminiCLI/VERSION/MODEL (PLATFORM; ARCH; SURFACE)
- */
-export function getGeminiCliUserAgent(modelId = "gemini-3.1-pro-preview"): string {
-	const version = process.env.PI_AI_GEMINI_CLI_VERSION || "0.68.0";
-	const platform = process.platform === "win32" ? "win32" : process.platform;
-	const arch = process.arch === "x64" ? "x64" : process.arch;
-	return `GeminiCLI/${version}/${modelId} (${platform}; ${arch}; terminal)`;
-}
-
-export const getGeminiCliHeaders = (modelId?: string) => ({
-	"User-Agent": getGeminiCliUserAgent(modelId),
-	"Client-Metadata": "ideType=IDE_UNSPECIFIED,platform=PLATFORM_UNSPECIFIED,pluginType=GEMINI",
-});
-
-/**
  * Antigravity / Cloud Code Assist user agent. Lives in its own file so discovery
- * and usage code can read it without pulling the heavy google-gemini-cli provider
+ * and usage code can read it without pulling the heavy Cloud Code Assist provider
  * (and its @google/genai → google-auth-library dependency chain) into the startup
  * parse graph.
  *
@@ -36,7 +19,7 @@ export const getGeminiCliHeaders = (modelId?: string) => ({
  * {@link getAntigravityPlatform}. The changelist is identical across those
  * builds. Overrides: PI_AI_ANTIGRAVITY_VERSION / _CL / _OS / _ARCH.
  */
-export const DEFAULT_ANTIGRAVITY_VERSION = "2.34.0";
+export const DEFAULT_ANTIGRAVITY_VERSION = "2.26.0";
 
 const ANTIGRAVITY_VERSION_MANIFEST_URL =
 	"https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/manifest/latest-arm64-mac.yml";
@@ -178,22 +161,6 @@ export const ANTIGRAVITY_MODEL_WIRE_PROFILES: Readonly<Record<string, Antigravit
 	// untracked for these ids; the backend does not require it.
 	"claude-sonnet-4-6": { maxOutputTokens: 64000 },
 	"claude-opus-4-6-thinking": { maxOutputTokens: 64000 },
-	"claude-sonnet-5-5": { maxOutputTokens: 128000 },
-	"claude-opus-5-5-thinking": { maxOutputTokens: 128000 },
-	"gemini-4-carbon": { maxOutputTokens: 262144 },
-	"gemini-4-carbon-low": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "LOW" },
-	"gemini-4-carbon-medium": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "MEDIUM" },
-	"gemini-4-carbon-high": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "HIGH" },
-	"gemini-4-hydrogen": { maxOutputTokens: 262144 },
-	"gemini-4-hydrogen-low": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "LOW" },
-	"gemini-4-hydrogen-medium": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "MEDIUM" },
-	"gemini-4-hydrogen-high": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "HIGH" },
-	"gemini-4-hydrogen-xhigh": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "xhigh" },
-	"gemini-4-neon": { maxOutputTokens: 262144 },
-	"gemini-4-neon-low": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "LOW" },
-	"gemini-4-neon-medium": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "MEDIUM" },
-	"gemini-4-neon-high": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "HIGH" },
-	"gemini-4-neon-xhigh": { maxOutputTokens: 262144, thinkingBudget: -1, thinkingLevel: "xhigh" },
 };
 
 /**

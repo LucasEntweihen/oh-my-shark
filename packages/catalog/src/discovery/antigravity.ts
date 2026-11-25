@@ -31,45 +31,6 @@ const ANTIGRAVITY_THINKING_LEVELS: Readonly<Record<number, AntigravityModelWireP
 	100: "xhigh",
 };
 
-const ANTIGRAVITY_STRING_THINKING_LEVELS: Readonly<Record<string, AntigravityModelWireProfile["thinkingLevel"]>> = {
-	"1": "LOW",
-	low: "LOW",
-	"2": "MEDIUM",
-	medium: "MEDIUM",
-	"3": "HIGH",
-	high: "HIGH",
-	"100": "xhigh",
-	xhigh: "xhigh",
-	"extra-high": "xhigh",
-};
-
-function resolveAntigravityThinkingLevel(
-	raw: number | string | undefined,
-): AntigravityModelWireProfile["thinkingLevel"] | undefined {
-	if (typeof raw === "number") return ANTIGRAVITY_THINKING_LEVELS[raw];
-	if (typeof raw === "string") return ANTIGRAVITY_STRING_THINKING_LEVELS[raw.toLowerCase()];
-	return undefined;
-}
-
-function defaultDiscoveryLimits(modelId: string, isImageModel: boolean): { contextWindow: number; maxTokens: number } {
-	if (isImageModel) {
-		return { contextWindow: 65_536, maxTokens: 65_536 };
-	}
-	if (modelId.startsWith("gemini-4-")) {
-		return {
-			contextWindow: 1_048_576,
-			maxTokens: modelId.startsWith("gemini-4-argon") ? 65_536 : 262_144,
-		};
-	}
-	if (modelId.startsWith("gemini-")) {
-		return { contextWindow: 1_048_576, maxTokens: 65_536 };
-	}
-	if (/^claude-.*-5-5(?:-|$)/.test(modelId)) {
-		return { contextWindow: 1_000_000, maxTokens: 128_000 };
-	}
-	return { contextWindow: DEFAULT_CONTEXT_WINDOW, maxTokens: DEFAULT_MAX_TOKENS };
-}
-
 /**
  * Raw model metadata returned by Antigravity's `fetchAvailableModels` endpoint.
  */
@@ -78,8 +39,8 @@ export interface AntigravityDiscoveryApiModel {
 	supportsImages?: boolean;
 	supportsThinking?: boolean;
 	thinkingBudget?: number;
-	/** SKU thinking level: 1 low, 2 medium, 3 high, 100 xhigh (or equivalent string label). */
-	thinkingLevel?: number | string;
+	/** SKU thinking level: 1 low, 2 medium, 3 high, 100 xhigh. */
+	thinkingLevel?: number;
 	recommended?: boolean;
 	maxTokens?: number;
 	maxOutputTokens?: number;
@@ -126,11 +87,9 @@ const AntigravityDiscoveryApiModelSchema = type({
 	"thinkingBudget?": type("unknown").pipe(value =>
 		typeof value === "number" && Number.isFinite(value) ? value : undefined,
 	),
-	"thinkingLevel?": type("unknown").pipe(value => {
-		if (typeof value === "number" && Number.isFinite(value)) return value;
-		if (typeof value === "string" && value.trim().length > 0) return value.trim();
-		return undefined;
-	}),
+	"thinkingLevel?": type("unknown").pipe(value =>
+		typeof value === "number" && Number.isFinite(value) ? value : undefined,
+	),
 	"recommended?": type("unknown").pipe(value => (typeof value === "boolean" ? value : undefined)),
 	"maxTokens?": type("unknown").pipe(value =>
 		typeof value === "number" && Number.isFinite(value) ? value : undefined,
@@ -252,10 +211,6 @@ export async function fetchAntigravityDiscoveryModels(
 	if ("rejectedStatus" in discovered) return { models: [], rejectedStatus: discovered.rejectedStatus };
 
 	const models: ModelSpec<"google-gemini-cli">[] = [];
-	const seenIds = new Set<string>();
-	const imageModelIds = new Set(
-		(discovered.payload.imageGenerationModelIds ?? []).filter(modelId => modelId.length > 0),
-	);
 	const apiModels = discovered.payload.models;
 	if (apiModels) {
 		for (const modelId in apiModels) {
@@ -272,54 +227,27 @@ export async function fetchAntigravityDiscoveryModels(
 				continue;
 			}
 
-			seenIds.add(modelId);
-			const isImageModel = imageModelIds.has(modelId) || modelId.endsWith("-image");
 			const supportsImages = model.supportsImages === true;
 			const wireProfile = antigravityWireProfileOf(model);
-			const defaults = defaultDiscoveryLimits(modelId, isImageModel);
 			models.push({
 				id: modelId,
 				name: model.displayName || modelId,
 				api: "google-gemini-cli",
 				provider: "google-antigravity",
 				baseUrl: discovered.endpoint,
-				...(isImageModel ? { kind: "image" as const } : {}),
 				reasoning: model.supportsThinking === true,
-				input: supportsImages || isImageModel ? ["text", "image"] : ["text"],
+				input: supportsImages ? ["text", "image"] : ["text"],
 				cost: {
 					input: 0,
 					output: 0,
 					cacheRead: 0,
 					cacheWrite: 0,
 				},
-				contextWindow: toPositiveNumber(model.maxTokens, defaults.contextWindow),
-				maxTokens: toPositiveNumber(model.maxOutputTokens, defaults.maxTokens),
+				contextWindow: toPositiveNumber(model.maxTokens, DEFAULT_CONTEXT_WINDOW),
+				maxTokens: toPositiveNumber(model.maxOutputTokens, DEFAULT_MAX_TOKENS),
 				...(wireProfile === undefined ? {} : { antigravityWireProfiles: { [modelId]: wireProfile } }),
 			});
 		}
-	}
-
-	for (const imageId of imageModelIds) {
-		if (seenIds.has(imageId) || ANTIGRAVITY_DISCOVERY_DENYLIST.has(imageId)) continue;
-		const defaults = defaultDiscoveryLimits(imageId, true);
-		models.push({
-			id: imageId,
-			name: imageId,
-			api: "google-gemini-cli",
-			provider: "google-antigravity",
-			baseUrl: discovered.endpoint,
-			kind: "image",
-			reasoning: false,
-			input: ["text", "image"],
-			cost: {
-				input: 0,
-				output: 0,
-				cacheRead: 0,
-				cacheWrite: 0,
-			},
-			contextWindow: defaults.contextWindow,
-			maxTokens: defaults.maxTokens,
-		});
 	}
 
 	// Collapse effort-tier variants at the source so runtime discovery,
@@ -344,7 +272,8 @@ function antigravityWireProfileOf(model: AntigravityDiscoveryApiModel): Antigrav
 	if (model.maxOutputTokens !== undefined && model.maxOutputTokens > 0) {
 		profile.maxOutputTokens = model.maxOutputTokens;
 	}
-	const thinkingLevel = resolveAntigravityThinkingLevel(model.thinkingLevel);
+	const thinkingLevel =
+		model.thinkingLevel === undefined ? undefined : ANTIGRAVITY_THINKING_LEVELS[model.thinkingLevel];
 	if (thinkingLevel !== undefined) profile.thinkingLevel = thinkingLevel;
 	if (model.thinkingBudget !== undefined) profile.thinkingBudget = model.thinkingBudget;
 	return Object.keys(profile).length > 0 ? profile : undefined;

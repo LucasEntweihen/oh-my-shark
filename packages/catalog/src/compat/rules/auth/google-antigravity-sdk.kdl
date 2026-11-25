@@ -1,4 +1,0 @@
-auth "google-antigravity-sdk" {
-	name "Google Antigravity SDK (API Key / Vertex / LiteRT)"
-	allows-missing-api-key #true
-}
