@@ -105,13 +105,13 @@ function settingRow(page: Page, pathName: string): Locator {
 }
 
 async function readSetting(page: Page, pathName: string): Promise<unknown> {
-	const response = await page.evaluate(async pathValue => window.omp.rpc.getSettings([pathValue]), pathName);
+	const response = await page.evaluate(async pathValue => window.omsk.rpc.getSettings([pathValue]), pathName);
 	if (!response.success) throw new Error(response.error);
 	return (response.data as { values?: JsonRecord } | undefined)?.values?.[pathName];
 }
 
 async function writeSetting(page: Page, pathName: string, value: unknown): Promise<JsonRecord> {
-	const response = await page.evaluate(async ({ pathValue, next }) => window.omp.rpc.setSetting(pathValue, next), {
+	const response = await page.evaluate(async ({ pathValue, next }) => window.omsk.rpc.setSetting(pathValue, next), {
 		pathValue: pathName,
 		next: value,
 	});
@@ -288,7 +288,7 @@ async function mutateEntry(
 			await toggle.click();
 			if (entry.provenance?.layers.some(layer => ["runtime", "overlay", "project"].includes(layer))) {
 				const readProvenance = async () => {
-					const response = await page.evaluate(() => window.omp.rpc.getSettingsSchema());
+					const response = await page.evaluate(() => window.omsk.rpc.getSettingsSchema());
 					if (!response.success) throw new Error(response.error);
 					return (response.data as SettingsSchemaResult).entries.find(item => item.path === entry.path)
 						?.provenance;
@@ -702,7 +702,7 @@ test("deep GUI audit: settings rows, nested controls, and command discoverabilit
 		app = await launchAuditApp(profile, project, desktop, agent);
 		const page = await app.firstWindow();
 		await expect
-			.poll(async () => (await page.evaluate(() => window.omp.sidecar.getStatus())).status, { timeout: 90_000 })
+			.poll(async () => (await page.evaluate(() => window.omsk.sidecar.getStatus())).status, { timeout: 90_000 })
 			.toBe("ready");
 		evidence.runtime = await app.evaluate(({ app }) => ({
 			isPackaged: app.isPackaged,
@@ -715,10 +715,10 @@ test("deep GUI audit: settings rows, nested controls, and command discoverabilit
 		const settings = page.getByRole("dialog", { name: "Settings", exact: true });
 		await expect(settings).toBeVisible();
 		await expect(settings.locator(".settings-nav-item").first()).toBeVisible();
-		const schemaResponse = await page.evaluate(() => window.omp.rpc.getSettingsSchema());
+		const schemaResponse = await page.evaluate(() => window.omsk.rpc.getSettingsSchema());
 		if (!schemaResponse.success) throw new Error(schemaResponse.error);
 		const schema = schemaResponse.data as SettingsSchemaResult;
-		const settingsResponse = await page.evaluate(() => window.omp.rpc.getSettings());
+		const settingsResponse = await page.evaluate(() => window.omsk.rpc.getSettings());
 		if (!settingsResponse.success) throw new Error(settingsResponse.error);
 		const currentValues = ((settingsResponse.data as { values?: JsonRecord } | undefined)?.values ??
 			{}) as JsonRecord;
@@ -858,7 +858,7 @@ test("deep GUI audit: settings rows, nested controls, and command discoverabilit
 		const palette = page.getByRole("dialog");
 		await expect(palette).toBeVisible();
 		const search = palette.getByRole("textbox").first();
-		const available = await page.evaluate(async () => window.omp.rpc.getAvailableCommands());
+		const available = await page.evaluate(async () => window.omsk.rpc.getAvailableCommands());
 		if (available.success) {
 			const commandEntries =
 				(available.data as { commands?: Array<{ name: string; textModeExecutable?: boolean }> } | undefined)

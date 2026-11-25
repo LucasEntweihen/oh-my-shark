@@ -97,7 +97,7 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 	};
 	try {
 		await expect
-			.poll(async () => (await page.evaluate(() => window.omp.sidecar.getStatus())).status, { timeout: 60_000 })
+			.poll(async () => (await page.evaluate(() => window.omsk.sidecar.getStatus())).status, { timeout: 60_000 })
 			.toBe("ready");
 		const runtime = await app.evaluate(({ app }) => ({
 			isPackaged: app.isPackaged,
@@ -112,12 +112,12 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 			expect(runtime.isPackaged).toBe(true);
 			expect(runtime.sidecarOverride).toBeNull();
 		}
-		const coreState = await page.evaluate(() => window.omp.rpc.getState());
+		const coreState = await page.evaluate(() => window.omsk.rpc.getState());
 		expect(coreState).toMatchObject({
 			success: true,
 			data: { isBackgroundCompacting: false, fastModeUltrafast: false },
 		});
-		await expect(page.evaluate(() => window.omp.rpc.abortCompaction())).resolves.toMatchObject({ success: true });
+		await expect(page.evaluate(() => window.omsk.rpc.abortCompaction())).resolves.toMatchObject({ success: true });
 		await closeWelcome("Welcome to omp", "Close");
 		// The file input creates a real Electron File with a local path.
 		await page.evaluate(() => {
@@ -199,7 +199,7 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		try {
 			await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].close());
 			await app.evaluate(({ app }) => app.quit());
-			await page.evaluate(() => window.omp.app.quit());
+			await page.evaluate(() => window.omsk.app.quit());
 			await app.evaluate(({ BrowserWindow, Menu }) => {
 				const items = Menu.getApplicationMenu()?.items.flatMap(item => item.submenu?.items ?? []) ?? [];
 				for (const accelerator of ["CmdOrCtrl+R", "CmdOrCtrl+Shift+R"]) {
@@ -214,7 +214,7 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 				)
 				.toEqual(Array(5).fill("Files have unsaved changes"));
 			await expect(editor).toContainText("my unsaved draft");
-			expect((await page.evaluate(() => window.omp.rpc.getState())).success).toBe(true);
+			expect((await page.evaluate(() => window.omsk.rpc.getState())).success).toBe(true);
 			await editor.fill("saved by OMP\n");
 			await expect(notesDirty).toHaveCount(0);
 			await app.evaluate(({ BrowserWindow }) => {
@@ -301,7 +301,7 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		await once(imageServer.listen(0, "127.0.0.1"), "listening");
 		const imageAddress = imageServer.address();
 		if (!imageAddress || typeof imageAddress === "string") throw new Error("Image fixture has no port");
-		const tabId = await page.evaluate(async () => (await window.omp.tabs.list()).find(tab => tab.active)?.tabId);
+		const tabId = await page.evaluate(async () => (await window.omsk.tabs.list()).find(tab => tab.active)?.tabId);
 		expect(tabId).toBeTruthy();
 		await app.evaluate(
 			({ BrowserWindow }, input) => {
@@ -344,7 +344,7 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		expect(imageRequests).toBe(0);
 		await page.screenshot({ path: "test-results/conversation-layout.png", scale: "css", animations: "disabled" });
 
-		await page.evaluate(() => window.omp.prefs.set("language", "zh"));
+		await page.evaluate(() => window.omsk.prefs.set("language", "zh"));
 		const sendEvents = (events: AgentSessionEvent[]) =>
 			app.evaluate(
 				({ BrowserWindow }, { channel, batch }) =>
@@ -427,7 +427,7 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		await currentFooter.click();
 		await expect(thinkingHeaders).toHaveCount(0);
 		await expect(finalProcessAnswer).toBeVisible();
-		await page.evaluate(() => window.omp.prefs.set("language", "en"));
+		await page.evaluate(() => window.omsk.prefs.set("language", "en"));
 
 		// Drive the real Add Project action with a deterministic native-picker result.
 		await app.evaluate(({ dialog }, folder) => {
@@ -452,13 +452,13 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		await editProject.getByRole("button", { name: "Save", exact: true }).click();
 		await expect(editProject).toHaveCount(0);
 		await expect(page.locator("[data-workspace-group]").filter({ hasText: "Delivery drawings" })).toBeVisible();
-		const profiles = await page.evaluate(() => window.omp.prefs.get("launchProfiles"));
+		const profiles = await page.evaluate(() => window.omsk.prefs.get("launchProfiles"));
 		expect(profiles).toMatchObject({ [addedProject]: { appendSystemPrompt: "Use millimetres in drawings." } });
 		expect((await fs.stat(addedProject)).isDirectory()).toBe(true);
 
 		await composer.fill("unsent conversation draft");
 		const addedMarketplace = await page.evaluate(
-			source => window.omp.rpc.marketplaceAction({ action: "add", source }),
+			source => window.omsk.rpc.marketplaceAction({ action: "add", source }),
 			marketplace,
 		);
 		expect(addedMarketplace).toMatchObject({ success: true, data: { ok: true } });
@@ -491,7 +491,7 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		await fs.writeFile("test-results/runtime-selection.json", JSON.stringify(runtime, null, 2));
 		const evidence = await page.evaluate(
 			async exportPath => {
-				const rpc = window.omp.rpc;
+				const rpc = window.omsk.rpc;
 				const before = await rpc.getState();
 				const settings = await rpc.getSettings();
 				const schema = await rpc.getSettingsSchema();
@@ -560,13 +560,13 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		await page.getByRole("button", { name: "Send (Enter)", exact: true }).click();
 		await expect
 			.poll(async () => {
-				const state = await page.evaluate(() => window.omp.rpc.getState());
+				const state = await page.evaluate(() => window.omsk.rpc.getState());
 				return state.success ? (state.data as RpcSessionState).sessionId : original.sessionId;
 			})
 			.not.toBe(original.sessionId);
 		await expect(page.getByText("The originating session was replaced or closed.", { exact: false })).toHaveCount(0);
 		await page.evaluate(async sessionPath => {
-			const result = await window.omp.rpc.switchSession(sessionPath);
+			const result = await window.omsk.rpc.switchSession(sessionPath);
 			if (!result.success) throw new Error(result.error);
 		}, original.sessionFile!);
 		await page.reload();
@@ -596,7 +596,7 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		}
 		await page.keyboard.press("Escape");
 		await page.evaluate(async () => {
-			await window.omp.prefs.set("language", "zh");
+			await window.omsk.prefs.set("language", "zh");
 		});
 		await page.reload();
 		await expect(page.getByRole("button", { name: "设置", exact: true })).toBeVisible();
@@ -653,12 +653,12 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		await rules.locator("textarea").fill(JSON.stringify([rule]));
 		await rules.getByRole("button", { name: "应用", exact: true }).click();
 		await expect
-			.poll(() => page.evaluate(() => window.omp.rpc.getSettings(["bash.patterns"])))
+			.poll(() => page.evaluate(() => window.omsk.rpc.getSettings(["bash.patterns"])))
 			.toMatchObject({ success: true, data: { values: { "bash.patterns": [rule] } } });
 		await rules.locator("textarea").fill("[]");
 		await rules.getByRole("button", { name: "应用", exact: true }).click();
 		await expect
-			.poll(() => page.evaluate(() => window.omp.rpc.getSettings(["bash.patterns"])))
+			.poll(() => page.evaluate(() => window.omsk.rpc.getSettings(["bash.patterns"])))
 			.toMatchObject({ success: true, data: { values: { "bash.patterns": [] } } });
 		await page.getByRole("dialog").getByRole("button", { name: "常规", exact: true }).click();
 		await expect(page.getByRole("dialog")).toContainText("选择 GUI 主题");
@@ -683,8 +683,8 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		expect(backgrounds[0]).not.toBe(backgrounds[1]);
 		// Delay the real IPC boot snapshot while the user makes a newer choice.
 		const bootPrefs = await page.evaluate(async () => {
-			await window.omp.prefs.set("fontSize", 18);
-			return window.omp.prefs.get();
+			await window.omsk.prefs.set("fontSize", 18);
+			return window.omsk.prefs.get();
 		});
 		await app.evaluate(({ ipcMain }, prefs) => {
 			const pending = Promise.withResolvers<void>();
@@ -724,7 +724,7 @@ test("real bundled sidecar persists settings and sessions and serves every stats
 		await page.keyboard.press("Escape");
 		await app.evaluate(() => Reflect.get(globalThis, "releaseAuditPrefs")());
 		await page.evaluate(async () => {
-			await window.omp.prefs.get();
+			await window.omsk.prefs.get();
 			const { promise, resolve } = Promise.withResolvers<void>();
 			requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
 			await promise;

@@ -52,8 +52,8 @@ test.beforeAll(async () => {
 	});
 	page = await app.firstWindow();
 	page.on("pageerror", error => errors.push(error.message));
-	await page.waitForFunction(() => window.omp?.rpc != null);
-	await expect.poll(async () => (await page.evaluate(() => window.omp.sidecar.getStatus())).status).toBe("ready");
+	await page.waitForFunction(() => window.omsk?.rpc != null);
+	await expect.poll(async () => (await page.evaluate(() => window.omsk.sidecar.getStatus())).status).toBe("ready");
 	await page.screenshot({ path: "test-results/desktop-start.png", scale: "css", animations: "disabled" });
 });
 
@@ -152,7 +152,7 @@ test("Escape cancels a settings edit without saving its abandoned value", async 
 	await input.press("Escape");
 	await expect(settings).toHaveCount(0);
 	expect((await recorded("set_setting")).length).toBe(before);
-	const response = await page.evaluate(() => window.omp.rpc.getSettings(["compaction.reserveTokens"]));
+	const response = await page.evaluate(() => window.omsk.rpc.getSettings(["compaction.reserveTokens"]));
 	expect(response.data).toMatchObject({ values: { "compaction.reserveTokens": 8192 } });
 });
 
@@ -341,11 +341,11 @@ test("uncertain delivery preserves the draft and blocks duplicate sending until 
 test("collaboration permission events immediately gate the originating composer and restore editing", async () => {
 	const input = page.locator("textarea").first();
 	await input.fill("retained collaboration draft");
-	await page.evaluate(() => window.omp.rpc.bash("fixture:readonly"));
+	await page.evaluate(() => window.omsk.rpc.bash("fixture:readonly"));
 	await expect(input).not.toBeEditable();
 	await expect(page.getByRole("button", { name: "Send (Enter)", exact: true })).toBeDisabled();
 	await expect(input).toHaveValue("retained collaboration draft");
-	await page.evaluate(() => window.omp.rpc.bash("fixture:writable"));
+	await page.evaluate(() => window.omsk.rpc.bash("fixture:writable"));
 	await expect(input).toBeEditable();
 	await expect(input).toHaveValue("retained collaboration draft");
 	await input.fill("");
@@ -365,7 +365,7 @@ test("security distinguishes unavailable, disabled, unscanned, running, failed a
 		findings: "Untrusted path reaches file access",
 	};
 	for (const [state, expected] of Object.entries(states)) {
-		await page.evaluate(value => window.omp.rpc.bash(`fixture:security:${value}`), state);
+		await page.evaluate(value => window.omsk.rpc.bash(`fixture:security:${value}`), state);
 		await page.getByRole("button", { name: "Settings", exact: true }).click();
 		const modal = page.getByRole("dialog");
 		const security = modal.getByRole("button", { name: "Security Center", exact: true });
@@ -403,7 +403,7 @@ test("repeated modal and task lifecycles release sidecars and document listeners
 	}
 	const after = await listeners();
 	expect(after).toBeLessThanOrEqual(before);
-	expect(await page.evaluate(() => window.omp.tabs.list())).toHaveLength(1);
+	expect(await page.evaluate(() => window.omsk.tabs.list())).toHaveLength(1);
 	await fs.writeFile(
 		"test-results/lifecycle.json",
 		JSON.stringify(
@@ -494,12 +494,12 @@ test("settings search opens advanced controls and old refreshes cannot undo a sa
 	await settings.getByRole("button", { name: "Reserve tokens compaction.reserveTokens", exact: true }).click();
 	const input = settings.locator('input[type="number"]').first();
 	await expect(input).toHaveValue("8192");
-	await page.evaluate(() => window.omp.rpc.prompt("fixture hold settings"));
+	await page.evaluate(() => window.omsk.rpc.prompt("fixture hold settings"));
 	const before = (await recorded("get_settings")).length;
 	// Main forwards every tab-scoped event wrapped in the tab's envelope, so the
 	// simulated config_update has to wear the same wire shape.
 	const activeTabId = await page.evaluate(() =>
-		window.omp.tabs.list().then(tabs => tabs.find(tab => tab.active === true)?.tabId ?? ""),
+		window.omsk.tabs.list().then(tabs => tabs.find(tab => tab.active === true)?.tabId ?? ""),
 	);
 	expect(activeTabId).toBeTruthy();
 	await app.evaluate(
@@ -511,10 +511,10 @@ test("settings search opens advanced controls and old refreshes cannot undo a sa
 	await input.fill("12345");
 	await input.press("Enter");
 	await expect
-		.poll(async () => await page.evaluate(() => window.omp.rpc.getSettings(["compaction.reserveTokens"])))
+		.poll(async () => await page.evaluate(() => window.omsk.rpc.getSettings(["compaction.reserveTokens"])))
 		.toMatchObject({ success: true, data: { values: { "compaction.reserveTokens": 12345 } } });
-	await page.evaluate(() => window.omp.rpc.prompt("fixture release settings"));
-	await page.evaluate(() => window.omp.rpc.getState());
+	await page.evaluate(() => window.omsk.rpc.prompt("fixture release settings"));
+	await page.evaluate(() => window.omsk.rpc.getState());
 	await expect(input).toHaveValue("12345");
 	await input.fill("8192");
 	await input.press("Enter");
@@ -530,10 +530,10 @@ test("a failing ipc handler cannot take the other handlers on its channel down w
 	await page.evaluate(() => {
 		const boom: Boom = { hits: 0 };
 		(globalThis as unknown as { __boom: Boom }).__boom = boom;
-		const throwing = window.omp.events.onConfigUpdate(() => {
+		const throwing = window.omsk.events.onConfigUpdate(() => {
 			throw new Error("simulated handler failure");
 		});
-		const counting = window.omp.events.onConfigUpdate(() => {
+		const counting = window.omsk.events.onConfigUpdate(() => {
 			boom.hits += 1;
 		});
 		boom.stop = () => {
@@ -542,7 +542,7 @@ test("a failing ipc handler cannot take the other handlers on its channel down w
 		};
 	});
 	const activeTabId = await page.evaluate(() =>
-		window.omp.tabs.list().then(tabs => tabs.find(tab => tab.active === true)?.tabId ?? ""),
+		window.omsk.tabs.list().then(tabs => tabs.find(tab => tab.active === true)?.tabId ?? ""),
 	);
 	expect(activeTabId).toBeTruthy();
 	await app.evaluate(
@@ -582,17 +582,17 @@ test("workspace navigation cannot replace the trusted desktop with an untrusted 
 
 test("launch profile updates preserve concurrent fields and workspaces through the real preferences store", async () => {
 	const result = await page.evaluate(async () => {
-		const status = await window.omp.sidecar.getStatus();
+		const status = await window.omsk.sidecar.getStatus();
 		const cwd = status.cwd;
 		const other = `${cwd}/other.workspace`;
 		await Promise.all([
-			window.omp.prefs.updateLaunchProfile(cwd, { noRules: true }),
-			window.omp.prefs.updateLaunchProfile(cwd, { noLsp: true }),
-			window.omp.prefs.updateLaunchProfile(other, { profile: " isolated " }),
+			window.omsk.prefs.updateLaunchProfile(cwd, { noRules: true }),
+			window.omsk.prefs.updateLaunchProfile(cwd, { noLsp: true }),
+			window.omsk.prefs.updateLaunchProfile(other, { profile: " isolated " }),
 		]);
-		const saved = (await window.omp.prefs.get("launchProfiles")) as Record<string, unknown>;
-		await window.omp.prefs.updateLaunchProfile(cwd, { noRules: false, noLsp: false });
-		const cleared = (await window.omp.prefs.get("launchProfiles")) as Record<string, unknown>;
+		const saved = (await window.omsk.prefs.get("launchProfiles")) as Record<string, unknown>;
+		await window.omsk.prefs.updateLaunchProfile(cwd, { noRules: false, noLsp: false });
+		const cleared = (await window.omsk.prefs.get("launchProfiles")) as Record<string, unknown>;
 		return { saved: saved[cwd], other: saved[other], cleared: cleared[cwd], preserved: cleared[other] };
 	});
 	expect(result).toEqual({
@@ -641,7 +641,7 @@ test("failed preference writes retain edits and never allow a premature restart"
 	await proxy.fill("http://127.0.0.1:7899");
 	await proxy.press("Enter");
 	await expect.poll(() => app.evaluate(() => Reflect.get(globalThis, "auditProxyRequested"))).toBe(true);
-	await page.evaluate(() => window.omp.prefs.get("proxyUrl"));
+	await page.evaluate(() => window.omsk.prefs.get("proxyUrl"));
 	expect(await app.evaluate(() => Reflect.get(globalThis, "auditRestarts"))).toEqual([]);
 	await app.evaluate(() => Reflect.get(globalThis, "auditProxySave").resolve());
 	await expect(page.getByRole("alert")).toContainText("audit disk write refused");

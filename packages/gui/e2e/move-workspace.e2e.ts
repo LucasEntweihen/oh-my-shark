@@ -41,7 +41,7 @@ test("moving an existing conversation changes its project and preserves its hist
 		const control = page.getByRole("button", { name: "Workspace: source", exact: true });
 		await expect(control).toBeEnabled({ timeout: 60000 });
 		const original = await page.evaluate(async () => {
-			const rpc = window.omp.rpc;
+			const rpc = window.omsk.rpc;
 			for (const response of [
 				await rpc.bash("printf 'workspace-move-marker'"),
 				await rpc.setSessionName("Workspace move fixture"),
@@ -67,7 +67,7 @@ test("moving an existing conversation changes its project and preserves its hist
 		await expect(
 			page.locator(`[data-session-group="${project}"]`).getByText("Workspace move fixture", { exact: true }),
 		).toHaveCount(0);
-		const files = await page.evaluate(() => window.omp.sessions.list("global"));
+		const files = await page.evaluate(() => window.omsk.sessions.list("global"));
 		const rows = files.filter(row => row.id === original.sessionId);
 		expect(rows).toHaveLength(1);
 		const moved = rows[0]!;
@@ -75,7 +75,7 @@ test("moving an existing conversation changes its project and preserves its hist
 		expect(moved.path).not.toBe(original.sessionFile);
 		await expect(fs.stat(original.sessionFile!)).rejects.toMatchObject({ code: "ENOENT" });
 		await page.evaluate(async file => {
-			const rpc = window.omp.rpc;
+			const rpc = window.omsk.rpc;
 			const fresh = await rpc.newSession();
 			if (!fresh.success) throw new Error(fresh.error);
 			const opened = await rpc.switchSession(file);
@@ -85,7 +85,7 @@ test("moving an existing conversation changes its project and preserves its hist
 		await expect(
 			page.locator("[data-transcript-kind]").filter({ hasText: "workspace-move-marker" }).first(),
 		).toBeVisible({ timeout: 60_000 });
-		const reopened = await page.evaluate(() => window.omp.rpc.getState());
+		const reopened = await page.evaluate(() => window.omsk.rpc.getState());
 		expect(reopened).toMatchObject({
 			success: true,
 			data: { sessionId: original.sessionId, sessionFile: moved.path, cwd: target },

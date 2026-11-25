@@ -55,11 +55,11 @@ test("streaming with 50k history preserves the reading anchor, supports five tas
 		if (!anchor) throw new Error("No visible reading anchor");
 		const progress = async () =>
 			page.evaluate(async () => {
-				const response = await window.omp.rpc.bash("fixture:progress");
+				const response = await window.omsk.rpc.bash("fixture:progress");
 				return (response.data as { chunks: number }).chunks;
 			});
 		const before = await progress();
-		await page.evaluate(() => window.omp.rpc.bash("fixture:large-tool"));
+		await page.evaluate(() => window.omsk.rpc.bash("fixture:large-tool"));
 		await expect.poll(progress).toBeGreaterThan(before + 30);
 		const after = await scroll.evaluate((node, index) => {
 			const row = node.querySelector(`[data-index="${index}"]`);
@@ -109,8 +109,8 @@ test("streaming with 50k history preserves the reading anchor, supports five tas
 		await expect(input).toHaveValue("retained stream draft");
 		await page.getByRole("button", { name: "Abort", exact: true }).click();
 		await expect(page.getByRole("button", { name: "Abort", exact: true })).toHaveCount(0);
-		await page.evaluate(() => window.omp.sidecar.restart());
-		await expect.poll(async () => (await page.evaluate(() => window.omp.sidecar.getStatus())).status).toBe("ready");
+		await page.evaluate(() => window.omsk.sidecar.restart());
+		await expect.poll(async () => (await page.evaluate(() => window.omsk.sidecar.getStatus())).status).toBe("ready");
 		await expect(input).toHaveValue("retained stream draft");
 		await expect(input).toBeEditable();
 		await fs.writeFile(
@@ -152,12 +152,12 @@ test("an older real core reports unavailable capabilities and retains the editab
 	page.on("pageerror", error => errors.push(error.message));
 	try {
 		await expect
-			.poll(async () => (await page.evaluate(() => window.omp.sidecar.getStatus())).status, { timeout: 60_000 })
+			.poll(async () => (await page.evaluate(() => window.omsk.sidecar.getStatus())).status, { timeout: 60_000 })
 			.toBe("ready");
 		const responses = await page.evaluate(async () => ({
-			state: await window.omp.rpc.getState(),
-			git: await window.omp.rpc.getGitChanges(),
-			share: await window.omp.rpc.previewShareSession(),
+			state: await window.omsk.rpc.getState(),
+			git: await window.omsk.rpc.getGitChanges(),
+			share: await window.omsk.rpc.previewShareSession(),
 		}));
 		expect(responses.state.success).toBe(true);
 		expect(responses.git.success).toBe(false);
@@ -175,8 +175,8 @@ test("an older real core reports unavailable capabilities and retains the editab
 		await page.screenshot({ path: "test-results/legacy-unavailable.png", scale: "css", animations: "disabled" });
 		await page.keyboard.press("Escape");
 		await page.locator("textarea").first().fill("legacy draft retained");
-		await page.evaluate(() => window.omp.sidecar.restart());
-		await expect.poll(async () => (await page.evaluate(() => window.omp.sidecar.getStatus())).status).toBe("ready");
+		await page.evaluate(() => window.omsk.sidecar.restart());
+		await expect.poll(async () => (await page.evaluate(() => window.omsk.sidecar.getStatus())).status).toBe("ready");
 		await expect(page.locator("textarea").first()).toHaveValue("legacy draft retained");
 		await fs.writeFile("test-results/legacy.json", JSON.stringify({ responses, errors }, null, 2));
 		expect(errors).toEqual([]);

@@ -15,7 +15,9 @@ const exists = (path: string): boolean => directories.has(path);
 
 describe("parseLaunchArgv", () => {
 	it("prefers the deep link over a directory in the same argv", () => {
-		expect(parseLaunchArgv(["/Applications/omsk.app", "omsk://session/abc", "/workspace/app"], "omsk", exists)).toEqual({
+		expect(
+			parseLaunchArgv(["/Applications/omsk.app", "omsk://session/abc", "/workspace/app"], "omsk", exists),
+		).toEqual({
 			kind: "url",
 			url: "omsk://session/abc",
 		});

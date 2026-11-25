@@ -63,7 +63,9 @@ async function finish(save: boolean): Promise<void> {
 		toast({ variant: "warning", title: translate("record.title"), message: translate("record.empty") });
 		return;
 	}
-	const path = await window.omsk.system.showSaveDialog(timestampName(), [{ name: "WebM Video", extensions: ["webm"] }]);
+	const path = await window.omsk.system.showSaveDialog(timestampName(), [
+		{ name: "WebM Video", extensions: ["webm"] },
+	]);
 	if (!path) return;
 	const res = await window.omsk.system.recorderSave(path, await blob.arrayBuffer());
 	if (res.ok) {

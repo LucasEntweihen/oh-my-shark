@@ -109,19 +109,19 @@ describe("manual installer transfer", () => {
 
 describe("installer debris sweep", () => {
 	const ENTRIES = [
-		"omp-0.9.7.dmg.download-4242",
-		"omp-0.9.8.dmg.download-99",
-		"omp-0.9.8.dmg.partial",
-		"omp-0.9.7 (1).dmg.partial",
+		"omsk-0.9.7.dmg.download-4242",
+		"omsk-0.9.8.dmg.download-99",
+		"omsk-0.9.8.dmg.partial",
+		"omsk-0.9.7 (1).dmg.partial",
 		"holiday.dmg.partial",
 		"notes.partial",
-		"install-omp.dmg.download-1",
-		"omp-0.9.9-arm64.dmg",
+		"install-omsk.dmg.download-1",
+		"omsk-0.9.9-arm64.dmg",
 	];
 	let dir: string;
 
 	beforeEach(() => {
-		dir = fs.mkdtempSync(path.join(os.tmpdir(), "omp-downloads-"));
+		dir = fs.mkdtempSync(path.join(os.tmpdir(), "omsk-downloads-"));
 		for (const name of ENTRIES) fs.writeFileSync(path.join(dir, name), "x");
 	});
 
@@ -131,38 +131,38 @@ describe("installer debris sweep", () => {
 
 	it("clears PID-keyed orphans that no restart could ever continue", async () => {
 		expect((await sweepInstallerPartials(dir)).sort()).toEqual([
-			"omp-0.9.7.dmg.download-4242",
-			"omp-0.9.8.dmg.download-99",
+			"omsk-0.9.7.dmg.download-4242",
+			"omsk-0.9.8.dmg.download-99",
 		]);
 	});
 
 	it("keeps every current-name partial while nothing is downloading", async () => {
 		await sweepInstallerPartials(dir);
-		expect(fs.existsSync(path.join(dir, "omp-0.9.8.dmg.partial"))).toBe(true);
+		expect(fs.existsSync(path.join(dir, "omsk-0.9.8.dmg.partial"))).toBe(true);
 	});
 
 	it("drops a superseded release's partial once the current download names its own", async () => {
-		const active = installerPartialPath(path.join(dir, "omp-0.9.9-arm64.dmg"));
+		const active = installerPartialPath(path.join(dir, "omsk-0.9.9-arm64.dmg"));
 		fs.writeFileSync(active, "x");
 		const removed = await sweepInstallerPartials(dir, active);
 		expect(removed.sort()).toEqual([
-			"omp-0.9.7 (1).dmg.partial",
-			"omp-0.9.7.dmg.download-4242",
-			"omp-0.9.8.dmg.download-99",
-			"omp-0.9.8.dmg.partial",
+			"omsk-0.9.7 (1).dmg.partial",
+			"omsk-0.9.7.dmg.download-4242",
+			"omsk-0.9.8.dmg.download-99",
+			"omsk-0.9.8.dmg.partial",
 		]);
 		expect(fs.existsSync(active)).toBe(true);
 	});
 
 	it("leaves files the updater never wrote where they are", async () => {
-		const active = installerPartialPath(path.join(dir, "omp-0.9.9-arm64.dmg"));
+		const active = installerPartialPath(path.join(dir, "omsk-0.9.9-arm64.dmg"));
 		await sweepInstallerPartials(dir, active);
 		await sweepInstallerPartials(dir);
 		for (const name of [
 			"holiday.dmg.partial",
 			"notes.partial",
-			"install-omp.dmg.download-1",
-			"omp-0.9.9-arm64.dmg",
+			"install-omsk.dmg.download-1",
+			"omsk-0.9.9-arm64.dmg",
 		]) {
 			expect(fs.existsSync(path.join(dir, name)), name).toBe(true);
 		}
