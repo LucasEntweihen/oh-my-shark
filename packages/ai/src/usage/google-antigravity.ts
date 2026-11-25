@@ -485,9 +485,7 @@ async function fetchAntigravityUsage(params: UsageFetchParams, ctx: UsageFetchCo
 	if (!accessToken) return null;
 
 	const baseUrl = params.baseUrl?.replace(/\/+$/, "");
-	const endpoints = baseUrl
-		? [baseUrl]
-		: [DEFAULT_ENDPOINT, "https://daily-cloudcode-pa.sandbox.googleapis.com", "https://cloudcode-pa.googleapis.com"];
+	const endpoints = baseUrl ? [baseUrl] : [DEFAULT_ENDPOINT, "https://daily-cloudcode-pa.sandbox.googleapis.com"];
 	const endpointRequest = {
 		endpoints,
 		projectId: credential.projectId,

@@ -23,11 +23,13 @@ import {
 	type ToolResultMessage,
 } from "@oh-my-pi/pi-ai";
 import type { Dialect } from "@oh-my-pi/pi-ai/dialect";
+import * as AIError from "@oh-my-pi/pi-ai/error";
 import { openAIResponsesReplaysNativeHistory } from "@oh-my-pi/pi-ai/providers/openai-responses-state";
 import type { HarmonyAuditEvent } from "@oh-my-pi/pi-ai/utils/harmony-leak";
 import { getBundledModel } from "@oh-my-pi/pi-catalog/models";
 import { logger } from "@oh-my-pi/pi-utils";
 import {
+	AgentLoopError,
 	abortReasonText,
 	agentLoop,
 	agentLoopContinue,
@@ -133,7 +135,7 @@ export interface AgentOptions {
 	 * Optional transform applied after provider context assembly and before
 	 * telemetry capture/provider send.
 	 */
-	transformProviderContext?: (context: Context, model: Model) => Context | Promise<Context>;
+	transformProviderContext?: (context: Context, model: Model, signal?: AbortSignal) => Context | Promise<Context>;
 
 	/**
 	 * Steering mode: "all" = send all steering messages at once, "one-at-a-time" = one per turn
@@ -270,15 +272,15 @@ export interface AgentOptions {
 
 	/**
 	 * Resolve a tool call whose name matched no advertised tool. Lets hosts
-	 * route calls to tools exposed through side transports (e.g. `xd://`
-	 * device mounts) instead of failing with "Tool not found".
+	 * route calls to tools reached through a side transport (e.g. mounted
+	 * tool commands run through `bash`) instead of failing with "Tool not found".
 	 */
 	resolveFallbackTool?: (name: string, advertised: readonly AgentTool<any>[]) => AgentTool<any> | undefined;
 
 	/**
 	 * Names routable by {@link resolveFallbackTool} that the advertised set
-	 * omits (e.g. `xd://` device mounts), used only to suggest a target when a
-	 * call misses.
+	 * omits (e.g. mounted tool commands run through `bash`), used only to
+	 * suggest a target when a call misses.
 	 */
 	suggestFallbackToolNames?: () => Iterable<string>;
 
@@ -426,11 +428,12 @@ export class Agent {
 	};
 	#tokenizer = new Tokenizer(this.#state.model);
 	#listeners = new Set<(e: AgentEvent) => void>();
+	#queueListeners = new Set<() => void>();
 	#pauseListeners = new Set<(paused: boolean) => void>();
 	#abortController?: AbortController;
 	#convertToLlm: (messages: AgentMessage[]) => Message[] | Promise<Message[]>;
 	#transformContext?: (messages: AgentMessage[], signal?: AbortSignal) => Promise<AgentMessage[]>;
-	#transformProviderContext?: (context: Context, model: Model) => Context | Promise<Context>;
+	#transformProviderContext?: (context: Context, model: Model, signal?: AbortSignal) => Context | Promise<Context>;
 	#sentToolDefinitions = new SentToolDefinitions();
 	#standbyTools: AgentTool[] = [];
 	#steeringQueue: AgentMessage[] = [];
@@ -457,20 +460,6 @@ export class Agent {
 	#withdrawnMessages = new WeakMap<AgentMessage, AbortController>();
 	#steeringWaiters = new Set<() => void>();
 	#queuedMessageGrouping?: (previous: AgentMessage, next: AgentMessage) => boolean;
-
-	/** Stable per-entry queue ids, keyed by message identity. Array indices
-	 *  can never serve as ids (they drift under concurrent enqueue), so each
-	 *  queued message gets a lane-prefixed counter id (`s1`, `f1`) at enqueue
-	 *  time. The WeakMap keeps the id invisible to message serialization and
-	 *  lets entries re-inserted by {@link replaceQueues} filtering keep their
-	 *  id — identity rides the message object, not the array slot. */
-	#queueIds = new WeakMap<AgentMessage, string>();
-	#nextQueueId = 1;
-
-	/** Queue-mutation subscribers (enqueue, drain/consume, remove, move,
-	 *  clear, replace). The session layer fans these out as queue-update
-	 *  snapshots so remote UIs never poll. */
-	#queueListeners = new Set<() => void>();
 
 	#steeringMode: "all" | "one-at-a-time";
 	#followUpMode: "all" | "one-at-a-time";
@@ -996,6 +985,7 @@ export class Agent {
 	async buildSideRequestContext(
 		llmMessages: Message[],
 		systemPrompt: string[] = this.#state.systemPrompt,
+		signal?: AbortSignal,
 	): Promise<Context> {
 		const model = this.#state.model;
 		if (!model) throw new Error("No active model on agent");
@@ -1012,7 +1002,7 @@ export class Agent {
 		// Side requests reuse the main loop's sent definitions without recording their own; attached before the
 		// transform too, so a request-size clamp in it measures them.
 		context = this.#sentToolDefinitions.withInactiveTools(context, standby);
-		if (this.#transformProviderContext) context = await this.#transformProviderContext(context, model);
+		if (this.#transformProviderContext) context = await this.#transformProviderContext(context, model, signal);
 		context = this.#sentToolDefinitions.withInactiveTools(context, context.inactiveTools);
 		return context;
 	}
@@ -1020,6 +1010,17 @@ export class Agent {
 	subscribe(fn: (e: AgentEvent) => void): () => void {
 		this.#listeners.add(fn);
 		return () => this.#listeners.delete(fn);
+	}
+
+	/** Register a listener notified after any steering/follow-up queue mutator
+	 *  (enqueue, dequeue-on-delivery, clear, restore, live-steering adoption,
+	 *  withdrawal, and landing in the transcript) runs. Internal-only signal —
+	 *  the queue itself has no concept of display filtering — so listeners
+	 *  recompute their own snapshot from `peekSteeringQueue()`/`peekFollowUpQueue()`
+	 *  (or a higher-level view) on notification. */
+	onQueueChange(listener: () => void): () => void {
+		this.#queueListeners.add(listener);
+		return () => this.#queueListeners.delete(listener);
 	}
 
 	/** Notify a session when this agent parks or resumes at a safe process-pause boundary. */
@@ -1413,8 +1414,6 @@ export class Agent {
 	replaceQueues(steering: AgentMessage[], followUp: AgentMessage[]) {
 		this.#steeringQueue = steering.slice();
 		this.#followUpQueue = followUp.slice();
-		for (const m of this.#steeringQueue) this.#ensureQueueId(m, "steering");
-		for (const m of this.#followUpQueue) this.#ensureQueueId(m, "followUp");
 		this.#cancelQueuedMessagePreparation("steering");
 		this.#cancelQueuedMessagePreparation("followUp");
 		this.#notifySteeringWaiters();
@@ -1486,7 +1485,6 @@ export class Agent {
 	 * Delivered after current tool execution, skips remaining tools.
 	 */
 	steer(m: AgentMessage) {
-		this.#ensureQueueId(m, "steering");
 		this.#steeringQueue.push(m);
 		this.#notifySteeringWaiters();
 		this.#emitQueueChanged();
@@ -1511,7 +1509,6 @@ export class Agent {
 	 * Delivered only when agent has no more tool calls or steering messages.
 	 */
 	followUp(m: AgentMessage) {
-		this.#ensureQueueId(m, "followUp");
 		this.#followUpQueue.push(m);
 		this.#emitQueueChanged();
 	}
@@ -1545,8 +1542,8 @@ export class Agent {
 		this.#cancelQueuedMessagePreparation("steering");
 		this.#cancelQueuedMessagePreparation("followUp");
 		this.#notifySteeringWaiters();
-		this.#emitQueueChanged();
 		this.clearDeferredToolDirectives();
+		this.#emitQueueChanged();
 	}
 
 	hasQueuedMessages(): boolean {
@@ -1598,104 +1595,6 @@ export class Agent {
 	peekFollowUpQueue(): readonly AgentMessage[] {
 		const claim = this.#queuedMessageClaims.followUp;
 		return claim ? [...claim.messages, ...this.#followUpQueue] : this.#followUpQueue;
-	}
-
-	/** Assign the message a stable queue id if it lacks one (see
-	 *  {@link #queueIds}); returns the id the entry carries. */
-	#ensureQueueId(message: AgentMessage, lane: "steering" | "followUp"): string {
-		const existing = this.#queueIds.get(message);
-		if (existing !== undefined) return existing;
-		const id = `${lane === "steering" ? "s" : "f"}${this.#nextQueueId++}`;
-		this.#queueIds.set(message, id);
-		return id;
-	}
-
-	/** Stable id of the queue entry holding `message`, or undefined when the
-	 *  message was never queued through this Agent. Ids survive every queue
-	 *  mutation short of removal, so a client holding an id can act on exactly
-	 *  the entry it fetched even after concurrent enqueues or lane filtering. */
-	queueEntryId(message: AgentMessage): string | undefined {
-		return this.#queueIds.get(message);
-	}
-
-	/** Subscribe to steering/follow-up queue mutations. The listener fires
-	 *  synchronously after every mutation that actually changed a queue:
-	 *  enqueue, dequeue/consume, pop, remove, move, clear, replace, reset,
-	 *  live-steering adoption, withdrawal, and landing in the transcript. */
-	onQueueChange(listener: () => void): () => void {
-		this.#queueListeners.add(listener);
-		return () => this.#queueListeners.delete(listener);
-	}
-
-	/**
-	 * Remove the queue entry carrying `queueId` from whichever lane holds it.
-	 * Returns the removed entry's lane and message, or undefined when no entry
-	 * carries the id (already consumed, cleared, or never queued here).
-	 */
-	removeQueuedMessage(queueId: string): { lane: "steering" | "followUp"; message: AgentMessage } | undefined {
-		const steeringIndex = this.#steeringQueue.findIndex(m => this.#queueIds.get(m) === queueId);
-		if (steeringIndex >= 0) {
-			const [message] = this.#steeringQueue.splice(steeringIndex, 1);
-			this.#notifySteeringWaiters();
-			this.#emitQueueChanged();
-			return { lane: "steering", message };
-		}
-		const followUpIndex = this.#followUpQueue.findIndex(m => this.#queueIds.get(m) === queueId);
-		if (followUpIndex >= 0) {
-			const [message] = this.#followUpQueue.splice(followUpIndex, 1);
-			this.#emitQueueChanged();
-			return { lane: "followUp", message };
-		}
-		return undefined;
-	}
-
-	/**
-	 * Move the queue entry carrying `queueId` to `toIndex` (clamped into the
-	 * valid post-removal range). Without `toLane` this is a same-lane reorder;
-	 * with `toLane` the entry switches lanes — the stable queue id survives
-	 * the crossing (its prefix still names the ENQUEUE lane, never the current
-	 * one). A crossing into steering notifies steering waiters, since a new
-	 * steering arrival can unblock an installed wait. Returns the lane and
-	 * the final index, or undefined when no entry carries the id.
-	 */
-	moveQueuedMessage(
-		queueId: string,
-		toIndex: number,
-		toLane?: "steering" | "followUp",
-	): { lane: "steering" | "followUp"; index: number } | undefined {
-		const clampIndex = (queue: AgentMessage[]): number =>
-			Math.max(0, Math.min(Number.isFinite(toIndex) ? Math.trunc(toIndex) : 0, queue.length));
-		const moveWithin = (
-			queue: AgentMessage[],
-			lane: "steering" | "followUp",
-		): { lane: "steering" | "followUp"; index: number } | undefined => {
-			const from = queue.findIndex(m => this.#queueIds.get(m) === queueId);
-			if (from < 0) return undefined;
-			const [message] = queue.splice(from, 1);
-			const clamped = clampIndex(queue);
-			queue.splice(clamped, 0, message);
-			return { lane, index: clamped };
-		};
-		if (toLane === undefined) {
-			const moved = moveWithin(this.#steeringQueue, "steering") ?? moveWithin(this.#followUpQueue, "followUp");
-			if (moved !== undefined) this.#emitQueueChanged();
-			return moved;
-		}
-		const target = toLane === "steering" ? this.#steeringQueue : this.#followUpQueue;
-		if (target.some(m => this.#queueIds.get(m) === queueId)) {
-			const moved = moveWithin(target, toLane);
-			if (moved !== undefined) this.#emitQueueChanged();
-			return moved;
-		}
-		const source = toLane === "steering" ? this.#followUpQueue : this.#steeringQueue;
-		const from = source.findIndex(m => this.#queueIds.get(m) === queueId);
-		if (from < 0) return undefined;
-		const [message] = source.splice(from, 1);
-		const clamped = clampIndex(target);
-		target.splice(clamped, 0, message);
-		if (toLane === "steering") this.#notifySteeringWaiters();
-		this.#emitQueueChanged();
-		return { lane: toLane, index: clamped };
 	}
 
 	/** Nonblocking snapshot of the latest results, including provisional payloads while transforms are pending. */
@@ -2130,6 +2029,7 @@ export class Agent {
 			return refreshToolChoiceForActiveTools(options?.toolChoice, this.#state.tools);
 		};
 
+		let requestModel: Model | undefined;
 		const config: AgentLoopConfig = {
 			model,
 			reasoning,
@@ -2208,6 +2108,9 @@ export class Agent {
 			onAssistantMessageEvent: this.#onAssistantMessageEvent,
 			onHarmonyLeak: this.#onHarmonyLeak,
 			onTurnEnd: (messages, signal, context) => this.#onTurnEnd?.(messages, signal, context),
+			onTurnEndEmitted: () => {
+				requestModel = undefined;
+			},
 			onPauseChange: paused => {
 				if (this.#isPaused === paused) return;
 				this.#isPaused = paused;
@@ -2218,7 +2121,10 @@ export class Agent {
 			onToolChoiceRejected: () => {
 				if (claimedToolChoice !== undefined) this.#deferredToolChoice = claimedToolChoice;
 			},
-			getModel: () => this.#state.model ?? model,
+			getModel: () => {
+				requestModel = this.#state.model ?? model;
+				return requestModel;
+			},
 			getReasoning: () => this.#state.thinkingLevel,
 			getDisableReasoning: () => this.#state.disableReasoning,
 			getServiceTier: this.#serviceTierResolver,
@@ -2348,6 +2254,14 @@ export class Agent {
 				: err instanceof Error
 					? err.message
 					: String(err);
+			const errorModel = requestModel ?? this.#state.model ?? model;
+			const errorStatus = stoppedForAbort ? undefined : AIError.status(err);
+			const errorId = stoppedForAbort
+				? errorMessage === "Request was aborted"
+					? AIError.create(AIError.Flag.Abort)
+					: AIError.classify(loopSignal.reason) || undefined
+				: AIError.classify(err, errorModel.api) || undefined;
+			const errorFromAgentLoop = (!stoppedForAbort && err instanceof AgentLoopError) || undefined;
 			const shouldEmitVisibleError = !stoppedForAbort;
 			const assistantPartial = partial?.role === "assistant" ? partial : undefined;
 			const hadAssistantStart = assistantPartial !== undefined;
@@ -2375,13 +2289,16 @@ export class Agent {
 							),
 							stopReason: "error",
 							errorMessage,
+							errorStatus,
+							errorId,
+							errorFromAgentLoop,
 						}
 					: {
 							role: "assistant",
 							content: [{ type: "text", text: "" }],
-							api: model.api,
-							provider: model.provider,
-							model: model.id,
+							api: errorModel.api,
+							provider: errorModel.provider,
+							model: errorModel.id,
 							usage: {
 								input: 0,
 								output: 0,
@@ -2392,6 +2309,9 @@ export class Agent {
 							},
 							stopReason: stoppedForAbort ? "aborted" : "error",
 							errorMessage,
+							errorStatus,
+							errorId,
+							errorFromAgentLoop,
 							timestamp: Date.now(),
 						};
 

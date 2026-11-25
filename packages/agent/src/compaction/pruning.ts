@@ -92,7 +92,7 @@ export interface PruneResult {
 	undo(): void;
 }
 
-const NOTHING_PRUNED: PruneResult = { prunedCount: 0, tokensSaved: 0, undo: () => { } };
+const NOTHING_PRUNED: PruneResult = { prunedCount: 0, tokensSaved: 0, undo: () => {} };
 
 /** Blank `message` to `notice`, returning the step that restores it. */
 function blankToolResult(message: ToolResultMessage, notice: string, prunedAt: number): () => void {
@@ -458,14 +458,14 @@ export function pruneSupersededToolResults(
 	const toolCalls = new SentToolCalls(entries, boundaryIndex);
 	const candidates = config.supersedeKey
 		? collectSupersededResults(
-			entries,
-			boundaryIndex,
-			tokenizer,
-			toolCalls,
-			config.supersedeKey,
-			config.supersedeComplete,
-			config.protectedTools,
-		)
+				entries,
+				boundaryIndex,
+				tokenizer,
+				toolCalls,
+				config.supersedeKey,
+				config.supersedeComplete,
+				config.protectedTools,
+			)
 		: [];
 	if (config.pruneUseless) {
 		const exclude = new Set(candidates.map(candidate => candidate.message));
@@ -549,29 +549,29 @@ export function pruneToolOutputs(
 	const toolCalls = new SentToolCalls(entries, boundaryIndex);
 	const supersededMessages = config.supersedeKey
 		? new Set(
-			collectSupersededResults(
-				entries,
-				boundaryIndex,
-				tokenizer,
-				toolCalls,
-				config.supersedeKey,
-				config.supersedeComplete,
-				config.protectedTools,
-			).map(candidate => candidate.message),
-		)
-		: undefined;
-	const uselessMessages =
-		config.pruneUseless !== false
-			? new Set(
-				collectUselessResults(
+				collectSupersededResults(
 					entries,
 					boundaryIndex,
 					tokenizer,
 					toolCalls,
+					config.supersedeKey,
+					config.supersedeComplete,
 					config.protectedTools,
-					supersededMessages ?? new Set(),
 				).map(candidate => candidate.message),
 			)
+		: undefined;
+	const uselessMessages =
+		config.pruneUseless !== false
+			? new Set(
+					collectUselessResults(
+						entries,
+						boundaryIndex,
+						tokenizer,
+						toolCalls,
+						config.protectedTools,
+						supersededMessages ?? new Set(),
+					).map(candidate => candidate.message),
+				)
 			: undefined;
 
 	const cacheWarmSuffixTokens = config.cacheWarmSuffixTokens;
@@ -579,11 +579,11 @@ export function pruneToolOutputs(
 		cacheWarmSuffixTokens === undefined
 			? boundaryIndex
 			: cacheLookbackFloor(
-				entries,
-				boundaryIndex,
-				config.cacheLookbackPositions,
-				config.convertToLlm ?? defaultConvertToLlm,
-			);
+					entries,
+					boundaryIndex,
+					config.cacheLookbackPositions,
+					config.convertToLlm ?? defaultConvertToLlm,
+				);
 	// Tokens of every message strictly after entry `i` (cache guard only).
 	let messageSuffix = 0;
 
@@ -682,7 +682,6 @@ export function readToolSupersedeKey(toolName: string, args: Record<string, unkn
 	if (typeof path !== "string" || path.length === 0) return undefined;
 	if (path.includes("://")) return undefined;
 	const { path: base, sel } = splitReadSelector(path);
-	const canonicalBase = base.replaceAll("\\", "/").replace(/^(?:\.\/)+/, "");
-	if (sel === undefined) return canonicalBase;
-	return `${canonicalBase}${isAlternateFormReadSelector(sel) ? "\u0001" : "\u0000"}${sel}`;
+	if (sel === undefined) return base;
+	return `${base}${isAlternateFormReadSelector(sel) ? "\u0001" : "\u0000"}${sel}`;
 }
