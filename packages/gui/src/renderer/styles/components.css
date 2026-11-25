@@ -654,6 +654,13 @@
 	min-width: 0;
 	max-width: min(100%, calc(var(--omsk-column-reading) + 2 * var(--omsk-column-pad)));
 	margin-inline: auto;
+	content-visibility: auto;
+	contain-intrinsic-size: auto 72px;
+}
+
+.omsk-ocean-aquarium {
+	contain: strict;
+	will-change: contents;
 }
 
 .omsk-transcript-editorial [data-transcript-kind] > .omsk-transcript-row::before {

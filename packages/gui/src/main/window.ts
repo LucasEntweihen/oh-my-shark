@@ -148,6 +148,8 @@ export class WindowManager {
 				nodeIntegration: false,
 				sandbox: true,
 				spellcheck: true,
+				backgroundThrottling: true,
+				v8CacheOptions: "code",
 				preload: join(__dirname, "../preload/index.cjs"),
 			},
 		});

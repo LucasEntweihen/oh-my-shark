@@ -83,6 +83,7 @@ export function OceanAquariumBackdrop({ seedKey, className }: OceanAquariumBackd
 		const syncCanvasSize = () => {
 			width = Math.max(container.clientWidth, 320);
 			height = Math.max(container.clientHeight, 240);
+			cachedRect = container.getBoundingClientRect();
 			const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 			canvas.width = Math.floor(width * dpr);
 			canvas.height = Math.floor(height * dpr);
@@ -91,6 +92,7 @@ export function OceanAquariumBackdrop({ seedKey, className }: OceanAquariumBackd
 			ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
 		};
 
+		let cachedRect = container.getBoundingClientRect();
 		syncCanvasSize();
 		const resizeObserver =
 			typeof ResizeObserver !== "undefined"
@@ -105,6 +107,7 @@ export function OceanAquariumBackdrop({ seedKey, className }: OceanAquariumBackd
 		let lastDrawMs = 0;
 		let elapsed = 0;
 		let frameIntervalMs = 42; // ~24fps crisp ASCII ocean motion, adapts to 15fps on slower GPUs
+		let paused = document.hidden;
 
 		// Draw initial frame immediately
 		renderOceanToCanvas(ctx, width, height, habitat, 0, overridesRef.current);
@@ -114,31 +117,49 @@ export function OceanAquariumBackdrop({ seedKey, className }: OceanAquariumBackd
 		}
 
 		const tick = (now: number) => {
-			if (!document.hidden) {
-				if (lastDrawMs === 0) lastDrawMs = now;
-				const deltaMs = now - lastDrawMs;
-				if (deltaMs >= frameIntervalMs) {
-					const dt = deltaMs / 1000;
-					lastDrawMs = now;
-					elapsed += dt;
-					const cols = Math.floor(width / 7.8);
-					const t0 = performance.now();
-					stepOceanHabitat(habitat, dt, elapsed, cols, pointerRef.current);
-					if (ctx) renderOceanToCanvas(ctx, width, height, habitat, elapsed, overridesRef.current);
-					const drawCost = performance.now() - t0;
-					frameIntervalMs = drawCost > 16 ? 66 : 42;
-				}
-			} else {
+			if (paused || document.hidden) {
+				rafId = 0;
+				return;
+			}
+			if (lastDrawMs === 0) lastDrawMs = now;
+			const deltaMs = now - lastDrawMs;
+			if (deltaMs >= frameIntervalMs) {
+				const dt = deltaMs / 1000;
 				lastDrawMs = now;
+				elapsed += dt;
+				const cols = Math.floor(width / 7.8);
+				const t0 = performance.now();
+				stepOceanHabitat(habitat, dt, elapsed, cols, pointerRef.current);
+				if (ctx) renderOceanToCanvas(ctx, width, height, habitat, elapsed, overridesRef.current);
+				const drawCost = performance.now() - t0;
+				frameIntervalMs = drawCost > 16 ? 66 : 42;
 			}
 			rafId = window.requestAnimationFrame(tick);
 		};
 
+		const scheduleTick = () => {
+			if (!paused && !document.hidden && rafId === 0) {
+				lastDrawMs = 0;
+				rafId = window.requestAnimationFrame(tick);
+			}
+		};
+
+		const onVisibilityChange = () => {
+			paused = document.hidden;
+			if (!paused) scheduleTick();
+		};
+		const onWindowBlur = () => {
+			paused = true;
+		};
+		const onWindowFocus = () => {
+			paused = document.hidden;
+			scheduleTick();
+		};
+
 		const onPointerMove = (event: PointerEvent) => {
-			const rect = container.getBoundingClientRect();
-			if (rect.width <= 0 || rect.height <= 0) return;
-			const xRatio = (event.clientX - rect.left) / rect.width;
-			const yRatio = (event.clientY - rect.top) / rect.height;
+			if (cachedRect.width <= 0 || cachedRect.height <= 0) return;
+			const xRatio = (event.clientX - cachedRect.left) / cachedRect.width;
+			const yRatio = (event.clientY - cachedRect.top) / cachedRect.height;
 			pointerRef.current = {
 				xRatio,
 				yRatio,
@@ -149,12 +170,18 @@ export function OceanAquariumBackdrop({ seedKey, className }: OceanAquariumBackd
 			pointerRef.current.active = false;
 		};
 
+		document.addEventListener("visibilitychange", onVisibilityChange);
+		window.addEventListener("blur", onWindowBlur);
+		window.addEventListener("focus", onWindowFocus);
 		window.addEventListener("pointermove", onPointerMove, { passive: true });
 		container.addEventListener("pointerleave", onPointerLeave, { passive: true });
-		rafId = window.requestAnimationFrame(tick);
+		scheduleTick();
 
 		return () => {
-			window.cancelAnimationFrame(rafId);
+			if (rafId !== 0) window.cancelAnimationFrame(rafId);
+			document.removeEventListener("visibilitychange", onVisibilityChange);
+			window.removeEventListener("blur", onWindowBlur);
+			window.removeEventListener("focus", onWindowFocus);
 			window.removeEventListener("pointermove", onPointerMove);
 			container.removeEventListener("pointerleave", onPointerLeave);
 			resizeObserver?.disconnect();
