@@ -72,13 +72,13 @@ export async function retryLastTurn(onEmpty: () => void): Promise<void> {
 		return;
 	}
 	const streaming = useSessionStore.getState().isStreaming;
-	const response = streaming ? await window.omp.rpc.abortAndPrompt(text) : await window.omp.rpc.prompt(text);
+	const response = streaming ? await window.omsk.rpc.abortAndPrompt(text) : await window.omsk.rpc.prompt(text);
 	if (!response.success) throw new Error(response.error);
 }
 
 /** Abort the active turn and synchronously retire any live retry UI. */
 export async function abortActiveTurn(
-	rpc: Pick<TabRpc, "abort" | "abortRetry"> = window.omp.rpc,
+	rpc: Pick<TabRpc, "abort" | "abortRetry"> = window.omsk.rpc,
 	tabId?: string | null,
 ): Promise<RpcResponse> {
 	const retrying = useSessionStore.getState().retryInfo !== null;
@@ -96,12 +96,12 @@ export async function abortActiveTurn(
 
 /** Branch from a user entry, restoring its draft and refreshing the session. */
 export async function branchSessionFromEntry(entryId: string): Promise<"branched" | "cancelled"> {
-	const response = await window.omp.rpc.branch(entryId);
+	const response = await window.omsk.rpc.branch(entryId);
 	if (!response.success) throw new Error(response.error);
 	const data = response.data as { cancelled?: boolean; text?: string } | undefined;
 	if (data?.cancelled) return "cancelled";
 	if (data?.text !== undefined) {
-		window.dispatchEvent(new CustomEvent("omp:fill-composer", { detail: { text: data.text } }));
+		window.dispatchEvent(new CustomEvent("omsk:fill-composer", { detail: { text: data.text } }));
 	}
 	await hydrateSession();
 	return "branched";
@@ -111,7 +111,7 @@ export async function branchSessionFromEntry(entryId: string): Promise<"branched
 export async function forkSessionFromEntryInNewTab(
 	entryId: string,
 	sourceTabId = useTabsStore.getState().activeTabId,
-	rpc: Pick<TabRpc, "forkFrom"> = window.omp.rpc,
+	rpc: Pick<TabRpc, "forkFrom"> = window.omsk.rpc,
 ): Promise<"opened" | "saved"> {
 	const tabs = useTabsStore.getState();
 	if (!sourceTabId || tabs.activeTabId !== sourceTabId || useSessionStore.getState().switchPending !== null) {
@@ -168,10 +168,10 @@ async function resolveMessageEntryId(message: AgentMessage, rpc: Pick<TabRpc, "g
 	return entryId;
 }
 
-/** Resolve legacy transcript messages through the active OMP session tree, then fork them. */
+/** Resolve legacy transcript messages through the active OMSK session tree, then fork them. */
 export async function forkSessionFromMessageInNewTab(
 	message: AgentMessage,
-	rpc: Pick<TabRpc, "forkFrom" | "getSessionTree"> = window.omp.rpc,
+	rpc: Pick<TabRpc, "forkFrom" | "getSessionTree"> = window.omsk.rpc,
 	sourceTabId = useTabsStore.getState().activeTabId,
 ): Promise<"opened" | "saved"> {
 	if (!sourceTabId || useSessionStore.getState().switchPending !== null) {
@@ -188,7 +188,7 @@ export async function forkSessionFromMessageInNewTab(
  */
 export async function editFromMessage(
 	message: AgentMessage,
-	rpc: Pick<TabRpc, "getSessionTree" | "branch"> = window.omp.rpc,
+	rpc: Pick<TabRpc, "getSessionTree" | "branch"> = window.omsk.rpc,
 	tabId = useTabsStore.getState().activeTabId,
 ): Promise<"branched" | "cancelled"> {
 	if (useSessionStore.getState().switchPending !== null) {
@@ -201,7 +201,7 @@ export async function editFromMessage(
 	const data = response.data as { cancelled?: boolean; text?: string } | undefined;
 	if (data?.cancelled) return "cancelled";
 	if (data?.text !== undefined) {
-		window.dispatchEvent(new CustomEvent("omp:fill-composer", { detail: { text: data.text, tabId } }));
+		window.dispatchEvent(new CustomEvent("omsk:fill-composer", { detail: { text: data.text, tabId } }));
 	}
 	await (tabId ? hydrateTabSession(tabId) : hydrateSession());
 	return "branched";
@@ -224,7 +224,7 @@ interface DequeuedMessage {
  * queued; RPC failures throw for the caller to surface.
  */
 export async function restoreQueuedMessages(onEmpty: () => void): Promise<void> {
-	const response = await window.omp.rpc.dequeue();
+	const response = await window.omsk.rpc.dequeue();
 	if (!response.success) throw new Error(response.error);
 	const data = response.data as { messages?: DequeuedMessage[] } | undefined;
 	const messages = data?.messages ?? [];
@@ -234,9 +234,9 @@ export async function restoreQueuedMessages(onEmpty: () => void): Promise<void> 
 	}
 	const restored = messages[messages.length - 1];
 	// Fill the composer first so the message being edited is safe even if a
-	// re-queue below fails; InputArea owns the "omp:fill-composer" listener.
+	// re-queue below fails; InputArea owns the "omsk:fill-composer" listener.
 	window.dispatchEvent(
-		new CustomEvent("omp:fill-composer", {
+		new CustomEvent("omsk:fill-composer", {
 			detail: { text: restored.text, images: restored.images, prepend: true },
 		}),
 	);
@@ -244,8 +244,8 @@ export async function restoreQueuedMessages(onEmpty: () => void): Promise<void> 
 	for (const queued of messages.slice(0, -1)) {
 		const requeue =
 			queued.mode === "steer"
-				? await window.omp.rpc.steer(queued.text, queued.images)
-				: await window.omp.rpc.followUp(queued.text, queued.images);
+				? await window.omsk.rpc.steer(queued.text, queued.images)
+				: await window.omsk.rpc.followUp(queued.text, queued.images);
 		if (!requeue.success) throw new Error(requeue.error);
 	}
 }
@@ -258,7 +258,7 @@ export async function restoreQueuedMessages(onEmpty: () => void): Promise<void> 
  * and reports the dropped count. Returns whether the context was cleared.
  */
 export async function clearSessionContext(
-	rpc: Pick<TabRpc, "clearContext"> = window.omp.rpc,
+	rpc: Pick<TabRpc, "clearContext"> = window.omsk.rpc,
 	hydrate: () => Promise<void> = hydrateSession,
 ): Promise<boolean> {
 	const response = await rpc.clearContext();

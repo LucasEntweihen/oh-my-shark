@@ -50,7 +50,7 @@ export function StatsDashboard({ open, onClose }: { open: boolean; onClose: () =
 		async (opts?: { quiet?: boolean }) => {
 			setSyncing(true);
 			try {
-				const outcome = await runStatsSync(path => window.omp.stats.fetch(path));
+				const outcome = await runStatsSync(path => window.omsk.stats.fetch(path));
 				if (outcome.kind === "unavailable") {
 					// Server still booting: the routes show a loading state and recover on
 					// their own, so the quiet auto-sync on open must not alarm the user.

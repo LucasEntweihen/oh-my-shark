@@ -21,7 +21,7 @@ export const RU_SCHEMA_OPTION_TEXT: Readonly<Record<string, string>> = {
 	"Save role models in the active profile config (current behavior)":
 		"Сохранять модели ролей в конфигурации активного профиля (текущее поведение)",
 	"Per-project": "Для каждого проекта",
-	"Save project role models in .omp/config.yml; missing project roles use global defaults":
+	"Save project role models in .omsk/config.yml; missing project roles use global defaults":
 		"Сохранять модели ролей проекта в .omsk/config.yml; для отсутствующих ролей проекта использовать глобальные значения по умолчанию",
 	Unicode: "Unicode",
 	"Standard symbols (default)": "Стандартные символы (по умолчанию)",
@@ -996,7 +996,7 @@ export const RU_SCHEMA_OPTION_TEXT: Readonly<Record<string, string>> = {
 		"Отправлять, если фраза заканчивается словом, содержащим 'submit' (перед отправкой это слово удаляется).",
 	"Share only when /collab is run": "Публиковать только после запуска /collab",
 	View: "Просмотр",
-	"Auto-host; the registry hands out view-only links (omp collab link --view)":
+	"Auto-host; the registry hands out view-only links (omsk collab link --view)":
 		"Автоматическая публикация; реестр выдаёт ссылки только для просмотра (OhMyShark collab link --view)",
 	Control: "Управление",
 	"Auto-host; the registry hands out control links that can prompt the session":

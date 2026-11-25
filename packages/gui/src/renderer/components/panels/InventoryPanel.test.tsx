@@ -58,7 +58,7 @@ function plugin(partial: Partial<RpcPluginInfo> & { name: string }): RpcPluginIn
 }
 
 function marketplace(partial: Partial<RpcMarketplaceInfo> & { name: string }): RpcMarketplaceInfo {
-	return { source: `https://github.com/omp/${partial.name}.git`, ...partial };
+	return { source: `https://github.com/omsk/${partial.name}.git`, ...partial };
 }
 
 function template(partial: Partial<RpcPromptTemplateInfo> & { name: string }): RpcPromptTemplateInfo {
@@ -67,12 +67,12 @@ function template(partial: Partial<RpcPromptTemplateInfo> & { name: string }): R
 
 describe("shortenSource", () => {
 	it("strips protocol and trailing .git from URLs", () => {
-		expect(shortenSource("https://github.com/omp/plugins.git")).toBe("github.com/omp/plugins");
+		expect(shortenSource("https://github.com/omsk/plugins.git")).toBe("github.com/omsk/plugins");
 		expect(shortenSource("http://example.com/mkt/")).toBe("example.com/mkt");
 	});
 
 	it("strips the git@ ceremony from SSH remotes", () => {
-		expect(shortenSource("git@github.com:omp/plugins.git")).toBe("github.com:omp/plugins");
+		expect(shortenSource("git@github.com:omsk/plugins.git")).toBe("github.com:omsk/plugins");
 	});
 
 	it("keeps short names and paths intact", () => {
@@ -81,8 +81,8 @@ describe("shortenSource", () => {
 	});
 
 	it("trims long filesystem paths to the last two segments", () => {
-		expect(shortenSource("/Users/zach/dev/marketplaces/omp")).toBe("…/marketplaces/omp");
-		expect(shortenSource("C:\\tools\\marketplaces\\omp")).toBe("…/marketplaces/omp");
+		expect(shortenSource("/Users/zach/dev/marketplaces/omsk")).toBe("…/marketplaces/omsk");
+		expect(shortenSource("C:\\tools\\marketplaces\\omsk")).toBe("…/marketplaces/omsk");
 	});
 });
 
@@ -122,7 +122,7 @@ describe("filterPlugins", () => {
 describe("filterMarketplaces", () => {
 	const marketplaces = [
 		marketplace({ name: "official", pluginCount: 12 }),
-		marketplace({ name: "team", source: "/opt/omp/team-marketplace" }),
+		marketplace({ name: "team", source: "/opt/omsk/team-marketplace" }),
 	];
 
 	it("matches by name and by source, and keeps rows without a pluginCount", () => {
@@ -160,9 +160,9 @@ describe("InventoryPanel", () => {
 	it("loads the active resource automatically and renders an actionable empty state", async () => {
 		const getPlugins = vi.fn(async () => ({ success: true as const, data: { plugins: [] } }));
 		const ompWindow = window as unknown as {
-			omp: { rpc: { getPlugins: typeof getPlugins } };
+			omsk: { rpc: { getPlugins: typeof getPlugins } };
 		};
-		ompWindow.omp = { rpc: { getPlugins } };
+		ompWindow.omsk = { rpc: { getPlugins } };
 		useSessionStore.setState({ status: "ready", cwd: "/repo" });
 		useTabsStore.setState({
 			activeTabId: "tab-1",

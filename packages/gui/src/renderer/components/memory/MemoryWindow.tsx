@@ -177,7 +177,7 @@ function ProjectActions({ project, onErase }: { project: MemoryProject; onErase:
 			icon: FolderOpen,
 			disabled: !overview || (!overview.summary && overview.notes.length === 0 && overview.lessons.length === 0),
 			onSelect: () => {
-				if (overview) void window.omp.system.openPath(overview.root);
+				if (overview) void window.omsk.system.openPath(overview.root);
 			},
 		},
 	];
@@ -249,7 +249,7 @@ export function MemoryWindow() {
 
 	useEffect(() => {
 		let cancelled = false;
-		void window.omp.sidecar
+		void window.omsk.sidecar
 			.defaultWorkspace()
 			.then(path => {
 				if (!cancelled) setWorkCwd(path);

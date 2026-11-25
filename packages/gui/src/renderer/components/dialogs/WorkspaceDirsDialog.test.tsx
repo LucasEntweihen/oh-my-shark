@@ -100,15 +100,15 @@ function installMockOmp(overrides: { rpc?: Partial<MockRpc>; pickedPath?: string
 		setSubagentSubscription: vi.fn(async () => success({})),
 		...overrides.rpc,
 	};
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		rpc,
 		system: {
 			showOpenDialog: vi.fn(async () => (overrides.pickedPath === null ? null : [overrides.pickedPath ?? EXTRA])),
 		},
 	};
 	// linkedom's window lacks the preload bridge; install the mock OmpApi on it.
-	(window as unknown as { omp: MockOmp }).omp = omp;
-	return omp;
+	(window as unknown as { omsk: MockOmp }).omsk = omsk;
+	return omsk;
 }
 
 let container: TestElement;
@@ -199,7 +199,7 @@ describe("WorkspaceDirsDialog", () => {
 	});
 
 	it("re-reads the roots from the error's retry affordance", async () => {
-		const omp = installMockOmp({
+		const omsk = installMockOmp({
 			rpc: {
 				getDirectories: vi
 					.fn<() => Promise<RpcResponse>>()
@@ -209,41 +209,41 @@ describe("WorkspaceDirsDialog", () => {
 		});
 		useUiStore.getState().openWorkspaceDirs();
 		await mount(<WorkspaceDirsDialog />);
-		expect(omp.rpc.getDirectories).toHaveBeenCalledTimes(1);
+		expect(omsk.rpc.getDirectories).toHaveBeenCalledTimes(1);
 
 		await click(findButton("Retry"));
 		await flush();
 
-		expect(omp.rpc.getDirectories).toHaveBeenCalledTimes(2);
+		expect(omsk.rpc.getDirectories).toHaveBeenCalledTimes(2);
 		const text = document.body.textContent ?? "";
 		expect(text).toContain(EXTRA);
 		expect(text).not.toContain("directories are unavailable");
 	});
 
 	it("adds a directory picked from the native dialog and refreshes the list", async () => {
-		const omp = installMockOmp({ pickedPath: "/work/third" });
-		omp.rpc.addDirectory = vi.fn(async () => success(directories(CWD, EXTRA, "/work/third")));
+		const omsk = installMockOmp({ pickedPath: "/work/third" });
+		omsk.rpc.addDirectory = vi.fn(async () => success(directories(CWD, EXTRA, "/work/third")));
 		useUiStore.getState().openWorkspaceDirs();
 		await mount(<WorkspaceDirsDialog />);
 		await click(findButton("Add directory"));
 		await flush();
-		expect(omp.rpc.addDirectory).toHaveBeenCalledWith("/work/third");
+		expect(omsk.rpc.addDirectory).toHaveBeenCalledWith("/work/third");
 		expect(document.body.textContent ?? "").toContain("/work/third");
 		const toasts = useToastStore.getState().toasts;
 		expect(toasts.some(toast => toast.variant === "success")).toBe(true);
 	});
 
 	it("does not call the RPC when the picker is cancelled", async () => {
-		const omp = installMockOmp({ pickedPath: null });
+		const omsk = installMockOmp({ pickedPath: null });
 		useUiStore.getState().openWorkspaceDirs();
 		await mount(<WorkspaceDirsDialog />);
 		await click(findButton("Add directory"));
 		await flush();
-		expect(omp.rpc.addDirectory).not.toHaveBeenCalled();
+		expect(omsk.rpc.addDirectory).not.toHaveBeenCalled();
 	});
 
 	it("keeps removal behind the inline confirm until confirmed", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		useUiStore.getState().openWorkspaceDirs();
 		await mount(<WorkspaceDirsDialog />);
 
@@ -252,19 +252,19 @@ describe("WorkspaceDirsDialog", () => {
 		if (!removeButton) throw new Error("remove button not found");
 		await click(removeButton);
 		await flush();
-		expect(omp.rpc.removeDirectory).not.toHaveBeenCalled();
+		expect(omsk.rpc.removeDirectory).not.toHaveBeenCalled();
 
 		// Cancel collapses the confirm without an RPC; re-open and confirm.
 		await click(findButton("Cancel"));
 		await flush();
-		expect(omp.rpc.removeDirectory).not.toHaveBeenCalled();
+		expect(omsk.rpc.removeDirectory).not.toHaveBeenCalled();
 		const removeButtonAgain = buttons().find(button => button.getAttribute("title") === "Remove");
 		if (!removeButtonAgain) throw new Error("remove button not found after cancel");
 		await click(removeButtonAgain);
 		await flush();
 		await click(findButton("Confirm"));
 		await flush();
-		expect(omp.rpc.removeDirectory).toHaveBeenCalledWith(EXTRA);
+		expect(omsk.rpc.removeDirectory).toHaveBeenCalledWith(EXTRA);
 		expect(document.body.textContent ?? "").not.toContain(EXTRA);
 	});
 
@@ -277,22 +277,22 @@ describe("WorkspaceDirsDialog", () => {
 	});
 
 	it("moves the session to the picked directory, toasts, and rehydrates", async () => {
-		const omp = installMockOmp({ pickedPath: EXTRA });
+		const omsk = installMockOmp({ pickedPath: EXTRA });
 		useUiStore.getState().openWorkspaceDirs();
 		await mount(<WorkspaceDirsDialog />);
 		await click(findButton("Move session"));
 		await flush();
-		expect(omp.rpc.moveSession).toHaveBeenCalledWith(EXTRA);
+		expect(omsk.rpc.moveSession).toHaveBeenCalledWith(EXTRA);
 		// hydrateSession pulled the session state, and the dialog refetched roots.
-		expect(omp.rpc.getState).toHaveBeenCalled();
-		expect(omp.rpc.getDirectories.mock.calls.length).toBeGreaterThanOrEqual(2);
+		expect(omsk.rpc.getState).toHaveBeenCalled();
+		expect(omsk.rpc.getDirectories.mock.calls.length).toBeGreaterThanOrEqual(2);
 		const toasts = useToastStore.getState().toasts;
 		expect(toasts.some(toast => toast.variant === "success")).toBe(true);
 	});
 
 	it("surfaces a primary-removal refusal as an error toast and keeps the list", async () => {
-		const omp = installMockOmp();
-		omp.rpc.removeDirectory = vi.fn(async () =>
+		const omsk = installMockOmp();
+		omsk.rpc.removeDirectory = vi.fn(async () =>
 			failure("Cannot remove the working directory; use /move to change it."),
 		);
 		useUiStore.getState().openWorkspaceDirs();
@@ -316,16 +316,16 @@ describe("CurrentWorkspaceControl", () => {
 				? "discards a folder picked for a closed session"
 				: "moves the original session when focus changes inside the folder picker",
 			async () => {
-				const omp = installMockOmp();
+				const omsk = installMockOmp();
 				const picked = Promise.withResolvers<string[] | null>();
-				omp.system.showOpenDialog.mockReturnValueOnce(picked.promise);
+				omsk.system.showOpenDialog.mockReturnValueOnce(picked.promise);
 				const commands = vi.fn(async (tab: string, command: RpcCommand) => {
 					if (command.type === "get_state") return success({ sessionId: tab, cwd: EXTRA, todoPhases: [] });
 					if (command.type === "get_transcript") return success({ messages: [] });
 					if (command.type === "move_session") return success({ cwd: EXTRA });
 					return failure("not available");
 				});
-				Object.assign(omp.rpc, { commandForTab: commands });
+				Object.assign(omsk.rpc, { commandForTab: commands });
 				const a = createTabRuntime("a");
 				createTabRuntime("b");
 				setFocusedSessionRuntime("a");
@@ -338,7 +338,7 @@ describe("CurrentWorkspaceControl", () => {
 				const button = findButton("project");
 				expect(button.title).toContain(CWD);
 				await click(button);
-				expect(omp.system.showOpenDialog).toHaveBeenCalledOnce();
+				expect(omsk.system.showOpenDialog).toHaveBeenCalledOnce();
 				setFocusedSessionRuntime("b");
 				if (closeOrigin) deleteSessionRuntime("a");
 				await act(async () => {
@@ -350,18 +350,18 @@ describe("CurrentWorkspaceControl", () => {
 					closeOrigin ? [] : [["a", { type: "move_session", path: EXTRA }]],
 				);
 				if (!closeOrigin) expect(buttons()[0]?.textContent).toContain("extra");
-				expect(omp.rpc.moveSession).not.toHaveBeenCalled();
+				expect(omsk.rpc.moveSession).not.toHaveBeenCalled();
 			},
 		);
 	}
 
 	it("does not open the picker when workspace moves are disabled", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		useSessionStore.setState({ cwd: CWD, status: "ready" });
 		await mount(<CurrentWorkspaceControl disabled tabId={null} />);
 		await click(buttons()[0]!);
 
-		expect(omp.system.showOpenDialog).not.toHaveBeenCalled();
-		expect(omp.rpc.moveSession).not.toHaveBeenCalled();
+		expect(omsk.system.showOpenDialog).not.toHaveBeenCalled();
+		expect(omsk.rpc.moveSession).not.toHaveBeenCalled();
 	});
 });

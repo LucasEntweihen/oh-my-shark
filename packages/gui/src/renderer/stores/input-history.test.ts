@@ -21,7 +21,7 @@ function installPrefs(stored: unknown = undefined): PrefsMock {
 		set: vi.fn(async (_key: string, _value: unknown) => {}),
 	};
 	// Node test env has no preload bridge; install the mock OmpApi on a global window.
-	(globalThis as Record<string, unknown>).window = { omp: { prefs } };
+	(globalThis as Record<string, unknown>).window = { omsk: { prefs } };
 	return prefs;
 }
 
@@ -47,7 +47,7 @@ describe("input-history secret scrubbing", () => {
 
 	const secretInputs = [
 		"/login sk-ant-oat01-secret",
-		"/join omp://share/abc123def456?write=tok_secret",
+		"/join omsk://share/abc123def456?write=tok_secret",
 		"/mcp add myserver --url http://x --token sk-secret123",
 	];
 	for (const secret of secretInputs) {
@@ -84,7 +84,7 @@ describe("input-history secret scrubbing", () => {
 		const prefs = installPrefs([
 			{ prompt: "refactor the store", ts: 1 },
 			{ prompt: "/login ?code=abc&state=xyz", ts: 2 },
-			"/join omp:abc123def456",
+			"/join omsk:abc123def456",
 		]);
 		await useInputHistoryStore.getState().hydrate();
 		expect(useInputHistoryStore.getState().entries.map(entry => entry.prompt)).toEqual(["refactor the store"]);
@@ -113,7 +113,7 @@ describe("input-history secret scrubbing", () => {
 describe("shouldSkipHistory", () => {
 	it("matches the TUI secret patterns, including colon-separated /login", () => {
 		expect(shouldSkipHistory("/login:?code=abc&state=xyz")).toBe(true);
-		expect(shouldSkipHistory("/join omp:abc123def456")).toBe(true);
+		expect(shouldSkipHistory("/join omsk:abc123def456")).toBe(true);
 		expect(shouldSkipHistory("/mcp add myserver --token tok123")).toBe(true);
 	});
 

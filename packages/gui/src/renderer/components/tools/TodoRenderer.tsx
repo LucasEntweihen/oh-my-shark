@@ -6,7 +6,7 @@ import { resultBodyText, resultDetails } from "./result";
 import type { ToolRendererProps } from "./ToolCard";
 
 /**
- * Task payload inside `details.phases`. A todo result saved before omp 18.19
+ * Task payload inside `details.phases`. A todo result saved before omsk 18.19
  * can carry the since-removed `blocked` status with its blocker note; the
  * transcript shows it as it happened.
  */

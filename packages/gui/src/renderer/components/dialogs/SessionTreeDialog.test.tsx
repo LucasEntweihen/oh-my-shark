@@ -85,8 +85,8 @@ function installMockOmp(overrides: Partial<MockRpc> = {}): MockRpc {
 		...overrides,
 	};
 	// linkedom's window lacks the preload bridge; install the mock OmpApi on it.
-	const ompWindow = window as unknown as { omp: { rpc: MockRpc } };
-	ompWindow.omp = { rpc };
+	const ompWindow = window as unknown as { omsk: { rpc: MockRpc } };
+	ompWindow.omsk = { rpc };
 	return rpc;
 }
 
@@ -171,7 +171,7 @@ function seedSession(sessionId: string): void {
 	useUiStore.getState().openSessionTree();
 }
 
-/** Extend the installed mock omp with the tabs/sessions surface the F-OWN guard uses. */
+/** Extend the installed mock omsk with the tabs/sessions surface the F-OWN guard uses. */
 function installOwnerMocks(owner: { tabId: string; winId: number } | null): {
 	getSessionOwner: Mock<(sessionPath: string) => Promise<{ tabId: string; winId: number } | null>>;
 	setActive: Mock<(tabId: string) => Promise<boolean>>;
@@ -180,8 +180,8 @@ function installOwnerMocks(owner: { tabId: string; winId: number } | null): {
 	const getSessionOwner = vi.fn(async () => owner);
 	const setActive = vi.fn(async () => true);
 	const openInNewWindow = vi.fn(async () => true);
-	const ompWindow = window as unknown as { omp: Record<string, unknown> };
-	ompWindow.omp = { ...ompWindow.omp, tabs: { getSessionOwner, setActive }, sessions: { openInNewWindow } };
+	const ompWindow = window as unknown as { omsk: Record<string, unknown> };
+	ompWindow.omsk = { ...ompWindow.omsk, tabs: { getSessionOwner, setActive }, sessions: { openInNewWindow } };
 	return { getSessionOwner, setActive, openInNewWindow };
 }
 
@@ -381,7 +381,7 @@ describe("SessionTreeDialog", () => {
 		await mount(<SessionTreeDialog />);
 		let restoredDraft: string | undefined;
 		window.addEventListener(
-			"omp:fill-composer",
+			"omsk:fill-composer",
 			(event: Event) => {
 				restoredDraft = (event as CustomEvent<{ text?: string }>).detail.text;
 			},

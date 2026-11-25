@@ -187,7 +187,7 @@ export function PlanDockCard() {
 					if (!quiet) setError(t("planPanel.noFsPath"));
 					return;
 				}
-				const response = await window.omp.fs.readPlan({
+				const response = await window.omsk.fs.readPlan({
 					fsPath: resolved.fsPath,
 					localRoot: resolved.localRoot,
 					tabId: tabId ?? undefined,

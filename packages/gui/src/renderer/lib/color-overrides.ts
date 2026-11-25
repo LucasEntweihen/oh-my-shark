@@ -64,7 +64,7 @@ export function saveColorOverrides(overrides: ManualColorOverrides): void {
 			// Ignore storage errors in sandboxed/test contexts
 		}
 		try {
-			const prefs = (window as { omp?: { prefs?: { set?: (k: string, v: unknown) => Promise<void> } } }).omp?.prefs;
+			const prefs = (window as { omsk?: { prefs?: { set?: (k: string, v: unknown) => Promise<void> } } }).omsk?.prefs;
 			void prefs?.set?.("colorOverrides", overrides);
 		} catch {
 			// Ignore IPC errors in tests

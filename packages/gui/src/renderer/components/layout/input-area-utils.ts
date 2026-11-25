@@ -60,7 +60,7 @@ export function listMentionFiles(cwd: string, tabId?: string | null): Promise<st
 	if (cached) return Promise.resolve(cached);
 	const inflight = mentionFileInflight.get(cwd);
 	if (inflight) return inflight;
-	const task = window.omp.fs
+	const task = window.omsk.fs
 		.list(undefined, MENTION_FS_DEPTH, MENTION_FS_MAX_ENTRIES, tabId ?? undefined)
 		.then(result => {
 			const paths: string[] = [];

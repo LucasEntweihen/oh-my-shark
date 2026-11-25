@@ -42,7 +42,7 @@ export function SessionSwitchDialog() {
 		if (!session) return;
 		setBusy("new-window");
 		try {
-			const ok = await window.omp.sessions.openInNewWindow({ sessionPath: session.path, cwd: session.cwd });
+			const ok = await window.omsk.sessions.openInNewWindow({ sessionPath: session.path, cwd: session.cwd });
 			if (!ok) {
 				toast({ variant: "error", message: t("sidebar.newWindowFailed") });
 				return;

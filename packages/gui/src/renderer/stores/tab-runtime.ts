@@ -83,8 +83,8 @@ export function createTabRuntime(tabId: string): SessionRuntime {
 		const requestGeneration = generation;
 		const origin = sessionRuntimeStore<SessionStore>(tabId, "session")?.getState().sessionId;
 		const response =
-			typeof window.omp.rpc.commandForTab === "function"
-				? await window.omp.rpc.commandForTab(tabId, rpcCommand, timeoutMs)
+			typeof window.omsk.rpc.commandForTab === "function"
+				? await window.omsk.rpc.commandForTab(tabId, rpcCommand, timeoutMs)
 				: await activeTabCommand(rpcCommand, timeoutMs);
 		// Session metadata can retire this runtime before its own lifecycle ACK.
 		// Preserve the execution outcome; callers guard any subsequent UI writes.

@@ -44,14 +44,14 @@ export function openLink(
 					defaultMode: useUiStore.getState().linkOpenMode,
 				});
 	if (destination === "external" || !tab) {
-		void window.omp.system.openExternal(href);
+		void window.omsk.system.openExternal(href);
 		return;
 	}
 	useUiStore.getState().setPanelTab("browser");
-	window.omp.browser.open(tab.id, href).then(
+	window.omsk.browser.open(tab.id, href).then(
 		state => {
-			if (!state) void window.omp.system.openExternal(href);
+			if (!state) void window.omsk.system.openExternal(href);
 		},
-		() => void window.omp.system.openExternal(href),
+		() => void window.omsk.system.openExternal(href),
 	);
 }

@@ -152,7 +152,7 @@ describe("spawnTabForWindow refusal contracts", () => {
 
 	it("passes a worktree binding through to acquire (plan/20)", async () => {
 		const { deps, acquire } = harness();
-		const worktree = { name: "fix-login", branch: "omp/gui/fix-login", baseCwd: "/repo" };
+		const worktree = { name: "fix-login", branch: "omsk/gui/fix-login", baseCwd: "/repo" };
 		const result = await spawnTabForWindow(deps, fakeWindow(), { cwd: "/wt/gui-fix-login-deadbeef", worktree });
 
 		expect(result?.tabId).toEqual(expect.any(String));

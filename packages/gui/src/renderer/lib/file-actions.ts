@@ -29,12 +29,12 @@ async function reportFailure(run: () => Promise<{ ok: boolean; error?: string } 
 
 /** Open `path` with the system's default app (a folder opens in the file manager). */
 export function openPathExternally(path: string): Promise<void> {
-	return reportFailure(() => window.omp.system.openPath(path), path);
+	return reportFailure(() => window.omsk.system.openPath(path), path);
 }
 
 /** Show `path` selected in the system file manager. */
 export function revealPath(path: string): Promise<void> {
-	return reportFailure(() => window.omp.system.revealPath(path), path);
+	return reportFailure(() => window.omsk.system.revealPath(path), path);
 }
 
 /** Open `path` in the Files panel preview, scrolled to `line` when given. */

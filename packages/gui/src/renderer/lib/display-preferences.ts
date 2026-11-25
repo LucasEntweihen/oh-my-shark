@@ -54,7 +54,7 @@ export function hydrateDisplayPreferences(raw: unknown): void {
 /** Commit preferences before displaying success; one key write cannot overwrite another. */
 export async function saveGuiPreference(key: string, value: unknown, apply: () => void): Promise<boolean> {
 	try {
-		await window.omp.prefs.set(key, value);
+		await window.omsk.prefs.set(key, value);
 		apply();
 		return true;
 	} catch (error) {

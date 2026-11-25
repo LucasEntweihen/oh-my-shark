@@ -47,7 +47,7 @@ export function launchArguments(argv: readonly string[], defaultApp: boolean): r
 }
 
 /**
- * The workspace a launch was pointed at (`omp ~/code/x`), absolute. A relative
+ * The workspace a launch was pointed at (`omsk ~/code/x`), absolute. A relative
  * path resolves against this process's cwd, so only call this for the app's own
  * startup argv, where that cwd is the launcher's.
  */

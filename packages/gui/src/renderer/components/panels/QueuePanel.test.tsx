@@ -73,7 +73,7 @@ async function mount(steering: RpcQueuedMessage[]): Promise<void> {
 	queueEdit = vi.fn(async () => ok({ updated: true }));
 	queueRemove = vi.fn(async () => ok({ removed: true }));
 	queueClear = vi.fn(async () => ok({ removed: 0 }));
-	(window as unknown as Record<string, unknown>).omp = {
+	(window as unknown as Record<string, unknown>).omsk = {
 		rpc: {
 			// The mount-time hydrate pull replaces the store, so it must serve
 			// the same rows the test seeded.

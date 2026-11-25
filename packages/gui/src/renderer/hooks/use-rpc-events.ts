@@ -124,7 +124,7 @@ async function maybeNotify(
 	kind: NotifyKind,
 	title: string,
 	body: string,
-	command: TabCommand = (rpcCommand, timeoutMs) => window.omp.rpc.command(rpcCommand, timeoutMs),
+	command: TabCommand = (rpcCommand, timeoutMs) => window.omsk.rpc.command(rpcCommand, timeoutMs),
 ): Promise<void> {
 	try {
 		const ui = useUiStore.getState();
@@ -137,7 +137,7 @@ async function maybeNotify(
 		const setting = values?.[key];
 		const effective = typeof setting === "string" ? setting : NOTIFY_DEFAULTS[kind];
 		if (effective === "off") return;
-		window.omp.system.notify(title, body);
+		window.omsk.system.notify(title, body);
 	} catch {
 		// Best-effort: a failed notification must never break event dispatch.
 	}
@@ -224,7 +224,7 @@ function returnUnsentPrompt(tabId: string, frame: PromptResultFrame): void {
 		const images = blocks.filter((block): block is ImageContent => block.type === "image");
 		if (!text && images.length === 0) return;
 		// prepend: whatever the user typed since sending stays after the restored text.
-		window.dispatchEvent(new CustomEvent("omp:fill-composer", { detail: { text, images, prepend: true, tabId } }));
+		window.dispatchEvent(new CustomEvent("omsk:fill-composer", { detail: { text, images, prepend: true, tabId } }));
 	});
 	useToastStore.getState().push({
 		variant: "error",
@@ -317,9 +317,9 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 		let disposed = false;
 		let statusVersion = 0;
 		const unsubscribe =
-			typeof window.omp.events.onTabBatch === "function"
-				? window.omp.events.onTabBatch(reduceEvents)
-				: window.omp.events.onBatch(events => {
+			typeof window.omsk.events.onTabBatch === "function"
+				? window.omsk.events.onTabBatch(reduceEvents)
+				: window.omsk.events.onBatch(events => {
 						if (acceptsActiveTabEvents()) reduceEvents(events, focusedTabId());
 					});
 		function reduceEvents(events: AgentSessionEvent[], tabId: string): void {
@@ -400,7 +400,7 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 							// Re-fetch state so agent-side todo updates mid-turn reach the panel.
 							void refreshSessionState(tabId);
 							// A run that ended with a reply: offer the user's likely next message
-							// in the empty composer (omp 19 composer predictions, TUI parity).
+							// in the empty composer (omsk 19 composer predictions, TUI parity).
 							if (runFinishedWithReply(event.messages) && !useSessionStore.getState().retryInfo) {
 								requestComposerPrediction(tabId);
 							}
@@ -662,7 +662,7 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 				const probeEventVersion = probeTabId
 					? sessionRuntimeStore<SessionStore>(probeTabId, "session")?.getState().eventVersion
 					: undefined;
-				void window.omp.rpc
+				void window.omsk.rpc
 					.getState()
 					.then(res => {
 						probing = false;
@@ -746,7 +746,7 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 						// A window opened "in new window" for a specific session
 						// switches to it BEFORE hydrating, so the first transcript
 						// it pulls is the target session, not the fresh empty one.
-						const pending = isFocused() ? await window.omp.sessions.consumePendingOpen() : null;
+						const pending = isFocused() ? await window.omsk.sessions.consumePendingOpen() : null;
 						if (pending) {
 							const sw = await command({ type: "switch_session", sessionPath: pending });
 							if (!sw.success) {
@@ -802,13 +802,13 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 		};
 
 		const unsubStatus =
-			typeof window.omp.events.onTabSidecarStatus === "function"
-				? window.omp.events.onTabSidecarStatus(handleStatus)
-				: window.omp.events.onSidecarStatus(payload => handleStatus(payload, focusedTabId()));
+			typeof window.omsk.events.onTabSidecarStatus === "function"
+				? window.omsk.events.onTabSidecarStatus(handleStatus)
+				: window.omsk.events.onSidecarStatus(payload => handleStatus(payload, focusedTabId()));
 		const snapshotTabId = focusedTabId();
 		const snapshotRuntime = sessionRuntime(snapshotTabId);
 		const snapshotVersion = statusVersion;
-		void window.omp.sidecar
+		void window.omsk.sidecar
 			.getStatus()
 			.then(status => {
 				// A boot snapshot cannot roll back a newer push, or reset a task
@@ -831,18 +831,18 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 			withSessionRuntime(tabId, () => useSubagentsStore.getState().applyFrame(frame));
 		};
 		const unsubSubagent =
-			typeof window.omp.events.onTabSubagentFrame === "function"
-				? window.omp.events.onTabSubagentFrame(handleSubagent)
-				: window.omp.events.onSubagentFrame(frame => handleSubagent(frame, focusedTabId()));
+			typeof window.omsk.events.onTabSubagentFrame === "function"
+				? window.omsk.events.onTabSubagentFrame(handleSubagent)
+				: window.omsk.events.onSubagentFrame(frame => handleSubagent(frame, focusedTabId()));
 
 		const handleModelCatalog = (frame: ModelCatalogUpdateFrame, tabId: string) => {
 			if (closedTabFrame(tabId)) return;
 			withSessionRuntime(tabId, () => useModelStore.getState().applyCatalogUpdate(frame));
 		};
 		const unsubModelCatalog =
-			typeof window.omp.events.onTabModelCatalogUpdate === "function"
-				? window.omp.events.onTabModelCatalogUpdate(handleModelCatalog)
-				: window.omp.events.onModelCatalogUpdate(frame => handleModelCatalog(frame, focusedTabId()));
+			typeof window.omsk.events.onTabModelCatalogUpdate === "function"
+				? window.omsk.events.onTabModelCatalogUpdate(handleModelCatalog)
+				: window.omsk.events.onModelCatalogUpdate(frame => handleModelCatalog(frame, focusedTabId()));
 
 		// Agent config edits (set_setting from any client, slash-command config
 		// changes) push config_update — re-read the thinking-display settings so
@@ -858,9 +858,9 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 			});
 		};
 		const unsubConfig =
-			typeof window.omp.events.onTabConfigUpdate === "function"
-				? window.omp.events.onTabConfigUpdate(handleConfig)
-				: window.omp.events.onConfigUpdate(frame => handleConfig(frame, focusedTabId()));
+			typeof window.omsk.events.onTabConfigUpdate === "function"
+				? window.omsk.events.onTabConfigUpdate(handleConfig)
+				: window.omsk.events.onConfigUpdate(frame => handleConfig(frame, focusedTabId()));
 		// Extension slash commands can settle locally after the prompt response
 		// has already resolved; prompt_result carries the deferred rehydrate signal.
 		const handlePromptResult = (frame: PromptResultFrame, tabId: string) => {
@@ -869,9 +869,9 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 			if (!frame.agentInvoked) void (sessionRuntime(tabId) ? hydrateTabSession(tabId) : hydrateLegacySession());
 		};
 		const unsubPromptResult =
-			typeof window.omp.events.onTabPromptResult === "function"
-				? window.omp.events.onTabPromptResult(handlePromptResult)
-				: window.omp.events.onPromptResult(frame => handlePromptResult(frame, focusedTabId()));
+			typeof window.omsk.events.onTabPromptResult === "function"
+				? window.omsk.events.onTabPromptResult(handlePromptResult)
+				: window.omsk.events.onPromptResult(frame => handlePromptResult(frame, focusedTabId()));
 		// Text-mode slash commands write outside the transcript. Surface their
 		// output as local custom messages instead of silently dropping the frame.
 		const handleCommandOutput = (frame: CommandOutputFrame, tabId: string) => {
@@ -886,9 +886,9 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 			});
 		};
 		const unsubCommandOutput =
-			typeof window.omp.events.onTabCommandOutput === "function"
-				? window.omp.events.onTabCommandOutput(handleCommandOutput)
-				: window.omp.events.onCommandOutput(frame => {
+			typeof window.omsk.events.onTabCommandOutput === "function"
+				? window.omsk.events.onTabCommandOutput(handleCommandOutput)
+				: window.omsk.events.onCommandOutput(frame => {
 						if (acceptsActiveTabEvents()) handleCommandOutput(frame, focusedTabId());
 					});
 
@@ -902,9 +902,9 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 			});
 		};
 		const unsubSessionInfo =
-			typeof window.omp.events.onTabSessionInfoUpdate === "function"
-				? window.omp.events.onTabSessionInfoUpdate(handleSessionInfo)
-				: window.omp.events.onSessionInfoUpdate(frame => handleSessionInfo(frame, focusedTabId()));
+			typeof window.omsk.events.onTabSessionInfoUpdate === "function"
+				? window.omsk.events.onTabSessionInfoUpdate(handleSessionInfo)
+				: window.omsk.events.onSessionInfoUpdate(frame => handleSessionInfo(frame, focusedTabId()));
 
 		const handleExtensionError = (frame: ExtensionErrorFrame) => {
 			useToastStore.getState().push({
@@ -914,14 +914,14 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 			});
 		};
 		const unsubExtensionError =
-			typeof window.omp.events.onTabExtensionError === "function"
-				? window.omp.events.onTabExtensionError(handleExtensionError)
-				: window.omp.events.onExtensionError(handleExtensionError);
+			typeof window.omsk.events.onTabExtensionError === "function"
+				? window.omsk.events.onTabExtensionError(handleExtensionError)
+				: window.omsk.events.onExtensionError(handleExtensionError);
 
 		// Ask/extension-UI requests that block for input (ask tool, approvals,
 		// confirms, …) — notify unless the window is focused and the pref says
 		// a focused window stays quiet.
-		const unsubExtensionUi = window.omp.events.onExtensionUi((request, sourceTabId) => {
+		const unsubExtensionUi = window.omsk.events.onExtensionUi((request, sourceTabId) => {
 			if (!BLOCKING_UI_METHODS[request.method]) return;
 			const tabId = sourceTabId ?? focusedTabId();
 			const tab = useTabsStore.getState().tabs.find(item => item.id === tabId);
@@ -936,8 +936,8 @@ export function useRpcEvents(heartbeatMs = 15_000): void {
 		// Side-question frames carry no tab id: the preload forwards them only for
 		// the active tab, so the focused runtime's store is the target.
 		const unsubBtw =
-			typeof window.omp.events.onBtwFrame === "function"
-				? window.omp.events.onBtwFrame(frame => useBtwStore.getState().applyFrame(frame))
+			typeof window.omsk.events.onBtwFrame === "function"
+				? window.omsk.events.onBtwFrame(frame => useBtwStore.getState().applyFrame(frame))
 				: () => {};
 
 		return () => {

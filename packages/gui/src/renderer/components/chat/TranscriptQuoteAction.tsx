@@ -130,7 +130,7 @@ export function TranscriptQuoteAction({
 		if (!text) return;
 		selection.removeAllRanges();
 		window.dispatchEvent(
-			new CustomEvent("omp:quote-composer", { detail: { quote: text, tabId: tabId ?? undefined } }),
+			new CustomEvent("omsk:quote-composer", { detail: { quote: text, tabId: tabId ?? undefined } }),
 		);
 	};
 

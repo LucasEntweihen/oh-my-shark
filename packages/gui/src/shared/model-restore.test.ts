@@ -16,7 +16,7 @@ describe("parseModelRestoreFailure", () => {
 			"2754 |\t\t\tthrow new Error(`Could not restore model ${sessionModelStrings[0]}`);",
 			"                     ^",
 			"error: Could not restore model ghostprov/missing-model",
-			"      at createAgentSessionScoped (/$bunfs/root/omp:620033:13)",
+			"      at createAgentSessionScoped (/$bunfs/root/omsk:620033:13)",
 		].join("\n");
 		expect(parseModelRestoreFailure(stderr)).toBe("ghostprov/missing-model");
 	});

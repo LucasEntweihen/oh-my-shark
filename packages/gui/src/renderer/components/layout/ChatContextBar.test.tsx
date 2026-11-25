@@ -30,7 +30,7 @@ const setChatConfig = vi.fn(async (patch: Partial<RpcChatConfig>) => {
 	config = { ...config, ...patch };
 	return ok(config);
 });
-(window as unknown as { omp: unknown }).omp = {
+(window as unknown as { omsk: unknown }).omsk = {
 	rpc: { getChatConfig, setChatConfig },
 	events: { onConfigUpdate: () => () => {} },
 };

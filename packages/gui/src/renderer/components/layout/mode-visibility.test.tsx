@@ -52,7 +52,7 @@ interface MockOmp {
 
 /** ComposerModes needs no RPC on render; the mock preserves the window bridge contract. */
 function installMockOmp(preset?: string): MockOmp {
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		rpc: {
 			getSettings: vi.fn(async () => success({ values: preset ? { "statusLine.preset": preset } : {} })),
 		},
@@ -60,8 +60,8 @@ function installMockOmp(preset?: string): MockOmp {
 			onConfigUpdate: vi.fn(() => () => {}),
 		},
 	};
-	(window as unknown as { omp: MockOmp }).omp = omp;
-	return omp;
+	(window as unknown as { omsk: MockOmp }).omsk = omsk;
+	return omsk;
 }
 
 let container: TestElement;

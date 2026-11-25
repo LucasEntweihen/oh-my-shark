@@ -111,7 +111,7 @@ interface MockOmp {
 }
 
 function installMockOmp(): {
-	omp: MockOmp;
+	omsk: MockOmp;
 	emitBatch: BatchHandler;
 	emitCommandOutput: CommandOutputHandler;
 	emitPromptResult: PromptResultHandler;
@@ -125,7 +125,7 @@ function installMockOmp(): {
 	// agent_start triggers refreshSessionState — a static mock would overwrite
 	// the event-set flag with stale state and test a race production never has.
 	let mockStreaming = false;
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		tabs: { setActive: vi.fn(async () => true) },
 		rpc: {
 			getState: vi.fn(async () =>
@@ -186,8 +186,8 @@ function installMockOmp(): {
 			set: vi.fn(async () => {}),
 		},
 	};
-	const ompWindow = window as unknown as { omp: MockOmp };
-	ompWindow.omp = omp;
+	const ompWindow = window as unknown as { omsk: MockOmp };
+	ompWindow.omsk = omsk;
 	const emitBatch: BatchHandler = events => {
 		for (const event of events) {
 			if (event.type === "agent_start") mockStreaming = true;
@@ -196,7 +196,7 @@ function installMockOmp(): {
 		batchHandler(events);
 	};
 	return {
-		omp,
+		omsk,
 		emitBatch,
 		emitCommandOutput: frame => commandOutputHandler(frame),
 		emitPromptResult: frame => promptResultHandler(frame),
@@ -256,7 +256,7 @@ function installTabRoutedMockOmp(): {
 	});
 	const noopSub = vi.fn(() => () => {});
 	const notify = vi.fn();
-	const omp = {
+	const omsk = {
 		tabs: {
 			list: vi.fn(async () => []),
 			close: vi.fn(async () => true),
@@ -290,7 +290,7 @@ function installTabRoutedMockOmp(): {
 		system: { notify },
 		prefs: { get: vi.fn(async () => null), set: vi.fn(async () => {}) },
 	};
-	(window as unknown as { omp: typeof omp }).omp = omp;
+	(window as unknown as { omsk: typeof omsk }).omsk = omsk;
 	return {
 		emitTabBatch: (events, tabId) => tabBatchHandler(events, tabId),
 		emitTabStatus: (payload, tabId) => tabStatusHandler(payload, tabId),
@@ -329,7 +329,7 @@ function RpcEventsProbe({ heartbeatMs }: { heartbeatMs?: number } = {}) {
 it("does not let a delayed startup snapshot clear the task selected after the request", async () => {
 	installTabRoutedMockOmp();
 	const status = Promise.withResolvers<IpcSidecarStatusPayload>();
-	vi.spyOn(window.omp.sidecar, "getStatus").mockReturnValue(status.promise);
+	vi.spyOn(window.omsk.sidecar, "getStatus").mockReturnValue(status.promise);
 	useTabsStore.setState({
 		tabs: [
 			{ id: "t0", kind: "agent", cwd: "/alpha", status: "ready", unreadDone: false },
@@ -353,7 +353,7 @@ it("does not let a delayed startup snapshot clear the task selected after the re
 it("does not roll a ready task back to starting when its older startup snapshot resolves", async () => {
 	const { emitTabStatus } = installTabRoutedMockOmp();
 	const status = Promise.withResolvers<IpcSidecarStatusPayload>();
-	vi.spyOn(window.omp.sidecar, "getStatus").mockReturnValue(status.promise);
+	vi.spyOn(window.omsk.sidecar, "getStatus").mockReturnValue(status.promise);
 	useTabsStore.setState({
 		tabs: [{ id: "t0", kind: "agent", cwd: "/alpha", status: "starting", unreadDone: false }],
 		activeTabId: "t0",
@@ -536,7 +536,7 @@ describe("useRpcEvents sidebar browsing (gui#29)", () => {
 	});
 });
 
-describe("useRpcEvents composer predictions (omp 19)", () => {
+describe("useRpcEvents composer predictions (omsk 19)", () => {
 	const predictionRequests = (commandForTab: Mock<(tabId: string, command: RpcCommand) => Promise<RpcResponse>>) =>
 		commandForTab.mock.calls.filter(([, command]) => command.type === "composer_prediction_request").length;
 
@@ -638,7 +638,7 @@ describe("useRpcEvents context usage sync", () => {
 		session.setState({ contextUsage: null });
 
 		const getState = vi
-			.spyOn(window.omp.rpc, "getState")
+			.spyOn(window.omsk.rpc, "getState")
 			.mockResolvedValue(settledState({ contextUsage: { tokens: 900, contextWindow: 1000, percent: 90 } }));
 		await act(async () => {
 			const { promise, resolve } = Promise.withResolvers<void>();
@@ -675,7 +675,7 @@ describe("useRpcEvents stale run repair", () => {
 
 		// The run finished while the tab was parked; no event will ever say so.
 		hydrateFails = false;
-		vi.spyOn(window.omp.rpc, "getState").mockResolvedValue(settledState({}));
+		vi.spyOn(window.omsk.rpc, "getState").mockResolvedValue(settledState({}));
 		await act(async () => {
 			const { promise, resolve } = Promise.withResolvers<void>();
 			setTimeout(resolve, 80);
@@ -696,7 +696,7 @@ describe("useRpcEvents stale run repair", () => {
 		// auto_compaction_start landed, but its end was dropped (session switch / parked tab).
 		session.setState({ isCompacting: true, compactionInfo: { reason: "overflow", action: "compact" } });
 
-		vi.spyOn(window.omp.rpc, "getState").mockResolvedValue(settledState({}));
+		vi.spyOn(window.omsk.rpc, "getState").mockResolvedValue(settledState({}));
 		await act(async () => {
 			const { promise, resolve } = Promise.withResolvers<void>();
 			setTimeout(resolve, 80);
@@ -953,11 +953,11 @@ describe("useRpcEvents awaiting-model marker", () => {
 	});
 
 	it("arms the marker when attaching to an already-streaming session", async () => {
-		const { omp } = installMockOmp();
+		const { omsk } = installMockOmp();
 		// Server reports a run already in flight at attach time — agent_start
 		// was missed, so hydration must re-arm the status row (TUI guest-attach
 		// parity).
-		omp.rpc.getState.mockImplementation(async () =>
+		omsk.rpc.getState.mockImplementation(async () =>
 			success({
 				sessionId: "s1",
 				sessionName: null,
@@ -1049,7 +1049,7 @@ describe("useRpcEvents non-transcript frames", () => {
 	});
 
 	it("keeps a retried run's prompt and hands the retry row to the retried run", async () => {
-		const { omp, emitBatch } = installMockOmp();
+		const { omsk, emitBatch } = installMockOmp();
 		await mount(<RpcEventsProbe />);
 		const prompt: AgentMessage = { role: "user", content: "fix the build", timestamp: 100 };
 		const failed: AgentMessage = {
@@ -1087,7 +1087,7 @@ describe("useRpcEvents non-transcript frames", () => {
 			{ ...failed, entryId: "failed-entry" },
 			{ ...reply, entryId: "reply-entry" },
 		];
-		omp.rpc.getTranscript.mockImplementation(async () => success({ messages: committed }));
+		omsk.rpc.getTranscript.mockImplementation(async () => success({ messages: committed }));
 		// The deferred agent_end belongs to the retried loop: it never lists the prompt.
 		await act(async () => {
 			emitBatch([
@@ -1103,10 +1103,10 @@ describe("useRpcEvents non-transcript frames", () => {
 	});
 
 	it("rehydrates when a deferred prompt result reports a local-only extension command", async () => {
-		const { omp, emitPromptResult } = installMockOmp();
+		const { omsk, emitPromptResult } = installMockOmp();
 		await mount(<RpcEventsProbe />);
-		const stateCallsBefore = omp.rpc.getState.mock.calls.length;
-		const transcriptCallsBefore = omp.rpc.getTranscript.mock.calls.length;
+		const stateCallsBefore = omsk.rpc.getState.mock.calls.length;
+		const transcriptCallsBefore = omsk.rpc.getTranscript.mock.calls.length;
 
 		await act(async () => {
 			emitPromptResult({ type: "prompt_result", id: "extension-command", agentInvoked: false });
@@ -1114,8 +1114,8 @@ describe("useRpcEvents non-transcript frames", () => {
 		});
 		await flush();
 
-		expect(omp.rpc.getState.mock.calls.length).toBeGreaterThan(stateCallsBefore);
-		expect(omp.rpc.getTranscript.mock.calls.length).toBeGreaterThan(transcriptCallsBefore);
+		expect(omsk.rpc.getState.mock.calls.length).toBeGreaterThan(stateCallsBefore);
+		expect(omsk.rpc.getTranscript.mock.calls.length).toBeGreaterThan(transcriptCallsBefore);
 	});
 
 	it("hands a prompt the agent refused after acknowledging it back to the composer", async () => {
@@ -1133,7 +1133,7 @@ describe("useRpcEvents non-transcript frames", () => {
 		useMessagesStore.getState().appendLiveMessage(unsent);
 		const refills: unknown[] = [];
 		const onFill = (event: Event) => refills.push((event as CustomEvent).detail);
-		window.addEventListener("omp:fill-composer", onFill);
+		window.addEventListener("omsk:fill-composer", onFill);
 
 		await act(async () => {
 			emitPromptResult({
@@ -1145,7 +1145,7 @@ describe("useRpcEvents non-transcript frames", () => {
 			});
 			await Promise.resolve();
 		});
-		window.removeEventListener("omp:fill-composer", onFill);
+		window.removeEventListener("omsk:fill-composer", onFill);
 
 		expect(useMessagesStore.getState().liveMessages).not.toContainEqual(unsent);
 		expect(refills).toEqual([expect.objectContaining({ text: "hello after delete", prepend: true })]);
@@ -1180,7 +1180,7 @@ describe("useRpcEvents non-transcript frames", () => {
 	});
 
 	it("drops session events while the selected tab and main-process route disagree", async () => {
-		const { omp, emitCommandOutput } = installMockOmp();
+		const { omsk, emitCommandOutput } = installMockOmp();
 		await mount(<RpcEventsProbe />);
 		useTabsStore.setState({
 			tabs: [
@@ -1191,7 +1191,7 @@ describe("useRpcEvents non-transcript frames", () => {
 			bundles: new Map(),
 		});
 		const route = Promise.withResolvers<boolean>();
-		omp.tabs.setActive.mockReturnValueOnce(route.promise);
+		omsk.tabs.setActive.mockReturnValueOnce(route.promise);
 
 		const switching = useTabsStore.getState().switchTab("t1");
 		await act(async () => {
@@ -1213,13 +1213,13 @@ describe("useRpcEvents non-transcript frames", () => {
 
 describe("useRpcEvents mode-state sync", () => {
 	it("keeps live goal and loop updates when older hydration replies arrive later", async () => {
-		const { omp, emitBatch } = installMockOmp();
+		const { omsk, emitBatch } = installMockOmp();
 		await mount(<RpcEventsProbe />);
 		await flush();
 		const goal = Promise.withResolvers<RpcResponse>();
 		const loop = Promise.withResolvers<RpcResponse>();
-		omp.rpc.getGoal.mockReturnValueOnce(goal.promise);
-		omp.rpc.getLoopMode.mockReturnValueOnce(loop.promise);
+		omsk.rpc.getGoal.mockReturnValueOnce(goal.promise);
+		omsk.rpc.getLoopMode.mockReturnValueOnce(loop.promise);
 		const hydration = hydrateSession();
 		await act(async () =>
 			emitBatch([
@@ -1235,10 +1235,10 @@ describe("useRpcEvents mode-state sync", () => {
 	});
 
 	it("hydrates loop, vibe, and project-scoped display settings into the active tab", async () => {
-		const { omp } = installMockOmp();
+		const { omsk } = installMockOmp();
 		// Loop/vibe aren't on the get_state wire — hydration must pull the
 		// dedicated RPCs so composer chips and footer badges are right at boot.
-		omp.rpc.getLoopMode.mockImplementation(async () =>
+		omsk.rpc.getLoopMode.mockImplementation(async () =>
 			success({
 				enabled: true,
 				state: "running",
@@ -1246,8 +1246,8 @@ describe("useRpcEvents mode-state sync", () => {
 				limit: { kind: "iterations", initial: 10, remaining: 7 },
 			}),
 		);
-		omp.rpc.getVibeMode.mockImplementation(async () => success({ enabled: true }));
-		omp.rpc.getSettings.mockImplementation(async () =>
+		omsk.rpc.getVibeMode.mockImplementation(async () => success({ enabled: true }));
+		omsk.rpc.getSettings.mockImplementation(async () =>
 			success({
 				values: {
 					"display.showTokenUsage": false,
@@ -1573,7 +1573,7 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 	});
 
 	it("discards an older hydration when a newer session finishes first", async () => {
-		const { omp } = installMockOmp();
+		const { omsk } = installMockOmp();
 		const oldState = Promise.withResolvers<RpcResponse>();
 		const oldTranscript = Promise.withResolvers<RpcResponse>();
 		const oldGoal = Promise.withResolvers<RpcResponse>();
@@ -1587,7 +1587,7 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 			content: [{ type: "text", text: "new transcript" }],
 			timestamp: 2,
 		};
-		omp.rpc.getState.mockReturnValueOnce(oldState.promise).mockResolvedValue(
+		omsk.rpc.getState.mockReturnValueOnce(oldState.promise).mockResolvedValue(
 			success({
 				sessionId: "new-session",
 				sessionName: "New",
@@ -1602,10 +1602,10 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 				todoPhases: [],
 			}),
 		);
-		omp.rpc.getTranscript
+		omsk.rpc.getTranscript
 			.mockReturnValueOnce(oldTranscript.promise)
 			.mockResolvedValue(success({ messages: [newMessage] }));
-		omp.rpc.getGoal.mockReturnValueOnce(oldGoal.promise).mockResolvedValue(success({ enabled: false }));
+		omsk.rpc.getGoal.mockReturnValueOnce(oldGoal.promise).mockResolvedValue(success({ enabled: false }));
 
 		const olderHydration = hydrateSession();
 		await hydrateSession();
@@ -1634,7 +1634,7 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 	});
 
 	it("paints the core transcript before slower subagent and secondary hydration settles", async () => {
-		const { omp } = installMockOmp();
+		const { omsk } = installMockOmp();
 		const subagents = Promise.withResolvers<RpcResponse>();
 		const goal = Promise.withResolvers<RpcResponse>();
 		const hydrated: AgentMessage = {
@@ -1642,9 +1642,9 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 			content: [{ type: "text", text: "new session transcript" }],
 			timestamp: 2,
 		};
-		omp.rpc.getTranscript.mockResolvedValue(success({ messages: [hydrated] }));
-		omp.rpc.getSubagents.mockReturnValue(subagents.promise);
-		omp.rpc.getGoal.mockReturnValue(goal.promise);
+		omsk.rpc.getTranscript.mockResolvedValue(success({ messages: [hydrated] }));
+		omsk.rpc.getSubagents.mockReturnValue(subagents.promise);
+		omsk.rpc.getGoal.mockReturnValue(goal.promise);
 		const transcriptPainted = Promise.withResolvers<void>();
 		const unsubscribe = useMessagesStore.subscribe(state => {
 			if (state.messages.length === 1 && state.messages[0] === hydrated) transcriptPainted.resolve();
@@ -1686,7 +1686,7 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 	});
 
 	it("clears the stale streaming bubble when the hydrated tab has settled", async () => {
-		const { omp } = installMockOmp();
+		const { omsk } = installMockOmp();
 		const optimistic: AgentMessage = {
 			role: "user",
 			content: "locally visible before RPC accepts it",
@@ -1713,7 +1713,7 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 			streamingText: "partial reply",
 			streamingThinking: "partial thinking",
 		});
-		omp.rpc.getTranscript.mockResolvedValue(success({ messages: [finalized] }));
+		omsk.rpc.getTranscript.mockResolvedValue(success({ messages: [finalized] }));
 
 		await hydrateSession();
 
@@ -1725,13 +1725,13 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 		// The finalized content arrives via the transcript merge, not the bubble.
 		expect(messages.messages).toEqual([finalized]);
 		// Hydrate re-asserts the per-tab subagent subscription (switch-in path).
-		expect(omp.rpc.setSubagentSubscription).toHaveBeenCalledWith("progress");
+		expect(omsk.rpc.setSubagentSubscription).toHaveBeenCalledWith("progress");
 	});
 
 	it("does not clear live deliveries that arrived after an idle hydration began", async () => {
-		const { omp } = installMockOmp();
+		const { omsk } = installMockOmp();
 		const transcript = Promise.withResolvers<RpcResponse>();
-		omp.rpc.getTranscript.mockReturnValue(transcript.promise);
+		omsk.rpc.getTranscript.mockReturnValue(transcript.promise);
 		const hydration = hydrateSession();
 		const delivered: AgentMessage = { role: "user", content: "new run", timestamp: 3 };
 		useMessagesStore.getState().applyEvents([{ type: "message_end", message: delivered }]);
@@ -1743,8 +1743,8 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 	});
 
 	it("keeps the live stream while the hydrated tab is still streaming", async () => {
-		const { omp } = installMockOmp();
-		omp.rpc.getState.mockImplementation(async () =>
+		const { omsk } = installMockOmp();
+		omsk.rpc.getState.mockImplementation(async () =>
 			success({
 				sessionId: "s1",
 				sessionName: null,
@@ -1773,7 +1773,7 @@ describe("hydrateSession streaming reconcile (F-HYDRATE)", () => {
 		expect(messages.streamingMessage).toBe(assistantMessage);
 		expect(messages.streamingText).toBe("partial reply");
 		expect(messages.streamingThinking).toBe("partial thinking");
-		expect(omp.rpc.setSubagentSubscription).toHaveBeenCalledWith("progress");
+		expect(omsk.rpc.setSubagentSubscription).toHaveBeenCalledWith("progress");
 	});
 });
 

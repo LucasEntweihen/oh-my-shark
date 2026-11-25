@@ -222,7 +222,7 @@ const command = vi.fn(
 const setModel = vi.fn(async (): Promise<RpcResponse> => ok("set_model"));
 
 Object.assign(window as unknown as Record<string, unknown>, {
-	omp: {
+	omsk: {
 		rpc: {
 			command,
 			setModel,

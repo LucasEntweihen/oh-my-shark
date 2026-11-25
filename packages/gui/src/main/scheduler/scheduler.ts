@@ -116,7 +116,7 @@ export class Scheduler {
 				...run,
 				state: "unknown",
 				endedAt: now,
-				error: { message: "omp closed or crashed while this run was in progress", kind: "other" },
+				error: { message: "omsk closed or crashed while this run was in progress", kind: "other" },
 			});
 		}
 		const lastAlive = Number(store.getMeta("heartbeat") ?? "") || null;

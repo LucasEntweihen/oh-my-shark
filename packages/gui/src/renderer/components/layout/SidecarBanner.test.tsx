@@ -19,7 +19,7 @@ Object.assign(globals, { document, window, HTMLElement, Element, Node, IS_REACT_
 globals.requestAnimationFrame = (callback: () => void) => setTimeout(callback, 0);
 
 const restart = vi.fn(() => Promise.resolve());
-Object.assign(window, { omp: { sidecar: { restart } } });
+Object.assign(window, { omsk: { sidecar: { restart } } });
 
 interface TestElement {
 	textContent: string | null;
@@ -85,7 +85,7 @@ describe("SidecarBanner", () => {
 
 	it("marks an exhausted crash loop as a failure with the last reason", async () => {
 		useSessionStore.getState().setStatus("error", "/tmp/project");
-		useUiStore.getState().setSidecarError("Exit code 1 — omp: command not found", {
+		useUiStore.getState().setSidecarError("Exit code 1 — omsk: command not found", {
 			attempt: 3,
 			maxAttempts: 3,
 		});
@@ -94,7 +94,7 @@ describe("SidecarBanner", () => {
 		expect(container.textContent).toContain("Agent unavailable");
 		expect(container.textContent).toContain("Gave up after 3 restart attempts");
 		expect((container as unknown as Element).querySelector("[title]")?.getAttribute("title")).toContain(
-			"omp: command not found",
+			"omsk: command not found",
 		);
 		expect(bannerDiv().className).toContain("--omsk-error");
 	});

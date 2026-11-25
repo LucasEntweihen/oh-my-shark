@@ -26,7 +26,7 @@ export function useGitStatus(): { status: RpcGitStatus | null; refresh: () => vo
 			if (!acceptsActiveTabEvents()) return;
 			const requestTabId = useTabsStore.getState().activeTabId;
 			try {
-				const response = await window.omp.rpc.getGitStatus();
+				const response = await window.omsk.rpc.getGitStatus();
 				if (!cancelled && acceptsActiveTabEvents() && useTabsStore.getState().activeTabId === requestTabId) {
 					setStatus(response.success ? (response.data as RpcGitStatus) : null);
 				}

@@ -104,12 +104,12 @@ async function syncApprovalMode(
 		];
 		// Only migrate when the core proves that no global, project, or runtime override exists.
 		if (provenance?.layers.length === 0) {
-			const pref = await window.omp.prefs.get("approvalMode");
+			const pref = await window.omsk.prefs.get("approvalMode");
 			if (!isCurrent()) return;
 			if (typeof pref === "string" && APPROVAL_MODES.has(pref)) {
 				const migrated = await command({ type: "set_setting", path: "tools.approvalMode", value: pref });
 				if (!migrated.success) return;
-				await window.omp.prefs.set("approvalMode", null);
+				await window.omsk.prefs.set("approvalMode", null);
 				res = await command({ type: "get_settings", paths: ["tools.approvalMode"] });
 			}
 		}

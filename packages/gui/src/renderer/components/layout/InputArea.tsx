@@ -234,7 +234,7 @@ export function InputArea() {
 	// and reroutes sending. Detected from the prefix alone so the badge appears
 	// while the user is still typing.
 	const composerMode = useMemo(() => parseComposerMode(text), [text]);
-	// The agent's guess at the next message (omp 19 composer predictions): shown
+	// The agent's guess at the next message (omsk 19 composer predictions): shown
 	// over the empty, idle composer only, and reported once when first shown.
 	const predictions = useComposerStore(s => s.predictions);
 	const predictionShown = useComposerStore(s => s.predictionShown);
@@ -299,9 +299,9 @@ export function InputArea() {
 			if (!cancelled && tabId === runtimeTabId) setCommands(next);
 		};
 		const unsubscribe =
-			typeof window.omp.events.onTabCommandsUpdate === "function"
-				? window.omp.events.onTabCommandsUpdate(applyCommands)
-				: window.omp.events.onCommandsUpdate(next => applyCommands(next, runtimeTabId));
+			typeof window.omsk.events.onTabCommandsUpdate === "function"
+				? window.omsk.events.onTabCommandsUpdate(applyCommands)
+				: window.omsk.events.onCommandsUpdate(next => applyCommands(next, runtimeTabId));
 		const load = () => {
 			if (status !== "ready" || !runtimeTabId) return;
 			void rpc.getAvailableCommands().then(res => {
@@ -376,8 +376,8 @@ export function InputArea() {
 			setText(current => `${current}${current && !current.endsWith(" ") ? " " : ""}@${path} `);
 			requestAnimationFrame(() => textareaRef.current?.focus());
 		};
-		window.addEventListener("omp:insert-mention", onInsertMention);
-		return () => window.removeEventListener("omp:insert-mention", onInsertMention);
+		window.addEventListener("omsk:insert-mention", onInsertMention);
+		return () => window.removeEventListener("omsk:insert-mention", onInsertMention);
 	}, [setText, runtimeTabId]);
 
 	useEffect(() => {
@@ -419,8 +419,8 @@ export function InputArea() {
 				if (next) el.setSelectionRange(next.length, next.length);
 			});
 		};
-		window.addEventListener("omp:fill-composer", fillComposer);
-		return () => window.removeEventListener("omp:fill-composer", fillComposer);
+		window.addEventListener("omsk:fill-composer", fillComposer);
+		return () => window.removeEventListener("omsk:fill-composer", fillComposer);
 	}, [
 		// prepend (dequeue restore): queued text goes ahead of any draft, TUI-style;
 		// otherwise replace (starter cards, history recall).
@@ -451,8 +451,8 @@ export function InputArea() {
 				target.setSelectionRange(next.caret, next.caret);
 			});
 		};
-		window.addEventListener("omp:quote-composer", onQuote);
-		return () => window.removeEventListener("omp:quote-composer", onQuote);
+		window.addEventListener("omsk:quote-composer", onQuote);
+		return () => window.removeEventListener("omsk:quote-composer", onQuote);
 	}, [setText, runtimeTabId]);
 
 	const insertCompletion = useCallback(

@@ -81,7 +81,7 @@ function fingerprintTodo(phases: readonly { name: string; tasks: readonly { cont
 }
 
 /**
- * A task status as the GUI tracks it. Saved sessions from before omp 18.19 can
+ * A task status as the GUI tracks it. Saved sessions from before omsk 18.19 can
  * still carry `blocked`, which the agent now restores as pending; reading it
  * the same way keeps those sessions' todo history instead of dropping it.
  */

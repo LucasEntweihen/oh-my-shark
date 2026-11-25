@@ -32,7 +32,7 @@ export function ComposerEditorDialog() {
 		const text = viewRef.current?.state.doc.toString() ?? "";
 		// clearPastes: the written-back text is fully inline — any paste markers
 		// were expanded when the dialog opened, so the blobs are consumed.
-		window.dispatchEvent(new CustomEvent("omp:fill-composer", { detail: { text, clearPastes: true } }));
+		window.dispatchEvent(new CustomEvent("omsk:fill-composer", { detail: { text, clearPastes: true } }));
 		close();
 	};
 	const saveRef = useRef(save);
@@ -52,7 +52,7 @@ export function ComposerEditorDialog() {
 		setExternalBusy(true);
 		setExternalError(null);
 		try {
-			const response = await window.omp.editor.openExternal(viewRef.current?.state.doc.toString() ?? "");
+			const response = await window.omsk.editor.openExternal(viewRef.current?.state.doc.toString() ?? "");
 			if (!response.ok) {
 				setExternalError(response.error ? describeError(response.error) : t("editor.externalFailed"));
 				return;

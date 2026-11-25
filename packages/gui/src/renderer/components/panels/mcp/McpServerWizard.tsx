@@ -4,7 +4,7 @@ import { useTabRpc } from "../../../lib/tab-rpc";
  * ProviderConfigDialog pattern (NOT stepped): transport picker cards
  * (stdio/http/sse), per-transport fields, name, scope, and an optional
  * "test connection" pre-check that probes the assembled config via
- * window.omp.rpc.mcpTest without persisting anything.
+ * window.omsk.rpc.mcpTest without persisting anything.
  *
  * Name validation is client-side parity with the agent's validateServerName
  * (packages/coding-agent/src/mcp/config-writer.ts): non-empty, max 100 chars,

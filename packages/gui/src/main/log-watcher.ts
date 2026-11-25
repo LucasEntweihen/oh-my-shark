@@ -1,5 +1,5 @@
 /**
- * Tails ~/.omp/logs/omp.*.log files.
+ * Tails ~/.omsk/logs/omsk.*.log files.
  * Uses fs.watch + createReadStream from last offset, with a directory
  * watcher for new-file discovery. A slow 15s poll is the safety net for
  * platforms where fs.watch is unreliable or a watcher silently detaches
@@ -93,7 +93,7 @@ export class LogWatcher {
 		try {
 			const entries = await readdir(this.#logsDir);
 			for (const entry of entries) {
-				if (entry.startsWith("omp.") && entry.endsWith(".log")) {
+				if (entry.startsWith("omsk.") && entry.endsWith(".log")) {
 					const fullPath = join(this.#logsDir, entry);
 					if (!this.#files.has(fullPath)) {
 						await this.#watchFile(fullPath);
@@ -109,7 +109,7 @@ export class LogWatcher {
 	#watchDirectory(): void {
 		try {
 			const watcher = watch(this.#logsDir, (_eventType, filename) => {
-				if (!filename?.startsWith("omp.") || !filename.endsWith(".log")) return;
+				if (!filename?.startsWith("omsk.") || !filename.endsWith(".log")) return;
 				const fullPath = join(this.#logsDir, filename);
 				if (!this.#files.has(fullPath)) {
 					// Something just wrote it, so an idle file is live again from where it stopped.

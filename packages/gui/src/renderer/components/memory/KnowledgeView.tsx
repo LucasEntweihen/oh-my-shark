@@ -1,6 +1,6 @@
 /**
- * Knowledge tab: exactly what omp brings into every task for this project —
- * the person's notes, the summary omp rebuilt from past sessions, and the
+ * Knowledge tab: exactly what omsk brings into every task for this project —
+ * the person's notes, the summary omsk rebuilt from past sessions, and the
  * lessons it captured — with the token budget they share.
  */
 import { BookOpen, ChevronRight, Lightbulb, Pin, RefreshCw, Sparkles } from "lucide-react";

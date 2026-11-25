@@ -31,7 +31,7 @@ function base64ToBytes(base64: string): Uint8Array<ArrayBuffer> {
 /** Read one agent setting at decision time (never cached across a run). */
 async function readSetting(path: string): Promise<unknown> {
 	try {
-		const response = await window.omp.rpc.getSettings([path]);
+		const response = await window.omsk.rpc.getSettings([path]);
 		if (!response.success) return undefined;
 		return (response.data as { values?: Record<string, unknown> } | undefined)?.values?.[path];
 	} catch {
@@ -56,7 +56,7 @@ export function speakText(text: string): void {
 	speaking = true;
 	void (async () => {
 		try {
-			const response = await window.omp.rpc.synthesizeSpeech(trimmed);
+			const response = await window.omsk.rpc.synthesizeSpeech(trimmed);
 			if (!response.success) {
 				toast({ variant: "error", title: translate("voice.speak.failed"), message: response.error });
 				return;

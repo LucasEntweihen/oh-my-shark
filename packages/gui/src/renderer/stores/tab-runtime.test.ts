@@ -14,7 +14,7 @@ import type { ToolsStore } from "./tools";
 
 beforeAll(() => {
 	(globalThis as { window?: unknown }).window = {
-		omp: {
+		omsk: {
 			rpc: {
 				commandForTab: vi.fn(
 					async (_tabId: string, command: RpcCommand): Promise<RpcResponse> => ({
@@ -132,7 +132,7 @@ it("rejects late snapshots after an in-place session replacement and tab closure
 	const first = Promise.withResolvers<RpcResponse>();
 	const second = Promise.withResolvers<RpcResponse>();
 	const spy = vi
-		.spyOn(window.omp.rpc, "commandForTab")
+		.spyOn(window.omsk.rpc, "commandForTab")
 		.mockReturnValueOnce(first.promise)
 		.mockReturnValueOnce(second.promise);
 	try {
@@ -154,7 +154,7 @@ it("does not deliver an old view's command to the replacement session", async ()
 	const old = createTabRuntime("tab-a");
 	const replacement = replaceTabRuntime("tab-a");
 	let enabled = false;
-	vi.spyOn(window.omp.rpc, "commandForTab").mockImplementation(async (_tabId, command) => {
+	vi.spyOn(window.omsk.rpc, "commandForTab").mockImplementation(async (_tabId, command) => {
 		if (command.type === "set_setting") enabled = command.value === true;
 		return { type: "response", command: command.type, success: true, data: {} };
 	});
@@ -171,7 +171,7 @@ it("does not deliver an old view's command to the replacement session", async ()
 
 it("preserves a committed session change acknowledgement when its metadata arrives before the response", async () => {
 	const runtime = createTabRuntime("tab-a");
-	vi.spyOn(window.omp.rpc, "commandForTab").mockImplementation(async (_tabId, command) => {
+	vi.spyOn(window.omsk.rpc, "commandForTab").mockImplementation(async (_tabId, command) => {
 		if (command.type === "new_session") {
 			replaceTabRuntime("tab-a");
 			sessionRuntimeStore<SessionStore>("tab-a", "session")?.setState({ sessionId: "committed-session" });
@@ -187,7 +187,7 @@ it("shows a compacting request as manual maintenance until its response arrives"
 	const runtime = createTabRuntime("tab-a");
 	const session = sessionRuntimeStore<SessionStore>("tab-a", "session");
 	const response = Promise.withResolvers<RpcResponse>();
-	vi.spyOn(window.omp.rpc, "commandForTab").mockImplementationOnce(() => response.promise);
+	vi.spyOn(window.omsk.rpc, "commandForTab").mockImplementationOnce(() => response.promise);
 
 	const approval = runtime.command({ type: "plan_approval", approved: true, option: "compact" });
 	expect(session?.getState().manualMaintenance?.kind).toBe("compact");

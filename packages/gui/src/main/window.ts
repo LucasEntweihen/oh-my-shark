@@ -1,5 +1,5 @@
 /**
- * Multi-window management for the omp GUI.
+ * Multi-window management for the omsk GUI.
  * Creates sandboxed BrowserWindows with persisted state via electron-store.
  */
 
@@ -51,7 +51,7 @@ const DEFAULT_WIDTH = 1400;
 const DEFAULT_HEIGHT = 900;
 const MIN_WIDTH = 800;
 const MIN_HEIGHT = 600;
-/** The header row the window controls sit in; the renderer lays out around them (`--omp-caption-*`). */
+/** The header row the window controls sit in; the renderer lays out around them (`--omsk-caption-*`). */
 const CAPTION_HEIGHT = 48;
 
 /** Work areas with the primary display first — it is the recentering target. */
@@ -369,7 +369,7 @@ export class WindowManager {
 		writeRuntimeLog(
 			{
 				source: "application-resources",
-				message: "Packaged application resources changed while omp was running; asking to restart",
+				message: "Packaged application resources changed while omsk was running; asking to restart",
 				url: windowUrl(record.win),
 				details: {
 					trigger: failure.kind,

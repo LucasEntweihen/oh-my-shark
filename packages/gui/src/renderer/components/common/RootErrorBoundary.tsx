@@ -8,12 +8,12 @@ interface RootErrorBoundaryProps {
 
 /** Opens a prefilled issue with the crash message; the user reviews and posts on GitHub. */
 function reportOnGithub(error: Error): void {
-	const omp = window.omp;
-	if (!omp) return;
-	void omp.system
+	const omsk = window.omsk;
+	if (!omsk) return;
+	void omsk.system
 		.info()
 		.then(info =>
-			omp.system.openExternal(
+			omsk.system.openExternal(
 				buildIssueUrl({
 					kind: "bug",
 					title: `App crash: ${error.message.slice(0, 80)}`,
@@ -34,7 +34,7 @@ function RootErrorFallback({ error }: { error: Error }) {
 	const [logPath, setLogPath] = useState<string | null>(null);
 
 	useEffect(() => {
-		window.omp?.runtime
+		window.omsk?.runtime
 			?.logPath()
 			.then(setLogPath)
 			.catch(() => {});

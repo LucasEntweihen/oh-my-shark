@@ -180,7 +180,7 @@ function FocusedSessionEffects() {
 				: progressStreaming
 					? "working"
 					: "idle";
-		const timer = setTimeout(() => window.omp.progress.set(state), 200);
+		const timer = setTimeout(() => window.omsk.progress.set(state), 200);
 		return () => clearTimeout(timer);
 	}, [progressEnabled, progressAwaiting, progressStreaming]);
 	useEffect(() => {
@@ -273,7 +273,7 @@ export function App() {
 			}
 		});
 		const initialThemeVersion = getThemeSelectionVersion();
-		void window.omp.prefs
+		void window.omsk.prefs
 			.get()
 			.then(async raw => {
 				if (cancelled) return;
@@ -406,7 +406,7 @@ export function App() {
 
 	// Live OMSK Orchestrator and Shark EventBus sidecar streams → scoped stores.
 	useEffect(() => {
-		const events = window.omp?.events;
+		const events = window.omsk?.events;
 		if (!events) return;
 		const unsubOrchestrator =
 			typeof events.onTabOrchestratorEvent === "function"
@@ -442,7 +442,7 @@ export function App() {
 	useEffect(() => watchSystemTheme(theme, () => applyThemeByName("system", { persist: false })), [theme]);
 	useEffect(() => applyFontSize(fontSize), [fontSize]);
 
-	// Handle omp:// deep links (omp://new → new session; omp://session/<id> → switch).
+	// Handle omsk:// deep links (omsk://new → new session; omsk://session/<id> → switch).
 	useEffect(() => {
 		const handle = async (link: { action: "new-session" } | { action: "switch-session"; sessionId: string }) => {
 			if (link.action === "new-session") {
@@ -458,7 +458,7 @@ export function App() {
 				return;
 			}
 			try {
-				const sessions = await window.omp.sessions.list("global");
+				const sessions = await window.omsk.sessions.list("global");
 				const target = sessions.find(s => s.id === link.sessionId);
 				if (!target) {
 					toast({ variant: "error", title: t("deepLink.notFound"), message: link.sessionId });
@@ -471,7 +471,7 @@ export function App() {
 				toast({ variant: "error", title: t("sidebar.openFailed"), message: String(error) });
 			}
 		};
-		return window.omp.events.onDeepLink(link => void handle(link));
+		return window.omsk.events.onDeepLink(link => void handle(link));
 	}, [t]);
 	// User keybinding overrides → precompiled chord → actionId lookup (B3,
 	// plan/15 §3.5): keydown dispatch is an O(1) map hit, never a config walk.
@@ -481,7 +481,7 @@ export function App() {
 	const keymap = useMemo(() => compileKeymap(KEYMAP_ACTIONS, keymapOverrides), [keymapOverrides]);
 
 	// Another window saved shortcut changes: re-read them so every window agrees.
-	useEffect(() => window.omp?.prefs?.onKeymapChanged?.(() => void useUiStore.getState().hydrateKeymap(true)), []);
+	useEffect(() => window.omsk?.prefs?.onKeymapChanged?.(() => void useUiStore.getState().hydrateKeymap(true)), []);
 
 	// Boot hydration of the saved shortcuts (prefs keys "keymapOverrides" / "keymapDisabled").
 	useEffect(() => {
@@ -589,7 +589,7 @@ export function App() {
 					ui.openAgentHub("hub");
 					return;
 				case "memory.open":
-					// ⌥⇧M — what omp remembers about this project.
+					// ⌥⇧M — what omsk remembers about this project.
 					ui.openMemory();
 					return;
 				case "search.conversations":
@@ -687,11 +687,11 @@ export function App() {
 	// A focused browser page keeps every keystroke: tell the host which chords
 	// are the app's, and replay the ones it hands back through the same dispatch.
 	useEffect(() => {
-		const browser = window.omp?.browser;
+		const browser = window.omsk?.browser;
 		if (typeof browser?.setShortcuts === "function") browser.setShortcuts([...keymap.keys()]);
 	}, [keymap]);
 	useEffect(() => {
-		const events = window.omp?.events;
+		const events = window.omsk?.events;
 		if (typeof events?.onBrowserKey !== "function") return;
 		return events.onBrowserKey(payload => {
 			if (payload.kind !== "shortcut") return;
@@ -890,9 +890,9 @@ export function App() {
 
 			try {
 				if (action === "open-project") {
-					await window.omp.sidecar.selectProject();
+					await window.omsk.sidecar.selectProject();
 				} else if (action === "switch-project") {
-					if (payload?.cwd) await window.omp.sidecar.setProject(payload.cwd);
+					if (payload?.cwd) await window.omsk.sidecar.setProject(payload.cwd);
 				} else if (action === "new-session") {
 					await newSessionNow();
 				} else if (action === "export-html") {
@@ -904,7 +904,7 @@ export function App() {
 				toast({ variant: "error", title: t("app.actionFailed"), message: String(error) });
 			}
 		};
-		return window.omp.events.onMenuAction((action, payload) => void run(action, payload));
+		return window.omsk.events.onMenuAction((action, payload) => void run(action, payload));
 	}, [lang, setLang, t]);
 
 	const focusedRuntime = useTabRuntime(activeTabId);

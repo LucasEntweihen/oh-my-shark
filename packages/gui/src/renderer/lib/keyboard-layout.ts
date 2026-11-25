@@ -31,7 +31,7 @@ async function readLayout(): Promise<void> {
 		const signature = JSON.stringify(layout);
 		if (signature === reported) return;
 		reported = signature;
-		await window.omp.prefs.setKeyboardLayout(layout);
+		await window.omsk.prefs.setKeyboardLayout(layout);
 	} catch {
 		// No layout map: chords keep their US-layout key positions.
 	}

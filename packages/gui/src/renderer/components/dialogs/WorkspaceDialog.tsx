@@ -101,7 +101,7 @@ export function WorkspaceDialog({
 		if (guardBusy()) return;
 		// Breadcrumb switching deliberately re-roots the current tab.
 		try {
-			const ok = await window.omp.sidecar.setProject(target);
+			const ok = await window.omsk.sidecar.setProject(target);
 			if (!ok) {
 				toast({ variant: "error", title: t("workspaces.switchFailed"), message: target });
 				return;
@@ -120,7 +120,7 @@ export function WorkspaceDialog({
 				if (picked) await newSessionHere(picked);
 				return;
 			}
-			if (await window.omp.sidecar.selectProject()) onClose();
+			if (await window.omsk.sidecar.selectProject()) onClose();
 		} catch (error) {
 			toast({ variant: "error", title: t("titlebar.openProjectFailed"), message: String(error) });
 		}

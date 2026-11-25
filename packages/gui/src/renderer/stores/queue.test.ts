@@ -9,7 +9,7 @@ import type { RpcResponse } from "../../shared/rpc-types";
 import { useQueueStore } from "./queue";
 
 const getQueue = vi.fn();
-(globalThis as Record<string, unknown>).window = { omp: { rpc: { getQueue } } };
+(globalThis as Record<string, unknown>).window = { omsk: { rpc: { getQueue } } };
 
 function queued(id: string, text: string) {
 	return { id, text, editable: true, timestamp: 1 };

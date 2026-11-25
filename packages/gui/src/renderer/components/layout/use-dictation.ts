@@ -84,7 +84,7 @@ export function useDictation(options: {
 		const session = new DictationSession({
 			rpc,
 			subscribe: listener =>
-				window.omp.events.onTabDictationFrame((frame, frameTabId) => {
+				window.omsk.events.onTabDictationFrame((frame, frameTabId) => {
 					if (frameTabId === tabId) listener(frame);
 				}),
 			openMic: openBrowserMic,

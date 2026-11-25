@@ -168,7 +168,7 @@ function AvailablePluginRow({
 						{repository && (
 							<button
 								className="underline decoration-(--omsk-border-muted) underline-offset-2 hover:text-(--omsk-text)"
-								onClick={() => void window.omp.system.openExternal(repository)}
+								onClick={() => void window.omsk.system.openExternal(repository)}
 								title={repository}
 								type="button"
 							>
@@ -178,7 +178,7 @@ function AvailablePluginRow({
 						{homepage && (
 							<button
 								className="underline decoration-(--omsk-border-muted) underline-offset-2 hover:text-(--omsk-text)"
-								onClick={() => void window.omp.system.openExternal(homepage)}
+								onClick={() => void window.omsk.system.openExternal(homepage)}
 								title={homepage}
 								type="button"
 							>
@@ -335,7 +335,7 @@ export function MarketplaceCard({
 
 	const runPluginAction = (pluginName: string, action: MarketplacePluginAction): void => {
 		if (!ready) return;
-		// The catalog wire carries no omp manifest, so the GUI cannot know
+		// The catalog wire carries no omsk manifest, so the GUI cannot know
 		// pre-install whether a plugin ships executable entry points — confirm
 		// every install (metadata is visible on the row).
 		if (action === "install") {

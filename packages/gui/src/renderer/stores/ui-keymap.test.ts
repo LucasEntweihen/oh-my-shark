@@ -21,7 +21,7 @@ function installPrefs(stored: Record<string, unknown> = {}): PrefsMock {
 		set: vi.fn(async (_key: string, _value: unknown) => {}),
 	};
 	// Node test env has no preload bridge; install the mock OmpApi on a global window.
-	(globalThis as Record<string, unknown>).window = { omp: { prefs } };
+	(globalThis as Record<string, unknown>).window = { omsk: { prefs } };
 	return prefs;
 }
 
@@ -52,7 +52,7 @@ describe("ui store keymap overrides", () => {
 		await useUiStore.getState().hydrateKeymap();
 		expect(prefs.get).toHaveBeenCalledTimes(2);
 		(globalThis as Record<string, unknown>).window = {
-			omp: { prefs: { get: vi.fn(async () => Promise.reject(new Error("no ipc"))) } },
+			omsk: { prefs: { get: vi.fn(async () => Promise.reject(new Error("no ipc"))) } },
 		};
 		useUiStore.setState({ keymapOverrides: {}, keymapHydrated: false });
 		await useUiStore.getState().hydrateKeymap();

@@ -19,7 +19,7 @@ export function ProjectSettingsDialog({ cwd, name, onClose }: { cwd: string; nam
 
 	useEffect(() => {
 		let active = true;
-		void window.omp.prefs
+		void window.omsk.prefs
 			.get("launchProfiles")
 			.then(raw => {
 				if (!active) return;
@@ -41,7 +41,7 @@ export function ProjectSettingsDialog({ cwd, name, onClose }: { cwd: string; nam
 		setSaving(true);
 		try {
 			if (savedInstructions !== null && instructions !== savedInstructions) {
-				const profile = await window.omp.prefs.updateLaunchProfile(cwd, {
+				const profile = await window.omsk.prefs.updateLaunchProfile(cwd, {
 					appendSystemPrompt: instructions || undefined,
 				});
 				setSavedInstructions(profile.appendSystemPrompt ?? "");

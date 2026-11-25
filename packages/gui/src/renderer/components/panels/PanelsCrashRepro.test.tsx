@@ -24,15 +24,15 @@ globals.Node = Node;
 globals.IS_REACT_ACT_ENVIRONMENT = true;
 globals.requestAnimationFrame = (callback: () => void) => setTimeout(callback, 0);
 
-// Minimal omp bridge: SubagentTranscript fetches transcripts on mount.
+// Minimal omsk bridge: SubagentTranscript fetches transcripts on mount.
 const getSubagentMessages = vi.fn(async () => ({
 	type: "response",
 	command: "get_subagent_messages",
 	success: true,
 	data: { messages: [] as AgentMessage[] },
 }));
-const ompWindow = window as unknown as { omp: { rpc: { getSubagentMessages: typeof getSubagentMessages } } };
-ompWindow.omp = { rpc: { getSubagentMessages } };
+const ompWindow = window as unknown as { omsk: { rpc: { getSubagentMessages: typeof getSubagentMessages } } };
+ompWindow.omsk = { rpc: { getSubagentMessages } };
 
 const elementPrototype = HTMLElement.prototype as unknown as Record<string, unknown>;
 if (typeof elementPrototype.scrollIntoView !== "function") elementPrototype.scrollIntoView = () => {};

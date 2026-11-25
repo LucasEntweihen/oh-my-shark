@@ -30,7 +30,7 @@ export function useDraftProblems(draft: TaskDraft, editingId?: string): DraftPro
 	useEffect(() => {
 		let live = true;
 		const timer = setTimeout(() => {
-			window.omp.scheduler.validate(draft, editingId).then(
+			window.omsk.scheduler.validate(draft, editingId).then(
 				result => live && setProblems(result),
 				() => {},
 			);
@@ -557,7 +557,7 @@ export function TaskForm({
 						className="h-auto shrink-0"
 						icon={<FolderOpen size={13} />}
 						onClick={async () => {
-							const picked = await window.omp.system.showOpenDialog(undefined, { directory: true });
+							const picked = await window.omsk.system.showOpenDialog(undefined, { directory: true });
 							if (picked?.[0]) patch({ cwd: picked[0] });
 						}}
 					>

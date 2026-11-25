@@ -170,7 +170,7 @@ async function mount(withRuntime = false): Promise<void> {
 	setThinkingLevel = vi.fn(async (level: string) => ok({ thinkingLevel: level, thinkingConfigured: level }));
 	setSetting = vi.fn(async (_path: string, value: unknown) => ok({ value, provenance: { layers: ["global"] } }));
 	setPlanMode = vi.fn(async (enabled: boolean) => ok({ enabled }));
-	(window as unknown as Record<string, unknown>).omp = {
+	(window as unknown as Record<string, unknown>).omsk = {
 		fs: { list: vi.fn(async () => ({ entries: [] })) },
 		events: { onCommandsUpdate: vi.fn(() => () => {}), onConfigUpdate: vi.fn(() => () => {}) },
 		prefs: { set: vi.fn(async () => ({})), get: vi.fn(async () => []) },
@@ -214,7 +214,7 @@ async function mount(withRuntime = false): Promise<void> {
 		withSessionRuntime("t0", () =>
 			useSessionStore.setState({ status: "ready", sessionId: "before-restart", cwd: "/tmp" }),
 		);
-		window.omp.rpc.commandForTab = vi.fn(async (_tabId, command) => {
+		window.omsk.rpc.commandForTab = vi.fn(async (_tabId, command) => {
 			if (command.type === "prompt") return prompt(command.message, command.images);
 			if (command.type === "get_queue") return ok({ steering: [], followUp: [] });
 			if (command.type === "get_state")
@@ -274,7 +274,7 @@ afterEach(async () => {
 describe("InputArea side-question shortcut", () => {
 	it("shows the BTW badge and sends through the originating tab's side-question store", async () => {
 		await mount(true);
-		const command = vi.mocked(window.omp.rpc.commandForTab);
+		const command = vi.mocked(window.omsk.rpc.commandForTab);
 		command.mockImplementation(async (_tabId, request) => {
 			if (request.type === "btw")
 				return ok({
@@ -316,7 +316,7 @@ describe("InputArea side-question shortcut", () => {
 			useComposerStore.getState().addFiles([file]);
 			useComposerStore.getState().setImages([image]);
 		});
-		const command = vi.mocked(window.omp.rpc.commandForTab);
+		const command = vi.mocked(window.omsk.rpc.commandForTab);
 		command.mockResolvedValue({ type: "response", command: "btw", success: false, error: "Already running" });
 		await typeInto(findTextarea(), "? Check this");
 		await pressEnter(findTextarea());
@@ -711,11 +711,11 @@ describe("InputArea prompt history", () => {
 	});
 });
 
-describe("InputArea composer prediction (omp 19)", () => {
+describe("InputArea composer prediction (omsk 19)", () => {
 	it("shows the predicted next message over the idle, empty composer and inserts it on Tab without sending", async () => {
 		await mount();
 		const command = vi.fn(async () => ok());
-		(window.omp.rpc as unknown as { command: typeof command }).command = command;
+		(window.omsk.rpc as unknown as { command: typeof command }).command = command;
 		await act(async () => {
 			useSessionStore.setState({ isStreaming: false });
 			useComposerStore.getState().setPredictions(["run the tests"]);
@@ -760,7 +760,7 @@ describe("InputArea transcript quote", () => {
 		Object.defineProperty(findTextarea(), "selectionStart", { configurable: true, value: "First point.".length });
 		(document.activeElement as unknown as { blur?: () => void } | null)?.blur?.();
 		await act(async () => {
-			window.dispatchEvent(new CustomEvent("omp:quote-composer", { detail: { quote: "> quoted", tabId: "t0" } }));
+			window.dispatchEvent(new CustomEvent("omsk:quote-composer", { detail: { quote: "> quoted", tabId: "t0" } }));
 		});
 		await flush();
 		expect(useComposerStore.getState().draft).toBe("First point.\n\n> quoted\n\nSecond point.");
@@ -772,7 +772,7 @@ describe("InputArea transcript quote", () => {
 		await mount();
 		await typeInto(findTextarea(), "draft");
 		await act(async () => {
-			window.dispatchEvent(new CustomEvent("omp:quote-composer", { detail: { quote: "> other", tabId: "t1" } }));
+			window.dispatchEvent(new CustomEvent("omsk:quote-composer", { detail: { quote: "> other", tabId: "t1" } }));
 		});
 		expect(useComposerStore.getState().draft).toBe("draft");
 	});
@@ -993,7 +993,7 @@ describe("InputArea GPT sign-in speed", () => {
 	it.each([false, true])("only offers Ultrafast when the sidecar supports it (%s)", async supported => {
 		await mount();
 		const setFastMode = vi.fn(async () => ok({ enabled: true, active: true, ultrafast: true }));
-		window.omp.rpc.setFastMode = setFastMode;
+		window.omsk.rpc.setFastMode = setFastMode;
 		await act(async () =>
 			useModelStore.setState({
 				model: {

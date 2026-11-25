@@ -27,7 +27,7 @@ const setTodos: Mock<() => Promise<RpcResponse>> = vi.fn(async () => ({
 	success: true,
 	data: {},
 }));
-(window as unknown as { omp: { rpc: { setTodos: typeof setTodos } } }).omp = { rpc: { setTodos } };
+(window as unknown as { omsk: { rpc: { setTodos: typeof setTodos } } }).omsk = { rpc: { setTodos } };
 
 const { createRoot } = await import("react-dom/client");
 const { TodoDockCard } = await import("./TodoDockCard");

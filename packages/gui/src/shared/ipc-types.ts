@@ -125,7 +125,7 @@ export const IPC_EVENTS = {
 	MODEL_CATALOG_UPDATE: "model-catalog:update",
 	/** Session list changed */
 	SESSIONS_CHANGED: "sessions:changed",
-	/** Learned skills or a project's memory changed on disk (any omp process). */
+	/** Learned skills or a project's memory changed on disk (any omsk process). */
 	MEMORY_CHANGED: "memory:changed",
 	/** A file in the custom themes folder changed (IpcCustomThemes). */
 	THEMES_CHANGED: "themes:changed",
@@ -135,7 +135,7 @@ export const IPC_EVENTS = {
 	STATS_DATA: "stats:data",
 	/** Native application menu action */
 	MENU_ACTION: "menu:action",
-	/** omp:// deep link (new session / switch session) */
+	/** omsk:// deep link (new session / switch session) */
 	DEEP_LINK: "deep-link",
 	/** Renderer → main fire-and-forget tray-state snapshot */
 	TRAY_STATE_PUSH: "tray:state-push",
@@ -216,7 +216,7 @@ export const IPC_COMMANDS = {
 	STATS_FETCH: "stats:fetch",
 	/** Stats dashboard base URL (for /trace deep links into the web UI) */
 	STATS_URL: "stats:url",
-	/** Run/cancel an isolated bundled `omp bench --json` process. */
+	/** Run/cancel an isolated bundled `omsk bench --json` process. */
 	BENCH_RUN: "bench:run",
 	BENCH_ABORT: "bench:abort",
 	/** Write a finished window recording (webm) to a user-picked path */
@@ -434,7 +434,7 @@ export type MenuAction =
 	| "toggle-language"
 	| "switch-project";
 
-/** Action forwarded to the renderer for an omp:// deep link. */
+/** Action forwarded to the renderer for an omsk:// deep link. */
 export type DeepLinkPayload = { action: "new-session" } | { action: "switch-session"; sessionId: string };
 
 /** Optional payload carried alongside a MenuAction (approval mode / project cwd). */
@@ -1011,7 +1011,7 @@ export interface IpcConversationSearchPayload {
  * A tab's git-worktree binding (tab × worktree, plan/20). Immutable, set at
  * spawn like `kind`; main-held so it survives renderer reloads. `name` is the
  * user-facing slug (chip label for untitled tabs), `branch` the created
- * omp/gui/<name> ref, `baseCwd` the repo checkout the worktree forked from.
+ * omsk/gui/<name> ref, `baseCwd` the repo checkout the worktree forked from.
  */
 export interface IpcTabWorktree {
 	name: string;
@@ -1225,7 +1225,7 @@ export interface IpcSidecarRestartPayload {
 	sessionPath?: string;
 }
 
-/** What changed under ~/.omp/agent: learned skills, and which project memory folders. */
+/** What changed under ~/.omsk/agent: learned skills, and which project memory folders. */
 export interface IpcMemoryChange {
 	skills: boolean;
 	/** Memory folder names (encoded project paths) that changed. */
@@ -1247,7 +1247,7 @@ export interface IpcCustomThemeFile {
 }
 
 export interface IpcCustomThemes {
-	/** The custom themes folder (~/.omp/gui/themes). */
+	/** The custom themes folder (~/.omsk/gui/themes). */
 	dir: string;
 	files: IpcCustomThemeFile[];
 }
@@ -1286,7 +1286,7 @@ export interface SessionInfo {
 }
 
 // ============================================================================
-// Preload API Shape (what window.omp exposes)
+// Preload API Shape (what window.omsk exposes)
 // ============================================================================
 
 export interface LogBatch {

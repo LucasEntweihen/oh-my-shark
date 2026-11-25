@@ -722,8 +722,8 @@ export const useUiStore = create<UiStore>()((set, get) => ({
 		if (get().keymapHydrated && !reload) return;
 		try {
 			const [overrides, disabled] = await Promise.all([
-				window.omp.prefs.get(KEYMAP_OVERRIDES_PREF),
-				window.omp.prefs.get(KEYMAP_DISABLED_PREF),
+				window.omsk.prefs.get(KEYMAP_OVERRIDES_PREF),
+				window.omsk.prefs.get(KEYMAP_DISABLED_PREF),
 			]);
 			set({
 				keymapOverrides: sanitizeOverrides(overrides),
@@ -742,19 +742,19 @@ export const useUiStore = create<UiStore>()((set, get) => ({
 		if (chords.length === 0) delete next[actionId];
 		else next[actionId] = chords;
 		set({ keymapOverrides: next });
-		void window.omp.prefs.set(KEYMAP_OVERRIDES_PREF, next).catch(() => {});
+		void window.omsk.prefs.set(KEYMAP_OVERRIDES_PREF, next).catch(() => {});
 	},
 	setShortcutEnabled: (id, enabled) => {
 		const current = get().keymapDisabled;
 		if (current.includes(id) !== enabled) return;
 		const next = enabled ? current.filter(other => other !== id) : [...current, id];
 		set({ keymapDisabled: next });
-		void window.omp.prefs.set(KEYMAP_DISABLED_PREF, next).catch(() => {});
+		void window.omsk.prefs.set(KEYMAP_DISABLED_PREF, next).catch(() => {});
 	},
 	resetKeymapOverrides: () => {
 		set({ keymapOverrides: {}, keymapDisabled: [] });
-		void window.omp.prefs.set(KEYMAP_OVERRIDES_PREF, {}).catch(() => {});
-		void window.omp.prefs.set(KEYMAP_DISABLED_PREF, []).catch(() => {});
+		void window.omsk.prefs.set(KEYMAP_OVERRIDES_PREF, {}).catch(() => {});
+		void window.omsk.prefs.set(KEYMAP_DISABLED_PREF, []).catch(() => {});
 	},
 }));
 

@@ -38,7 +38,7 @@ export interface MemoryProject {
 	edit: (edit: RpcMemoryEdit) => Promise<RpcMemoryEditOutcome | null>;
 	/** Read waiting sessions and rebuild knowledge now. */
 	update: () => Promise<boolean>;
-	/** Switch omp's memory between the local pipeline and off, for every project. */
+	/** Switch omsk's memory between the local pipeline and off, for every project. */
 	setEnabled: (enabled: boolean) => Promise<boolean>;
 }
 
@@ -118,7 +118,7 @@ export function useMemoryProject(open: boolean, cwd: string | null): MemoryProje
 	useEffect(() => {
 		if (!open || !connected) return;
 		let timer: number | undefined;
-		const unsubscribe = window.omp.events.onMemoryChanged(change => {
+		const unsubscribe = window.omsk.events.onMemoryChanged(change => {
 			if (change.memoryRoots.length === 0) return;
 			window.clearTimeout(timer);
 			timer = window.setTimeout(() => void reload(), CHANGE_SETTLE_MS);

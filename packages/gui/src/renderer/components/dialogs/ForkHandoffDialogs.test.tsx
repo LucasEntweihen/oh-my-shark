@@ -78,8 +78,8 @@ function installMockOmp(overrides: Partial<MockRpc> = {}): MockRpc {
 		...overrides,
 	};
 	// linkedom's window lacks the preload bridge; install the mock OmpApi on it.
-	const ompWindow = window as unknown as { omp: { rpc: MockRpc } };
-	ompWindow.omp = { rpc };
+	const ompWindow = window as unknown as { omsk: { rpc: MockRpc } };
+	ompWindow.omsk = { rpc };
 	return rpc;
 }
 

@@ -29,7 +29,7 @@ globals.Element = Element;
 globals.IS_REACT_ACT_ENVIRONMENT = true;
 globals.requestAnimationFrame = (callback: () => void) => setTimeout(callback, 0);
 
-const ompWindow = window as unknown as { omp?: unknown };
+const ompWindow = window as unknown as { omsk?: unknown };
 
 const ON_DISK: Record<string, IpcResolvedPath> = {
 	"src/app.ts": { absolutePath: "/work/src/app.ts", kind: "file", relativePath: "src/app.ts" },
@@ -73,7 +73,7 @@ beforeEach(() => {
 	resolvePaths = vi.fn(async (paths: string[]) => paths.map(path => ON_DISK[path] ?? null));
 	openPath = vi.fn(async () => ({ ok: true }));
 	browserOpen = vi.fn(async () => ({}));
-	ompWindow.omp = {
+	ompWindow.omsk = {
 		system: { resolvePaths, openPath, openExternal: vi.fn(async () => {}) },
 		browser: { open: browserOpen },
 	};
@@ -87,7 +87,7 @@ beforeEach(() => {
 afterEach(async () => {
 	await act(async () => root.unmount());
 	document.body.innerHTML = "";
-	delete ompWindow.omp;
+	delete ompWindow.omsk;
 	clearPathResolutionCache();
 	useTabsStore.getState().reset();
 	useUiStore.setState({ filePreviewPath: null, filePreviewLine: null });
@@ -183,7 +183,7 @@ describe("links to Windows paths", () => {
 
 	it("reads an image named by drive path from that drive, and lets no script address through", async () => {
 		const readImage = vi.fn(async () => ({ ok: false, dataUrl: null, mime: null, size: 0 }));
-		(ompWindow.omp as { fs?: unknown }).fs = { readImage };
+		(ompWindow.omsk as { fs?: unknown }).fs = { readImage };
 		await render(
 			'![shot](E:\\ymt\\shot.png) [x](javascript:alert(1)) <a href="vbscript:msgbox">y</a> <img src="javascript:alert(1)">',
 		);

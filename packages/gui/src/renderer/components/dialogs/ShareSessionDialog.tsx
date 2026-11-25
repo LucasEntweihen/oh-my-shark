@@ -101,7 +101,7 @@ export function ShareSessionDialog() {
 							</Button>
 							<Button
 								aria-label={t("shareDialog.open")}
-								onClick={() => void window.omp.system.openExternal(result.url)}
+								onClick={() => void window.omsk.system.openExternal(result.url)}
 								size="sm"
 								title={t("shareDialog.open")}
 								variant="secondary"

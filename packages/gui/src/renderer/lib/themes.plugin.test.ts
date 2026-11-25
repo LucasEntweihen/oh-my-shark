@@ -93,7 +93,7 @@ describe("validatePluginThemeTokens", () => {
 describe("applyPluginThemeOverlay", () => {
 	it("rejects a plugin response invalidated by leaving its task", async () => {
 		const pending = Promise.withResolvers<RpcResponse>();
-		vi.stubGlobal("window", { omp: { rpc: { getGuiThemes: () => pending.promise } } });
+		vi.stubGlobal("window", { omsk: { rpc: { getGuiThemes: () => pending.promise } } });
 		applyThemeByName("dark", { persist: false });
 		const refresh = refreshPluginThemes();
 		clearPluginThemes();
@@ -121,7 +121,7 @@ describe("applyPluginThemeOverlay", () => {
 			}),
 		);
 		vi.stubGlobal("window", {
-			omp: { rpc: { getSettings: settings, getThemeColors: colors }, events: { onConfigUpdate: () => () => {} } },
+			omsk: { rpc: { getSettings: settings, getThemeColors: colors }, events: { onConfigUpdate: () => () => {} } },
 		});
 		vi.stubGlobal("MutationObserver", window.MutationObserver);
 		applyThemeByName("dark", { persist: false });

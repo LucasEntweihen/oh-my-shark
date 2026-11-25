@@ -20,7 +20,7 @@ export function PluginLogo({ owner, title, size = 40 }: { owner: string | null; 
 		if (!owner || known) return;
 		let cancelled = false;
 		const load = (): void => {
-			window.omp.pluginCatalog.logo(owner).then(
+			window.omsk.pluginCatalog.logo(owner).then(
 				url => {
 					if (!url) return;
 					loadedLogos.set(owner, url);

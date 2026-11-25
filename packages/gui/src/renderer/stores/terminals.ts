@@ -92,7 +92,7 @@ function viewKey(tabId: string, terminalId: string): string {
 }
 
 function command(tabId: string, rpcCommand: RpcCommand): Promise<RpcResponse> {
-	return window.omp.rpc.commandForTab(tabId, rpcCommand);
+	return window.omsk.rpc.commandForTab(tabId, rpcCommand);
 }
 
 /** xterm colors from the active GUI theme (custom properties resolve to plain colors). */

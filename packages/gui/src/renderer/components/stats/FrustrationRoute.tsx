@@ -1,7 +1,7 @@
 /**
  * Frustration: how often user messages sound annoyed, overall and per model
  * version (`GET /api/stats/frustration`). Read-only — the paid LLM judge run
- * stays in the `omp stats` web dashboard.
+ * stays in the `omsk stats` web dashboard.
  */
 
 import { useEffect, useMemo } from "react";

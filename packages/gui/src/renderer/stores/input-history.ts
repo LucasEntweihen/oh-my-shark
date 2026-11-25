@@ -120,7 +120,7 @@ function persist(entries: InputHistoryEntry[]): void {
 	// (rather than in record) also keeps earlier session secrets out of the
 	// payload when a later benign input triggers a persist.
 	const safe = entries.filter(entry => !shouldSkipHistory(entry.prompt));
-	void window.omp.prefs.set(PREFS_KEY, safe).catch(() => {});
+	void window.omsk.prefs.set(PREFS_KEY, safe).catch(() => {});
 }
 
 function parseStored(raw: unknown): InputHistoryEntry[] {
@@ -156,7 +156,7 @@ export const useInputHistoryStore = create<InputHistoryStore>()((set, get) => ({
 	hydrate: async () => {
 		if (get().hydrated) return;
 		try {
-			const raw = await window.omp.prefs.get(PREFS_KEY);
+			const raw = await window.omsk.prefs.get(PREFS_KEY);
 			const parsed = parseStored(raw);
 			// Scrub secrets persisted before the skip guard existed.
 			const entries = parsed.filter(entry => !shouldSkipHistory(entry.prompt));

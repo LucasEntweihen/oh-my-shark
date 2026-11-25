@@ -13,7 +13,7 @@ it("keeps a change pushed while the first read is still out", async () => {
 	const read = Promise.withResolvers<IpcCustomThemes>();
 	let push: (themes: IpcCustomThemes) => void = () => {};
 	vi.stubGlobal("window", {
-		omp: {
+		omsk: {
 			themes: {
 				list: () => read.promise,
 				onChanged: (callback: (themes: IpcCustomThemes) => void) => {

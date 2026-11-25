@@ -104,10 +104,10 @@ function extractRun(data: unknown): RpcOrchestratorRun | null {
 }
 
 function resolveOrchestratorBridge(command?: TabCommand, tabId?: string): OrchestratorBridge {
-	const hasPreload = typeof window !== "undefined" && window.omp?.orchestrator != null;
+	const hasPreload = typeof window !== "undefined" && window.omsk?.orchestrator != null;
 	const isFocusedOrUnbound = !command || command === activeTabCommand || !tabId || tabId === focusedRuntimeTabId();
 	if (hasPreload && isFocusedOrUnbound) {
-		return window.omp.orchestrator;
+		return window.omsk.orchestrator;
 	}
 	const exec = command ?? activeTabCommand;
 	return {

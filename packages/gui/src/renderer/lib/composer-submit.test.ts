@@ -41,7 +41,7 @@ interface MockOmp {
 }
 
 function installMockOmp(): MockOmp {
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		rpc: {
 			prompt: vi.fn(async () => success({})),
 			compact: vi.fn(async () => ({ ...success({}), command: "compact" })),
@@ -75,8 +75,8 @@ function installMockOmp(): MockOmp {
 		sessions: { consumePendingOpen: vi.fn(async () => null) },
 		app: { quit: vi.fn() },
 	};
-	(globalThis as Record<string, unknown>).window = { omp, confirm: vi.fn(() => true), close: vi.fn() };
-	return omp;
+	(globalThis as Record<string, unknown>).window = { omsk, confirm: vi.fn(() => true), close: vi.fn() };
+	return omsk;
 }
 
 afterEach(() => {
@@ -102,7 +102,7 @@ const guiOnly = (name: string): AvailableCommand => ({
 });
 describe("planComposerSubmit", () => {
 	it.each([false, true])("routes a ? shortcut to BTW while streaming=%s", isStreaming => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const result = planComposerSubmit({
 			message: "  ?why did this fail?",
 			wireMessage: '?why did this fail? @"source file.ts"',
@@ -113,9 +113,9 @@ describe("planComposerSubmit", () => {
 		});
 
 		expect(result).toEqual({ kind: "btw", question: 'why did this fail? @"source file.ts"' });
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
-		expect(omp.rpc.steer).not.toHaveBeenCalled();
-		expect(omp.rpc.followUp).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.steer).not.toHaveBeenCalled();
+		expect(omsk.rpc.followUp).not.toHaveBeenCalled();
 	});
 
 	it("keeps a bare ? draft out of the main conversation", () => {
@@ -132,7 +132,7 @@ describe("planComposerSubmit", () => {
 	});
 
 	it("typed share still requires a desktop preview when Core can upload directly or discovery is pending", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		for (const commands of [[{ ...guiOnly("share"), textModeExecutable: true }], []]) {
 			useUiStore.setState({ shareSessionOpen: false });
 			const submit = planComposerSubmit({
@@ -145,11 +145,11 @@ describe("planComposerSubmit", () => {
 			expect(submit.kind).toBe("handled");
 			expect(useUiStore.getState().shareSessionOpen).toBe(true);
 		}
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("text-capable voice and side-question commands open their explicit start surfaces", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		planComposerSubmit({
 			message: "/live",
 			images: [],
@@ -166,11 +166,11 @@ describe("planComposerSubmit", () => {
 			commands: [{ ...guiOnly("btw"), textModeExecutable: true }],
 		});
 		expect(useUiStore.getState().btwRequest).toBe("local question");
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("opens the side-questions drawer for a bare /btw", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		useUiStore.setState({ panelTab: "diff", panelVisible: false });
 		const submit = planComposerSubmit({
 			message: "/btw",
@@ -184,11 +184,11 @@ describe("planComposerSubmit", () => {
 		expect(useUiStore.getState().panelTab).toBe("btw");
 		expect(useUiStore.getState().panelVisible).toBe(true);
 		expect(useUiStore.getState().btwRequest).toBeNull();
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("routes typed /compact through its long-running RPC instead of the 8s prompt path", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/compact",
 			images: [],
@@ -198,14 +198,14 @@ describe("planComposerSubmit", () => {
 		});
 		expect(submit.kind).toBe("compact");
 		if (submit.kind !== "compact") return;
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 		await submit.request();
-		expect(omp.rpc.compact).toHaveBeenCalledOnce();
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.compact).toHaveBeenCalledOnce();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("routes /compact through its dedicated RPC even while streaming — never steer/followUp", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/compact",
 			images: [],
@@ -216,14 +216,14 @@ describe("planComposerSubmit", () => {
 		expect(submit.kind).toBe("compact");
 		if (submit.kind !== "compact") return;
 		await submit.request();
-		expect(omp.rpc.compact).toHaveBeenCalledOnce();
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
-		expect(omp.rpc.steer).not.toHaveBeenCalled();
-		expect(omp.rpc.followUp).not.toHaveBeenCalled();
+		expect(omsk.rpc.compact).toHaveBeenCalledOnce();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.steer).not.toHaveBeenCalled();
+		expect(omsk.rpc.followUp).not.toHaveBeenCalled();
 	});
 
 	it("routes plain text through steer (or followUp) while streaming", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const steerSubmit = planComposerSubmit({
 			message: "hello",
 			images: [],
@@ -233,8 +233,8 @@ describe("planComposerSubmit", () => {
 		});
 		if (steerSubmit.kind !== "send") throw new Error("expected send");
 		await steerSubmit.request();
-		expect(omp.rpc.steer).toHaveBeenCalledWith("hello", []);
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.steer).toHaveBeenCalledWith("hello", []);
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 
 		const followUpSubmit = planComposerSubmit({
 			message: "again",
@@ -245,11 +245,11 @@ describe("planComposerSubmit", () => {
 		});
 		if (followUpSubmit.kind !== "send") throw new Error("expected send");
 		await followUpSubmit.request();
-		expect(omp.rpc.followUp).toHaveBeenCalledWith("again", []);
+		expect(omsk.rpc.followUp).toHaveBeenCalledWith("again", []);
 	});
 
 	it("routes exact /clear to the native clear path when idle — never to the model", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/clear",
 			images: [],
@@ -258,11 +258,11 @@ describe("planComposerSubmit", () => {
 			commands: [],
 		});
 		expect(submit.kind).toBe("clear");
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("still routes /clear with args through prompt (no native interception)", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/clear extra",
 			images: [],
@@ -273,17 +273,17 @@ describe("planComposerSubmit", () => {
 		expect(submit.kind).toBe("send");
 		if (submit.kind !== "send") return;
 		await submit.request();
-		expect(omp.rpc.prompt).toHaveBeenCalledWith("/clear extra", []);
+		expect(omsk.rpc.prompt).toHaveBeenCalledWith("/clear extra", []);
 	});
 
 	it.each(["/new", "/clear", "/new extra args"])(
 		"blocks %s while a turn is running instead of silently killing it",
 		async message => {
-			const omp = installMockOmp();
+			const omsk = installMockOmp();
 			const submit = planComposerSubmit({ message, images: [], isStreaming: true, mode: "prompt", commands: [] });
 			expect(submit.kind).toBe("blocked");
-			expect(omp.rpc.prompt).not.toHaveBeenCalled();
-			expect(omp.rpc.steer).not.toHaveBeenCalled();
+			expect(omsk.rpc.prompt).not.toHaveBeenCalled();
+			expect(omsk.rpc.steer).not.toHaveBeenCalled();
 			expect(useToastStore.getState().toasts.some(toast => toast.variant === "warning")).toBe(true);
 		},
 	);
@@ -304,7 +304,7 @@ describe("planComposerSubmit", () => {
 
 describe("planComposerSubmit GUI-only routing", () => {
 	it("routes typed TUI-only commands through a matching native GUI affordance", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/settings",
 			images: [],
@@ -314,11 +314,11 @@ describe("planComposerSubmit GUI-only routing", () => {
 		});
 		expect(submit.kind).toBe("handled");
 		expect(useUiStore.getState().settingsOpen).toBe(true);
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("maps typed /exit to a real app quit, not closing the focused window", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const close = vi.fn();
 		((globalThis as Record<string, unknown>).window as Record<string, unknown>).close = close;
 		const submit = planComposerSubmit({
@@ -333,13 +333,13 @@ describe("planComposerSubmit GUI-only routing", () => {
 		// while reporting the app as quit; the guard-owned quit is the only one
 		// that tears the session down (and confirms first).
 		expect(submit.kind).toBe("handled");
-		expect(omp.app.quit).toHaveBeenCalledTimes(1);
+		expect(omsk.app.quit).toHaveBeenCalledTimes(1);
 		expect(close).not.toHaveBeenCalled();
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("passes typed /guided-goal arguments to the native guided interview RPC", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/guided-goal ship reliable sync",
 			images: [],
@@ -349,12 +349,12 @@ describe("planComposerSubmit GUI-only routing", () => {
 		});
 
 		expect(submit.kind).toBe("handled");
-		expect(omp.rpc.guidedGoal).toHaveBeenCalledWith("ship reliable sync");
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.guidedGoal).toHaveBeenCalledWith("ship reliable sync");
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("toggles the process-wide pause gate from typed /pause", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/pause",
 			images: [],
@@ -366,13 +366,13 @@ describe("planComposerSubmit GUI-only routing", () => {
 		await Promise.resolve();
 
 		expect(submit.kind).toBe("handled");
-		expect(omp.rpc.setAgentsPaused).toHaveBeenCalledWith(true);
+		expect(omsk.rpc.setAgentsPaused).toHaveBeenCalledWith(true);
 		expect(useSessionStore.getState().agentsPaused).toBe(true);
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("opens the native copy selector for typed /copy", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/copy",
 			images: [],
@@ -383,11 +383,11 @@ describe("planComposerSubmit GUI-only routing", () => {
 
 		expect(submit.kind).toBe("handled");
 		expect(useUiStore.getState().copySelectorOpen).toBe(true);
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("opens the native ephemeral side-question flow for typed /btw", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/btw why did this fail?",
 			images: [],
@@ -398,11 +398,11 @@ describe("planComposerSubmit GUI-only routing", () => {
 
 		expect(submit.kind).toBe("handled");
 		expect(useUiStore.getState().btwRequest).toBe("why did this fail?");
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("dispatches typed /tan work through the background-agent RPC", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/tan investigate the flaky test",
 			images: [],
@@ -414,12 +414,12 @@ describe("planComposerSubmit GUI-only routing", () => {
 		await Promise.resolve();
 
 		expect(submit.kind).toBe("handled");
-		expect(omp.rpc.tan).toHaveBeenCalledWith("investigate the flaky test");
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.tan).toHaveBeenCalledWith("investigate the flaky test");
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("runs typed /omfg through the RPC-hosted confirmation workflow", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/omfg stop repeating stale advice",
 			images: [],
@@ -431,12 +431,12 @@ describe("planComposerSubmit GUI-only routing", () => {
 		await Promise.resolve();
 
 		expect(submit.kind).toBe("handled");
-		expect(omp.rpc.omfg).toHaveBeenCalledWith("stop repeating stale advice");
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.omfg).toHaveBeenCalledWith("stop repeating stale advice");
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("routes typed /drop through confirmation and the destructive session RPC", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/drop",
 			images: [],
@@ -446,12 +446,12 @@ describe("planComposerSubmit GUI-only routing", () => {
 		});
 
 		expect(submit.kind).toBe("handled");
-		expect(omp.rpc.dropSession).toHaveBeenCalledTimes(1);
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.dropSession).toHaveBeenCalledTimes(1);
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("opens native live collaboration for typed /collab without leaking it to the model", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/collab",
 			images: [],
@@ -461,12 +461,12 @@ describe("planComposerSubmit GUI-only routing", () => {
 		});
 		expect(submit.kind).toBe("handled");
 		expect(useUiStore.getState().collabOpen).toBe(true);
-		expect(omp.rpc.collabStart).not.toHaveBeenCalled();
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.collabStart).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 	});
 
 	it("blocks an advertised non-text command until it has a native GUI affordance", () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const submit = planComposerSubmit({
 			message: "/future-native",
 			images: [],
@@ -475,36 +475,36 @@ describe("planComposerSubmit GUI-only routing", () => {
 			commands: [guiOnly("future-native")],
 		});
 		expect(submit.kind).toBe("blocked");
-		expect(omp.rpc.prompt).not.toHaveBeenCalled();
+		expect(omsk.rpc.prompt).not.toHaveBeenCalled();
 		expect(useToastStore.getState().toasts.some(toast => toast.variant === "warning")).toBe(true);
 	});
 });
 
 describe("settleComposerResponse", () => {
 	it("rehydrates on agentInvoked:false (local-only slash command)", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		await settleComposerResponse(success({ agentInvoked: false }));
-		expect(omp.rpc.getState).toHaveBeenCalled();
-		expect(omp.rpc.getTranscript).toHaveBeenCalled();
+		expect(omsk.rpc.getState).toHaveBeenCalled();
+		expect(omsk.rpc.getTranscript).toHaveBeenCalled();
 	});
 
 	it("rehydrates after dedicated compaction completes", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		await settleComposerResponse({ ...success({}), command: "compact" });
-		expect(omp.rpc.getState).toHaveBeenCalled();
-		expect(omp.rpc.getTranscript).toHaveBeenCalled();
+		expect(omsk.rpc.getState).toHaveBeenCalled();
+		expect(omsk.rpc.getTranscript).toHaveBeenCalled();
 	});
 
 	it("does not rehydrate when the agent was invoked (events stream normally)", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		await settleComposerResponse(success({ agentInvoked: true }));
-		expect(omp.rpc.getState).not.toHaveBeenCalled();
+		expect(omsk.rpc.getState).not.toHaveBeenCalled();
 	});
 
 	it("does not rehydrate on failure responses or missing data", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		await settleComposerResponse({ type: "response", command: "prompt", success: false, error: "boom" });
 		await settleComposerResponse(success({}));
-		expect(omp.rpc.getState).not.toHaveBeenCalled();
+		expect(omsk.rpc.getState).not.toHaveBeenCalled();
 	});
 });

@@ -16,19 +16,19 @@ export function useExtensionUi(): ExtensionUiResult {
 	const pendingRequests = useExtensionUiStore(s => s.pendingRequests);
 
 	useEffect(() => {
-		const unsubscribe = window.omp.events.onExtensionUi((request, tabId) => {
+		const unsubscribe = window.omsk.events.onExtensionUi((request, tabId) => {
 			pushTabExtensionUiRequest(tabId, request);
 		});
 		return unsubscribe;
 	}, []);
 
 	const respond = useCallback((response: ExtensionUIResponse) => {
-		window.omp.ui.respondExtensionUi(response);
+		window.omsk.ui.respondExtensionUi(response);
 		removeExtensionRequest(response.id);
 	}, []);
 
 	const cancel = useCallback((id: string) => {
-		window.omp.ui.respondExtensionUi({ type: "extension_ui_response", id, cancelled: true });
+		window.omsk.ui.respondExtensionUi({ type: "extension_ui_response", id, cancelled: true });
 		removeExtensionRequest(id);
 	}, []);
 

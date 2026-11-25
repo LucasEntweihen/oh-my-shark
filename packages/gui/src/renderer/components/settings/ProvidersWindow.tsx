@@ -250,7 +250,7 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 			try {
 				const [providerResult, configsResult] = await Promise.allSettled([
 					refreshProviders(forceRefresh),
-					window.omp.models.listProviders(),
+					window.omsk.models.listProviders(),
 				]);
 				if (version !== requestVersion.current) return undefined;
 				if (configsResult.status === "fulfilled") {
@@ -469,7 +469,7 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 								variant="ghost"
 								icon={<ExternalLink size={12} />}
 								onClick={() => {
-									void window.omp.models.openConfig().catch(cause => {
+									void window.omsk.models.openConfig().catch(cause => {
 										toast({ variant: "error", title: t("providers.editConfig"), message: String(cause) });
 									});
 								}}

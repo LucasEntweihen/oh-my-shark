@@ -1,5 +1,5 @@
 /**
- * Custom themes from ~/.omp/gui/themes (gui#38), for the theme picker. Main
+ * Custom themes from ~/.omsk/gui/themes (gui#38), for the theme picker. Main
  * reads the folder and pushes every change; this store parses the files and
  * hands the usable ones to the theme registry, so a theme on screen follows
  * edits to its file.
@@ -48,11 +48,11 @@ export function loadCustomThemes(themes: IpcCustomThemes): void {
 /** Reads the folder once and follows it; call once at App boot. Returns the teardown. */
 export function initCustomThemes(): () => void {
 	let pushed = false;
-	const unsubscribe = window.omp.themes.onChanged(themes => {
+	const unsubscribe = window.omsk.themes.onChanged(themes => {
 		pushed = true;
 		loadCustomThemes(themes);
 	});
-	void window.omp.themes
+	void window.omsk.themes
 		.list()
 		.then(themes => {
 			// A change pushed meanwhile is newer than this read.

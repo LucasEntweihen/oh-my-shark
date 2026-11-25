@@ -11,7 +11,7 @@ afterEach(() => {
 describe("GUI display preference ownership", () => {
 	it("keeps false and zero overrides and ignores a delayed boot snapshot after an edit", async () => {
 		const save = vi.fn(async () => {});
-		vi.stubGlobal("window", { omp: { prefs: { set: save } } });
+		vi.stubGlobal("window", { omsk: { prefs: { set: save } } });
 		useSettingsStore.setState({ showTokenUsage: true, pasteMenuThreshold: 100 });
 		await setDisplayPreference("showTokenUsage", false);
 		hydrateDisplayPreferences({ showTokenUsage: true, pasteMenuThreshold: 0, hideThinkingBlock: "true" });
@@ -25,7 +25,7 @@ describe("GUI display preference ownership", () => {
 	});
 	it("leaves the previous visible value on persistence failure", async () => {
 		vi.stubGlobal("window", {
-			omp: {
+			omsk: {
 				prefs: {
 					set: vi.fn(async () => {
 						throw new Error("disk full");

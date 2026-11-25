@@ -1,5 +1,5 @@
 /**
- * ⇧⌘F conversation search: finds what you or omp said in any session — never
+ * ⇧⌘F conversation search: finds what you or omsk said in any session — never
  * tool output — and opens the session at that message. Results are grouped by
  * session, newest activity first; matches are highlighted in a one-line snippet.
  */
@@ -33,7 +33,7 @@ import { DIALOG_OVERLAY_Z, isTopmostDialog, registerDialogLayer } from "../commo
 
 type Scope = "project" | "all";
 
-const SCOPE_KEY = "omp.conversationSearch.scope";
+const SCOPE_KEY = "omsk.conversationSearch.scope";
 /** Typing pause before a search goes out. */
 const DEBOUNCE_MS = 140;
 /** How often an answer given mid-indexing is asked again. */
@@ -135,7 +135,7 @@ function SearchPanel() {
 			setSlow(false);
 		}
 		const run = () => {
-			window.omp.sessions
+			window.omsk.sessions
 				.searchConversations(trimmed, effectiveScope === "project" ? cwd : null)
 				.then(next => {
 					if (mine !== seq.current) return;

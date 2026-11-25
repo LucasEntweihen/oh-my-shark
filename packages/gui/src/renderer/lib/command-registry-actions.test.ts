@@ -3,7 +3,7 @@
  * /fresh, /shake elide|images|thinking, /reload-plugins, /queue (composer prefill) and
  * /force (dialog picker) must drive their RPC/native affordance — never
  * inject "/cmd" prompt text — and surface the result as a toast or dialog.
- * Exercises buildCommandMenu directly with a mocked window.omp.rpc.
+ * Exercises buildCommandMenu directly with a mocked window.omsk.rpc.
  */
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import { useSessionStore } from "../stores/session";
@@ -100,7 +100,7 @@ beforeEach(() => {
 	dispatchMock = vi.fn();
 	sidecarRestart = vi.fn(async () => {});
 	(globalThis as Record<string, unknown>).window = {
-		omp: { rpc, sidecar: { restart: sidecarRestart } },
+		omsk: { rpc, sidecar: { restart: sidecarRestart } },
 		confirm: confirmMock,
 		dispatchEvent: dispatchMock,
 	};
@@ -239,7 +239,7 @@ describe("one-shot action wiring", () => {
 		await affordance.run();
 		expect(dispatchMock).toHaveBeenCalledTimes(1);
 		const event = dispatchMock.mock.calls[0]?.[0] as CustomEvent<{ text?: string }>;
-		expect(event.type).toBe("omp:fill-composer");
+		expect(event.type).toBe("omsk:fill-composer");
 		expect(event.detail.text).toBe("-> ");
 	});
 

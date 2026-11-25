@@ -105,7 +105,7 @@ function installAgent(overrides: Partial<Pick<Fake, "marketplaces" | "plugins">>
 		}
 		return ok({ ok: true });
 	});
-	(window as unknown as { omp: unknown }).omp = {
+	(window as unknown as { omsk: unknown }).omsk = {
 		rpc: {
 			getMarketplaces: vi.fn(async () => ok({ marketplaces: fake.marketplaces })),
 			marketplaceAction: fake.marketplaceAction,

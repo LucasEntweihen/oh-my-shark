@@ -132,7 +132,7 @@ function TaskStats({ task, runs }: { task: ScheduledTask; runs: TaskRun[] }) {
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the newest run's id and state pace the refetch, so a landing run updates the figures.
 	useEffect(() => {
 		let current = true;
-		window.omp.scheduler.insights(STATS_DAYS, task.id).then(
+		window.omsk.scheduler.insights(STATS_DAYS, task.id).then(
 			result => current && setInsights(result),
 			() => {},
 		);
@@ -238,7 +238,7 @@ function TaskDetail({ task, runs }: { task: ScheduledTask; runs: TaskRun[] }) {
 	// biome-ignore lint/correctness/useExhaustiveDependencies: a saved edit bumps the revision, which adds a row to the list.
 	useEffect(() => {
 		let current = true;
-		window.omp.scheduler.revisions(task.id).then(
+		window.omsk.scheduler.revisions(task.id).then(
 			list => current && setRevisions(list),
 			() => {},
 		);

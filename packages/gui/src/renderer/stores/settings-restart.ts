@@ -31,7 +31,7 @@ function clearTab(tabId: string): void {
 function watchRestarts(): void {
 	if (watching) return;
 	watching = true;
-	window.omp.events.onTabSidecarStatus((payload, tabId) => {
+	window.omsk.events.onTabSidecarStatus((payload, tabId) => {
 		if (payload.status === "starting" || payload.status === "restarting") clearTab(tabId);
 	});
 }

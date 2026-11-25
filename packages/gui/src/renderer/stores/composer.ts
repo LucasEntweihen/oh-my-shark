@@ -4,7 +4,7 @@
  *
  * Writes still flow through the same call sites as the old useState: every
  * producer (typing, paste markers, mentions, history recall, dequeue
- * restore, the `omp:fill-composer` window event) calls setDraft with a value
+ * restore, the `omsk:fill-composer` window event) calls setDraft with a value
  * or an updater.
  */
 import { createStore } from "zustand/vanilla";
@@ -43,7 +43,7 @@ export interface ComposerStore {
 	addFiles: (files: ComposerFile[]) => void;
 	removeFile: (key: string) => void;
 	/**
-	 * The agent's guess at the user's next message after a finished run (omp 19
+	 * The agent's guess at the user's next message after a finished run (omsk 19
 	 * composer predictions), most likely first; empty when there is none. Shown
 	 * over the empty composer, never sent unless the user inserts it.
 	 */

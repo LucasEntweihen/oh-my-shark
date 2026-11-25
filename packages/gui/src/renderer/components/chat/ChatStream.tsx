@@ -818,7 +818,7 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 										type="button"
 										onClick={() =>
 											window.dispatchEvent(
-												new CustomEvent("omp:fill-composer", { detail: { text: prompt, tabId } }),
+												new CustomEvent("omsk:fill-composer", { detail: { text: prompt, tabId } }),
 											)
 										}
 										className="omsk-starter-card omsk-lift group flex min-h-20 items-start gap-3.5 rounded-2xl border border-[var(--omsk-border)] p-4 text-left shadow-[var(--omsk-shadow-sm)] hover:border-[var(--omsk-border-accent)]"

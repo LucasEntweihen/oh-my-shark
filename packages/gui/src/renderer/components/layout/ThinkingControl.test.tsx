@@ -63,8 +63,8 @@ function installMockOmp(): void {
 				data: { thinkingLevel: level === "auto" ? "medium" : level, thinkingConfigured: level },
 			}) as RpcResponse,
 	);
-	const ompWindow = window as unknown as { omp: { rpc: { setThinkingLevel: typeof setThinkingLevelMock } } };
-	ompWindow.omp = { rpc: { setThinkingLevel: setThinkingLevelMock } };
+	const ompWindow = window as unknown as { omsk: { rpc: { setThinkingLevel: typeof setThinkingLevelMock } } };
+	ompWindow.omsk = { rpc: { setThinkingLevel: setThinkingLevelMock } };
 }
 
 let container: TestElement;

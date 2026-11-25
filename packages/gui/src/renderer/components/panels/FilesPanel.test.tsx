@@ -35,7 +35,7 @@ globals.IS_REACT_ACT_ENVIRONMENT = true;
 globals.requestAnimationFrame = (callback: () => void) => setTimeout(callback, 0);
 Object.defineProperties(window, { innerWidth: { value: 1440 }, innerHeight: { value: 900 } });
 
-const ompWindow = window as unknown as { omp?: unknown };
+const ompWindow = window as unknown as { omsk?: unknown };
 
 let root: Root | null = null;
 let resolvePaths: Mock;
@@ -64,7 +64,7 @@ afterEach(async () => {
 		root = null;
 	}
 	document.body.innerHTML = "";
-	delete ompWindow.omp;
+	delete ompWindow.omsk;
 	setFocusedSessionRuntime(null);
 	clearPathResolutionCache();
 	useUiStore.getState().closeFilePreview();
@@ -76,7 +76,7 @@ describe("FilesPanel right-click", () => {
 		const onDisk: IpcResolvedPath = { absolutePath: "/work/b/README.md", kind: "file", relativePath: "README.md" };
 		resolvePaths = vi.fn(async (paths: string[]) => paths.map(() => onDisk));
 		revealPath = vi.fn(async () => ({ ok: true }));
-		ompWindow.omp = {
+		ompWindow.omsk = {
 			fs: {
 				explore: vi.fn(async () => ({
 					ok: true,
@@ -127,7 +127,7 @@ describe("FilesPanel preview", () => {
 	const text = (content: string) => ({ ok: true, content, truncated: false, binary: false, size: content.length });
 
 	async function open(path: string, fs: Record<string, unknown>, line?: number): Promise<void> {
-		ompWindow.omp = {
+		ompWindow.omsk = {
 			fs: { explore: vi.fn(async () => ({ ok: true, entries: [], truncated: false })), ...fs },
 			system: { resolvePaths: vi.fn(async (paths: string[]) => paths.map(() => null)) },
 		};

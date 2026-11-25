@@ -35,7 +35,7 @@ export const TRANSIENT_RETRY_DELAY_MS = 10 * 60_000;
 export const UNREVIEWED_WORKTREE_MAX_AGE_MS = 14 * 86_400_000;
 
 /**
- * Search and read tools only: nothing in this set writes or executes. omp
+ * Search and read tools only: nothing in this set writes or executes. omsk
  * refuses to start when `--tools` names a tool its settings turn off, so the
  * list holds only tools that are on by default; `ast_grep` joins on its own
  * when the user enabled it, because `grep` is listed. `find` stays out: it is
@@ -43,7 +43,7 @@ export const UNREVIEWED_WORKTREE_MAX_AGE_MS = 14 * 86_400_000;
  */
 export const READ_ONLY_TOOLS = ["read", "glob", "grep", "lsp", "web_search", "todo"];
 
-/** omp's exit code for a rejected command line (a bad flag or tool list). */
+/** omsk's exit code for a rejected command line (a bad flag or tool list). */
 const USAGE_EXIT = /^Exit code 2\b/;
 
 /**

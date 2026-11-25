@@ -1,6 +1,6 @@
 /**
  * ProviderConfigDialog: add / edit / delete third-party model providers stored
- * in the agent's models.yml, via the window.omp.models IPC surface.
+ * in the agent's models.yml, via the window.omsk.models IPC surface.
  *
  * List mode shows every configured provider (custom ones get Edit/Delete,
  * built-ins are read-only). Form mode validates and upserts; the agent
@@ -375,7 +375,7 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 		setSubmitting(true);
 		setSubmitError(null);
 		try {
-			await window.omp.models.upsertProvider(input);
+			await window.omsk.models.upsertProvider(input);
 			try {
 				const catalog = await refreshProviders(true);
 				const discoveryError = catalog.discoveryStates.find(
@@ -873,7 +873,7 @@ export function ProviderConfigDialog({ open, onClose, editProvider = null }: Pro
 		setLoading(true);
 		setListError(null);
 		try {
-			setProviders(await window.omp.models.listProviders());
+			setProviders(await window.omsk.models.listProviders());
 		} catch (cause) {
 			setListError(describeError(cause));
 		} finally {
@@ -894,7 +894,7 @@ export function ProviderConfigDialog({ open, onClose, editProvider = null }: Pro
 		if (!pendingDelete) return;
 		setDeleting(true);
 		try {
-			await window.omp.models.deleteProvider(pendingDelete.id);
+			await window.omsk.models.deleteProvider(pendingDelete.id);
 			try {
 				await refreshProviders(true);
 			} catch (cause) {

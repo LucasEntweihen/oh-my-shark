@@ -30,7 +30,7 @@ export function UpdateBanner() {
 				<span className="min-w-0 flex-1 truncate text-(--omsk-text)">
 					{t("updater.available", { version: status.version })}
 				</span>
-				<Button size="sm" onClick={() => void window.omp.updater.download()}>
+				<Button size="sm" onClick={() => void window.omsk.updater.download()}>
 					{status.mode === "manual" ? t("updater.downloadInstaller") : t("updater.download")}
 				</Button>
 				<button
@@ -78,7 +78,7 @@ export function UpdateBanner() {
 						<div className="text-(--omsk-text)">{t("updater.installerReady", { version: status.version })}</div>
 						<div className="mt-0.5 text-omsk-xs text-(--omsk-dim)">{t("updater.manualInstructions")}</div>
 					</div>
-					<Button size="sm" onClick={() => void window.omp.updater.apply()}>
+					<Button size="sm" onClick={() => void window.omsk.updater.apply()}>
 						{t("updater.openInstaller")}
 					</Button>
 				</div>
@@ -90,7 +90,7 @@ export function UpdateBanner() {
 				<span className="min-w-0 flex-1 truncate text-(--omsk-text)">
 					{t("updater.ready", { version: status.version })}
 				</span>
-				<Button size="sm" onClick={() => void window.omp.updater.apply()}>
+				<Button size="sm" onClick={() => void window.omsk.updater.apply()}>
 					{t("updater.restart")}
 				</Button>
 			</div>
@@ -105,7 +105,7 @@ export function UpdateBanner() {
 			<div className="flex items-center gap-2 border-b border-(--omsk-border-muted) bg-transparent px-3 py-1.5 text-omsk-md">
 				<AlertTriangle size={13} className="shrink-0 text-(--omsk-error)" />
 				<span className="min-w-0 flex-1 text-(--omsk-error)">{describeError(status.message)}</span>
-				<Button size="sm" onClick={() => void window.omp.updater.check()}>
+				<Button size="sm" onClick={() => void window.omsk.updater.check()}>
 					{t("updater.retry")}
 				</Button>
 				<button

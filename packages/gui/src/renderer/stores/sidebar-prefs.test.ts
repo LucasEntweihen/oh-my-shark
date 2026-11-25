@@ -11,7 +11,7 @@ import { useToastStore } from "./toast";
 
 const get = vi.fn(async (_key: string) => null as unknown);
 const set = vi.fn(async (_key: string, _value: unknown) => {});
-(globalThis as Record<string, unknown>).window = { omp: { prefs: { get, set } } };
+(globalThis as Record<string, unknown>).window = { omsk: { prefs: { get, set } } };
 
 afterEach(() => {
 	get.mockClear();

@@ -14,7 +14,7 @@ Object.assign(window, { setInterval, clearInterval, setTimeout, clearTimeout });
 
 const paths: string[] = [];
 function serve(reply: unknown): void {
-	(window as unknown as { omp: unknown }).omp = {
+	(window as unknown as { omsk: unknown }).omsk = {
 		stats: {
 			fetch: async (path: string) => {
 				paths.push(path);

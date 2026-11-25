@@ -34,7 +34,7 @@ export interface PluginEffects {
 }
 
 /** Manifest locations in the agent's precedence order, relative to the plugin root. */
-export const PLUGIN_MANIFEST_PATHS = [".omp-plugin/plugin.json", "plugin.json", ".claude-plugin/plugin.json"] as const;
+export const PLUGIN_MANIFEST_PATHS = [".omsk-plugin/plugin.json", "plugin.json", ".claude-plugin/plugin.json"] as const;
 const DEFAULT_MCP_PATHS = [".mcp.json", "mcp.json"] as const;
 const DEFAULT_LSP_PATHS = [".lsp.json", "lsp.json"] as const;
 const DEFAULT_HOOKS_PATH = "hooks/hooks.json";
@@ -163,8 +163,8 @@ function summarizeHookEvents(config: unknown): string[] {
 }
 
 function declaresExtension(packageJson: unknown): boolean {
-	if (!isRecord(packageJson) || !isRecord(packageJson.omp)) return false;
-	const { extensions } = packageJson.omp;
+	if (!isRecord(packageJson) || !isRecord(packageJson.omsk)) return false;
+	const { extensions } = packageJson.omsk;
 	return Array.isArray(extensions) && extensions.length > 0;
 }
 

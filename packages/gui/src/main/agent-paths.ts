@@ -10,7 +10,7 @@ export function agentDir(): string {
 	const candidates = [
 		path.join(home, ".omsk", "agent"),
 		path.join(home, ".ohms", "agent"),
-		path.join(home, ".omp", "agent"),
+		path.join(home, ".omsk", "agent"),
 	];
 	for (const candidate of candidates) {
 		if (fs.existsSync(candidate)) return candidate;

@@ -34,13 +34,13 @@ function success(data: unknown): RpcResponse {
 	return { type: "response", command: "test", success: true, data };
 }
 
-/** window.omp stub (composer-submit.test.ts pattern): the wizard only touches it on submit/test. */
+/** window.omsk stub (composer-submit.test.ts pattern): the wizard only touches it on submit/test. */
 function installMockOmp(): MockMcpRpc {
 	const rpc: MockMcpRpc = {
 		mcpAdd: vi.fn(async () => success({ added: true })),
 		mcpTest: vi.fn(async () => success({ ok: true, toolNames: [], toolCount: 0 })),
 	};
-	(globalThis as Record<string, unknown>).window = { omp: { rpc } };
+	(globalThis as Record<string, unknown>).window = { omsk: { rpc } };
 	return rpc;
 }
 

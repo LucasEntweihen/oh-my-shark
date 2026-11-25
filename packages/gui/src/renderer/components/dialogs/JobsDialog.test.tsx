@@ -24,7 +24,7 @@ Object.assign(globalThis as Record<string, unknown>, {
 });
 
 const getJobs = vi.fn<() => Promise<RpcResponse>>();
-(window as unknown as { omp: { rpc: { getJobs: typeof getJobs } } }).omp = { rpc: { getJobs } };
+(window as unknown as { omsk: { rpc: { getJobs: typeof getJobs } } }).omsk = { rpc: { getJobs } };
 
 const { createRoot } = await import("react-dom/client");
 const { JobsDialog } = await import("./JobsDialog");

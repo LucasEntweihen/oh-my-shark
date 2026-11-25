@@ -20,7 +20,7 @@ export type { RpcWorkspaceDirectory };
 
 /** Native directory picker (Electron openDirectory); undefined when cancelled. */
 export async function pickWorkspaceDirectory(): Promise<string | undefined> {
-	const paths = await window.omp.system.showOpenDialog(undefined, { directory: true });
+	const paths = await window.omsk.system.showOpenDialog(undefined, { directory: true });
 	return paths?.[0];
 }
 
@@ -31,7 +31,7 @@ function directoriesOf(response: RpcResponse): RpcWorkspaceDirectory[] {
 
 /** add_directory; returns the post-add list, or null on refusal (error toast shown). */
 export async function addWorkspaceDirectory(path: string): Promise<RpcWorkspaceDirectory[] | null> {
-	const response = await window.omp.rpc.addDirectory(path);
+	const response = await window.omsk.rpc.addDirectory(path);
 	if (!response.success) {
 		toast({ variant: "error", title: translate("workspaceDirs.add"), message: response.error });
 		return null;
@@ -42,7 +42,7 @@ export async function addWorkspaceDirectory(path: string): Promise<RpcWorkspaceD
 
 /** remove_directory; returns the post-removal list, or null on refusal (error toast shown). */
 export async function removeWorkspaceDirectory(path: string): Promise<RpcWorkspaceDirectory[] | null> {
-	const response = await window.omp.rpc.removeDirectory(path);
+	const response = await window.omsk.rpc.removeDirectory(path);
 	if (!response.success) {
 		toast({ variant: "error", title: translate("workspaceDirs.remove"), message: response.error });
 		return null;
@@ -90,7 +90,7 @@ export async function pickAndMoveSession(tabId = focusedRuntimeTabId()): Promise
 			});
 			return false;
 		}
-		const rpc = runtime ? createSessionRpcClient(runtime.command) : window.omp.rpc;
+		const rpc = runtime ? createSessionRpcClient(runtime.command) : window.omsk.rpc;
 		const response = await rpc.moveSession(path);
 		if (!response.success) throw new Error(response.error);
 		const cwd = (response.data as { cwd?: string } | undefined)?.cwd ?? path;

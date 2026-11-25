@@ -44,7 +44,7 @@ const getSshHosts = vi.fn(
 const sshManage = vi.fn(async (): Promise<RpcResponse> => ok("ssh_manage", { deleted: true }));
 
 Object.assign(window as unknown as Record<string, unknown>, {
-	omp: {
+	omsk: {
 		rpc: {
 			getSshHosts,
 			sshManage,

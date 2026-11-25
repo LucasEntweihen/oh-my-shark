@@ -36,7 +36,7 @@ import { Kbd, Spinner } from "../common";
 import { DIALOG_OVERLAY_Z, isTopmostDialog, registerDialogLayer } from "../common/dialog-layer";
 import { commandIcon } from "./command-icons";
 
-const RECENT_KEY = "omp.palette.recent";
+const RECENT_KEY = "omsk.palette.recent";
 const RECENT_LIMIT = 5;
 
 function sidecarBlocked(item: CommandMenuItem, ready: boolean): boolean {

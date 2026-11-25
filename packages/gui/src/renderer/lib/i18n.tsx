@@ -10,7 +10,7 @@ export type Locale = Record<string, string>;
 export type Lang = Language;
 
 const LOCALES: Record<Lang, Locale> = { en, pt, ru, th, zh };
-const LANG_KEY = "omp.lang";
+const LANG_KEY = "omsk.lang";
 
 function readStoredLanguage(): Lang | undefined {
 	try {
@@ -73,7 +73,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 	const userSelected = useRef(false);
 
 	useEffect(() => {
-		const prefs = window.omp?.prefs;
+		const prefs = window.omsk?.prefs;
 		if (!prefs) return;
 		const stored = readStoredLanguage();
 		let cancelled = false;
@@ -116,7 +116,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 		userSelected.current = true;
 		setLangState(next);
 		storeLanguage(next);
-		void window.omp?.prefs?.set("language", next).catch(() => {});
+		void window.omsk?.prefs?.set("language", next).catch(() => {});
 	}, []);
 
 	const t = useCallback(

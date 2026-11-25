@@ -9,12 +9,12 @@ export function useTabRpc(): TabRpc {
 	const runtime = useSessionRuntime();
 	return useMemo(() => {
 		if (runtime) return createTabRpc(runtime.command);
-		return typeof window !== "undefined" && window.omp?.rpc ? window.omp.rpc : createTabRpc(activeTabCommand);
+		return typeof window !== "undefined" && window.omsk?.rpc ? window.omsk.rpc : createTabRpc(activeTabCommand);
 	}, [runtime]);
 }
 
 /** Capture the selected task once for an imperative action, before its first await. */
 export function focusedTabRpc(): TabRpc {
 	const runtime = focusedSessionRuntime();
-	return runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	return runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 }

@@ -380,7 +380,7 @@ providers:
 				apiKey: "sk-test",
 				models: [{ id: "model-a" }],
 			});
-			// ProvidersWindow tells the user `~/.omp/agent/models.yml`.
+			// ProvidersWindow tells the user `~/.omsk/agent/models.yml`.
 			expect(modelsPath()).toBe(join(testDir, "models.yml"));
 			expect(existsSync(join(testDir, "models.yaml"))).toBe(false);
 		});

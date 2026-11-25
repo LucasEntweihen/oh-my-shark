@@ -1,8 +1,8 @@
 /**
- * Watches what omp learns outside any one window: auto-learned skills
- * (~/.omp/agent/managed-skills) and per-project memory
- * (~/.omp/agent/memories). Either can change from a background capture or
- * another omp process, so the renderer is told instead of polling. Bursts
+ * Watches what omsk learns outside any one window: auto-learned skills
+ * (~/.omsk/agent/managed-skills) and per-project memory
+ * (~/.omsk/agent/memories). Either can change from a background capture or
+ * another omsk process, so the renderer is told instead of polling. Bursts
  * (a consolidation rewrites several files) collapse into one notice.
  */
 import { join, relative, sep } from "node:path";

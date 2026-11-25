@@ -33,7 +33,7 @@ export function useWorkspaceExplorer(cwd: string, tabId: string | null, expanded
 			active.current.add(path);
 			let result: IpcFsListResult;
 			try {
-				result = await window.omp.fs.explore({ path, tabId: tabId ?? undefined, showIgnored });
+				result = await window.omsk.fs.explore({ path, tabId: tabId ?? undefined, showIgnored });
 			} catch (error) {
 				result = { ok: false, entries: [], truncated: false, error: describeError(error) };
 			}
@@ -54,7 +54,7 @@ export function useWorkspaceExplorer(cwd: string, tabId: string | null, expanded
 		const request = { showIgnored, tabId: tabId ?? undefined };
 		const timer = window.setTimeout(() => {
 			started = true;
-			void window.omp.fs
+			void window.omsk.fs
 				.explore({ ...request, query: term })
 				.then(result => {
 					if (!cancelled) setSearch(result);
@@ -66,7 +66,7 @@ export function useWorkspaceExplorer(cwd: string, tabId: string | null, expanded
 		return () => {
 			cancelled = true;
 			window.clearTimeout(timer);
-			if (started) void window.omp.fs.explore({ ...request, query: "" }).catch(() => {});
+			if (started) void window.omsk.fs.explore({ ...request, query: "" }).catch(() => {});
 		};
 	}, [term, cwd, tabId, showIgnored, rootDirectory]);
 

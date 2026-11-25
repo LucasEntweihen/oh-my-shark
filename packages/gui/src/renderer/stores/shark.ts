@@ -82,10 +82,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function resolveSharkBridge(command?: TabCommand, tabId?: string): SharkBridge {
-	const hasPreload = typeof window !== "undefined" && window.omp?.shark != null;
+	const hasPreload = typeof window !== "undefined" && window.omsk?.shark != null;
 	const isFocusedOrUnbound = !command || command === activeTabCommand || !tabId || tabId === focusedRuntimeTabId();
 	if (hasPreload && isFocusedOrUnbound) {
-		return window.omp.shark;
+		return window.omsk.shark;
 	}
 	const exec = command ?? activeTabCommand;
 	return {

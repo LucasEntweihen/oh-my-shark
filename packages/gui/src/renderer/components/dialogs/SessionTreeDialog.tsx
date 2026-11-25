@@ -470,7 +470,7 @@ export function SessionTreeDialog() {
 		const sessionFile = useSessionStore.getState().sessionFile;
 		if (sessionFile) {
 			try {
-				const owner = await window.omp.tabs.getSessionOwner(sessionFile);
+				const owner = await window.omsk.tabs.getSessionOwner(sessionFile);
 				if (owner && owner.tabId !== useTabsStore.getState().activeTabId) {
 					await routeToSessionOwner(owner, sessionFile);
 					close();
@@ -500,7 +500,7 @@ export function SessionTreeDialog() {
 			}
 			if (data.editorText !== undefined) {
 				window.dispatchEvent(
-					new CustomEvent("omp:fill-composer", { detail: { text: data.editorText, images: data.editorImages } }),
+					new CustomEvent("omsk:fill-composer", { detail: { text: data.editorText, images: data.editorImages } }),
 				);
 			}
 			if (tabId) await hydrateTabSession(tabId);
@@ -534,7 +534,7 @@ export function SessionTreeDialog() {
 			}
 			const data = response.data as { sessionPath?: string } | undefined;
 			if (!data?.sessionPath) return;
-			const opened = await window.omp.sessions.openInNewWindow({ sessionPath: data.sessionPath });
+			const opened = await window.omsk.sessions.openInNewWindow({ sessionPath: data.sessionPath });
 			if (!opened) {
 				toast({ variant: "error", message: t("sidebar.newWindowFailed") });
 				return;

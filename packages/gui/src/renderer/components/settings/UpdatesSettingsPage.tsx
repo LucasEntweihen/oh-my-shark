@@ -50,7 +50,7 @@ export function UpdatesSettingsPage() {
 		setChecking(true);
 		setCoreError(undefined);
 		const [appResult, coreResult] = await Promise.allSettled([
-			window.omp.updater.check(),
+			window.omsk.updater.check(),
 			sidecarReady ? tabRpc.getOmpUpdate() : Promise.resolve(null),
 		]);
 		setStatus(
@@ -78,7 +78,7 @@ export function UpdatesSettingsPage() {
 	}, [setStatus, sidecarReady, t, tabRpc.getOmpUpdate]);
 
 	useEffect(() => {
-		void window.omp.updater.version().then(setGuiVersion);
+		void window.omsk.updater.version().then(setGuiVersion);
 		void check();
 	}, [check]);
 
@@ -152,7 +152,7 @@ export function UpdatesSettingsPage() {
 						{status.state === "available" && (
 							<Button
 								icon={<Download size={13} />}
-								onClick={() => void window.omp.updater.download()}
+								onClick={() => void window.omsk.updater.download()}
 								size="sm"
 								variant="primary"
 							>
@@ -165,7 +165,7 @@ export function UpdatesSettingsPage() {
 						{status.state === "downloaded" && (
 							<Button
 								icon={status.mode === "manual" ? <FolderOpen size={13} /> : <RotateCcw size={13} />}
-								onClick={() => void window.omp.updater.apply()}
+								onClick={() => void window.omsk.updater.apply()}
 								size="sm"
 								variant="primary"
 							>

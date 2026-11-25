@@ -76,7 +76,7 @@ export function SidecarBanner() {
 				type="button"
 				onClick={() => {
 					clearSidecarError();
-					void window.omp.sidecar.restart();
+					void window.omsk.sidecar.restart();
 				}}
 				className="omsk-pressable flex shrink-0 items-center gap-1.5 rounded-md border border-[var(--omsk-border-muted)] px-2.5 py-1 text-omsk-sm font-medium text-[var(--omsk-text)] hover:bg-[var(--omsk-selected-bg)]"
 			>

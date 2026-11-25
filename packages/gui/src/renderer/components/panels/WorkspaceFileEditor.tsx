@@ -33,7 +33,7 @@ export function connectFileDraftGuard(): () => void {
 			draft => draft.saving || draft.content !== draft.initial,
 		);
 		if (dirty === previous) return;
-		window.omp.app.setUnsavedFiles(dirty);
+		window.omsk.app.setUnsavedFiles(dirty);
 		previous = dirty;
 	};
 	report();
@@ -87,7 +87,7 @@ export function WorkspaceFileEditor({
 		const current = useFileDrafts.getState().drafts.get(draftId);
 		if (!current || current.saving || current.content === current.initial) return;
 		setFileDraft(draftId, { ...current, saving: true, failure: undefined });
-		const response = await window.omp.fs
+		const response = await window.omsk.fs
 			.saveEdit({ path, tabId: tabId ?? undefined, revision: current.revision, content: current.content })
 			.catch((error): { ok: false; reason: "io"; detail: string } => ({
 				ok: false,

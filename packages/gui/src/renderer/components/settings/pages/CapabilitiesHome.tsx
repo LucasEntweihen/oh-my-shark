@@ -1,5 +1,5 @@
 /**
- * Capabilities home page: the OMP Capabilities tab in settings that showcases
+ * Capabilities home page: the OMSK Capabilities tab in settings that showcases
  * differentiating workflows with discovery cards and direct actions.
  */
 

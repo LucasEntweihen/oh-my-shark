@@ -126,9 +126,9 @@ interface MockOmp {
 
 type TabStatusHandler = (payload: IpcTabStatusPayload) => void;
 
-function installMockOmp(): { omp: MockOmp; emitTabStatus: TabStatusHandler } {
+function installMockOmp(): { omsk: MockOmp; emitTabStatus: TabStatusHandler } {
 	let tabStatusHandler: TabStatusHandler = () => {};
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		tabs: {
 			list: vi.fn(async () => []),
 			spawn: vi.fn(async () => null),
@@ -155,8 +155,8 @@ function installMockOmp(): { omp: MockOmp; emitTabStatus: TabStatusHandler } {
 			setSubagentSubscription: vi.fn(async () => ok({})),
 		},
 	};
-	(window as unknown as { omp: MockOmp }).omp = omp;
-	return { omp, emitTabStatus: payload => tabStatusHandler(payload) };
+	(window as unknown as { omsk: MockOmp }).omsk = omsk;
+	return { omsk, emitTabStatus: payload => tabStatusHandler(payload) };
 }
 
 /** Seed two tabs without going through spawn: t0 active, t1 background. */
@@ -223,7 +223,7 @@ function fillLiveStores(tag: string): void {
 	useExtensionUiStore.getState().setWidget(`widget-${tag}`, [`Widget ${tag}`]);
 }
 
-let omp: MockOmp;
+let omsk: MockOmp;
 let emitTabStatus: TabStatusHandler;
 
 function resetAll(): void {
@@ -246,14 +246,14 @@ function resetAll(): void {
 afterEach(() => {
 	resetAll();
 	vi.restoreAllMocks();
-	({ omp, emitTabStatus } = installMockOmp());
+	({ omsk, emitTabStatus } = installMockOmp());
 });
 
-({ omp, emitTabStatus } = installMockOmp());
+({ omsk, emitTabStatus } = installMockOmp());
 
 describe("tabs store boot reconciliation", () => {
 	it("adopts the window's initial sidecar as tab 0 and never duplicates it", async () => {
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
 
 		await useTabsStore.getState().reconcileTabs();
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0"]);
@@ -276,28 +276,28 @@ describe("tabs store boot reconciliation", () => {
 	it("keeps renderer-known tabs the reply misses and re-converges active on reload", async () => {
 		seedTabs("t1");
 		// Main knows only two of three tabs (the third spawned mid-reply).
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), tabInfo("t1", "/beta")]);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), tabInfo("t1", "/beta")]);
 
 		await useTabsStore.getState().reconcileTabs();
 
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0", "t1", "t2"]);
 		expect(useTabsStore.getState().activeTabId).toBe("t1");
 		// >1 tabs after a renderer reload: main re-converges to the renderer's pick.
-		expect(omp.tabs.setActive).toHaveBeenCalledWith("t1");
+		expect(omsk.tabs.setActive).toHaveBeenCalledWith("t1");
 	});
 
 	it("restores main's persisted active tab when renderer state is empty", async () => {
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), { ...tabInfo("t1", "/beta"), active: true }]);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), { ...tabInfo("t1", "/beta"), active: true }]);
 
 		await useTabsStore.getState().reconcileTabs();
 
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0", "t1"]);
 		expect(useTabsStore.getState().activeTabId).toBe("t1");
-		expect(omp.tabs.setActive).toHaveBeenCalledWith("t1");
+		expect(omsk.tabs.setActive).toHaveBeenCalledWith("t1");
 	});
 
 	it("retains the restored transcript path before session metadata arrives", async () => {
-		omp.tabs.list.mockResolvedValue([
+		omsk.tabs.list.mockResolvedValue([
 			{ ...tabInfo("t0", "/alpha"), sessionPath: "/sessions/restored.jsonl", active: true },
 		]);
 
@@ -323,7 +323,7 @@ describe("tabs store boot reconciliation", () => {
 		await useTabsStore.getState().switchTab("t1");
 		const oldRuntime = sessionRuntime("t0");
 		expect(oldRuntime).not.toBeNull();
-		omp.tabs.list.mockResolvedValue([
+		omsk.tabs.list.mockResolvedValue([
 			{ kind: "agent", tabId: "t0", cwd: "/alpha", status: "ready", title: null, sessionId: "s-new" },
 			tabInfo("t1", "/beta"),
 			tabInfo("t2", "/gamma"),
@@ -362,50 +362,50 @@ describe("tabs store boot reconciliation", () => {
 
 describe("tabs store switch", () => {
 	it("openTab spawns in the current cwd, registers the tab, and switches to it", async () => {
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
 		await useTabsStore.getState().reconcileTabs();
 		useSessionStore.setState({ cwd: "/alpha" });
-		omp.tabs.spawn.mockResolvedValue({ tabId: "t1" });
+		omsk.tabs.spawn.mockResolvedValue({ tabId: "t1" });
 
 		const tabId = await useTabsStore.getState().openTab();
 
 		expect(tabId).toBe("t1");
-		expect(omp.tabs.spawn).toHaveBeenCalledWith({ cwd: "/alpha", sessionPath: undefined, kind: "agent" });
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith({ cwd: "/alpha", sessionPath: undefined, kind: "agent" });
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0", "t1"]);
 		expect(useTabsStore.getState().activeTabId).toBe("t1");
 	});
 
 	it("opens Work as an agent in the main-owned default workspace", async () => {
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
 		await useTabsStore.getState().reconcileTabs();
 		useSessionStore.setState({ cwd: "/alpha" });
-		omp.tabs.spawn.mockResolvedValue({ tabId: "t-work", cwd: "/Users/test/.omp/work" });
+		omsk.tabs.spawn.mockResolvedValue({ tabId: "t-work", cwd: "/Users/test/.omsk/work" });
 
 		const tabId = await useTabsStore.getState().openTab({ work: true });
 
 		expect(tabId).toBe("t-work");
-		expect(omp.tabs.spawn).toHaveBeenCalledWith({
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith({
 			cwd: undefined,
 			sessionPath: undefined,
 			kind: "agent",
 			defaultWorkspace: true,
 			worktree: undefined,
 		});
-		expect(useTabsStore.getState().tabs.find(tab => tab.id === "t-work")?.cwd).toBe("/Users/test/.omp/work");
+		expect(useTabsStore.getState().tabs.find(tab => tab.id === "t-work")?.cwd).toBe("/Users/test/.omsk/work");
 	});
 
 	it("hydrates a fresh tab when its ready push beats full route wiring", async () => {
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
 		await useTabsStore.getState().reconcileTabs();
 		useSessionStore.setState({ cwd: "/alpha", status: "ready" });
-		omp.tabs.spawn.mockResolvedValue({ tabId: "t1" });
+		omsk.tabs.spawn.mockResolvedValue({ tabId: "t1" });
 		const route = Promise.withResolvers<boolean>();
-		omp.tabs.setActive.mockReturnValueOnce(route.promise);
+		omsk.tabs.setActive.mockReturnValueOnce(route.promise);
 
 		const opening = useTabsStore.getState().openTab({ kind: "chat" });
 		await Promise.resolve();
 		await Promise.resolve();
-		expect(omp.tabs.setActive).toHaveBeenCalledWith("t1");
+		expect(omsk.tabs.setActive).toHaveBeenCalledWith("t1");
 
 		// The light per-tab channel reports ready before main finishes attaching
 		// the full active-tab channel, so no full ready event will replay.
@@ -415,31 +415,31 @@ describe("tabs store switch", () => {
 
 		expect(useSessionStore.getState().status).toBe("ready");
 		expect(useSessionStore.getState().sessionId).toBe("srv");
-		expect(omp.rpc.getState).toHaveBeenCalled();
+		expect(omsk.rpc.getState).toHaveBeenCalled();
 	});
 
 	it("reports the pool cap without mutating the tab list", async () => {
 		seedTabs();
-		omp.tabs.spawn.mockResolvedValue(null);
+		omsk.tabs.spawn.mockResolvedValue(null);
 
 		const tabId = await useTabsStore.getState().openTab();
 
 		expect(tabId).toBeNull();
 		expect(useTabsStore.getState().tabs).toHaveLength(3);
 		expect(useTabsStore.getState().activeTabId).toBe("t0");
-		expect(omp.tabs.setActive).not.toHaveBeenCalled();
+		expect(omsk.tabs.setActive).not.toHaveBeenCalled();
 	});
 
 	it("surfaces a kind-mismatch refusal as an error toast and adds no tab", async () => {
 		seedTabs();
-		omp.tabs.spawn.mockResolvedValue({ tabId: null, refusal: "kind-mismatch" });
+		omsk.tabs.spawn.mockResolvedValue({ tabId: null, refusal: "kind-mismatch" });
 
 		const tabId = await useTabsStore.getState().openTab({ sessionPath: "/sessions/agent.jsonl", kind: "chat" });
 
 		expect(tabId).toBeNull();
 		expect(useTabsStore.getState().tabs).toHaveLength(3);
 		expect(useToastStore.getState().toasts.some(toast => toast.variant === "error")).toBe(true);
-		expect(omp.tabs.setActive).not.toHaveBeenCalled();
+		expect(omsk.tabs.setActive).not.toHaveBeenCalled();
 	});
 
 	it("fires SET_ACTIVE_TAB before hydrating from the target sidecar", async () => {
@@ -447,10 +447,10 @@ describe("tabs store switch", () => {
 
 		await useTabsStore.getState().switchTab("t1");
 
-		expect(omp.tabs.setActive).toHaveBeenCalledWith("t1");
-		expect(omp.rpc.getState).toHaveBeenCalled();
-		const setActiveOrder = omp.tabs.setActive.mock.invocationCallOrder[0];
-		const getStateOrder = omp.rpc.getState.mock.invocationCallOrder[0];
+		expect(omsk.tabs.setActive).toHaveBeenCalledWith("t1");
+		expect(omsk.rpc.getState).toHaveBeenCalled();
+		const setActiveOrder = omsk.tabs.setActive.mock.invocationCallOrder[0];
+		const getStateOrder = omsk.rpc.getState.mock.invocationCallOrder[0];
 		expect(setActiveOrder).toBeDefined();
 		expect(getStateOrder).toBeDefined();
 		expect(setActiveOrder!).toBeLessThan(getStateOrder!);
@@ -477,7 +477,7 @@ describe("tabs store switch", () => {
 		seedTabs();
 		const firstRoute = Promise.withResolvers<boolean>();
 		const secondRoute = Promise.withResolvers<boolean>();
-		omp.tabs.setActive.mockReturnValueOnce(firstRoute.promise).mockReturnValueOnce(secondRoute.promise);
+		omsk.tabs.setActive.mockReturnValueOnce(firstRoute.promise).mockReturnValueOnce(secondRoute.promise);
 
 		const firstSwitch = useTabsStore.getState().switchTab("t1");
 		const secondSwitch = useTabsStore.getState().switchTab("t2");
@@ -486,20 +486,20 @@ describe("tabs store switch", () => {
 		// UI selection remains immediate even while main-process routing catches up.
 		expect(useTabsStore.getState().activeTabId).toBe("t2");
 		expect(acceptsActiveTabEvents()).toBe(false);
-		expect(omp.tabs.setActive).toHaveBeenCalledTimes(1);
+		expect(omsk.tabs.setActive).toHaveBeenCalledTimes(1);
 
 		firstRoute.resolve(true);
 		await firstSwitch;
-		expect(omp.tabs.setActive).toHaveBeenCalledTimes(2);
+		expect(omsk.tabs.setActive).toHaveBeenCalledTimes(2);
 		// The superseded t1 route must not hydrate into t2's visible stores.
 		expect(acceptsActiveTabEvents()).toBe(false);
-		expect(omp.rpc.getState).not.toHaveBeenCalled();
+		expect(omsk.rpc.getState).not.toHaveBeenCalled();
 
 		secondRoute.resolve(true);
 		await Promise.all([firstSwitch, secondSwitch]);
 
-		expect(omp.tabs.setActive.mock.calls.map(call => call[0])).toEqual(["t1", "t2"]);
-		expect(omp.rpc.getState).toHaveBeenCalledTimes(1);
+		expect(omsk.tabs.setActive.mock.calls.map(call => call[0])).toEqual(["t1", "t2"]);
+		expect(omsk.rpc.getState).toHaveBeenCalledTimes(1);
 		expect(useTabsStore.getState().activeTabId).toBe("t2");
 		expect(acceptsActiveTabEvents()).toBe(true);
 	});
@@ -510,7 +510,7 @@ describe("tabs store switch", () => {
 
 		// Gate the transcript so the restored (pre-hydrate) state is observable.
 		const gate = Promise.withResolvers<RpcResponse>();
-		omp.rpc.getTranscript.mockReturnValueOnce(gate.promise);
+		omsk.rpc.getTranscript.mockReturnValueOnce(gate.promise);
 		const firstSwitch = useTabsStore.getState().switchTab("t1");
 
 		// t1 has no bundle: stores reset to empty instantly, before any RPC settles.
@@ -539,7 +539,7 @@ describe("tabs store switch", () => {
 		});
 		expect(useExtensionUiStore.getState().pendingRequests.map(request => request.id)).toEqual(["ui-t1"]);
 		const gate2 = Promise.withResolvers<RpcResponse>();
-		omp.rpc.getTranscript.mockReturnValueOnce(gate2.promise);
+		omsk.rpc.getTranscript.mockReturnValueOnce(gate2.promise);
 		const secondSwitch = useTabsStore.getState().switchTab("t0");
 
 		// Instant restore of t0's parked bundle — every slice, before hydrate.
@@ -623,7 +623,7 @@ describe("tabs store switch", () => {
 
 		// Gate the hydrate so the restored (pre-hydrate) state is observable.
 		const gate = Promise.withResolvers<RpcResponse>();
-		omp.rpc.getTranscript.mockReturnValueOnce(gate.promise);
+		omsk.rpc.getTranscript.mockReturnValueOnce(gate.promise);
 		const switching = useTabsStore.getState().switchTab("t1");
 
 		// Restore paints the run live before hydrate's get_state confirms it.
@@ -643,7 +643,7 @@ describe("tabs store switch", () => {
 		useSessionStore.setState({ isStreaming: true, awaitingModelSince: 1_000 });
 		await useTabsStore.getState().switchTab("t1");
 
-		omp.rpc.getState.mockResolvedValue(ok(serverState({ isStreaming: true })));
+		omsk.rpc.getState.mockResolvedValue(ok(serverState({ isStreaming: true })));
 		const returnedAt = Date.now();
 		await useTabsStore.getState().switchTab("t0");
 
@@ -664,8 +664,8 @@ describe("tabs store switch", () => {
 	it("surfaces a SET_ACTIVE_TAB failure, re-converges from GET_TABS, and hydrates after the retry", async () => {
 		seedTabs();
 		useToastStore.setState({ toasts: [] });
-		omp.tabs.setActive.mockRejectedValueOnce(new Error("routing wedged"));
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), tabInfo("t1", "/beta"), tabInfo("t2", "/gamma")]);
+		omsk.tabs.setActive.mockRejectedValueOnce(new Error("routing wedged"));
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), tabInfo("t1", "/beta"), tabInfo("t2", "/gamma")]);
 
 		await useTabsStore.getState().switchTab("t1");
 
@@ -673,33 +673,33 @@ describe("tabs store switch", () => {
 		expect(useToastStore.getState().toasts.some(toast => toast.title === "Could not switch tab")).toBe(true);
 		// …re-converged from GET_TABS — reconcile retries SET_ACTIVE_TAB for the
 		// renderer's pick, so a transient failure re-points routing here…
-		expect(omp.tabs.list).toHaveBeenCalled();
-		expect(omp.tabs.setActive).toHaveBeenCalledTimes(2);
+		expect(omsk.tabs.list).toHaveBeenCalled();
+		expect(omsk.tabs.setActive).toHaveBeenCalledTimes(2);
 		// …then hydrate paints the target instead of leaving the restored empty
 		// bundle on screen after the successful retry.
-		expect(omp.rpc.getTranscript).toHaveBeenCalledTimes(1);
+		expect(omsk.rpc.getTranscript).toHaveBeenCalledTimes(1);
 	});
 
 	it("treats a false SET_ACTIVE_TAB reply as a routing failure and recovers on retry", async () => {
 		seedTabs();
 		useToastStore.setState({ toasts: [] });
-		omp.tabs.setActive.mockResolvedValueOnce(false);
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), tabInfo("t1", "/beta"), tabInfo("t2", "/gamma")]);
+		omsk.tabs.setActive.mockResolvedValueOnce(false);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), tabInfo("t1", "/beta"), tabInfo("t2", "/gamma")]);
 
 		await useTabsStore.getState().switchTab("t1");
 
 		expect(useToastStore.getState().toasts.some(toast => toast.title === "Could not switch tab")).toBe(true);
-		expect(omp.rpc.getTranscript).toHaveBeenCalledTimes(1);
+		expect(omsk.rpc.getTranscript).toHaveBeenCalledTimes(1);
 	});
 
 	it("does not hydrate when both the tab route and reconciliation route fail", async () => {
 		seedTabs();
-		omp.tabs.setActive.mockResolvedValueOnce(false).mockResolvedValueOnce(false);
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), tabInfo("t1", "/beta"), tabInfo("t2", "/gamma")]);
+		omsk.tabs.setActive.mockResolvedValueOnce(false).mockResolvedValueOnce(false);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), tabInfo("t1", "/beta"), tabInfo("t2", "/gamma")]);
 
 		await useTabsStore.getState().switchTab("t1");
 
-		expect(omp.rpc.getTranscript).not.toHaveBeenCalled();
+		expect(omsk.rpc.getTranscript).not.toHaveBeenCalled();
 	});
 });
 
@@ -730,7 +730,7 @@ describe("tabs store split pairs (gui#30)", () => {
 	it("shows a pair whenever either tab is picked, and a single tab alone without breaking the pair", async () => {
 		seedStrip(3, "t2", [pair("t0", "t1", 0.3)]);
 		const hydrated: string[] = [];
-		(omp.rpc as unknown as { commandForTab: unknown }).commandForTab = vi.fn(
+		(omsk.rpc as unknown as { commandForTab: unknown }).commandForTab = vi.fn(
 			async (tabId: string, command: { type: string }) => {
 				if (command.type === "get_state") hydrated.push(tabId);
 				return command.type === "get_state" ? ok(serverState()) : ok({ messages: [] });
@@ -740,7 +740,7 @@ describe("tabs store split pairs (gui#30)", () => {
 		await useTabsStore.getState().switchTab("t1");
 
 		expect(useTabsStore.getState().split).toEqual(pair("t0", "t1", 0.3));
-		expect(omp.tabs.setView).toHaveBeenLastCalledWith("t1", ["t0", "t1"], [pair("t0", "t1", 0.3)]);
+		expect(omsk.tabs.setView).toHaveBeenLastCalledWith("t1", ["t0", "t1"], [pair("t0", "t1", 0.3)]);
 		// The partner came on screen beside the picked tab, so both hydrate.
 		expect(hydrated.sort()).toEqual(["t0", "t1"]);
 
@@ -748,7 +748,7 @@ describe("tabs store split pairs (gui#30)", () => {
 		expect(useTabsStore.getState().split).toBeNull();
 		expect(useTabsStore.getState().groups).toEqual([pair("t0", "t1", 0.3)]);
 		// Main already holds the pair: the single tab is named alone.
-		expect(omp.tabs.setActive).toHaveBeenLastCalledWith("t2");
+		expect(omsk.tabs.setActive).toHaveBeenLastCalledWith("t2");
 
 		await useTabsStore.getState().switchTab("t0");
 		expect(useTabsStore.getState().activeTabId).toBe("t0");
@@ -765,7 +765,7 @@ describe("tabs store split pairs (gui#30)", () => {
 		expect(state.activeTabId).toBe("t0");
 		expect(state.split).toBe(state.groups[0]);
 		expect(ids()).toEqual(["t0", "t3", "t1", "t2", "t4"]);
-		expect(omp.tabs.setOrder).toHaveBeenLastCalledWith(["t0", "t3", "t1", "t2", "t4"]);
+		expect(omsk.tabs.setOrder).toHaveBeenLastCalledWith(["t0", "t3", "t1", "t2", "t4"]);
 	});
 
 	it("drops a tab into one pane of the shown pair; the tab it replaces stays open on its own", async () => {
@@ -777,7 +777,7 @@ describe("tabs store split pairs (gui#30)", () => {
 		expect(state.groups).toEqual([pair("t0", "t2", 0.7)]);
 		expect(state.activeTabId).toBe("t2");
 		expect(ids()).toEqual(["t0", "t2", "t1", "t3"]);
-		expect(omp.tabs.setView).toHaveBeenLastCalledWith("t2", ["t0", "t2"], [pair("t0", "t2", 0.7)]);
+		expect(omsk.tabs.setView).toHaveBeenLastCalledWith("t2", ["t0", "t2"], [pair("t0", "t2", 0.7)]);
 	});
 
 	it("separates the pair on screen in place, and a background pair without moving the view", async () => {
@@ -791,7 +791,7 @@ describe("tabs store split pairs (gui#30)", () => {
 		await useTabsStore.getState().unsplit("t1");
 		expect(useTabsStore.getState().groups).toEqual([]);
 		expect(useTabsStore.getState().activeTabId).toBe("t1");
-		expect(omp.tabs.setView).toHaveBeenLastCalledWith("t1", ["t1"], []);
+		expect(omsk.tabs.setView).toHaveBeenLastCalledWith("t1", ["t1"], []);
 	});
 
 	it("closing a tab of the shown pair leaves its partner on screen; a background pair just loses it", async () => {
@@ -820,12 +820,12 @@ describe("tabs store split pairs (gui#30)", () => {
 		// Onto its own partner: nothing to move.
 		moveTab("t1", "t2", "after");
 		expect(ids()).toEqual(["t1", "t2", "t0", "t3"]);
-		await vi.waitFor(() => expect(omp.tabs.setOrder).toHaveBeenCalledTimes(2));
-		expect(omp.tabs.setOrder).toHaveBeenLastCalledWith(["t1", "t2", "t0", "t3"]);
+		await vi.waitFor(() => expect(omsk.tabs.setOrder).toHaveBeenCalledTimes(2));
+		expect(omsk.tabs.setOrder).toHaveBeenLastCalledWith(["t1", "t2", "t0", "t3"]);
 	});
 
 	it("rebuilds pairs from main's tab list on reconcile", async () => {
-		omp.tabs.list.mockResolvedValue([
+		omsk.tabs.list.mockResolvedValue([
 			{ ...tabInfo("t0", "/a"), group: { axis: "rows", index: 0, ratio: 0.6, partnerTabId: "t1" } },
 			{ ...tabInfo("t1", "/b"), active: true, group: { axis: "rows", index: 1, ratio: 0.6, partnerTabId: "t0" } },
 			tabInfo("t2", "/c"),
@@ -861,13 +861,13 @@ describe("tabs store split pairs (gui#30)", () => {
 
 describe("tabs store close", () => {
 	it("keeps the last tab open", async () => {
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
 		await useTabsStore.getState().reconcileTabs();
 
 		await useTabsStore.getState().closeTab("t0");
 
 		expect(useTabsStore.getState().tabs).toHaveLength(1);
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 	});
 
 	it("closing the active tab activates its right neighbor first, then releases", async () => {
@@ -879,10 +879,10 @@ describe("tabs store close", () => {
 		expect(state.tabs.map(tab => tab.id)).toEqual(["t0", "t2"]);
 		expect(state.activeTabId).toBe("t2");
 		// Neighbor was activated BEFORE the release hit main.
-		expect(omp.tabs.setActive).toHaveBeenCalledWith("t2");
-		expect(omp.tabs.close).toHaveBeenCalledWith("t1");
-		const setActiveOrder = omp.tabs.setActive.mock.invocationCallOrder[0];
-		const closeOrder = omp.tabs.close.mock.invocationCallOrder[0];
+		expect(omsk.tabs.setActive).toHaveBeenCalledWith("t2");
+		expect(omsk.tabs.close).toHaveBeenCalledWith("t1");
+		const setActiveOrder = omsk.tabs.setActive.mock.invocationCallOrder[0];
+		const closeOrder = omsk.tabs.close.mock.invocationCallOrder[0];
 		expect(setActiveOrder!).toBeLessThan(closeOrder!);
 		// The closed tab's parked bundle is gone.
 		expect(state.bundles.has("t1")).toBe(false);
@@ -904,8 +904,8 @@ describe("tabs store close", () => {
 
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0", "t2"]);
 		expect(useTabsStore.getState().activeTabId).toBe("t0");
-		expect(omp.tabs.setActive).not.toHaveBeenCalled();
-		expect(omp.tabs.close).toHaveBeenCalledWith("t1");
+		expect(omsk.tabs.setActive).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).toHaveBeenCalledWith("t1");
 	});
 });
 
@@ -1047,7 +1047,7 @@ describe("tabs store applyTabStatus", () => {
 		expect(tab?.title).toBeUndefined();
 		expect(tab?.sessionId).toBe("s-new");
 		expect(sessionRuntime("t0")).not.toBe(oldRuntime);
-		omp.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "s-new", cwd: "/old" })));
+		omsk.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "s-new", cwd: "/old" })));
 
 		await useTabsStore.getState().switchTab("t0");
 		expect(useComposerStore.getState().draft).toBe("");
@@ -1085,19 +1085,19 @@ describe("useSessionTabs hook", () => {
 	});
 
 	it("reconciles on mount and subscribes to TAB_STATUS", async () => {
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha")]);
 
 		await mount();
 
-		expect(omp.tabs.list).toHaveBeenCalled();
-		expect(omp.events.onTabStatus).toHaveBeenCalled();
+		expect(omsk.tabs.list).toHaveBeenCalled();
+		expect(omsk.events.onTabStatus).toHaveBeenCalled();
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0"]);
 		expect(useTabsStore.getState().activeTabId).toBe("t0");
 	});
 
 	it("hydrates the restored active tab when it was ready before renderer subscriptions", async () => {
-		omp.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), { ...tabInfo("t1", "/beta"), active: true }]);
-		omp.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "restored", cwd: "/beta" })));
+		omsk.tabs.list.mockResolvedValue([tabInfo("t0", "/alpha"), { ...tabInfo("t1", "/beta"), active: true }]);
+		omsk.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "restored", cwd: "/beta" })));
 
 		await mount();
 		await act(async () => {
@@ -1108,16 +1108,16 @@ describe("useSessionTabs hook", () => {
 
 		expect(useTabsStore.getState().activeTabId).toBe("t1");
 		expect(useSessionStore.getState()).toMatchObject({ sessionId: "restored", cwd: "/beta", status: "ready" });
-		expect(omp.rpc.getTranscript).toHaveBeenCalled();
+		expect(omsk.rpc.getTranscript).toHaveBeenCalled();
 	});
 
 	it("restores transcript and controls when metadata arrives before the boot status snapshot", async () => {
 		ensureTabRuntime("t0");
 		setFocusedSessionRuntime("t0");
 		useSessionStore.setState({ sessionId: "restored", cwd: "/alpha", status: "starting" });
-		omp.tabs.list.mockResolvedValue([{ ...tabInfo("t0", "/alpha"), active: true }]);
-		omp.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "restored", cwd: "/alpha", messageCount: 1 })));
-		omp.rpc.getTranscript.mockResolvedValue(ok({ messages: [msg("restored history")] }));
+		omsk.tabs.list.mockResolvedValue([{ ...tabInfo("t0", "/alpha"), active: true }]);
+		omsk.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "restored", cwd: "/alpha", messageCount: 1 })));
+		omsk.rpc.getTranscript.mockResolvedValue(ok({ messages: [msg("restored history")] }));
 		await mount();
 		await act(async () => {
 			const { promise, resolve } = Promise.withResolvers<void>();
@@ -1138,8 +1138,8 @@ describe("useSessionTabs hook", () => {
 		ensureTabRuntime("t1");
 		setFocusedSessionRuntime("t1");
 		useSessionStore.setState({ sessionId: "restored", status: "starting" });
-		omp.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "restored", messageCount: 1 })));
-		omp.rpc.getTranscript.mockResolvedValue(ok({ messages: [msg("restored history")] }));
+		omsk.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "restored", messageCount: 1 })));
+		omsk.rpc.getTranscript.mockResolvedValue(ok({ messages: [msg("restored history")] }));
 
 		await act(async () => {
 			emitTabStatus({ kind: "chat", tabId: "t1", cwd: "/beta", status: "ready" });
@@ -1181,15 +1181,15 @@ describe("useSessionTabs hook", () => {
 			await promise;
 		});
 
-		expect(omp.rpc.switchSession).toHaveBeenCalledWith("/s.json");
-		expect(omp.rpc.getState).toHaveBeenCalled();
+		expect(omsk.rpc.switchSession).toHaveBeenCalledWith("/s.json");
+		expect(omsk.rpc.getState).toHaveBeenCalled();
 		expect(useTabsStore.getState().tabs[0]?.pendingSessionPath).toBeUndefined();
 
 		// A duplicate ready push must not re-enter the flow.
 		await act(async () => {
 			emitTabStatus({ kind: "agent", tabId: "t1", cwd: "/beta", status: "ready" });
 		});
-		expect(omp.rpc.switchSession).toHaveBeenCalledTimes(1);
+		expect(omsk.rpc.switchSession).toHaveBeenCalledTimes(1);
 	});
 
 	it("skips the ready-time switchSession when the sidecar is already on the pending session", async () => {
@@ -1209,7 +1209,7 @@ describe("useSessionTabs hook", () => {
 		});
 		// Spawned WITH --session /s.json: get_state already reports that file,
 		// so a second switch would only abort the in-flight resume.
-		omp.rpc.getState.mockResolvedValue(ok(serverState({ sessionFile: "/s.json" })));
+		omsk.rpc.getState.mockResolvedValue(ok(serverState({ sessionFile: "/s.json" })));
 		await mount();
 
 		await act(async () => {
@@ -1224,8 +1224,8 @@ describe("useSessionTabs hook", () => {
 
 		// No redundant switch — but the transcript still hydrates and the
 		// pending path is consumed.
-		expect(omp.rpc.switchSession).not.toHaveBeenCalled();
-		expect(omp.rpc.getTranscript).toHaveBeenCalled();
+		expect(omsk.rpc.switchSession).not.toHaveBeenCalled();
+		expect(omsk.rpc.getTranscript).toHaveBeenCalled();
 		expect(useTabsStore.getState().tabs[0]?.pendingSessionPath).toBeUndefined();
 	});
 
@@ -1251,7 +1251,7 @@ describe("useSessionTabs hook", () => {
 			emitTabStatus({ kind: "agent", tabId: "t1", cwd: "/beta", status: "ready" });
 		});
 
-		expect(omp.rpc.switchSession).not.toHaveBeenCalled();
+		expect(omsk.rpc.switchSession).not.toHaveBeenCalled();
 		// Pending path survives for when the user actually switches to t1.
 		expect(useTabsStore.getState().tabs.find(tab => tab.id === "t1")?.pendingSessionPath).toBe("/s.json");
 	});
@@ -1260,11 +1260,11 @@ describe("useSessionTabs hook", () => {
 		seedTabs();
 		useSessionStore.setState({ sessionId: "active" });
 		const commandForTab = vi.fn(async () => ({ type: "response" as const, command: "", success: true as const }));
-		Object.assign(omp.rpc, { commandForTab });
+		Object.assign(omsk.rpc, { commandForTab });
 		try {
 			await mount();
 			commandForTab.mockClear();
-			omp.rpc.setSubagentSubscription.mockClear();
+			omsk.rpc.setSubagentSubscription.mockClear();
 
 			await act(async () => {
 				emitTabStatus({ kind: "agent", tabId: "t1", cwd: "/beta", status: "ready" });
@@ -1274,9 +1274,9 @@ describe("useSessionTabs hook", () => {
 				{ type: "set_subagent_subscription", level: "progress" },
 				undefined,
 			);
-			expect(omp.rpc.setSubagentSubscription).not.toHaveBeenCalled();
+			expect(omsk.rpc.setSubagentSubscription).not.toHaveBeenCalled();
 		} finally {
-			delete (omp.rpc as { commandForTab?: unknown }).commandForTab;
+			delete (omsk.rpc as { commandForTab?: unknown }).commandForTab;
 		}
 	});
 
@@ -1289,7 +1289,7 @@ describe("useSessionTabs hook", () => {
 			setTimeout(resolve, 0);
 			await promise;
 		});
-		omp.rpc.setSubagentSubscription.mockClear();
+		omsk.rpc.setSubagentSubscription.mockClear();
 
 		// Background ready: renderer RPC routes through the ACTIVE tab, so a
 		// background tab's ready must NOT fire the command (it would land on
@@ -1297,12 +1297,12 @@ describe("useSessionTabs hook", () => {
 		await act(async () => {
 			emitTabStatus({ kind: "agent", tabId: "t1", cwd: "/beta", status: "ready" });
 		});
-		expect(omp.rpc.setSubagentSubscription).not.toHaveBeenCalled();
+		expect(omsk.rpc.setSubagentSubscription).not.toHaveBeenCalled();
 
 		await act(async () => {
 			emitTabStatus({ kind: "agent", tabId: "t0", cwd: "/alpha", status: "ready" });
 		});
-		expect(omp.rpc.setSubagentSubscription).toHaveBeenCalledWith("progress");
+		expect(omsk.rpc.setSubagentSubscription).toHaveBeenCalledWith("progress");
 	});
 });
 

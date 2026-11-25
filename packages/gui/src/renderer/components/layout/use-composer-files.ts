@@ -22,7 +22,7 @@ export function useComposerFiles() {
 				imageReads.push(fileToImage(file));
 				continue;
 			}
-			const path = window.omp.app.pathForFile(file);
+			const path = window.omsk.app.pathForFile(file);
 			if (path) localFiles.push({ name: file.name, path, mention: droppedFileMention(path, cwd) });
 			else unavailable = true;
 		}

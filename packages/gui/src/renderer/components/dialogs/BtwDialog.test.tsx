@@ -49,7 +49,7 @@ const command = vi.fn(async (cmd: RpcCommand): Promise<RpcResponse> => {
 	return { type: "response", command: cmd.type, success: true };
 });
 
-Object.assign(window as unknown as Record<string, unknown>, { omp: { rpc: { command } } });
+Object.assign(window as unknown as Record<string, unknown>, { omsk: { rpc: { command } } });
 
 let container: InstanceType<typeof HTMLElement> | null = null;
 let root: Root | null = null;

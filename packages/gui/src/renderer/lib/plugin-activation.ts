@@ -42,7 +42,7 @@ export async function restartForActivation(
 	if (!isPluginActivationOriginActive(origin)) return undefined;
 	const { sessionFile } = useSessionStore.getState();
 	try {
-		await window.omp.sidecar.restart({ tabId: origin.tabId, sessionPath: sessionFile ?? undefined });
+		await window.omsk.sidecar.restart({ tabId: origin.tabId, sessionPath: sessionFile ?? undefined });
 	} catch (cause) {
 		toast({
 			variant: "error",
@@ -61,7 +61,7 @@ export async function restartForActivation(
 			await promise;
 		}
 		try {
-			const res = await window.omp.rpc.commandForTab(origin.tabId, { type: "get_plugins" });
+			const res = await window.omsk.rpc.commandForTab(origin.tabId, { type: "get_plugins" });
 			if (!res.success) continue;
 			const data = res.data as { plugins?: Array<{ id?: string; name: string; enabled: boolean }> } | undefined;
 			const plugins = new Map(

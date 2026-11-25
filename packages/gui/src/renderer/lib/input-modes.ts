@@ -2,9 +2,9 @@
  * Composer `!` / `$` / `?` input-mode detection, mirroring the TUI editor
  * (`packages/coding-agent/src/modes/controllers/input-controller.ts`):
  *
- * - `!cmd`  → bash mode (runs locally via `window.omp.rpc.bash`)
+ * - `!cmd`  → bash mode (runs locally via `window.omsk.rpc.bash`)
  * - `!!cmd` → bash mode, excluded from model context in the TUI (no RPC flag yet)
- * - `$ code`  → python mode (runs via `window.omp.rpc.eval`; `$$ code` = excluded variant)
+ * - `$ code`  → python mode (runs via `window.omsk.rpc.eval`; `$$ code` = excluded variant)
  * - `? question` → BTW side-question mode
  * - `${...}` template literals and `$HOME`-style variables are NOT python mode
  *

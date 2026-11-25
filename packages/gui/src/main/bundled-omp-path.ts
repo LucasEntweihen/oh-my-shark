@@ -8,7 +8,7 @@ export function bundledOmpFilename(): string {
 
 /** Candidate filenames for the bundled sidecar, ordered by preference. */
 export function bundledOmpFilenames(): readonly string[] {
-	return process.platform === "win32" ? ["omsk.exe", "ohms.exe", "omp.exe"] : ["omsk", "ohms", "omp"];
+	return process.platform === "win32" ? ["omsk.exe", "ohms.exe", "omsk.exe"] : ["omsk", "ohms", "omsk"];
 }
 
 /** Resolve a bundled sidecar path, accepting a Windows .exe suffix when needed. */
@@ -28,7 +28,7 @@ export function resolveBundledOmpInDir(dir: string): string | null {
 		const found = resolveOmpCandidate(dir, name);
 		if (found) return found;
 	}
-	for (const base of ["omsk", "ohms", "omp"]) {
+	for (const base of ["omsk", "ohms", "omsk"]) {
 		const found = resolveOmpCandidate(dir, base);
 		if (found) return found;
 	}

@@ -34,7 +34,7 @@ const LIST_ITEM = {
 };
 
 function installMockOmp() {
-	const omp = {
+	const omsk = {
 		rpc: {
 			prRepo: vi.fn(async () => ok(REPO)),
 			prList: vi.fn(async () => ok([LIST_ITEM])),
@@ -67,8 +67,8 @@ function installMockOmp() {
 		},
 		events: { onTabStatus: vi.fn(() => () => {}) },
 	};
-	(globalThis as Record<string, unknown>).window = { omp } as unknown as Window;
-	return omp;
+	(globalThis as Record<string, unknown>).window = { omsk } as unknown as Window;
+	return omsk;
 }
 
 beforeEach(() => {
@@ -89,12 +89,12 @@ describe("pr-center store", () => {
 	});
 
 	it("probe does not list when the repo is unavailable", async () => {
-		const omp = installMockOmp();
-		omp.rpc.prRepo.mockResolvedValue(ok({ available: false, reason: "no_github_remote" }));
+		const omsk = installMockOmp();
+		omsk.rpc.prRepo.mockResolvedValue(ok({ available: false, reason: "no_github_remote" }));
 		await usePrCenterStore.getState().probe();
 		const state = usePrCenterStore.getState();
 		expect(state.list).toHaveLength(0);
-		expect(omp.rpc.prList).not.toHaveBeenCalled();
+		expect(omsk.rpc.prList).not.toHaveBeenCalled();
 	});
 
 	it("select loads detail; toggleFile lazy-loads then removes the diff", async () => {
@@ -131,10 +131,10 @@ describe("pr-center store", () => {
 	});
 
 	it("checkout failure toasts instead of spawning", async () => {
-		const omp = installMockOmp();
-		omp.rpc.prCheckout.mockResolvedValue(fail("boom", "pr_checkout_failed"));
+		const omsk = installMockOmp();
+		omsk.rpc.prCheckout.mockResolvedValue(fail("boom", "pr_checkout_failed"));
 		await usePrCenterStore.getState().probe();
 		await usePrCenterStore.getState().checkout(42);
-		expect(omp.tabs.spawn).not.toHaveBeenCalled();
+		expect(omsk.tabs.spawn).not.toHaveBeenCalled();
 	});
 });

@@ -96,7 +96,7 @@ export async function saveWorkspaceEdit(
 		const file = await editablePath(cwd, target);
 		if (saving.has(file)) throw new EditError("changed");
 		saving.add(file);
-		const temp = path.join(path.dirname(file), `.omp-edit-${randomUUID()}.tmp`);
+		const temp = path.join(path.dirname(file), `.omsk-edit-${randomUUID()}.tmp`);
 		try {
 			const original = await readSnapshot(file);
 			if (original.revision !== revision) throw new EditError("changed");

@@ -114,7 +114,7 @@ beforeEach(() => {
 		setForceTool: vi.fn(async () => ok({ tool: "write" })),
 		prompt: vi.fn(async () => ok({ agentInvoked: true })),
 	};
-	(window as unknown as { omp: { rpc: Record<string, Mock> } }).omp = { rpc };
+	(window as unknown as { omsk: { rpc: Record<string, Mock> } }).omsk = { rpc };
 	useUiStore.setState({ forceToolOpen: true });
 	useToastStore.setState({ toasts: [] });
 });

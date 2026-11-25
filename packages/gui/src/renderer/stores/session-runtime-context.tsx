@@ -24,7 +24,7 @@ export type TabCommand = (command: RpcCommand, timeoutMs?: number) => Promise<Rp
 
 /** Active-tab fallback for tests, startup races, and an older preload bridge. */
 export function activeTabCommand(command: RpcCommand, timeoutMs?: number): Promise<RpcResponse> {
-	const rpc = window.omp.rpc;
+	const rpc = window.omsk.rpc;
 	if (typeof rpc.command === "function") return rpc.command(command, timeoutMs);
 	switch (command.type) {
 		case "abort_compaction":

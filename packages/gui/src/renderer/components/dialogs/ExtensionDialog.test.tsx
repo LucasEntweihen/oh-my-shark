@@ -48,12 +48,12 @@ async function flush(): Promise<void> {
 async function mount(): Promise<void> {
 	respondExtensionUi = vi.fn();
 	const ompWindow = window as unknown as {
-		omp: {
+		omsk: {
 			ui: { respondExtensionUi: typeof respondExtensionUi };
 			rpc: { commandForTab: (tabId: string, command: RpcCommand) => Promise<RpcResponse> };
 		};
 	};
-	ompWindow.omp = {
+	ompWindow.omsk = {
 		ui: { respondExtensionUi },
 		rpc: {
 			commandForTab: vi.fn(
@@ -382,7 +382,7 @@ describe("ExtensionDialog non-dialog mutations", () => {
 		await mount();
 		let editorDetail: { text?: string; images?: unknown[]; prepend?: boolean } | undefined;
 		window.addEventListener(
-			"omp:fill-composer",
+			"omsk:fill-composer",
 			(event: Event) => {
 				editorDetail = (event as CustomEvent<{ text?: string; images?: unknown[]; prepend?: boolean }>).detail;
 			},
@@ -461,7 +461,7 @@ describe("ExtensionDialog cross-tab requests", () => {
 
 		await mount();
 		let editorFired = false;
-		window.addEventListener("omp:fill-composer", () => {
+		window.addEventListener("omsk:fill-composer", () => {
 			editorFired = true;
 		});
 

@@ -57,7 +57,7 @@ export function useChatConfig(enabled = true): ChatConfigHandle {
 			return;
 		}
 		void read();
-		return window.omp.events.onConfigUpdate(() => void read());
+		return window.omsk.events.onConfigUpdate(() => void read());
 	}, [ready, enabled, sessionId, read]);
 
 	const write = useCallback(

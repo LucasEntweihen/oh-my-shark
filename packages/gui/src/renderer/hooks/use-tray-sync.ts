@@ -63,7 +63,7 @@ export function useTraySync(): void {
 		const trayStatus: TrayState["status"] =
 			status === "error" ? "error" : awaitingConfirmation ? "waiting" : isStreaming ? "streaming" : "idle";
 
-		window.omp.tray.pushState({
+		window.omsk.tray.pushState({
 			status: trayStatus,
 			language: lang,
 			cwd: cwd || null,

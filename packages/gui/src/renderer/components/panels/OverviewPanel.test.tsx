@@ -74,7 +74,7 @@ const rpc = {
 		}),
 	),
 };
-(window as unknown as Record<string, unknown>).omp = { rpc, events: { onConfigUpdate: () => () => {} } };
+(window as unknown as Record<string, unknown>).omsk = { rpc, events: { onConfigUpdate: () => () => {} } };
 
 let container: InstanceType<typeof HTMLElement>;
 let root: Root;

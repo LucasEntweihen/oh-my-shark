@@ -92,7 +92,7 @@ export const useSchedulerStore = create<SchedulerStore>()((set, get) => ({
 	editor: null,
 
 	connect: () => {
-		const api = window.omp.scheduler;
+		const api = window.omsk.scheduler;
 		void api.snapshot().then(
 			snapshot => set({ snapshot }),
 			() => {},
@@ -133,10 +133,10 @@ export const useSchedulerStore = create<SchedulerStore>()((set, get) => ({
 	},
 	openNotice: notice => {
 		get().openTasks(notice.target);
-		if (!notice.read) void window.omp.scheduler.markNoticesRead([notice.id]).catch(failed);
+		if (!notice.read) void window.omsk.scheduler.markNoticesRead([notice.id]).catch(failed);
 	},
 	markAllNoticesRead: () => {
-		if (get().notices.some(notice => !notice.read)) void window.omp.scheduler.markNoticesRead().catch(failed);
+		if (get().notices.some(notice => !notice.read)) void window.omsk.scheduler.markNoticesRead().catch(failed);
 	},
 	close: () => {
 		set({ open: false, editor: null });
@@ -149,7 +149,7 @@ export const useSchedulerStore = create<SchedulerStore>()((set, get) => ({
 	closeEditor: () => set({ editor: null }),
 
 	save: async (draft, taskId) => {
-		const api = window.omp.scheduler;
+		const api = window.omsk.scheduler;
 		const result = taskId ? await api.update(taskId, configOf(draft)) : await api.create(draft);
 		// A new task opens in the Tasks view, wherever it was created from.
 		if (result.ok)
@@ -158,7 +158,7 @@ export const useSchedulerStore = create<SchedulerStore>()((set, get) => ({
 	},
 	runNow: async taskId => {
 		try {
-			const run = await window.omp.scheduler.runNow(taskId);
+			const run = await window.omsk.scheduler.runNow(taskId);
 			if (run) toast({ variant: "info", message: translate("tasks.toast.started") });
 		} catch (error) {
 			failed(error);
@@ -166,7 +166,7 @@ export const useSchedulerStore = create<SchedulerStore>()((set, get) => ({
 	},
 	setEnabled: async (taskId, enabled) => {
 		try {
-			const result = await window.omp.scheduler.setEnabled(taskId, enabled);
+			const result = await window.omsk.scheduler.setEnabled(taskId, enabled);
 			if (!result.ok) {
 				toast({
 					variant: "warning",
@@ -179,14 +179,14 @@ export const useSchedulerStore = create<SchedulerStore>()((set, get) => ({
 	},
 	archive: async taskId => {
 		try {
-			await window.omp.scheduler.archive(taskId, true);
+			await window.omsk.scheduler.archive(taskId, true);
 		} catch (error) {
 			failed(error);
 		}
 	},
 	remove: async taskId => {
 		try {
-			await window.omp.scheduler.remove(taskId);
+			await window.omsk.scheduler.remove(taskId);
 			if (get().selectedTaskId === taskId) set({ selectedTaskId: null });
 		} catch (error) {
 			failed(error);
@@ -194,14 +194,14 @@ export const useSchedulerStore = create<SchedulerStore>()((set, get) => ({
 	},
 	cancelRun: async runId => {
 		try {
-			await window.omp.scheduler.cancelRun(runId);
+			await window.omsk.scheduler.cancelRun(runId);
 		} catch (error) {
 			failed(error);
 		}
 	},
 	review: async (runId, decision, note) => {
 		try {
-			return (await window.omp.scheduler.review(runId, decision, note)) !== null;
+			return (await window.omsk.scheduler.review(runId, decision, note)) !== null;
 		} catch (error) {
 			failed(error);
 			return false;
@@ -209,7 +209,7 @@ export const useSchedulerStore = create<SchedulerStore>()((set, get) => ({
 	},
 	setPaused: async paused => {
 		try {
-			await window.omp.scheduler.setPaused(paused);
+			await window.omsk.scheduler.setPaused(paused);
 		} catch (error) {
 			failed(error);
 		}

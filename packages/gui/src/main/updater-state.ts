@@ -72,7 +72,7 @@ const PARTIAL_SUFFIX = ".partial";
  * plus a partial suffix. Downloads is the user's directory, so anything else —
  * including a lookalike like `holiday.dmg.partial` — must survive the sweep.
  */
-const INSTALLER_DEBRIS = /^(?:OhMyShark|omp)-[\d.]+(?:-arm64)?(?: \(\d+\))?\.dmg(?:\.partial|\.download-\d+)$/;
+const INSTALLER_DEBRIS = /^(?:OhMyShark|omsk)-[\d.]+(?:-arm64)?(?: \(\d+\))?\.dmg(?:\.partial|\.download-\d+)$/;
 const HASH_CHUNK_BYTES = 1024 * 1024;
 
 /**

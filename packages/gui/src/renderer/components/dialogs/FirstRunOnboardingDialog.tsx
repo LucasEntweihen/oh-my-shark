@@ -78,7 +78,7 @@ export function FirstRunOnboardingDialog() {
 			try {
 				const [providerResult, configResult] = await Promise.allSettled([
 					tabRpc.getProviders(),
-					window.omp.models.listProviders(),
+					window.omsk.models.listProviders(),
 				]);
 				if (version !== requestVersion.current) return;
 				if (providerResult.status === "rejected") throw providerResult.reason;

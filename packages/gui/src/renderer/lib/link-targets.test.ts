@@ -33,7 +33,7 @@ describe("looksLikeFilePath", () => {
 			"./scripts/build.sh",
 			"../README.md",
 			"/Users/me/project/notes.txt",
-			"~/.config/omp/config.yml",
+			"~/.config/omsk/config.yml",
 			"C:\\work\\app.cs",
 			"package.json",
 			".gitignore",

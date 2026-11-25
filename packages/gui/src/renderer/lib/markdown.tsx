@@ -285,7 +285,7 @@ function StyledTable({ children, ...props }: ComponentPropsWithoutRef<"table">) 
 }
 
 // ── codeLineNumbers pref (GUI prefs file, NOT zustand) ─────────────────────
-// Module snapshot hydrated lazily from window.omp.prefs when the first code
+// Module snapshot hydrated lazily from window.omsk.prefs when the first code
 // block mounts; Settings writes go through setCodeLineNumbersPref, which
 // flips every mounted block live without re-parsing markdown. SSR never runs
 // subscriptions, so tests drive rendering via the MarkdownRenderer
@@ -307,7 +307,7 @@ function subscribeCodeLineNumbers(listener: () => void): () => void {
 		codeLineNumbersHydrated = true;
 		const version = codeLineNumbersVersion;
 		try {
-			void window.omp.prefs
+			void window.omsk.prefs
 				.get("codeLineNumbers")
 				.then(value => {
 					if (version === codeLineNumbersVersion) setCodeLineNumbersSnapshot(value === true);
@@ -567,7 +567,7 @@ function RemoteMarkdownImage({ src, alt }: { src: string; alt: string }) {
 	const load = async () => {
 		setState("loading");
 		try {
-			const result = await window.omp.system.fetchRemoteImage(src);
+			const result = await window.omsk.system.fetchRemoteImage(src);
 			setDataUrl(result);
 			setState(result ? "idle" : "failed");
 		} catch {
@@ -619,7 +619,7 @@ function LocalMarkdownImage({ path: imagePath, alt, title }: { path: string; alt
 	const [resolved, setResolved] = useState<{ url: string } | { error: true } | null>(null);
 	useEffect(() => {
 		let cancelled = false;
-		window.omp.fs
+		window.omsk.fs
 			.readImage(path, tabId ?? undefined)
 			.then(result => {
 				if (!cancelled) setResolved(result.ok && result.dataUrl ? { url: result.dataUrl } : { error: true });

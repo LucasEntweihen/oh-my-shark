@@ -59,7 +59,7 @@ export function BenchmarkDialog({ open, onClose }: { open: boolean; onClose: () 
 		parallel <= 8;
 	const abort = async () => {
 		try {
-			await window.omp.bench.abort();
+			await window.omsk.bench.abort();
 		} catch (cause) {
 			setError(describeError(cause));
 		}
@@ -70,7 +70,7 @@ export function BenchmarkDialog({ open, onClose }: { open: boolean; onClose: () 
 		setError(null);
 		setStderr(null);
 		try {
-			const next = await window.omp.bench.run({ models: selectors, profile, runs, parallel });
+			const next = await window.omsk.bench.run({ models: selectors, profile, runs, parallel });
 			const output = next.stderr?.trim();
 			setStderr(output ? output : null);
 			if (next.success) setResult(next);

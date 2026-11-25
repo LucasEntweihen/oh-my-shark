@@ -60,14 +60,14 @@ export function LogPanel() {
 
 	const reload = useCallback((): void => {
 		setError(null);
-		void window.omp.runtime
+		void window.omsk.runtime
 			.logSnapshot()
 			.then(applyBatch)
 			.catch(cause => setError(describeError(cause)));
 	}, [applyBatch]);
 
 	useEffect(() => {
-		const unsubscribe = window.omp.events.onLogBatch(applyBatch);
+		const unsubscribe = window.omsk.events.onLogBatch(applyBatch);
 		void reload();
 		return unsubscribe;
 	}, [applyBatch, reload]);

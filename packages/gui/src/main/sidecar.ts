@@ -1,5 +1,5 @@
 /**
- * Sidecar lifecycle manager: spawns omp --mode rpc-ui, handles restart,
+ * Sidecar lifecycle manager: spawns omsk --mode rpc-ui, handles restart,
  * routes frames to RpcClient and EventBatcher.
  */
 import { type ChildProcess, spawn } from "node:child_process";
@@ -71,7 +71,7 @@ const STDERR_REASON_CHARS = 240;
  */
 function stderrExcerpt(lines: string[]): string {
 	for (const line of lines) {
-		// omp colors its fatal line; the reason is shown as plain text.
+		// omsk colors its fatal line; the reason is shown as plain text.
 		const trimmed = stripVTControlCharacters(line).trim();
 		if (!trimmed) continue;
 		return trimmed.length > STDERR_REASON_CHARS ? `${trimmed.slice(0, STDERR_REASON_CHARS - 1)}…` : trimmed;
@@ -390,7 +390,7 @@ export class SidecarManager extends EventEmitter {
 			(process.platform === "win32" && binaryPath.toLowerCase().endsWith(".ts") ? binaryPath : undefined);
 		const command = runViaBun ? resolveBunExe() : binaryPath;
 		const spawnArgs = runViaBun ? [runViaBun, ...args] : args;
-		console.log(`[sidecar] spawning ${sourceCli ? "source" : "bundled"} omp (${args.length} args, cwd: ${cwd})`);
+		console.log(`[sidecar] spawning ${sourceCli ? "source" : "bundled"} omsk (${args.length} args, cwd: ${cwd})`);
 
 		let child: ChildProcess;
 		try {

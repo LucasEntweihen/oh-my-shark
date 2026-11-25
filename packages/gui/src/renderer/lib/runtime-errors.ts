@@ -27,7 +27,7 @@ export function createRuntimeErrorReport(
 
 export function reportRuntimeError(source: RuntimeErrorSource, error: unknown, extras: RuntimeErrorExtras = {}): void {
 	try {
-		window.omp?.runtime?.report(createRuntimeErrorReport(source, error, extras));
+		window.omsk?.runtime?.report(createRuntimeErrorReport(source, error, extras));
 	} catch {
 		// Reporting is best effort and must never mask the original failure.
 	}

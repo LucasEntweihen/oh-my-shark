@@ -1,5 +1,5 @@
 /**
- * Preload script: exposes the OmpApi on window.omp via contextBridge.
+ * Preload script: exposes the OmpApi on window.omsk via contextBridge.
  * All RPC commands delegate to ipcRenderer.invoke(IPC_COMMANDS.RPC_COMMAND, ...).
  * Event subscriptions return unsubscribe functions.
  */
@@ -555,4 +555,4 @@ const api: OmpApi = {
 	},
 };
 
-contextBridge.exposeInMainWorld("omp", api);
+contextBridge.exposeInMainWorld("omsk", api);

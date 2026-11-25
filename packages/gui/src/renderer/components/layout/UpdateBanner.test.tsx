@@ -21,7 +21,7 @@ interface TestElement {
 const check = vi.fn(() => Promise.resolve({ state: "checking" } as const));
 const download = vi.fn(() => Promise.resolve({ state: "idle" } as const));
 const apply = vi.fn(() => Promise.resolve());
-Object.assign(window, { omp: { updater: { check, download, apply } } });
+Object.assign(window, { omsk: { updater: { check, download, apply } } });
 
 let container: TestElement;
 let root: Root;

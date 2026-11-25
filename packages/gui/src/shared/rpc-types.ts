@@ -1,11 +1,11 @@
 /**
- * RPC protocol types for the omp GUI sidecar connection.
+ * RPC protocol types for the omsk GUI sidecar connection.
  * Hand-written from verified source (rpc-types.ts, rpc-mode.ts).
  * These are the wire types — no runtime dependency on @oh-my-pi/*.
  */
 
 // ============================================================================
-// RPC Commands (GUI → omp stdin)
+// RPC Commands (GUI → omsk stdin)
 // ============================================================================
 
 /** One chat's own settings (`get_chat_config`, `set_chat_config`); a chat that saved none follows `chat.*`. */
@@ -179,7 +179,7 @@ export type RpcCommand =
 	| { id?: string; type: "btw_cancel"; recordId: string }
 	| { id?: string; type: "btw_inject"; recordId: string }
 	| { id?: string; type: "get_btw_history" }
-	// Composer predictions (omp 19): alternatives arrive as `composer_prediction` events
+	// Composer predictions (omsk 19): alternatives arrive as `composer_prediction` events
 	| { id?: string; type: "composer_prediction_request" }
 	| {
 			id?: string;
@@ -304,8 +304,8 @@ export type RpcCommand =
 	| { id?: string; type: "remove_directory"; path: string }
 	| { id?: string; type: "move_session"; path: string }
 	// Git worktrees (tab × worktree binding, plan/20). get_git_status feeds the
-	// footer git segment; worktree_create materializes branch omp/gui/<name> at
-	// ~/.omp/wt/gui-<name>-<hash7>; worktree_remove refuses dirty unless force.
+	// footer git segment; worktree_create materializes branch omsk/gui/<name> at
+	// ~/.omsk/wt/gui-<name>-<hash7>; worktree_remove refuses dirty unless force.
 	| { id?: string; type: "get_git_status" }
 	| { id?: string; type: "get_git_changes" }
 	| { id?: string; type: "get_git_diff"; path: string }
@@ -357,7 +357,7 @@ export type RpcCommand =
 	| { id?: string; type: "shark_set_cockpit_config"; patch: Record<string, unknown> };
 
 // ============================================================================
-// RPC Responses (omp stdout → GUI)
+// RPC Responses (omsk stdout → GUI)
 // ============================================================================
 
 export interface RpcResponseSuccess {
@@ -395,7 +395,7 @@ export interface RpcContextUsageBreakdown {
 	systemPromptTokens: number;
 	systemToolsTokens: number;
 	systemContextTokens: number;
-	/** Loaded instruction files (AGENTS.md and the like), counted apart from the system prompt; absent before omp 18.18.9. */
+	/** Loaded instruction files (AGENTS.md and the like), counted apart from the system prompt; absent before omsk 18.18.9. */
 	instructionFilesTokens?: number;
 	skillsTokens: number;
 	messagesTokens: number;
@@ -521,7 +521,7 @@ export interface RpcAsyncJobItem {
 	type: "bash" | "task" | "eval";
 	status: "running" | "completed" | "failed" | "cancelled";
 	label: string;
-	/** What the model said the call is for (omp ≥18.15 sidecars); listings lead with it ahead of the command. */
+	/** What the model said the call is for (omsk ≥18.15 sidecars); listings lead with it ahead of the command. */
 	intent?: string;
 	/** One line on what a long command does and when it ends, written by the widget model while widgets are on. */
 	caption?: string;
@@ -538,7 +538,7 @@ export interface RpcAsyncJobItem {
 	resultPreview?: string;
 	errorPreview?: string;
 	previewTruncated?: boolean;
-	/** Live widget authored for this job (omp ≥18.12.5 sidecars). */
+	/** Live widget authored for this job (omsk ≥18.12.5 sidecars). */
 	widget?: RpcJobWidgetView;
 }
 
@@ -731,7 +731,7 @@ export interface RpcDictationStartResult {
 // ============================================================================
 
 /** One sidecar-hosted terminal. */
-/** omp subcommands `terminal_run_cli` launches in a revealed terminal (each brings its own terminal UI). */
+/** omsk subcommands `terminal_run_cli` launches in a revealed terminal (each brings its own terminal UI). */
 export type RpcTerminalCliSubcommand = "git" | "cleanse";
 
 /** TUI-only screens `tui_open` hosts in a terminal. */
@@ -1349,7 +1349,7 @@ export interface RpcMemoryActivity {
 	phase: "reading" | "consolidating";
 	done: number;
 	total: number;
-	/** Another omp process holds the work; counts are unknown. */
+	/** Another omsk process holds the work; counts are unknown. */
 	elsewhere: boolean;
 }
 
@@ -2185,7 +2185,7 @@ export interface TodoPhase {
 
 export interface TodoTask {
 	content: string;
-	/** omp 18.19 dropped `blocked`; the agent restores such tasks as pending (see stores/todo.ts). */
+	/** omsk 18.19 dropped `blocked`; the agent restores such tasks as pending (see stores/todo.ts). */
 	status: "pending" | "in_progress" | "completed" | "abandoned";
 }
 
@@ -2194,7 +2194,7 @@ export interface TodoTask {
 // ============================================================================
 
 export interface AgentMessage {
-	/** Persisted OMP session-tree node id, present on user/assistant transcript messages. */
+	/** Persisted OMSK session-tree node id, present on user/assistant transcript messages. */
 	entryId?: string;
 	/** GUI-only local echo awaiting ownership by the persisted transcript. */
 	optimistic?: boolean;
@@ -2547,7 +2547,7 @@ export interface SessionStats {
 	};
 	routedModels?: Record<string, number>;
 	contextUsage?: ContextUsage;
-	/** What the next request finds in the prompt cache (`/session`'s Prompt Cache section); absent when omp cannot tell. */
+	/** What the next request finds in the prompt cache (`/session`'s Prompt Cache section); absent when omsk cannot tell. */
 	promptCache?: PromptCacheStatus;
 }
 
@@ -2589,7 +2589,7 @@ export interface SynthesizeSpeechResult {
 }
 
 // ============================================================================
-// Outbound Frame Union (everything omp can emit on stdout)
+// Outbound Frame Union (everything omsk can emit on stdout)
 // ============================================================================
 
 export type OutboundFrame =

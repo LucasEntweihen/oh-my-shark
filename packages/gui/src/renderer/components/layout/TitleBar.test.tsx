@@ -50,9 +50,9 @@ const getSessionStats = vi.fn(async () => ({
 }));
 (
 	window as unknown as {
-		omp: { sessions: typeof sessions; events: typeof events; rpc: { getSessionStats: typeof getSessionStats } };
+		omsk: { sessions: typeof sessions; events: typeof events; rpc: { getSessionStats: typeof getSessionStats } };
 	}
-).omp = { sessions, events, rpc: { getSessionStats } };
+).omsk = { sessions, events, rpc: { getSessionStats } };
 
 let container: TestElement;
 let root: Root;

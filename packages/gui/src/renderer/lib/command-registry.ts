@@ -252,7 +252,7 @@ export async function restartSidecarFromGui(): Promise<void> {
 		return;
 	}
 	try {
-		await window.omp.sidecar.restart({ tabId: runtime?.tabId, sessionPath: session?.sessionFile ?? undefined });
+		await window.omsk.sidecar.restart({ tabId: runtime?.tabId, sessionPath: session?.sessionFile ?? undefined });
 		toast({ variant: "info", message: translate("settings.launch.restarting") });
 	} catch (cause) {
 		toast({ variant: "error", title: translate("app.actionFailed"), message: String(cause) });
@@ -266,7 +266,7 @@ export function buildCommandMenu(ctx: CommandRegistryContext): CommandMenuItem[]
 		? createTabRpc(runtime.command)
 		: typeof window === "undefined"
 			? createTabRpc(activeTabCommand)
-			: window.omp.rpc;
+			: window.omsk.rpc;
 	const items: CommandMenuItem[] = [];
 	/** Every name the menu claims: item names plus their aliases. */
 	const claimed = new Set<string>();
@@ -342,7 +342,7 @@ export function buildCommandMenu(ctx: CommandRegistryContext): CommandMenuItem[]
 		toast({ variant: "success", message: t(enabled ? "advisor.enabled" : "advisor.disabled") });
 	};
 
-	/** Launch an omp CLI surface (`omp git`, `omp cleanse`) in a revealed terminal of this tab. */
+	/** Launch an omsk CLI surface (`omsk git`, `omsk cleanse`) in a revealed terminal of this tab. */
 	const runCliInTerminal = async (subcommand: RpcTerminalCliSubcommand): Promise<void> => {
 		const res = await boundRpc.command({ type: "terminal_run_cli", subcommand });
 		if (!res.success) throw new Error(res.error);
@@ -390,7 +390,7 @@ export function buildCommandMenu(ctx: CommandRegistryContext): CommandMenuItem[]
 			toast({ variant: "info", message: t("cmd.trace.noSession") });
 			return;
 		}
-		const stats = await window.omp.stats.url();
+		const stats = await window.omsk.stats.url();
 		if (!stats.url) {
 			toast({
 				variant: stats.unavailable ? "info" : "warning",
@@ -702,7 +702,7 @@ export function buildCommandMenu(ctx: CommandRegistryContext): CommandMenuItem[]
 		label: t("cmd.quit"),
 		description: t("cmd.quit.desc"),
 		category: "session",
-		affordance: { kind: "action", run: () => window.omp.app.quit() },
+		affordance: { kind: "action", run: () => window.omsk.app.quit() },
 	});
 	add({
 		name: "retry",
@@ -720,7 +720,7 @@ export function buildCommandMenu(ctx: CommandRegistryContext): CommandMenuItem[]
 		affordance: { kind: "action", run: () => ctx.retryLastTurn() },
 	});
 	// /queue focuses the composer prefilled with the yield-queue shorthand
-	// ("-> ") via the same omp:fill-composer channel the starter cards and the
+	// ("-> ") via the same omsk:fill-composer channel the starter cards and the
 	// session-tree draft restore use — the composer submits the queue over RPC.
 	add({
 		name: "queue",
@@ -1070,7 +1070,7 @@ export function buildCommandMenu(ctx: CommandRegistryContext): CommandMenuItem[]
 		},
 	});
 	// /cleanse: the parallel-fix diagnostic runner is a full-screen TUI flow —
-	// the bundled `omp cleanse` runs it inside a revealed terminal.
+	// the bundled `omsk cleanse` runs it inside a revealed terminal.
 	add({
 		name: "cleanse",
 		label: t("cmd.cleanse"),
@@ -1446,7 +1446,7 @@ export function buildCommandMenu(ctx: CommandRegistryContext): CommandMenuItem[]
 					category: "workspace",
 					affordance: { kind: "window", open: () => useUiStore.getState().setPanelTab("diff") },
 				},
-				// The real `/git`: staging + commit composer — the bundled `omp git`
+				// The real `/git`: staging + commit composer — the bundled `omsk git`
 				// runs the full TUI in a revealed terminal.
 				{
 					name: "git tui",
@@ -1799,10 +1799,10 @@ export function buildCommandMenu(ctx: CommandRegistryContext): CommandMenuItem[]
 	return items;
 }
 
-/** Hand text to the composer and focus it (the omp:fill-composer channel also
+/** Hand text to the composer and focus it (the omsk:fill-composer channel also
  *  serves starter cards, dequeue restore, and session-tree restore). */
 export function prefillComposer(text: string): void {
-	window.dispatchEvent(new CustomEvent("omp:fill-composer", { detail: { text } }));
+	window.dispatchEvent(new CustomEvent("omsk:fill-composer", { detail: { text } }));
 }
 
 /** /queue prefill: focus the composer with the yield-queue shorthand ("-> "). */
@@ -1827,7 +1827,7 @@ export function commandArgPrefill(item: CommandMenuItem): string | null {
  *  the toast carries the agent's removed summary. */
 async function shakeContextFromGui(mode: "elide" | "images" | "thinking"): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const confirmKey =
 		mode === "images" ? "shake.confirmImages" : mode === "thinking" ? "shake.confirmThinking" : "shake.confirmElide";
 	if (!window.confirm(translate(confirmKey))) return;
@@ -1844,7 +1844,7 @@ async function shakeContextFromGui(mode: "elide" | "images" | "thinking"): Promi
  *  refusal (mid-stream) rides a warning toast instead of failing hard. */
 async function freshProviderStateFromGui(): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const response = await rpc.fresh();
 	if (!response.success) {
 		toast({ variant: "warning", message: response.error });
@@ -1857,7 +1857,7 @@ async function freshProviderStateFromGui(): Promise<void> {
  *  post-reload counts, and rehydrate so the extensions inventory refreshes. */
 async function reloadPluginsFromGui(hydrate: () => Promise<void>): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const response = await rpc.reloadPlugins();
 	if (!response.success) {
 		toast({ variant: "error", title: translate("cmd.reloadPlugins"), message: response.error });
@@ -1878,7 +1878,7 @@ async function reloadPluginsFromGui(hydrate: () => Promise<void>): Promise<void>
 
 async function runCollabCommand(args?: string): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const input = args?.trim() ?? "";
 	if (!input) {
 		useUiStore.getState().openCollab();
@@ -1911,7 +1911,7 @@ async function joinCollab(link?: string): Promise<void> {
 
 async function leaveCollab(): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const response = await rpc.collabLeave();
 	if (!response.success) throw new Error(response.error);
 	if (runtime) await hydrateTabSession(runtime.tabId);
@@ -1921,7 +1921,7 @@ async function leaveCollab(): Promise<void> {
 
 async function copyFromChat(args?: string): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const kind = args?.trim().toLowerCase();
 	if (!kind) {
 		useUiStore.getState().openCopySelector();
@@ -1959,7 +1959,7 @@ async function copyFromChat(args?: string): Promise<void> {
 
 async function dispatchTan(work?: string): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const trimmed = work?.trim();
 	if (!trimmed) {
 		toast({ variant: "info", message: translate("tan.usage") });
@@ -1975,7 +1975,7 @@ async function dispatchTan(work?: string): Promise<void> {
 
 async function forgeTtsrRule(complaint?: string): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const trimmed = complaint?.trim();
 	if (!trimmed) {
 		toast({ variant: "info", message: translate("omfg.usage") });
@@ -1993,7 +1993,7 @@ async function forgeTtsrRule(complaint?: string): Promise<void> {
 
 export async function retryFailedTurn(): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const response = await rpc.retry();
 	if (!response.success) throw new Error(response.error);
 	const data = response.data as { retried?: boolean } | undefined;
@@ -2008,7 +2008,7 @@ export async function retryFailedTurn(): Promise<void> {
 
 export async function dropSessionFromGui(): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	if (useUiStore.getState().confirmSessionDelete && !window.confirm(translate("drop.confirm"))) return;
 	const response = await rpc.dropSession();
 	if (!response.success) throw new Error(response.error);
@@ -2024,7 +2024,7 @@ export async function dropSessionFromGui(): Promise<void> {
 
 export async function forkSessionFromGui(): Promise<void> {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const response = await rpc.fork();
 	if (!response.success) throw new Error(response.error);
 	const data = response.data as { cancelled?: boolean } | undefined;
@@ -2044,7 +2044,7 @@ export async function forkSessionFromGui(): Promise<void> {
  */
 export function buildCurrentCommandMenu(availableCommands: AvailableCommand[]): CommandMenuItem[] {
 	const runtime = focusedSessionRuntime();
-	const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+	const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 	const session = useSessionStore.getState();
 	const model = useModelStore.getState();
 	const settings = useSettingsStore.getState();

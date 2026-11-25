@@ -24,7 +24,7 @@ app.on("open-url", (event, url) => {
 	else beforeSetup.push(url);
 });
 
-/** Same replay story for `open -a omp ~/code/x`, which arrives as an open-file. */
+/** Same replay story for `open -a omsk ~/code/x`, which arrives as an open-file. */
 const filesBeforeSetup: string[] = [];
 let fileHandler: ((path: string) => void) | undefined;
 
@@ -96,7 +96,7 @@ function handleDeepLink(url: string, windowManager: WindowManager, spawnWindow: 
 	win.focus();
 
 	// new URL puts the first segment of a scheme:// URL into hostname, not
-	// pathname: omp://new → host "new", omp://session/<id> → host "session" +
+	// pathname: omsk://new → host "new", omsk://session/<id> → host "session" +
 	// path "/<id>". (Hostname case is preserved for non-special schemes.)
 	let payload: DeepLinkPayload | null = null;
 	const host = parsed.hostname.toLowerCase();

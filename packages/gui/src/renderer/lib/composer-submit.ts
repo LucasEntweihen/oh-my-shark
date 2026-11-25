@@ -108,7 +108,7 @@ export function planComposerSubmit(input: {
 	commands: AvailableCommand[];
 	rpc?: Pick<TabRpc, "compact" | "followUp" | "prompt" | "steer">;
 }): ComposerSubmit {
-	const { message, wireMessage = message, images, isStreaming, mode, commands, rpc = window.omp.rpc } = input;
+	const { message, wireMessage = message, images, isStreaming, mode, commands, rpc = window.omsk.rpc } = input;
 	const shortcut = parseComposerMode(message);
 	if (shortcut?.mode === "btw") {
 		return shortcut.body

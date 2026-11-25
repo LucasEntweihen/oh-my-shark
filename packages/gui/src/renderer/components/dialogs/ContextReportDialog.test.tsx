@@ -35,7 +35,7 @@ const breakdown = {
 };
 
 const getContextReport = vi.fn<() => Promise<RpcResponse>>();
-(window as unknown as { omp: { rpc: { getContextReport: typeof getContextReport } } }).omp = {
+(window as unknown as { omsk: { rpc: { getContextReport: typeof getContextReport } } }).omsk = {
 	rpc: { getContextReport },
 };
 

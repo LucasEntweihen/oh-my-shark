@@ -71,7 +71,7 @@ function endpointLists(models: DiscoveredModel[]): void {
 	});
 }
 Object.assign(window as unknown as Record<string, unknown>, {
-	omp: { models: { listProviders, upsertProvider, deleteProvider }, rpc: { getProviders, discoverProviderModels } },
+	omsk: { models: { listProviders, upsertProvider, deleteProvider }, rpc: { getProviders, discoverProviderModels } },
 });
 
 function mockProvider(): CustomProviderView {

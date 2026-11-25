@@ -28,7 +28,7 @@ globals.IS_REACT_ACT_ENVIRONMENT = true;
 globals.requestAnimationFrame = (callback: () => void) => setTimeout(callback, 0);
 Object.defineProperties(window, { innerWidth: { value: 1440 }, innerHeight: { value: 900 } });
 
-const ompWindow = window as unknown as { omp?: unknown; getSelection?: unknown };
+const ompWindow = window as unknown as { omsk?: unknown; getSelection?: unknown };
 const t = (key: string) => key;
 
 let openExternal: Mock;
@@ -68,7 +68,7 @@ beforeEach(() => {
 	openExternal = vi.fn(async () => {});
 	openPath = vi.fn(async () => ({ ok: true }));
 	writeText = vi.fn(async () => {});
-	ompWindow.omp = {
+	ompWindow.omsk = {
 		system: { openExternal, openPath, revealPath: vi.fn(async () => ({ ok: true })) },
 		browser: { open: vi.fn(async () => ({})) },
 	};
@@ -83,7 +83,7 @@ afterEach(async () => {
 	}
 	document.body.innerHTML = "";
 	vi.unstubAllGlobals();
-	delete ompWindow.omp;
+	delete ompWindow.omsk;
 	delete ompWindow.getSelection;
 	useTabsStore.getState().reset();
 	useUiStore.setState({ filePreviewPath: null, filePreviewLine: null });

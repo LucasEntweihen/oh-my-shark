@@ -1,5 +1,5 @@
 /**
- * Skills tab: skills omp taught itself. They work the moment omp writes them;
+ * Skills tab: skills omsk taught itself. They work the moment omsk writes them;
  * here the person catches up — sees what is new or what changed since they
  * last looked, and keeps, edits, switches off, or removes each one.
  */
@@ -85,11 +85,11 @@ function SkillCard({
 	const [loadError, setLoadError] = useState<string | null>(null);
 	const [editing, setEditing] = useState<{ description: string; body: string } | null>(null);
 	const [busy, setBusy] = useState<"save" | "remove" | "review" | "toggle" | null>(null);
-	// Only the read of the skill as it is now counts: once omp rewrites it, an
+	// Only the read of the skill as it is now counts: once omsk rewrites it, an
 	// older read would review — or diff — words the person never saw.
 	const detail = loaded && loaded.modifiedAt === skill.modifiedAt ? loaded : null;
 
-	// Read the skill when the card opens, and again after omp rewrites it.
+	// Read the skill when the card opens, and again after omsk rewrites it.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: modifiedAt is the rewrite signal
 	useEffect(() => {
 		if (!expanded) return;

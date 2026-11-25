@@ -137,12 +137,12 @@ describe("a custom theme on screen", () => {
 		setCustomThemes(themes(midnight("#111111")));
 		applyThemeByName("custom:midnight", { persist: false, remember: true });
 		expect(accent()).toBe("#111111");
-		expect(storage.get("omp.themeBackground")).toBe("#0b1020");
+		expect(storage.get("omsk.themeBackground")).toBe("#0b1020");
 
 		setCustomThemes(themes(midnight("#222222", "#202840")));
 		expect(accent()).toBe("#222222");
 		// The next launch paints the edited background first.
-		expect(storage.get("omp.themeBackground")).toBe("#202840");
+		expect(storage.get("omsk.themeBackground")).toBe("#202840");
 
 		setCustomThemes(themes());
 		expect(accent()).toBe(THEMES.dark.tokens["--omsk-accent"]);

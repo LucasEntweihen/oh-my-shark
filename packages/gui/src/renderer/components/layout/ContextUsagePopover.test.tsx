@@ -56,7 +56,7 @@ const getContextReport: Mock<() => Promise<RpcResponse>> = vi.fn(async () => ({
 	success: true,
 	data: report,
 }));
-(window as unknown as { omp: { rpc: { getContextReport: typeof getContextReport } } }).omp = {
+(window as unknown as { omsk: { rpc: { getContextReport: typeof getContextReport } } }).omsk = {
 	rpc: { getContextReport },
 };
 

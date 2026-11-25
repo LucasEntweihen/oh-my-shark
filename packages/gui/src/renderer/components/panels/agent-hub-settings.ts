@@ -27,8 +27,8 @@ interface AgentSettingsLoadResult {
 
 const fetchAgentSettings = async (): Promise<AgentSettingsLoadResult> => {
 	const [settings, definitions] = await Promise.all([
-		window.omp.rpc.getSettings([...SETTINGS_PATHS]),
-		window.omp.rpc.getAgentDefinitions(),
+		window.omsk.rpc.getSettings([...SETTINGS_PATHS]),
+		window.omsk.rpc.getAgentDefinitions(),
 	]);
 	return { settings, definitions };
 };

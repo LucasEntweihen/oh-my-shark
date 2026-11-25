@@ -41,7 +41,7 @@ afterEach(() => {
 
 function stubOmp(overrides: { restart?: Mock; commandForTab?: Mock } = {}): void {
 	(globalThis as unknown as Record<string, unknown>).window = {
-		omp: {
+		omsk: {
 			sidecar: { restart: overrides.restart ?? vi.fn(async () => {}) },
 			rpc: {
 				commandForTab: overrides.commandForTab ?? vi.fn(async () => ({ success: false })),

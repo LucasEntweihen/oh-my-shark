@@ -36,13 +36,13 @@ describe("classifyMarketplaceSource (agent classifySource parity)", () => {
 	it("classifies http(s) URLs by .json suffix", () => {
 		expect(classifyMarketplaceSource("https://example.com/marketplace.json")).toBe("url");
 		expect(classifyMarketplaceSource("http://example.com/catalog.json")).toBe("url");
-		expect(classifyMarketplaceSource("https://github.com/omp/plugins")).toBe("git");
-		expect(classifyMarketplaceSource("https://github.com/omp/plugins.git")).toBe("git");
+		expect(classifyMarketplaceSource("https://github.com/omsk/plugins")).toBe("git");
+		expect(classifyMarketplaceSource("https://github.com/omsk/plugins.git")).toBe("git");
 	});
 
 	it("classifies SCP-style and ssh git URLs", () => {
-		expect(classifyMarketplaceSource("git@github.com:omp/plugins.git")).toBe("git");
-		expect(classifyMarketplaceSource("ssh://git@github.com/omp/plugins.git")).toBe("git");
+		expect(classifyMarketplaceSource("git@github.com:omsk/plugins.git")).toBe("git");
+		expect(classifyMarketplaceSource("ssh://git@github.com/omsk/plugins.git")).toBe("git");
 	});
 
 	it("classifies local paths", () => {

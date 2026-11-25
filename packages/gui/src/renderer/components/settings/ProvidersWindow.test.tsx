@@ -283,7 +283,7 @@ const login = vi.fn(
 );
 
 Object.assign(window as unknown as Record<string, unknown>, {
-	omp: {
+	omsk: {
 		rpc: { getProviders, getLogoutAccounts, logout, login },
 		models: { listProviders },
 	},

@@ -9,7 +9,7 @@
 import { create } from "zustand";
 import type { UpdateStatus } from "../../shared/ipc-types";
 
-const DISMISSAL_KEY = "omp.update.dismissed";
+const DISMISSAL_KEY = "omsk.update.dismissed";
 
 export interface UpdateDismissal {
 	version?: string;
@@ -82,10 +82,10 @@ export const useUpdaterStore = create<UpdaterStore>()((set, get) => ({
 
 /** Wire the main-process push + boot replay once (App mount). Returns unsubscribe. */
 export function subscribeUpdaterStatus(): () => void {
-	const unsubscribe = window.omp.events.onUpdaterStatus(status => {
+	const unsubscribe = window.omsk.events.onUpdaterStatus(status => {
 		useUpdaterStore.getState().setStatus(status);
 	});
-	void window.omp.updater.getStatus().then(status => {
+	void window.omsk.updater.getStatus().then(status => {
 		useUpdaterStore.getState().setStatus(status);
 	});
 	return unsubscribe;

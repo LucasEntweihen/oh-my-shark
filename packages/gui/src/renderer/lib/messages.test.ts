@@ -51,7 +51,7 @@ function installWindow(messages: Array<{ text: string; mode: "steer" | "followUp
 		),
 	};
 	(globalThis as Record<string, unknown>).window = {
-		omp: { rpc },
+		omsk: { rpc },
 		dispatchEvent: (event: CustomEvent<FillComposerDetail>) => {
 			fillDetail = event.detail;
 			return true;

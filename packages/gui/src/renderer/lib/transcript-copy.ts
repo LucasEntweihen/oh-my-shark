@@ -159,7 +159,7 @@ function currentTodoPhases(): TodoPhase[] {
 
 /** /dump: full transcript as markdown → clipboard → toast. */
 export async function dumpTranscriptToClipboard(): Promise<void> {
-	const response = await window.omp.rpc.getTranscript();
+	const response = await window.omsk.rpc.getTranscript();
 	if (!response.success) throw new Error(response.error);
 	const messages = (response.data as { messages?: AgentMessage[] } | undefined)?.messages ?? [];
 	if (messages.length === 0) {
@@ -223,10 +223,10 @@ export function parseTodoPhasesJson(value: unknown): TodoPhase[] {
 
 /** /todo import: open dialog → read JSON → validate → set_todos RPC → toast. */
 export async function importTodosFromFile(): Promise<void> {
-	const picked = await window.omp.system.showOpenDialog([{ name: "JSON", extensions: ["json"] }]);
+	const picked = await window.omsk.system.showOpenDialog([{ name: "JSON", extensions: ["json"] }]);
 	const path = picked?.[0];
 	if (!path) return;
-	const read = await window.omp.fs.read(path, 4 * 1024 * 1024);
+	const read = await window.omsk.fs.read(path, 4 * 1024 * 1024);
 	if (!read.ok || read.binary || read.truncated) throw new Error(translate("todoCmd.importReadFailed"));
 	let parsed: unknown;
 	try {
@@ -235,7 +235,7 @@ export async function importTodosFromFile(): Promise<void> {
 		throw new Error(translate("todoCmd.importInvalid"));
 	}
 	const phases = parseTodoPhasesJson(parsed);
-	const response = await window.omp.rpc.setTodos(phases);
+	const response = await window.omsk.rpc.setTodos(phases);
 	if (!response.success) throw new Error(response.error);
 	await hydrateSession();
 	toast({ variant: "success", message: translate("todoCmd.imported", { count: taskCount(phases) }) });

@@ -21,7 +21,7 @@ export function FileAttachmentCard({
 	const [thumb, setThumb] = useState<{ path: string; url: string } | null>(null);
 	useEffect(() => {
 		let cancelled = false;
-		void window.omp?.fs
+		void window.omsk?.fs
 			?.documentPreview?.(path, true, tabId ?? undefined)
 			.then(result => {
 				if (!cancelled && result.kind === "image") setThumb({ path, url: result.dataUrl });

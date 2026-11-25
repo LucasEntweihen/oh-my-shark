@@ -22,7 +22,7 @@ globals.requestAnimationFrame = (callback: () => void) => setTimeout(callback, 0
 Object.assign(window as unknown as Record<string, unknown>, { innerWidth: 1280, innerHeight: 900 });
 
 const prefsSet = vi.fn(async (_key: string, _value: unknown) => {});
-(window as unknown as { omp: unknown }).omp = { prefs: { get: vi.fn(async () => undefined), set: prefsSet } };
+(window as unknown as { omsk: unknown }).omsk = { prefs: { get: vi.fn(async () => undefined), set: prefsSet } };
 
 const HOUR = 60 * 60_000;
 

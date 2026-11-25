@@ -63,7 +63,7 @@ function installMockOmp(next: () => Promise<unknown>): void {
 			truncated: false,
 		},
 	}));
-	(window as unknown as { omp: { rpc: { getGitChanges: Mock; getGitDiff: Mock } } }).omp = {
+	(window as unknown as { omsk: { rpc: { getGitChanges: Mock; getGitDiff: Mock } } }).omsk = {
 		rpc: { getGitChanges, getGitDiff },
 	};
 }
@@ -269,8 +269,8 @@ describe("RepositoryChanges right-click", () => {
 		const revealPath = vi.fn(async () => ({ ok: true }));
 		const writeText = vi.fn(async () => {});
 		vi.stubGlobal("navigator", { platform: "MacIntel", clipboard: { writeText } });
-		const omp = (window as unknown as { omp: Record<string, unknown> }).omp;
-		omp.system = { resolvePaths, revealPath, openPath: vi.fn(async () => ({ ok: true })) };
+		const omsk = (window as unknown as { omsk: Record<string, unknown> }).omsk;
+		omsk.system = { resolvePaths, revealPath, openPath: vi.fn(async () => ({ ok: true })) };
 		await mount();
 
 		await rightClick("app/src/a.ts");

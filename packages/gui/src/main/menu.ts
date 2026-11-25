@@ -1,5 +1,5 @@
 /**
- * Native application menu for the omp GUI.
+ * Native application menu for the omsk GUI.
  */
 import { app, Menu, type MenuItemConstructorOptions, shell } from "electron";
 import { IPC_EVENTS, type MenuAction } from "../shared/ipc-types";

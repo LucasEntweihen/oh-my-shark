@@ -30,9 +30,9 @@ export function usePlanApproval(): void {
 			});
 		};
 		const unsubscribe =
-			typeof window.omp.events.onTabBatch === "function"
-				? window.omp.events.onTabBatch(reduce)
-				: window.omp.events.onBatch(events => reduce(events, useTabsStore.getState().activeTabId ?? ""));
+			typeof window.omsk.events.onTabBatch === "function"
+				? window.omsk.events.onTabBatch(reduce)
+				: window.omsk.events.onBatch(events => reduce(events, useTabsStore.getState().activeTabId ?? ""));
 		return unsubscribe;
 	}, []);
 }

@@ -1,6 +1,6 @@
 /**
  * Learned-skill review: a skill is new until reviewed, reads "updated" only when
- * omp rewrote it after the review, and the review diff shows the change itself.
+ * omsk rewrote it after the review, and the review diff shows the change itself.
  */
 import { describe, expect, it } from "vitest";
 import type { RpcSkillDetail, RpcSkillInfo } from "../../shared/rpc-types";
@@ -16,11 +16,11 @@ function skill(name: string, modifiedAt: number, managed = true): RpcSkillInfo {
 	return {
 		name,
 		description: "Deploy the app",
-		source: "omp:user",
+		source: "omsk:user",
 		enabled: true,
 		location: `/skills/${name}`,
-		provider: "omp",
-		providerName: "omp",
+		provider: "omsk",
+		providerName: "omsk",
 		level: "user",
 		managed,
 		hidden: false,

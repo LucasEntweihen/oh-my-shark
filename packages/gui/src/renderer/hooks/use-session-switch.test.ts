@@ -6,7 +6,7 @@
  * still toast.
  *
  * Harness: linkedom globals (hydrateSession's store graph expects them) +
- * a mocked window.omp, same shape as tabs.test.tsx.
+ * a mocked window.omsk, same shape as tabs.test.tsx.
  */
 
 import { parseHTML } from "linkedom";
@@ -105,7 +105,7 @@ interface MockOmp {
 }
 
 function installMockOmp(): MockOmp {
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		tabs: {
 			getSessionOwner: vi.fn(async () => null),
 			setActive: vi.fn(async () => true),
@@ -128,8 +128,8 @@ function installMockOmp(): MockOmp {
 			setSubagentSubscription: vi.fn(async () => ok({})),
 		},
 	};
-	(window as unknown as { omp: MockOmp }).omp = omp;
-	return omp;
+	(window as unknown as { omsk: MockOmp }).omsk = omsk;
+	return omsk;
 }
 
 /** Two tabs: t0 active, t1 background. */
@@ -160,15 +160,15 @@ function resetAll(): void {
 	useToastStore.setState({ toasts: [] });
 }
 
-let omp: MockOmp;
+let omsk: MockOmp;
 
 afterEach(() => {
 	resetAll();
 	vi.restoreAllMocks();
-	omp = installMockOmp();
+	omsk = installMockOmp();
 });
 
-omp = installMockOmp();
+omsk = installMockOmp();
 
 describe("switchSessionNow F-OWN owner guard", () => {
 	it("clears old todo history and agents before a successful new session hydrates", async () => {
@@ -179,7 +179,7 @@ describe("switchSessionNow F-OWN owner guard", () => {
 				["old-agent", { id: "old-agent", index: 0, agent: "task", status: "completed", lastUpdate: 1 }],
 			]),
 		});
-		omp.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "fresh" })));
+		omsk.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "fresh" })));
 
 		await newSessionNow();
 
@@ -195,13 +195,13 @@ describe("switchSessionNow F-OWN owner guard", () => {
 				["old-agent", { id: "old-agent", index: 0, agent: "task", status: "completed", lastUpdate: 1 }],
 			]),
 		});
-		omp.rpc.newSession.mockResolvedValue(ok({ cancelled: true }));
+		omsk.rpc.newSession.mockResolvedValue(ok({ cancelled: true }));
 
 		await newSessionNow();
 
 		expect(useTodoStore.getState().phases).toHaveLength(1);
 		expect(useSubagentsStore.getState().subagents.has("old-agent")).toBe(true);
-		expect(omp.rpc.getState).not.toHaveBeenCalled();
+		expect(omsk.rpc.getState).not.toHaveBeenCalled();
 	});
 
 	it("clears the attached task before projecting its replacement after deletion", async () => {
@@ -211,11 +211,11 @@ describe("switchSessionNow F-OWN owner guard", () => {
 				["old-agent", { id: "old-agent", index: 0, agent: "task", status: "completed", lastUpdate: 1 }],
 			]),
 		});
-		omp.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "replacement" })));
+		omsk.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "replacement" })));
 
 		await dropSessionNow();
 
-		expect(omp.rpc.dropSession).toHaveBeenCalledOnce();
+		expect(omsk.rpc.dropSession).toHaveBeenCalledOnce();
 		expect(useMessagesStore.getState().messages).toEqual([]);
 		expect(useSubagentsStore.getState().subagents.size).toBe(0);
 		expect(useSessionStore.getState().sessionId).toBe("replacement");
@@ -223,44 +223,44 @@ describe("switchSessionNow F-OWN owner guard", () => {
 
 	it("routes to the owning tab in this window without issuing switch_session", async () => {
 		seedTabs();
-		omp.tabs.getSessionOwner.mockResolvedValue({ tabId: "t1", winId: 1 });
+		omsk.tabs.getSessionOwner.mockResolvedValue({ tabId: "t1", winId: 1 });
 
 		const result = await switchSessionNow(session("/sessions/x.jsonl"));
 
 		expect(result).toBe(true);
-		expect(omp.tabs.getSessionOwner).toHaveBeenCalledWith("/sessions/x.jsonl");
-		expect(omp.rpc.switchSession).not.toHaveBeenCalled();
+		expect(omsk.tabs.getSessionOwner).toHaveBeenCalledWith("/sessions/x.jsonl");
+		expect(omsk.rpc.switchSession).not.toHaveBeenCalled();
 		// Routed via switchTab: SET_ACTIVE_TAB fired and the tab is foreground.
-		expect(omp.tabs.setActive).toHaveBeenCalledWith("t1");
+		expect(omsk.tabs.setActive).toHaveBeenCalledWith("t1");
 		expect(useTabsStore.getState().activeTabId).toBe("t1");
 		expect(useToastStore.getState().toasts).toEqual([]);
 	});
 
 	it("focuses the foreign owner window instead of attaching", async () => {
 		seedTabs();
-		omp.tabs.getSessionOwner.mockResolvedValue({ tabId: "zz", winId: 9 });
-		omp.sessions.openInNewWindow.mockResolvedValue(true);
+		omsk.tabs.getSessionOwner.mockResolvedValue({ tabId: "zz", winId: 9 });
+		omsk.sessions.openInNewWindow.mockResolvedValue(true);
 
 		const result = await switchSessionNow(session("/sessions/x.jsonl"));
 
 		expect(result).toBe(true);
-		expect(omp.sessions.openInNewWindow).toHaveBeenCalledWith({ sessionPath: "/sessions/x.jsonl" });
-		expect(omp.rpc.switchSession).not.toHaveBeenCalled();
-		expect(omp.tabs.setActive).not.toHaveBeenCalled();
+		expect(omsk.sessions.openInNewWindow).toHaveBeenCalledWith({ sessionPath: "/sessions/x.jsonl" });
+		expect(omsk.rpc.switchSession).not.toHaveBeenCalled();
+		expect(omsk.tabs.setActive).not.toHaveBeenCalled();
 		expect(useTabsStore.getState().activeTabId).toBe("t0");
 	});
 
 	it("switches in place when no tab owns the session", async () => {
 		seedTabs();
-		omp.tabs.getSessionOwner.mockResolvedValue(null);
+		omsk.tabs.getSessionOwner.mockResolvedValue(null);
 
 		const result = await switchSessionNow(session("/sessions/x.jsonl"));
 
 		expect(result).toBe(true);
-		expect(omp.rpc.switchSession).toHaveBeenCalledWith("/sessions/x.jsonl");
+		expect(omsk.rpc.switchSession).toHaveBeenCalledWith("/sessions/x.jsonl");
 		// The existing flow hydrated after the switch.
-		expect(omp.rpc.getState).toHaveBeenCalled();
-		expect(omp.tabs.setActive).not.toHaveBeenCalled();
+		expect(omsk.rpc.getState).toHaveBeenCalled();
+		expect(omsk.tabs.setActive).not.toHaveBeenCalled();
 	});
 
 	it("keeps the outgoing transcript painted until hydrate commits the next session", async () => {
@@ -316,7 +316,7 @@ describe("switchSessionNow F-OWN owner guard", () => {
 		});
 		const transcript = Promise.withResolvers<RpcResponse>();
 		const transcriptStarted = Promise.withResolvers<void>();
-		omp.rpc.getTranscript.mockImplementation(() => {
+		omsk.rpc.getTranscript.mockImplementation(() => {
 			transcriptStarted.resolve();
 			return transcript.promise;
 		});
@@ -339,8 +339,8 @@ describe("switchSessionNow F-OWN owner guard", () => {
 	it("routes a raced session_owned_elsewhere refusal to the payload owner", async () => {
 		seedTabs();
 		// Pre-check saw no owner, but a parallel attach won the race → main refuses.
-		omp.tabs.getSessionOwner.mockResolvedValue(null);
-		omp.rpc.switchSession.mockResolvedValue({
+		omsk.tabs.getSessionOwner.mockResolvedValue(null);
+		omsk.rpc.switchSession.mockResolvedValue({
 			type: "response",
 			command: "switch_session",
 			success: false,
@@ -352,7 +352,7 @@ describe("switchSessionNow F-OWN owner guard", () => {
 		const result = await switchSessionNow(session("/sessions/x.jsonl"));
 
 		expect(result).toBe(true);
-		expect(omp.tabs.setActive).toHaveBeenCalledWith("t1");
+		expect(omsk.tabs.setActive).toHaveBeenCalledWith("t1");
 		expect(useTabsStore.getState().activeTabId).toBe("t1");
 		// The refusal is a routing signal, not a failure — no error toast.
 		expect(useToastStore.getState().toasts).toEqual([]);
@@ -360,12 +360,12 @@ describe("switchSessionNow F-OWN owner guard", () => {
 
 	it("ignores a failed owner pre-check and lets main be the backstop", async () => {
 		seedTabs();
-		omp.tabs.getSessionOwner.mockRejectedValue(new Error("ipc down"));
+		omsk.tabs.getSessionOwner.mockRejectedValue(new Error("ipc down"));
 
 		const result = await switchSessionNow(session("/sessions/x.jsonl"));
 
 		expect(result).toBe(true);
-		expect(omp.rpc.switchSession).toHaveBeenCalledWith("/sessions/x.jsonl");
+		expect(omsk.rpc.switchSession).toHaveBeenCalledWith("/sessions/x.jsonl");
 	});
 
 	it("requires confirmation before replacing a session with an active background handoff", () => {
@@ -376,7 +376,7 @@ describe("switchSessionNow F-OWN owner guard", () => {
 		try {
 			requestSessionSwitch(target);
 			expect(request).toHaveBeenCalledWith(target);
-			expect(omp.rpc.switchSession).not.toHaveBeenCalled();
+			expect(omsk.rpc.switchSession).not.toHaveBeenCalled();
 		} finally {
 			request.mockRestore();
 		}
@@ -384,7 +384,7 @@ describe("switchSessionNow F-OWN owner guard", () => {
 
 	it("keeps ordinary switch failures as error toasts", async () => {
 		seedTabs();
-		omp.rpc.switchSession.mockResolvedValue({
+		omsk.rpc.switchSession.mockResolvedValue({
 			type: "response",
 			command: "switch_session",
 			success: false,
@@ -401,7 +401,7 @@ describe("switchSessionNow F-OWN owner guard", () => {
 		seedTabs();
 		const kept = { role: "user" as const, content: "stay", timestamp: 1 };
 		useMessagesStore.setState({ messages: [kept], totalMessages: 1 });
-		omp.rpc.switchSession.mockResolvedValue({
+		omsk.rpc.switchSession.mockResolvedValue({
 			type: "response",
 			command: "switch_session",
 			success: false,
@@ -416,7 +416,7 @@ describe("switchSessionNow F-OWN owner guard", () => {
 
 	it("surfaces a cross-kind switch as an error toast without switching (session_kind_mismatch)", async () => {
 		seedTabs();
-		omp.rpc.switchSession.mockResolvedValue({
+		omsk.rpc.switchSession.mockResolvedValue({
 			type: "response",
 			command: "switch_session",
 			success: false,
@@ -429,8 +429,8 @@ describe("switchSessionNow F-OWN owner guard", () => {
 		expect(result).toBe(false);
 		expect(useToastStore.getState().toasts.some(toast => toast.variant === "error")).toBe(true);
 		// No routing side-effects: the kind guard never defers to an owner or a new window.
-		expect(omp.tabs.setActive).not.toHaveBeenCalled();
-		expect(omp.sessions.openInNewWindow).not.toHaveBeenCalled();
+		expect(omsk.tabs.setActive).not.toHaveBeenCalled();
+		expect(omsk.sessions.openInNewWindow).not.toHaveBeenCalled();
 	});
 
 	it("opens a chat session in a new chat tab instead of switching the agent tab onto it", async () => {
@@ -440,8 +440,8 @@ describe("switchSessionNow F-OWN owner guard", () => {
 
 		expect(result).toBe(true);
 		// Cross-kind: never a switch_session on the agent tab — a NEW chat tab instead.
-		expect(omp.rpc.switchSession).not.toHaveBeenCalled();
-		expect(omp.tabs.spawn).toHaveBeenCalledWith(
+		expect(omsk.rpc.switchSession).not.toHaveBeenCalled();
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith(
 			expect.objectContaining({ sessionPath: "/sessions/chat.jsonl", kind: "chat" }),
 		);
 	});
@@ -456,15 +456,15 @@ describe("switchSessionNow F-OWN owner guard", () => {
 		const result = await switchSessionNow(session("/sessions/agent.jsonl"));
 
 		expect(result).toBe(true);
-		expect(omp.rpc.switchSession).not.toHaveBeenCalled();
-		expect(omp.tabs.spawn).toHaveBeenCalledWith(
+		expect(omsk.rpc.switchSession).not.toHaveBeenCalled();
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith(
 			expect.objectContaining({ sessionPath: "/sessions/agent.jsonl", kind: "agent" }),
 		);
 	});
 
 	it("offers the model-restore dialog instead of a toast when the saved model is unavailable", async () => {
 		seedTabs();
-		omp.rpc.switchSession.mockResolvedValue({
+		omsk.rpc.switchSession.mockResolvedValue({
 			type: "response",
 			command: "switch_session",
 			success: false,
@@ -488,9 +488,9 @@ describe("switchSessionNow F-OWN owner guard", () => {
 		const model = { provider: "anthropic", modelId: "claude-opus" };
 
 		await expect(switchSessionNow(target, model)).resolves.toBe(true);
-		expect(omp.rpc.switchSession).toHaveBeenCalledWith("/sessions/x.jsonl", model);
+		expect(omsk.rpc.switchSession).toHaveBeenCalledWith("/sessions/x.jsonl", model);
 
-		omp.rpc.switchSession.mockResolvedValue({
+		omsk.rpc.switchSession.mockResolvedValue({
 			type: "response",
 			command: "switch_session",
 			success: false,
@@ -508,8 +508,8 @@ describe("switchSessionNow F-OWN owner guard", () => {
 		const result = await switchSessionNow(session("/sessions/agent.jsonl"));
 
 		expect(result).toBe(true);
-		expect(omp.rpc.switchSession).toHaveBeenCalledWith("/sessions/agent.jsonl");
-		expect(omp.tabs.spawn).not.toHaveBeenCalled();
+		expect(omsk.rpc.switchSession).toHaveBeenCalledWith("/sessions/agent.jsonl");
+		expect(omsk.tabs.spawn).not.toHaveBeenCalled();
 	});
 });
 
@@ -526,12 +526,12 @@ describe("openSessionFromSidebar (gui#29)", () => {
 
 	it("browses history in the tab it opened, until a turn runs there", async () => {
 		seedFocusedTab(false);
-		omp.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "a", messageCount: 2 })));
+		omsk.rpc.getState.mockResolvedValue(ok(serverState({ sessionId: "a", messageCount: 2 })));
 
 		// The focused tab holds a conversation: the session gets a tab of its own.
 		await openSessionFromSidebar(session("/sessions/a.jsonl"));
-		expect(omp.rpc.switchSession).not.toHaveBeenCalled();
-		expect(omp.tabs.spawn).toHaveBeenCalledWith({
+		expect(omsk.rpc.switchSession).not.toHaveBeenCalled();
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith({
 			cwd: "/srv",
 			sessionPath: "/sessions/a.jsonl",
 			kind: "agent",
@@ -546,15 +546,15 @@ describe("openSessionFromSidebar (gui#29)", () => {
 
 		// The next open switches that tab in place, though it is not blank.
 		await openSessionFromSidebar(session("/sessions/b.jsonl"));
-		expect(omp.rpc.switchSession).toHaveBeenCalledWith("/sessions/b.jsonl");
-		expect(omp.tabs.spawn).toHaveBeenCalledOnce();
+		expect(omsk.rpc.switchSession).toHaveBeenCalledWith("/sessions/b.jsonl");
+		expect(omsk.tabs.spawn).toHaveBeenCalledOnce();
 
 		// Once a turn has run in it, it is the user's: the next open starts a new tab.
 		useTabsStore.getState().applyTabStatus({ ...status, sessionPath: "/sessions/b.jsonl", status: "running" });
 		useTabsStore.getState().applyTabStatus({ ...status, sessionPath: "/sessions/b.jsonl", status: "ready" });
 		await openSessionFromSidebar(session("/sessions/c.jsonl"));
-		expect(omp.rpc.switchSession).toHaveBeenCalledOnce();
-		expect(omp.tabs.spawn).toHaveBeenLastCalledWith(expect.objectContaining({ sessionPath: "/sessions/c.jsonl" }));
+		expect(omsk.rpc.switchSession).toHaveBeenCalledOnce();
+		expect(omsk.tabs.spawn).toHaveBeenLastCalledWith(expect.objectContaining({ sessionPath: "/sessions/c.jsonl" }));
 	});
 
 	it("switches a blank tab in place instead of starting another", async () => {
@@ -562,8 +562,8 @@ describe("openSessionFromSidebar (gui#29)", () => {
 
 		await openSessionFromSidebar(session("/sessions/a.jsonl"));
 
-		expect(omp.rpc.switchSession).toHaveBeenCalledWith("/sessions/a.jsonl");
-		expect(omp.tabs.spawn).not.toHaveBeenCalled();
+		expect(omsk.rpc.switchSession).toHaveBeenCalledWith("/sessions/a.jsonl");
+		expect(omsk.tabs.spawn).not.toHaveBeenCalled();
 	});
 
 	it("never switches away a tab holding unsent input", async () => {
@@ -572,7 +572,7 @@ describe("openSessionFromSidebar (gui#29)", () => {
 
 		await openSessionFromSidebar(session("/sessions/a.jsonl"));
 
-		expect(omp.rpc.switchSession).not.toHaveBeenCalled();
-		expect(omp.tabs.spawn).toHaveBeenCalledWith(expect.objectContaining({ sessionPath: "/sessions/a.jsonl" }));
+		expect(omsk.rpc.switchSession).not.toHaveBeenCalled();
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith(expect.objectContaining({ sessionPath: "/sessions/a.jsonl" }));
 	});
 });

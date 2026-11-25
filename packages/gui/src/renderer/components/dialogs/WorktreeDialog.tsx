@@ -1,7 +1,7 @@
 import { useTabRpc } from "../../lib/tab-rpc";
 /**
  * Worktree-create dialog (plan/20 — tab × worktree binding): names a new
- * branch omp/gui/<slug> checked out at ~/.omp/wt/gui-<slug>-<hash7>, then
+ * branch omsk/gui/<slug> checked out at ~/.omsk/wt/gui-<slug>-<hash7>, then
  * opens a tab bound to it. The create RPC rides the ACTIVE tab's sidecar
  * (baseCwd defaults to its session cwd; a Sidebar group pins it via
  * ui.worktreeDialog.baseCwd). The hash-suffixed path is computed agent-side —

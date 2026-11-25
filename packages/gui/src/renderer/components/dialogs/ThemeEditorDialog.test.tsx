@@ -121,7 +121,7 @@ beforeEach(() => {
 	});
 	trash = vi.fn(async () => ({ ok: true, themes: { dir: "/themes", files: [] } }));
 	prefsSet = vi.fn(async () => {});
-	(window as unknown as { omp: unknown }).omp = {
+	(window as unknown as { omsk: unknown }).omsk = {
 		prefs: { get: vi.fn(async () => "dark"), set: prefsSet },
 		themes: { save, delete: trash },
 	};

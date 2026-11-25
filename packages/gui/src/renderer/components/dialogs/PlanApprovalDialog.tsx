@@ -100,7 +100,7 @@ export function PlanApprovalDialog() {
 		const trimmed = feedback.trim();
 		const savePath =
 			kind === "approve" && option === "save"
-				? await window.omp.system.showSaveDialog(
+				? await window.omsk.system.showSaveDialog(
 						`${useSessionStore.getState().cwd}/${target.suggestedFileName ?? basename(target.planFilePath)}`,
 						[{ name: "Markdown", extensions: ["md"] }],
 					)

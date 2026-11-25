@@ -59,7 +59,7 @@ function useStatsResource<T>(path: string, params: Record<string, string> | unde
 					: { key, data: null, isLoading: true, error: null, updatedAt: null },
 			);
 			try {
-				const result = await window.omp.stats.fetch(path, queryParams);
+				const result = await window.omsk.stats.fetch(path, queryParams);
 				const starting = unavailableError(result);
 				if (starting !== null) {
 					// Server still booting: stay in the loading state and retry quickly so

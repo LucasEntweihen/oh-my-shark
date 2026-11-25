@@ -88,7 +88,7 @@ export function SessionPickerDialog() {
 		let cancelled = false;
 		void (async () => {
 			try {
-				const global = browsableSessions(await window.omp.sessions.list("global"));
+				const global = browsableSessions(await window.omsk.sessions.list("global"));
 				if (cancelled) return;
 				listsRef.current.global = global;
 				setSessions(global);
@@ -110,7 +110,7 @@ export function SessionPickerDialog() {
 		setError(null);
 		setActiveIndex(0);
 		try {
-			const list = listsRef.current[target] ?? browsableSessions(await window.omp.sessions.list(target));
+			const list = listsRef.current[target] ?? browsableSessions(await window.omsk.sessions.list(target));
 			listsRef.current[target] = list;
 			setSessions(list);
 			setScope(target);
@@ -131,7 +131,7 @@ export function SessionPickerDialog() {
 		}
 		const generation = ++searchGenerationRef.current;
 		const timer = setTimeout(() => {
-			window.omp.sessions
+			window.omsk.sessions
 				.search(q, scope)
 				.then(paths => {
 					if (searchGenerationRef.current === generation) setContentPaths(new Set(paths));

@@ -1,5 +1,5 @@
 /**
- * Theme application for the omp GUI.
+ * Theme application for the omsk GUI.
  *
  * Single source of truth for design tokens is the stylesheets
  * `theme-dark.css` (`:root`) and `theme-light.css` (`:root[data-theme="light"]`).
@@ -10,9 +10,9 @@
 export type ThemeMode = "dark" | "light" | "system";
 export type ResolvedTheme = "dark" | "light";
 
-export const THEME_SCHEME_STORAGE_KEY = "omp.themeScheme";
+export const THEME_SCHEME_STORAGE_KEY = "omsk.themeScheme";
 /** The chosen theme's window background, painted by pre-paint.js before the theme loads. */
-export const THEME_BACKGROUND_STORAGE_KEY = "omp.themeBackground";
+export const THEME_BACKGROUND_STORAGE_KEY = "omsk.themeBackground";
 
 /** Synchronous boot mode mirrored by pre-paint.js before preferences IPC exists. */
 export function readPrepaintThemeMode(): ThemeMode {

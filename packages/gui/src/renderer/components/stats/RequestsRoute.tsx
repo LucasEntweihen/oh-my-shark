@@ -31,7 +31,7 @@ function DetailDrawer({ row, onClose }: { row: RequestRow; onClose: () => void }
 		let cancelled = false;
 		setLoading(true);
 		setError(null);
-		window.omp.stats
+		window.omsk.stats
 			.fetch(`/api/request/${row.id}`)
 			.then(result => {
 				if (result && typeof result === "object" && "error" in result) throw new Error(String(result.error));

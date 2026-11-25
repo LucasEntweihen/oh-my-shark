@@ -99,7 +99,7 @@ interface MockOmp {
 }
 
 function installMockOmp(): MockOmp {
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		sessions: { list: vi.fn(async () => []) },
 		tabs: {
 			list: vi.fn(async () => []),
@@ -164,11 +164,11 @@ function installMockOmp(): MockOmp {
 			}),
 		},
 	};
-	(window as unknown as { omp: MockOmp }).omp = omp;
-	return omp;
+	(window as unknown as { omsk: MockOmp }).omsk = omsk;
+	return omsk;
 }
 
-let omp: MockOmp;
+let omsk: MockOmp;
 let container: TestElement;
 let root: Root;
 
@@ -272,15 +272,15 @@ afterEach(async () => {
 	// `[aria-label="Close tab"]` query finds nothing.
 	useUiStore.setState({ armedCloseTab: null, worktreeClosePrompt: null });
 	vi.restoreAllMocks();
-	omp = installMockOmp();
+	omsk = installMockOmp();
 });
 
-omp = installMockOmp();
+omsk = installMockOmp();
 
 describe("TabBar", () => {
 	it("uses the restored session path before session_info arrives and matches the sidebar title", async () => {
 		const firstMessage = "当前本地已修改代码,是否可以合并到 main 分支并完成全部验证";
-		omp.sessions.list.mockResolvedValue([listedSession("s-infron", { firstMessage, messageCount: 2 })]);
+		omsk.sessions.list.mockResolvedValue([listedSession("s-infron", { firstMessage, messageCount: 2 })]);
 		useTabsStore.setState({
 			tabs: [
 				{
@@ -306,7 +306,7 @@ describe("TabBar", () => {
 	});
 
 	it("removes a truly empty startup placeholder after a real session tab exists", async () => {
-		omp.sessions.list.mockResolvedValue([
+		omsk.sessions.list.mockResolvedValue([
 			listedSession("s-empty"),
 			listedSession("s-real", { firstMessage: "Real work", messageCount: 2 }),
 		]);
@@ -338,12 +338,12 @@ describe("TabBar", () => {
 		await mount(<TabBar />);
 		await flush();
 
-		expect(omp.tabs.close).toHaveBeenCalledWith("t-empty");
+		expect(omsk.tabs.close).toHaveBeenCalledWith("t-empty");
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t-real"]);
 	});
 
 	it("keeps an empty startup tab when it contains an unsent draft", async () => {
-		omp.sessions.list.mockResolvedValue([
+		omsk.sessions.list.mockResolvedValue([
 			listedSession("s-empty"),
 			listedSession("s-real", { firstMessage: "Real work", messageCount: 2 }),
 		]);
@@ -376,7 +376,7 @@ describe("TabBar", () => {
 		await mount(<TabBar />);
 		await flush();
 
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t-empty", "t-real"]);
 	});
 
@@ -489,7 +489,7 @@ describe("TabBar", () => {
 		await click(menuItem("Split right")!);
 		const pair = { axis: "columns", firstTabId: "t0", secondTabId: "t2", ratio: 0.5 };
 		expect(useTabsStore.getState()).toMatchObject({ activeTabId: "t2", split: pair, groups: [pair] });
-		expect(omp.tabs.setView).toHaveBeenCalledWith("t2", ["t0", "t2"], [pair]);
+		expect(omsk.tabs.setView).toHaveBeenCalledWith("t2", ["t0", "t2"], [pair]);
 		// One merged chip, its halves in pane order, ahead of the single tab.
 		const merged = container.querySelectorAll("[data-tab-pair]");
 		expect(merged).toHaveLength(1);
@@ -503,7 +503,7 @@ describe("TabBar", () => {
 		await click(menuItem("Separate pair")!);
 		expect(useTabsStore.getState().split).toBeNull();
 		expect(useTabsStore.getState().activeTabId).toBe("t2");
-		expect(omp.tabs.setView).toHaveBeenLastCalledWith("t2", ["t2"], []);
+		expect(omsk.tabs.setView).toHaveBeenLastCalledWith("t2", ["t2"], []);
 		expect(container.querySelectorAll("[data-tab-pair]")).toHaveLength(0);
 	});
 
@@ -530,7 +530,7 @@ describe("TabBar", () => {
 		await fire(chips()[0]!, "onDragStart", { dataTransfer: { setData: () => {}, effectAllowed: "none" } });
 		await fire(chips()[1]!, "onDrop", over(chips()[1]!, 180));
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0", "t2", "t1"]);
-		await vi.waitFor(() => expect(omp.tabs.setOrder).toHaveBeenLastCalledWith(["t0", "t2", "t1"]));
+		await vi.waitFor(() => expect(omsk.tabs.setOrder).toHaveBeenLastCalledWith(["t0", "t2", "t1"]));
 	});
 
 	it("the all-tabs list finds a tab by title and switches to it", async () => {
@@ -587,9 +587,9 @@ describe("TabBar", () => {
 		await rightClick(chips()[0]!);
 		await click(menuItem("Close all tabs")!);
 		await flush();
-		expect(omp.tabs.spawn).toHaveBeenCalledWith({ cwd: "/gamma", sessionPath: undefined, kind: "agent" });
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith({ cwd: "/gamma", sessionPath: undefined, kind: "agent" });
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t9"]);
-		expect(omp.tabs.close.mock.calls.map(([id]) => id)).toEqual(["t0", "t1", "t3", "t2"]);
+		expect(omsk.tabs.close.mock.calls.map(([id]) => id)).toEqual(["t0", "t1", "t3", "t2"]);
 	});
 
 	it("clicking a chip switches tabs; the + button spawns a new tab in the current cwd", async () => {
@@ -603,7 +603,7 @@ describe("TabBar", () => {
 		});
 		// Hydrate on the switch pulls the target sidecar's state — its cwd is
 		// what the + button reuses for the fresh tab.
-		omp.rpc.getState.mockResolvedValue(
+		omsk.rpc.getState.mockResolvedValue(
 			ok({
 				sessionId: "srv",
 				sessionName: null,
@@ -621,14 +621,14 @@ describe("TabBar", () => {
 		await mount(<TabBar />);
 
 		await click(chips()[1]!);
-		expect(omp.tabs.setActive).toHaveBeenCalledWith("t1");
+		expect(omsk.tabs.setActive).toHaveBeenCalledWith("t1");
 		expect(useTabsStore.getState().activeTabId).toBe("t1");
 
 		const plus = container.querySelector('[aria-label="New Agent Tab"]');
 		expect(plus).not.toBeNull();
 		await click(plus!);
 		// One click = agent tab directly (the dominant path).
-		expect(omp.tabs.spawn).toHaveBeenCalledWith({ cwd: "/beta", sessionPath: undefined, kind: "agent" });
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith({ cwd: "/beta", sessionPath: undefined, kind: "agent" });
 	});
 
 	it("the chat button spawns a chat tab in one click", async () => {
@@ -643,7 +643,7 @@ describe("TabBar", () => {
 		const chatButton = container.querySelector('[aria-label="New Chat Tab"]');
 		expect(chatButton).not.toBeNull();
 		await click(chatButton!);
-		expect(omp.tabs.spawn).toHaveBeenCalledWith({ cwd: "/beta", sessionPath: undefined, kind: "chat" });
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith({ cwd: "/beta", sessionPath: undefined, kind: "chat" });
 	});
 
 	it("agent and chat creation buttons are visible with labeled affordances", async () => {
@@ -676,10 +676,10 @@ describe("TabBar", () => {
 		expect(close).not.toBeNull();
 		await click(close!);
 
-		expect(omp.tabs.close).toHaveBeenCalledWith("t1");
+		expect(omsk.tabs.close).toHaveBeenCalledWith("t1");
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0"]);
 		expect(useTabsStore.getState().activeTabId).toBe("t0");
-		expect(omp.tabs.setActive).not.toHaveBeenCalled();
+		expect(omsk.tabs.setActive).not.toHaveBeenCalled();
 	});
 });
 
@@ -708,13 +708,13 @@ describe("TabBar close confirm", () => {
 		await click(chips()[1]!.querySelector('[aria-label="Close tab"]')!);
 
 		// Armed, not executed: the chip swaps its label for the warning + ✓/✕.
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 		expect(chips()[1]?.textContent).toContain("Close tab? The running task will be aborted");
 		expect(chips()[1]?.querySelector('[aria-label="Close tab"]')).toBeNull();
 
 		await click(chips()[1]!.querySelector('[aria-label="Confirm"]')!);
 
-		expect(omp.tabs.close).toHaveBeenCalledWith("t1");
+		expect(omsk.tabs.close).toHaveBeenCalledWith("t1");
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0"]);
 	});
 
@@ -727,7 +727,7 @@ describe("TabBar close confirm", () => {
 
 		await click(chips()[1]!.querySelector('[aria-label="Cancel"]')!);
 
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 		expect(chips()[1]?.textContent).not.toContain("Close tab? The running task will be aborted");
 		expect(chips()[1]?.querySelector('[aria-label="Close tab"]')).not.toBeNull();
 	});
@@ -746,7 +746,7 @@ describe("TabBar close confirm", () => {
 		expect(keydown.defaultPrevented).toBe(true);
 		expect(useUiStore.getState().armedCloseTab).toBeNull();
 		expect(chips()[1]?.querySelector('[aria-label="Close tab"]')).not.toBeNull();
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 	});
 
 	it("the armed close auto-cancels after the timeout", async () => {
@@ -761,7 +761,7 @@ describe("TabBar close confirm", () => {
 			await sleep(200);
 		});
 
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 		expect(chips()[1]?.querySelector('[aria-label="Confirm"]')).toBeNull();
 		expect(chips()[1]?.querySelector('[aria-label="Close tab"]')).not.toBeNull();
 	});
@@ -779,7 +779,7 @@ describe("TabBar close confirm", () => {
 
 		// t1's sidecar is still booting — closing kills the launch, so it arms.
 		await click(chips()[1]!.querySelector('[aria-label="Close tab"]')!);
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 		expect(chips()[1]?.textContent).toContain("Close tab? The running task will be aborted");
 
 		// The active tab's status push says ready, but the foreground stream is
@@ -787,7 +787,7 @@ describe("TabBar close confirm", () => {
 		useSessionStore.setState({ isStreaming: true });
 		await flush();
 		await click(chips()[0]!.querySelector('[aria-label="Close tab"]')!);
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 		expect(chips()[0]?.textContent).toContain("Close tab? The running task will be aborted");
 	});
 
@@ -804,7 +804,7 @@ describe("TabBar close confirm", () => {
 
 		// The active-but-idle tab closes with no confirm interlude.
 		await click(chips()[0]!.querySelector('[aria-label="Close tab"]')!);
-		expect(omp.tabs.close).toHaveBeenCalledWith("t0");
+		expect(omsk.tabs.close).toHaveBeenCalledWith("t0");
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t1"]);
 	});
 
@@ -829,7 +829,7 @@ describe("TabBar close confirm", () => {
 
 		// ✓ on that chip finishes the close.
 		await click(chips()[0]!.querySelector('[aria-label="Confirm"]')!);
-		expect(omp.tabs.close).toHaveBeenCalledWith("t0");
+		expect(omsk.tabs.close).toHaveBeenCalledWith("t0");
 		expect(useUiStore.getState().armedCloseTab).toBeNull();
 	});
 
@@ -843,7 +843,7 @@ describe("TabBar close confirm", () => {
 					cwd: "/wt/gui-fix-deadbeef",
 					status: "ready",
 					unreadDone: false,
-					worktree: { name: "fix", branch: "omp/gui/fix", baseCwd: "/alpha" },
+					worktree: { name: "fix", branch: "omsk/gui/fix", baseCwd: "/alpha" },
 				},
 			],
 			activeTabId: "t0",
@@ -852,12 +852,12 @@ describe("TabBar close confirm", () => {
 		await mount(<TabBar />);
 
 		// The chip carries the worktree marker + branch tooltip…
-		expect(chips()[1]?.getAttribute("title")).toBe("fix — gui-fix-deadbeef — omp/gui/fix");
+		expect(chips()[1]?.getAttribute("title")).toBe("fix — gui-fix-deadbeef — omsk/gui/fix");
 		expect(chips()[1]?.textContent).toContain("fix");
 
 		// …and its × opens the cleanup prompt WITHOUT closing the tab.
 		await click(chips()[1]!.querySelector('[aria-label="Close tab"]')!);
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 		expect(useTabsStore.getState().tabs.map(tab => tab.id)).toEqual(["t0", "t1"]);
 		expect(useUiStore.getState().worktreeClosePrompt).toEqual({ tabId: "t1" });
 	});

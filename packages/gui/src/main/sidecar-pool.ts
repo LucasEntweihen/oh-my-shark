@@ -88,7 +88,7 @@ interface PoolEntry {
 	/**
 	 * Git-worktree binding (plan/20). Immutable, set at acquire from the spawn
 	 * payload; surfaced via tabStatusPayload so the chip and close flow know
-	 * this tab owns a ~/.omp/wt checkout.
+	 * this tab owns a ~/.omsk/wt checkout.
 	 */
 	worktree?: IpcTabWorktree;
 	/** Last status this tab's sidecar reported (TAB_STATUS / GET_TABS). */
@@ -169,7 +169,7 @@ export class SidecarPool {
 	/** Suppress partial snapshots while a saved layout is being reconstructed. */
 	#restoringWindows = new Set<number>();
 	/**
-	 * Warm spare (gui#29). Opening a session used to cold-start an omp process
+	 * Warm spare (gui#29). Opening a session used to cold-start an omsk process
 	 * for its tab — seconds on a fast Mac, tens of seconds on slow Windows
 	 * hosts — while switching a running process onto a session takes well
 	 * under a second. So once an agent tab is up, one idle process is booted in

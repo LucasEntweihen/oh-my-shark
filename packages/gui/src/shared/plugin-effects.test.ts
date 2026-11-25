@@ -86,7 +86,7 @@ describe("runsLocalCode", () => {
 		["a hook", summarize(["hooks/post/a.sh"])],
 		["a custom tool", summarize(["tools/thing.ts"])],
 		["a language server", summarize([".lsp.json"], { ".lsp.json": { rust: { command: "rust-analyzer" } } })],
-		["an agent extension", summarize(["package.json"], { "package.json": { omp: { extensions: ["./x.ts"] } } })],
+		["an agent extension", summarize(["package.json"], { "package.json": { omsk: { extensions: ["./x.ts"] } } })],
 	])("flags %s", (_label, effects) => {
 		expect(runsLocalCode(effects)).toBe(true);
 	});

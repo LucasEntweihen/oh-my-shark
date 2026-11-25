@@ -284,7 +284,7 @@ function WebLinkRow(props: { label: string; value: string; onCopy(value: string)
 			</div>
 			<Button
 				aria-label={props.label}
-				onClick={() => void window.omp.system.openExternal(props.value)}
+				onClick={() => void window.omsk.system.openExternal(props.value)}
 				size="sm"
 				variant="secondary"
 			>

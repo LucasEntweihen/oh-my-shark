@@ -152,7 +152,7 @@ const CASES: Array<[string, string]> = [
 	["<!DOCTYPE html><html><body>Sign in</body></html>", en["errors.htmlReply"]],
 
 	// Programs and files.
-	["spawn omp ENOENT", "Couldn't start omp. It may not be installed."],
+	["spawn omsk ENOENT", "Couldn't start omsk. It may not be installed."],
 	["ENOENT: no such file or directory, open '/tmp/x.json'", "Couldn't find /tmp/x.json."],
 	["EACCES: permission denied, open '/tmp/x.json'", "You don't have permission to use /tmp/x.json."],
 	["ENOSPC: no space left on device, write", en["errors.file.diskFull"]],

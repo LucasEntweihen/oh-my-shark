@@ -1,5 +1,5 @@
 /**
- * HTTP client for the private, bundled omp stats dashboard API.
+ * HTTP client for the private, bundled omsk stats dashboard API.
  * Polls GET endpoints; discovers availability via x-omp-stats-dashboard header.
  */
 

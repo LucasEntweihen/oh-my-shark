@@ -36,7 +36,7 @@ export function LiveVoiceDialog() {
 		let cancelled = false;
 		generation.current++;
 		dispatch({ kind: "reset" });
-		const unsubscribe = window.omp.events.onLiveFrame(frame => {
+		const unsubscribe = window.omsk.events.onLiveFrame(frame => {
 			if (!cancelled && acceptsActiveTabEvents()) dispatch({ kind: "frame", frame });
 		});
 		return () => {

@@ -50,9 +50,9 @@ const getSubagentMessages: Mock = vi.fn(async () => ({
 	success: true,
 	data: { messages: [] },
 }));
-// Window carries the omp bridge at runtime; named cast keeps the mock wiring typed.
-const ompWindow = window as unknown as { omp: { rpc: { getSubagents: Mock; getSubagentMessages: Mock } } };
-ompWindow.omp = { rpc: { getSubagents, getSubagentMessages } };
+// Window carries the omsk bridge at runtime; named cast keeps the mock wiring typed.
+const ompWindow = window as unknown as { omsk: { rpc: { getSubagents: Mock; getSubagentMessages: Mock } } };
+ompWindow.omsk = { rpc: { getSubagents, getSubagentMessages } };
 
 function snap(overrides: Partial<SubagentSnapshot>): SubagentSnapshot {
 	return { id: "a1", index: 1, agent: "scout", status: "running", lastUpdate: Date.now(), ...overrides };

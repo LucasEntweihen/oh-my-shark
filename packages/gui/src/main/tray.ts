@@ -43,7 +43,7 @@ let trayState: TrayState | null = null;
 /** Label set the currently installed native menu renders, and whether it is open. */
 let installedSignature: string | null = null;
 let menuIsOpen = false;
-let tooltip = "omp";
+let tooltip = "omsk";
 
 function buildIcon(): Electron.NativeImage {
 	// macOS status items are template images: the system applies the correct
@@ -348,5 +348,5 @@ export function destroyTray(): void {
 	trayState = null;
 	installedSignature = null;
 	menuIsOpen = false;
-	tooltip = "omp";
+	tooltip = "omsk";
 }

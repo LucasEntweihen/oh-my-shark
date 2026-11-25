@@ -1,5 +1,5 @@
 /**
- * Main process entry point for the omp GUI.
+ * Main process entry point for the omsk GUI.
  * App lifecycle: ready → window, sidecar, session index, IPC, tray, menu, deep links, updater.
  */
 
@@ -68,7 +68,7 @@ app.setName("OhMyShark");
 
 /**
  * Locate the GUI's built-in OMSK sidecar binary — prioritizing omsk(.exe), then
- * ohms(.exe), then legacy omp(.exe). Packaged apps ship it at
+ * ohms(.exe), then legacy omsk(.exe). Packaged apps ship it at
  * `process.resourcesPath/omsk(.exe)`; in dev it lives at
  * `packages/gui/resources/omsk(.exe)` (built by `bun --cwd=packages/gui run
  * build:omsk`). No system-installed sidecar is consulted and there is no
@@ -294,7 +294,7 @@ app.whenReady().then(() => {
 	const explicitStartupCwd = startupFolder();
 	const bundledOmp = resolveBundledOmp();
 	const sourceCli = resolveSourceCli();
-	// Finder-launched omp has no terminal, and a sidecar that dies before
+	// Finder-launched omsk has no terminal, and a sidecar that dies before
 	// it can write its own log only speaks through stderr — land the tail
 	// in gui-runtime.jsonl so it is readable after the fact.
 	const reportSidecarFailure: SidecarOptions["reportFailure"] = report => {
@@ -388,7 +388,7 @@ app.whenReady().then(() => {
 	}
 	statsClient = new StatsClient();
 	// Built-in stats dashboard: spawned from the SAME bundled binary. No
-	// external `omp stats` process is required (closed loop).
+	// external `omsk stats` process is required (closed loop).
 	if (bundledOmp) {
 		statsServer = new StatsServerManager(bundledOmp);
 		statsServer.on("ready", (port: number) => {

@@ -1,7 +1,7 @@
 /**
  * Theme editor: give a few parts of the window a color and the rest of the
  * theme follows (lib/theme-generator), shown live on a small copy of the
- * window. Saving writes a custom theme file to ~/.omp/gui/themes and applies
+ * window. Saving writes a custom theme file to ~/.omsk/gui/themes and applies
  * it, so nobody has to write the JSON by hand. Opened from the theme picker,
  * empty for a new theme or on a saved one to change it.
  */
@@ -386,7 +386,7 @@ export function ThemeEditorDialog() {
 		setSaving(true);
 		try {
 			const file = customThemeFileFor(generated, trimmedName, description);
-			const result = await window.omp.themes.save({ fileName: editing?.fileName, theme: { ...file } });
+			const result = await window.omsk.themes.save({ fileName: editing?.fileName, theme: { ...file } });
 			if (!result.ok) {
 				toast({ variant: "error", message: t("themeEditor.saveFailed", { error: describeError(result.error) }) });
 				return;
@@ -414,7 +414,7 @@ export function ThemeEditorDialog() {
 		setSaving(true);
 		try {
 			const onScreen = await getPersistedThemeSelection();
-			const result = await window.omp.themes.delete(editing.fileName);
+			const result = await window.omsk.themes.delete(editing.fileName);
 			if (!result.ok) {
 				toast({ variant: "error", message: t("themeEditor.deleteFailed", { error: describeError(result.error) }) });
 				return;

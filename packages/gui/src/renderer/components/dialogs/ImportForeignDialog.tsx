@@ -1,7 +1,7 @@
 import { useTabRpc } from "../../lib/tab-rpc";
 /**
- * Foreign-session import wizard (Claude/Codex → OMP copy): list sessions from
- * a source, multi-select, import each as a fresh OMP session (the source data
+ * Foreign-session import wizard (Claude/Codex → OMSK copy): list sessions from
+ * a source, multi-select, import each as a fresh OMSK session (the source data
  * is never modified). A single import opens the new session via the normal
  * switch flow; multiple imports land in the sidebar list with a count toast.
  * Backs the `list_foreign_sessions` / `import_foreign_session` RPCs.

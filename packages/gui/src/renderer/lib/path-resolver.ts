@@ -25,7 +25,7 @@ function flush(): void {
 		const settle = (results: Array<Resolution | undefined>) => {
 			for (const [index, path] of paths.entries()) requests.get(path)?.resolve(results[index] ?? null);
 		};
-		const resolvePaths = window.omp?.system?.resolvePaths;
+		const resolvePaths = window.omsk?.system?.resolvePaths;
 		if (!resolvePaths) {
 			settle([]);
 			continue;

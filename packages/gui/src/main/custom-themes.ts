@@ -1,7 +1,7 @@
 /**
- * Custom GUI themes (gui#38): `.json` files in ~/.omp/gui/themes, beside the
- * ~/.omp/work and ~/.omp/logs folders the GUI already keeps. The agent's own
- * ~/.omp/agent/themes holds TUI themes in another format, so GUI themes keep
+ * Custom GUI themes (gui#38): `.json` files in ~/.omsk/gui/themes, beside the
+ * ~/.omsk/work and ~/.omsk/logs folders the GUI already keeps. The agent's own
+ * ~/.omsk/agent/themes holds TUI themes in another format, so GUI themes keep
  * a folder of their own. Main reads and parses the files, and writes the
  * ones made in the theme editor; the renderer checks every color and fills
  * the rest from a built-in theme. Edits reach every window without a

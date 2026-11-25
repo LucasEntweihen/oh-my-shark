@@ -37,7 +37,7 @@ export function WorktreeCloseDialog() {
 			return;
 		}
 		let cancelled = false;
-		window.omp.rpc
+		window.omsk.rpc
 			.commandForTab(prompt.tabId, { type: "get_git_status" })
 			.then(response => {
 				if (cancelled) return;
@@ -66,7 +66,7 @@ export function WorktreeCloseDialog() {
 		if (!sidecarReady || busy) return;
 		setBusy(true);
 		try {
-			const response = await window.omp.rpc.commandForTab(
+			const response = await window.omsk.rpc.commandForTab(
 				prompt.tabId,
 				{ type: "worktree_remove", path: tab.cwd, force },
 				60_000,

@@ -18,7 +18,7 @@ import { useUiStore } from "../stores/ui";
  */
 export function useWorkspaceSurfaces(): void {
 	useEffect(() => {
-		const events = window.omp?.events;
+		const events = window.omsk?.events;
 		if (typeof events?.onTerminalFrame !== "function" || typeof events.onBrowserState !== "function") return;
 		const offTerminal = events.onTerminalFrame(({ tabId, frame }) => handleTerminalFrame(tabId, frame));
 		const offBrowser = events.onBrowserState(state => applyBrowserState(state, { reveal: true }));

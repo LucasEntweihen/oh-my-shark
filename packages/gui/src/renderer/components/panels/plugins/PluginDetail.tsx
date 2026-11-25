@@ -36,7 +36,7 @@ function usePluginPreview(plugin: CatalogPlugin, location: PluginRepoLocation | 
 		}
 		let cancelled = false;
 		setPreview({ status: "loading" });
-		window.omp.pluginCatalog.inspect({ ...location, ...(components ? { components } : {}) }).then(
+		window.omsk.pluginCatalog.inspect({ ...location, ...(components ? { components } : {}) }).then(
 			result => {
 				if (!cancelled) setPreview(result);
 			},
@@ -315,7 +315,7 @@ export function PluginDetail({
 								<button
 									className="flex items-center gap-1 text-omsk-sm text-(--omsk-accent) hover:underline"
 									key={link.label}
-									onClick={() => void window.omp.system.openExternal(link.url)}
+									onClick={() => void window.omsk.system.openExternal(link.url)}
 									title={link.url}
 									type="button"
 								>

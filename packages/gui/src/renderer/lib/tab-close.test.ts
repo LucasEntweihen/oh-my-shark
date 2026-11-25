@@ -23,7 +23,7 @@ interface MockOmp {
 }
 
 function installMockOmp(): MockOmp {
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		tabs: {
 			list: vi.fn(async () => []),
 			spawn: vi.fn(async () => ({ tabId: "t9" })),
@@ -33,20 +33,20 @@ function installMockOmp(): MockOmp {
 		},
 	};
 	(globalThis as Record<string, unknown>).window = {
-		omp,
+		omsk,
 		close: vi.fn(),
 	} as unknown as Window & typeof globalThis;
-	return omp;
+	return omsk;
 }
 
 function tab(id: string, overrides: Partial<SessionTab> = {}): SessionTab {
 	return { kind: "agent", id, cwd: `/work/${id}`, status: "ready", unreadDone: false, ...overrides };
 }
 
-let omp: MockOmp;
+let omsk: MockOmp;
 
 beforeEach(() => {
-	omp = installMockOmp();
+	omsk = installMockOmp();
 });
 
 afterEach(() => {
@@ -89,7 +89,7 @@ describe("closeActiveTab", () => {
 
 		expect(closeActiveTab()).toBe("window");
 		expect(window.close).toHaveBeenCalledTimes(1);
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 		expect(useTabsStore.getState().tabs).toHaveLength(1);
 	});
 
@@ -98,23 +98,23 @@ describe("closeActiveTab", () => {
 
 		expect(closeActiveTab()).toBe("armed");
 		expect(useUiStore.getState().armedCloseTab).toEqual({ tabId: "a" });
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 
 		expect(closeActiveTab()).toBe("closed");
-		await vi.waitFor(() => expect(omp.tabs.close).toHaveBeenCalledWith("a"));
+		await vi.waitFor(() => expect(omsk.tabs.close).toHaveBeenCalledWith("a"));
 		expect(useUiStore.getState().armedCloseTab).toBeNull();
 		expect(useTabsStore.getState().tabs.map(entry => entry.id)).toEqual(["b"]);
 	});
 
 	it("routes a worktree tab's close to the cleanup prompt instead of dropping the checkout", async () => {
 		useTabsStore.setState({
-			tabs: [tab("a", { worktree: { name: "fix", branch: "omp/gui/fix", baseCwd: "/work/base" } }), tab("b")],
+			tabs: [tab("a", { worktree: { name: "fix", branch: "omsk/gui/fix", baseCwd: "/work/base" } }), tab("b")],
 			activeTabId: "a",
 		});
 
 		expect(closeActiveTab()).toBe("worktree-prompt");
 		expect(useUiStore.getState().worktreeClosePrompt).toEqual({ tabId: "a" });
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 		expect(useTabsStore.getState().tabs).toHaveLength(2);
 	});
 
@@ -122,7 +122,7 @@ describe("closeActiveTab", () => {
 		useTabsStore.setState({ tabs: [tab("a"), tab("b")], activeTabId: "a" });
 
 		expect(closeActiveTab()).toBe("closed");
-		await vi.waitFor(() => expect(omp.tabs.close).toHaveBeenCalledWith("a"));
+		await vi.waitFor(() => expect(omsk.tabs.close).toHaveBeenCalledWith("a"));
 	});
 
 	it("does nothing without an active tab", () => {
@@ -130,7 +130,7 @@ describe("closeActiveTab", () => {
 
 		expect(closeActiveTab()).toBe("nothing");
 		expect(window.close).not.toHaveBeenCalled();
-		expect(omp.tabs.close).not.toHaveBeenCalled();
+		expect(omsk.tabs.close).not.toHaveBeenCalled();
 	});
 });
 
@@ -141,6 +141,6 @@ describe("performTabClose", () => {
 
 		expect(performTabClose(tab("b"))).toBe("closed");
 		expect(useUiStore.getState().armedCloseTab).toBeNull();
-		await vi.waitFor(() => expect(omp.tabs.close).toHaveBeenCalledWith("b"));
+		await vi.waitFor(() => expect(omsk.tabs.close).toHaveBeenCalledWith("b"));
 	});
 });

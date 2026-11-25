@@ -56,7 +56,7 @@ function installOmpMock(overrides: Partial<OmpMock> = {}): OmpMock {
 		abort: vi.fn(async () => ok({})),
 		...overrides,
 	};
-	(window as unknown as { omp: { rpc: OmpMock } }).omp = { rpc: mock };
+	(window as unknown as { omsk: { rpc: OmpMock } }).omsk = { rpc: mock };
 	return mock;
 }
 
@@ -156,20 +156,20 @@ function bodyText(): string {
 
 describe("AgentHubWindow hub tab", () => {
 	it("pauses and resumes all agents from the hub header", async () => {
-		const omp = installOmpMock();
+		const omsk = installOmpMock();
 		useSessionStore.getState().setStatus("ready", "/repo");
 		await mount(<AgentHubWindow initialTab="hub" onClose={() => {}} open />);
 
 		const pause = queryAll('button[title="Freeze all agents until resumed"]')[0];
 		if (!pause) throw new Error("pause button not found");
 		await click(pause);
-		expect(omp.setAgentsPaused).toHaveBeenCalledWith(true);
+		expect(omsk.setAgentsPaused).toHaveBeenCalledWith(true);
 		expect(useSessionStore.getState().agentsPaused).toBe(true);
 
 		const resume = queryAll('button[title="Resume all agents"]')[0];
 		if (!resume) throw new Error("resume button not found");
 		await click(resume);
-		expect(omp.setAgentsPaused).toHaveBeenCalledWith(false);
+		expect(omsk.setAgentsPaused).toHaveBeenCalledWith(false);
 		expect(useSessionStore.getState().agentsPaused).toBe(false);
 	});
 	it("distinguishes same-type agents by task label and shows model/kind/status", async () => {
@@ -235,17 +235,17 @@ describe("AgentHubWindow hub tab", () => {
 	});
 
 	it("查看消息 opens a transcript slide-over and back closes it", async () => {
-		const omp = installOmpMock();
+		const omsk = installOmpMock();
 		seedHub();
 		await mount(<AgentHubWindow initialTab="hub" onClose={() => {}} open />);
-		expect(omp.getSubagentMessages).not.toHaveBeenCalled();
+		expect(omsk.getSubagentMessages).not.toHaveBeenCalled();
 
 		// Rows sort live-first by descending index: a3, a2, a1 — the last card is a1.
 		const viewButtons = queryAll('button[title="View messages"]');
 		expect(viewButtons.length).toBe(3);
 		await click(viewButtons[2]!);
 
-		expect(omp.getSubagentMessages).toHaveBeenCalledWith("a1", undefined, 0);
+		expect(omsk.getSubagentMessages).toHaveBeenCalledWith("a1", undefined, 0);
 		expect(queryAll('button[aria-label="Back to instances"]').length).toBe(1);
 
 		await click(queryAll('button[aria-label="Back to instances"]')[0]!);
@@ -254,7 +254,7 @@ describe("AgentHubWindow hub tab", () => {
 
 	it("abort runs through inline confirm; revive calls revive_subagent directly", async () => {
 		// Post-action refetch keeps the parked row (a1 is released on abort).
-		const omp = installOmpMock({
+		const omsk = installOmpMock({
 			getSubagents: vi.fn(async () =>
 				ok({ subagents: [snap({ id: "a2", index: 2, status: "parked", task: "short second task", kind: "sub" })] }),
 			),
@@ -268,15 +268,15 @@ describe("AgentHubWindow hub tab", () => {
 		expect(abortButtons.length).toBe(2);
 		await click(abortButtons[1]!); // a1
 
-		expect(omp.abortSubagent).not.toHaveBeenCalled();
+		expect(omsk.abortSubagent).not.toHaveBeenCalled();
 		await click(queryAll('button[title="Confirm abort"]')[0]!);
-		expect(omp.abortSubagent).toHaveBeenCalledWith("a1");
-		expect(omp.getSubagents).toHaveBeenCalled();
+		expect(omsk.abortSubagent).toHaveBeenCalledWith("a1");
+		expect(omsk.getSubagents).toHaveBeenCalled();
 
 		// Only the parked row offers revive.
 		const reviveButtons = queryAll('button[title="Revive this agent"]');
 		expect(reviveButtons.length).toBe(1);
 		await click(reviveButtons[0]!);
-		expect(omp.reviveSubagent).toHaveBeenCalledWith("a2");
+		expect(omsk.reviveSubagent).toHaveBeenCalledWith("a2");
 	});
 });

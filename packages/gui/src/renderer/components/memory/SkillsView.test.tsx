@@ -1,5 +1,5 @@
 /**
- * Skill review when omp rewrites a skill the person already reviewed, while its
+ * Skill review when omsk rewrites a skill the person already reviewed, while its
  * card is open: the card shows what changed — never re-reviews the words read
  * before the rewrite — and the review bookmark is written a bounded number of
  * times (a stale read once re-marked it in a render loop that froze the app).
@@ -69,7 +69,7 @@ function reactProps(element: Element | null): Record<string, ((event: object) =>
 beforeEach(async () => {
 	current = { modifiedAt: 100, body: V1 };
 	prefsSet = vi.fn(async () => {});
-	(window as unknown as { omp: unknown }).omp = {
+	(window as unknown as { omsk: unknown }).omsk = {
 		prefs: { get: vi.fn(async () => undefined), set: prefsSet },
 		rpc: {
 			getSkills: vi.fn(async () => ok({ skills: [info(current.modifiedAt)] })),

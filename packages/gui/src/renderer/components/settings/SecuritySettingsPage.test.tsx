@@ -45,7 +45,7 @@ const setSetting = vi.fn(async (): Promise<RpcResponse> => ok("set_setting", { v
 const securityStart = vi.fn(async (): Promise<RpcResponse> => ok("security_start", { scanId: "scan-1" }));
 
 Object.assign(window as unknown as Record<string, unknown>, {
-	omp: {
+	omsk: {
 		rpc: {
 			getSecurityDashboard,
 			getSecurityScan: vi.fn(async (): Promise<RpcResponse> => ok("get_security_scan", undefined)),

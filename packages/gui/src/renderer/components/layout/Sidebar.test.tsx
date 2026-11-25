@@ -78,7 +78,7 @@ interface MockOmp {
 }
 
 function installMockOmp(sessionList: SessionInfo[]): MockOmp {
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		sidecar: {
 			defaultWorkspace: vi.fn(async () => "/default/work"),
 			selectProject: vi.fn(async () => null),
@@ -124,8 +124,8 @@ function installMockOmp(sessionList: SessionInfo[]): MockOmp {
 			},
 		}),
 	};
-	(window as unknown as { omp: MockOmp }).omp = omp;
-	return omp;
+	(window as unknown as { omsk: MockOmp }).omsk = omsk;
+	return omsk;
 }
 
 function session(path: string, cwd: string, overrides: Partial<SessionInfo> = {}): SessionInfo {
@@ -298,7 +298,7 @@ describe("Sidebar menus and pinned ordering", () => {
 	});
 
 	it("moves the most recently used session and its workspace to the front immediately", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		useSessionStore.setState({ sessionId: "", cwd: "/neutral", isStreaming: false });
 		useTabsStore.setState({
 			tabs: [{ id: "chat", cwd: "/neutral", status: "ready", kind: "chat", unreadDone: false }],
@@ -343,7 +343,7 @@ describe("Sidebar menus and pinned ordering", () => {
 		expect(alphaSessionOrder()[0]).toContain("Session /work/alpha/two");
 		expect(useSidebarPrefs.getState().sessionLastUsed["/work/alpha/two.jsonl"]).toBeGreaterThan(0);
 		expect(useSidebarPrefs.getState().workspaceLastUsed["/work/alpha"]).toBeGreaterThan(0);
-		expect(omp.prefs.set).toHaveBeenCalledWith(
+		expect(omsk.prefs.set).toHaveBeenCalledWith(
 			"sidebar",
 			expect.objectContaining({
 				sessionLastUsed: expect.objectContaining({ "/work/alpha/two.jsonl": expect.any(Number) }),
@@ -352,7 +352,7 @@ describe("Sidebar menus and pinned ordering", () => {
 	});
 
 	it("sorted by name, workspaces keep their order when a session is opened, and the choice persists (#55)", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		useSessionStore.setState({ sessionId: "", cwd: "/neutral", isStreaming: false });
 		useTabsStore.setState({
 			tabs: [{ id: "chat", cwd: "/neutral", status: "ready", kind: "chat", unreadDone: false }],
@@ -370,7 +370,7 @@ describe("Sidebar menus and pinned ordering", () => {
 
 		await fire(container.querySelector("[data-workspace-sort]"), "onClick");
 		expect(workspaceOrder()).toEqual(["/work/alpha", "/work/beta"]);
-		expect(omp.prefs.set).toHaveBeenCalledWith("sidebar", expect.objectContaining({ workspaceSort: "name" }));
+		expect(omsk.prefs.set).toHaveBeenCalledWith("sidebar", expect.objectContaining({ workspaceSort: "name" }));
 
 		await act(async () => {
 			useTabsStore.setState({
@@ -388,7 +388,7 @@ describe("Sidebar menus and pinned ordering", () => {
 	});
 
 	it("opens a projectless agent session directly from the sidebar over an active project", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		await mount(<Sidebar />);
 
@@ -396,14 +396,14 @@ describe("Sidebar menus and pinned ordering", () => {
 		await fire(container.querySelector("[data-sidebar-new-agent]"), "onClick");
 		expect(document.querySelector('[role="dialog"]')).toBeNull();
 
-		expect(omp.tabs.spawn).toHaveBeenCalledExactlyOnceWith({
+		expect(omsk.tabs.spawn).toHaveBeenCalledExactlyOnceWith({
 			cwd: undefined,
 			sessionPath: undefined,
 			kind: "agent",
 			defaultWorkspace: true,
 			worktree: undefined,
 		});
-		expect(omp.tabs.setActive).toHaveBeenCalledWith("t-new");
+		expect(omsk.tabs.setActive).toHaveBeenCalledWith("t-new");
 		expect(useTabsStore.getState()).toMatchObject({
 			activeTabId: "t-new",
 			tabs: expect.arrayContaining([
@@ -414,7 +414,7 @@ describe("Sidebar menus and pinned ordering", () => {
 	});
 
 	it("creates a project agent tab without re-rooting the current chat", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		useSessionStore.setState({ sessionId: "chat", cwd: "/work/alpha", isStreaming: false });
 		useTabsStore.setState({
 			tabs: [{ id: "chat", cwd: "/work/alpha", status: "ready", kind: "chat", unreadDone: false }],
@@ -428,13 +428,13 @@ describe("Sidebar menus and pinned ordering", () => {
 			"onClick",
 		);
 
-		expect(omp.tabs.spawn).toHaveBeenCalledWith({
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith({
 			cwd: "/work/alpha",
 			kind: "agent",
 			sessionPath: undefined,
 			worktree: undefined,
 		});
-		expect(omp.sidecar.setProject).not.toHaveBeenCalled();
+		expect(omsk.sidecar.setProject).not.toHaveBeenCalled();
 	});
 
 	it("opens the existing global session picker from the header", async () => {
@@ -523,7 +523,7 @@ describe("Sidebar menus and pinned ordering", () => {
 	});
 
 	it("right-click on a session row opens the 7-item session menu", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		await mount(<Sidebar />);
 
@@ -546,12 +546,12 @@ describe("Sidebar menus and pinned ordering", () => {
 			(button.textContent ?? "").includes("Pin to top"),
 		);
 		await fire(pinItem as Element, "onClick");
-		expect(omp.rpc.setSessionPinned).toHaveBeenCalledWith("/work/alpha/one.jsonl", true);
+		expect(omsk.rpc.setSessionPinned).toHaveBeenCalledWith("/work/alpha/one.jsonl", true);
 	});
 
 	it("rename and delete stay enabled for idle tasks while another task runs", async () => {
 		const attached = session("/work/alpha/mine.jsonl", "/work/alpha", { id: "attached-id" });
-		const omp = installMockOmp([attached, ...LIST]);
+		const omsk = installMockOmp([attached, ...LIST]);
 		seedStores();
 		useSessionStore.setState({ isStreaming: true });
 		await mount(<Sidebar />);
@@ -598,11 +598,11 @@ describe("Sidebar menus and pinned ordering", () => {
 			inputProps.onBlur({ currentTarget: { value: "Renamed idle task" } });
 		});
 		await flush();
-		expect(omp.sessions.rename).toHaveBeenCalledWith("/work/alpha/one.jsonl", "Renamed idle task");
+		expect(omsk.sessions.rename).toHaveBeenCalledWith("/work/alpha/one.jsonl", "Renamed idle task");
 	});
 
 	it("clicking an idle task opens it in a new tab by default", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		useSessionStore.setState({ isStreaming: true });
 		await mount(<Sidebar />);
@@ -612,17 +612,17 @@ describe("Sidebar menus and pinned ordering", () => {
 		);
 		await fire(row as unknown as Element, "onClick");
 
-		expect(omp.tabs.spawn).toHaveBeenCalledWith({
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith({
 			cwd: "/work/alpha",
 			kind: "agent",
 			sessionPath: "/work/alpha/one.jsonl",
 			worktree: undefined,
 		});
-		expect(omp.sessions.openInNewWindow).not.toHaveBeenCalled();
+		expect(omsk.sessions.openInNewWindow).not.toHaveBeenCalled();
 	});
 
 	it("brings a background tab back from its agent page, found by its session file", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		// Main reports a tab's session file at once; the sidecar's id comes later.
 		useTabsStore.setState({
@@ -653,7 +653,7 @@ describe("Sidebar menus and pinned ordering", () => {
 
 			expect(useAgentPagesStore.getState().shown.t1).toBeNull();
 			expect(switchTab).toHaveBeenCalledWith("t1");
-			expect(omp.tabs.spawn).not.toHaveBeenCalled();
+			expect(omsk.tabs.spawn).not.toHaveBeenCalled();
 		} finally {
 			useTabsStore.setState({ switchTab: originalSwitch });
 		}
@@ -673,7 +673,7 @@ describe("Sidebar menus and pinned ordering", () => {
 		const chat = session("/work/alpha/chat.jsonl", "/work/alpha", { kind: "chat" });
 		const agent = session("/work/alpha/agent.jsonl", "/work/alpha");
 		const work = session("/default/work/personal.jsonl", "/default/work");
-		const omp = installMockOmp([chat, agent, work]);
+		const omsk = installMockOmp([chat, agent, work]);
 		seedStores();
 		await mount(<Sidebar />);
 
@@ -688,7 +688,7 @@ describe("Sidebar menus and pinned ordering", () => {
 			(element.textContent ?? "").includes("Session /work/alpha/chat"),
 		);
 		await fire(chatRow as unknown as Element, "onClick");
-		expect(omp.tabs.spawn).toHaveBeenLastCalledWith({
+		expect(omsk.tabs.spawn).toHaveBeenLastCalledWith({
 			cwd: "/work/alpha",
 			kind: "chat",
 			sessionPath: "/work/alpha/chat.jsonl",
@@ -731,7 +731,7 @@ describe("Sidebar menus and pinned ordering", () => {
 	});
 
 	it("workspace rows expose one menu and can create an agent tab from it", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		await mount(<Sidebar />);
 
@@ -742,7 +742,7 @@ describe("Sidebar menus and pinned ordering", () => {
 			item.textContent?.includes("New agent session here"),
 		);
 		await fire(add ?? null, "onClick");
-		expect(omp.tabs.spawn).toHaveBeenCalledWith({
+		expect(omsk.tabs.spawn).toHaveBeenCalledWith({
 			cwd: "/work/alpha",
 			kind: "agent",
 			sessionPath: undefined,
@@ -751,7 +751,7 @@ describe("Sidebar menus and pinned ordering", () => {
 	});
 
 	it.each(["beta", "empty"])("opens a new conversation from the %s project row", async project => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		const cwd = `/work/${project}`;
 		await useSidebarPrefs.getState().addWorkspace("/work/empty");
@@ -761,7 +761,7 @@ describe("Sidebar menus and pinned ordering", () => {
 		const header = container.querySelector(`[data-workspace-group="${cwd}"]`);
 		await fire(header?.querySelector(`button[aria-label="New session in ${project}"]`) ?? null, "onClick");
 
-		expect(omp.tabs.spawn).toHaveBeenCalledExactlyOnceWith({
+		expect(omsk.tabs.spawn).toHaveBeenCalledExactlyOnceWith({
 			cwd,
 			kind: "agent",
 			sessionPath: undefined,
@@ -835,7 +835,7 @@ describe("Sidebar menus and pinned ordering", () => {
 	});
 
 	it("asks before removing a session transcript, and only deletes once confirmed", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		await mount(<Sidebar />);
 
@@ -845,14 +845,14 @@ describe("Sidebar menus and pinned ordering", () => {
 		await fire(row.querySelector('[aria-label="Delete session"]') as Element, "onClick");
 
 		// Queued, not executed: the trash click must never reach the hard delete.
-		expect(omp.sessions.delete).not.toHaveBeenCalled();
+		expect(omsk.sessions.delete).not.toHaveBeenCalled();
 		const dialog = document.body.querySelector('[role="dialog"]');
 		expect(dialog?.textContent).toContain("/work/alpha/one");
 		expect(dialog?.textContent).toContain("cannot be undone");
 
 		const buttons = [...(dialog?.querySelectorAll("button") ?? [])];
 		await fire(buttons.find(b => (b.textContent ?? "").trim() === "Cancel") as unknown as Element, "onClick");
-		expect(omp.sessions.delete).not.toHaveBeenCalled();
+		expect(omsk.sessions.delete).not.toHaveBeenCalled();
 		expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
 		await fire(row.querySelector('[aria-label="Delete session"]') as Element, "onClick");
@@ -860,7 +860,7 @@ describe("Sidebar menus and pinned ordering", () => {
 			b => (b.textContent ?? "").trim() === "Delete",
 		) as unknown as Element;
 		await fire(confirm, "onClick");
-		expect(omp.sessions.delete).toHaveBeenCalledWith("/work/alpha/one.jsonl");
+		expect(omsk.sessions.delete).toHaveBeenCalledWith("/work/alpha/one.jsonl");
 	});
 
 	it("shows a session that moved files as one row, with its pin, and deletes both files", async () => {
@@ -878,7 +878,7 @@ describe("Sidebar menus and pinned ordering", () => {
 			parentSessionPath: "before-id",
 			continuationOf: "before-id",
 		});
-		const omp = installMockOmp([before, after]);
+		const omsk = installMockOmp([before, after]);
 		seedStores();
 		useSidebarPrefs.setState({ pinnedSessions: [before.path], hydrated: true });
 		await mount(<Sidebar />);
@@ -896,12 +896,12 @@ describe("Sidebar menus and pinned ordering", () => {
 		await fire(confirm, "onClick");
 
 		// Left on disk, the older file would come straight back as a row.
-		expect(omp.sessions.delete.mock.calls.map(call => call[0])).toEqual([after.path, before.path]);
+		expect(omsk.sessions.delete.mock.calls.map(call => call[0])).toEqual([after.path, before.path]);
 		expect(useSidebarPrefs.getState().pinnedSessions).toEqual([]);
 	});
 
 	it("names the whole workspace and its session count before a group delete", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		await mount(<Sidebar />);
 
@@ -910,7 +910,7 @@ describe("Sidebar menus and pinned ordering", () => {
 		const items = [...document.body.querySelectorAll('[role="menu"] button')];
 		await fire(items.find(b => (b.textContent ?? "").includes("Delete")) as unknown as Element, "onClick");
 
-		expect(omp.sessions.delete).not.toHaveBeenCalled();
+		expect(omsk.sessions.delete).not.toHaveBeenCalled();
 		const dialog = document.body.querySelector('[role="dialog"]');
 		expect(dialog?.textContent).toContain("alpha");
 		expect(dialog?.textContent).toContain("2");
@@ -923,7 +923,7 @@ describe("Sidebar menus and pinned ordering", () => {
 			"onClick",
 		);
 		// Both alpha sessions, and nothing from the other workspace.
-		expect(omp.sessions.delete.mock.calls.map(call => call[0]).sort()).toEqual([
+		expect(omsk.sessions.delete.mock.calls.map(call => call[0]).sort()).toEqual([
 			"/work/alpha/one.jsonl",
 			"/work/alpha/two.jsonl",
 		]);
@@ -1032,7 +1032,7 @@ describe("Sidebar bulk selection", () => {
 	const bulkBar = () => document.body.querySelector("[data-sidebar-bulk]");
 
 	it("archives ⌘-clicked sessions out of their workspace and restores them from Archived", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		useSidebarPrefs.setState({ hydrated: true });
 		await mount(<Sidebar />);
@@ -1040,7 +1040,7 @@ describe("Sidebar bulk selection", () => {
 		// A ⌘-click selects instead of opening the session.
 		await fire(row("Session /work/alpha/one"), "onClick", { metaKey: true });
 		await fire(row("Session /work/alpha/two"), "onClick", { metaKey: true });
-		expect(omp.tabs.spawn).not.toHaveBeenCalled();
+		expect(omsk.tabs.spawn).not.toHaveBeenCalled();
 		expect(bulkBar()?.textContent).toContain("2 selected");
 
 		await fire(document.body.querySelector("[data-sidebar-bulk-archive]"), "onClick");
@@ -1049,7 +1049,7 @@ describe("Sidebar bulk selection", () => {
 		const archived = container.querySelector("[data-archived-section]");
 		expect(archived?.textContent).toContain("Archived");
 		expect(archived?.textContent).toContain("2");
-		expect(omp.prefs.set).toHaveBeenLastCalledWith(
+		expect(omsk.prefs.set).toHaveBeenLastCalledWith(
 			"sidebar",
 			expect.objectContaining({ archivedSessions: ["/work/alpha/one.jsonl", "/work/alpha/two.jsonl"] }),
 		);
@@ -1093,7 +1093,7 @@ describe("Sidebar bulk selection", () => {
 	});
 
 	it("deletes the selected idle sessions, leaves a running one, and forgets their pins", async () => {
-		const omp = installMockOmp([
+		const omsk = installMockOmp([
 			session("/work/alpha/run.jsonl", "/work/alpha", { status: "pending", modified: "2026-01-05T00:00:00Z" }),
 			...LIST,
 		]);
@@ -1107,7 +1107,7 @@ describe("Sidebar bulk selection", () => {
 		await fire(document.body.querySelector("[data-sidebar-bulk-delete]"), "onClick");
 
 		// Queued behind the dialog, which names the count before anything is removed.
-		expect(omp.sessions.delete).not.toHaveBeenCalled();
+		expect(omsk.sessions.delete).not.toHaveBeenCalled();
 		expect(document.body.querySelector('[role="dialog"]')?.textContent).toContain("Delete 3 selected sessions?");
 		await fire(
 			[...document.body.querySelectorAll('[role="dialog"] button')].find(
@@ -1116,7 +1116,7 @@ describe("Sidebar bulk selection", () => {
 			"onClick",
 		);
 
-		expect(omp.sessions.delete.mock.calls.map(call => call[0]).sort()).toEqual([
+		expect(omsk.sessions.delete.mock.calls.map(call => call[0]).sort()).toEqual([
 			"/work/alpha/one.jsonl",
 			"/work/alpha/two.jsonl",
 		]);
@@ -1153,7 +1153,7 @@ describe("Sidebar selection keys", () => {
 	});
 
 	it("selects every shown row on ⌘A and asks before deleting on ⌫, with focus in the sidebar", async () => {
-		const omp = installMockOmp(LIST);
+		const omsk = installMockOmp(LIST);
 		seedStores();
 		await mount(<Sidebar />);
 		await fire(container.querySelector("[data-sidebar-select]"), "onClick");
@@ -1163,14 +1163,14 @@ describe("Sidebar selection keys", () => {
 		expect(document.body.querySelector("[data-sidebar-bulk]")?.textContent).toContain("2 selected");
 		await press(row, "Backspace");
 		expect(document.body.querySelector('[role="dialog"]')?.textContent).toContain("Delete 2 selected sessions?");
-		expect(omp.sessions.delete).not.toHaveBeenCalled();
+		expect(omsk.sessions.delete).not.toHaveBeenCalled();
 	});
 });
 
 describe("Sidebar session-list failures", () => {
 	it("names the failed read instead of claiming there are no sessions", async () => {
-		const omp = installMockOmp([]);
-		omp.sessions.list.mockRejectedValue(new Error("session index unreadable"));
+		const omsk = installMockOmp([]);
+		omsk.sessions.list.mockRejectedValue(new Error("session index unreadable"));
 		seedStores();
 		await mount(<Sidebar />);
 
@@ -1181,12 +1181,12 @@ describe("Sidebar session-list failures", () => {
 		expect(text).toContain("session index unreadable");
 		expect(text).not.toContain("No code sessions yet");
 
-		const callsBeforeRetry = omp.sessions.list.mock.calls.length;
+		const callsBeforeRetry = omsk.sessions.list.mock.calls.length;
 		const retry = [...document.body.querySelectorAll("button")].find(b => (b.textContent ?? "") === "Retry");
 		if (!retry) throw new Error("retry button not found");
 		await fire(retry as unknown as Element, "onClick");
 		await flush();
-		expect(omp.sessions.list.mock.calls.length).toBeGreaterThan(callsBeforeRetry);
+		expect(omsk.sessions.list.mock.calls.length).toBeGreaterThan(callsBeforeRetry);
 	});
 });
 

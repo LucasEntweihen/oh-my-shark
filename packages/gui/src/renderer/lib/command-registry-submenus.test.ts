@@ -188,7 +188,7 @@ describe("nativized action wiring", () => {
 			marketplaceAction: vi.fn(async () => ok({ ok: true })),
 			setPluginEnabled: vi.fn(async () => ok({})),
 		};
-		(globalThis as Record<string, unknown>).window = { omp: { rpc } };
+		(globalThis as Record<string, unknown>).window = { omsk: { rpc } };
 		openSettings = vi.fn();
 		openPlugins = vi.fn();
 		openExtensions = vi.fn();

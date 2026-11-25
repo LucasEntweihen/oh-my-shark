@@ -9,7 +9,7 @@ import type { RpcResponse, SubagentSnapshot } from "../../shared/rpc-types";
 import { useSubagentsStore } from "./subagents";
 
 const getSubagents = vi.fn();
-(globalThis as Record<string, unknown>).window = { omp: { rpc: { getSubagents } } };
+(globalThis as Record<string, unknown>).window = { omsk: { rpc: { getSubagents } } };
 
 function snap(overrides: Partial<SubagentSnapshot>): SubagentSnapshot {
 	return { id: "a1", index: 1, agent: "scout", status: "running", lastUpdate: Date.now(), ...overrides };

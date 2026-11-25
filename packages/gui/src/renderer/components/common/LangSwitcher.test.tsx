@@ -60,7 +60,7 @@ afterEach(async () => {
 	}
 	container?.remove();
 	try {
-		window.localStorage.removeItem("omp.lang");
+		window.localStorage.removeItem("omsk.lang");
 	} catch {
 		/* localStorage unavailable in the test env — getInitialLang falls back to en */
 	}
@@ -78,7 +78,7 @@ describe("LangSwitcher", () => {
 				store[key] = value;
 			},
 		};
-		Object.defineProperty(window, "omp", {
+		Object.defineProperty(window, "omsk", {
 			configurable: true,
 			value: {
 				prefs: {
@@ -101,14 +101,14 @@ describe("LangSwitcher", () => {
 				receive?.("ru");
 			});
 			expect(document.querySelector("button")?.textContent).toContain("RU");
-			expect(store["omp.lang"]).toBe("ru");
+			expect(store["omsk.lang"]).toBe("ru");
 			expect(document.documentElement.lang).toBe("ru");
 			expect(writes).toEqual([]);
 			await act(async () => root?.unmount());
 			root = undefined;
 			expect(unsubscribed).toBe(true);
 		} finally {
-			delete (window as unknown as { omp?: unknown }).omp;
+			delete (window as unknown as { omsk?: unknown }).omsk;
 			delete globals.localStorage;
 		}
 	});
@@ -152,7 +152,7 @@ describe("LangSwitcher", () => {
 		["th", "TH"],
 	])("rehydrates the persisted language %s", async (language, label) => {
 		// I18nProvider reads the LANG_KEY at mount; install a stub store first.
-		const store: Record<string, string> = { "omp.lang": language };
+		const store: Record<string, string> = { "omsk.lang": language };
 		globals.localStorage = {
 			getItem: (key: string) => store[key] ?? null,
 			setItem: (key: string, value: string) => {
@@ -183,14 +183,14 @@ describe("LangSwitcher", () => {
 			},
 		};
 		const bridgeWindow = window as unknown as {
-			omp?: {
+			omsk?: {
 				prefs: {
 					get: (key: string) => Promise<unknown>;
 					set: (key: string, value: unknown) => Promise<void>;
 				};
 			};
 		};
-		bridgeWindow.omp = {
+		bridgeWindow.omsk = {
 			prefs: {
 				get: async () => "zh",
 				set: async (key, value) => {
@@ -203,7 +203,7 @@ describe("LangSwitcher", () => {
 			expect(document.querySelector("button")?.textContent).toContain("中文");
 			expect(writes).toEqual([]);
 		} finally {
-			delete bridgeWindow.omp;
+			delete bridgeWindow.omsk;
 			delete globals.localStorage;
 		}
 	});
@@ -211,14 +211,14 @@ describe("LangSwitcher", () => {
 	it("does not persist an inferred language when neither store has an explicit preference", async () => {
 		const writes: Array<{ key: string; value: unknown }> = [];
 		const bridgeWindow = window as unknown as {
-			omp?: {
+			omsk?: {
 				prefs: {
 					get: (key: string) => Promise<unknown>;
 					set: (key: string, value: unknown) => Promise<void>;
 				};
 			};
 		};
-		bridgeWindow.omp = {
+		bridgeWindow.omsk = {
 			prefs: {
 				get: async () => undefined,
 				set: async (key, value) => {
@@ -230,7 +230,7 @@ describe("LangSwitcher", () => {
 			await mountSwitcher();
 			expect(writes).toEqual([]);
 		} finally {
-			delete bridgeWindow.omp;
+			delete bridgeWindow.omsk;
 		}
 	});
 });

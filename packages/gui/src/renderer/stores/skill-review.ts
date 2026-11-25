@@ -1,5 +1,5 @@
 /**
- * Review state for skills omp learned on its own (the omsk-managed provider).
+ * Review state for skills omsk learned on its own (the omsk-managed provider).
  *
  * Learned skills are active the moment they are written; the person reviews
  * them afterwards. The GUI remembers what each skill looked like when it was
@@ -30,7 +30,7 @@ export function skillReviewState(skill: RpcSkillInfo, reviewed: ReviewedSkill | 
 	return "reviewed";
 }
 
-/** Skills omp wrote by itself; authored and plugin skills are never up for review. */
+/** Skills omsk wrote by itself; authored and plugin skills are never up for review. */
 export function learnedSkillsOf(skills: readonly RpcSkillInfo[]): RpcSkillInfo[] {
 	return skills.filter(skill => skill.managed);
 }
@@ -83,7 +83,7 @@ interface SkillReviewStore {
 	learned: RpcSkillInfo[] | null;
 	hydrate: () => Promise<void>;
 	setLearned: (skills: readonly RpcSkillInfo[]) => void;
-	/** Record `detail` as reviewed: it stops counting until omp rewrites it. */
+	/** Record `detail` as reviewed: it stops counting until omsk rewrites it. */
 	markReviewed: (detail: RpcSkillDetail) => Promise<void>;
 	/** Drop a removed skill's snapshot so a future skill of that name reads new. */
 	forget: (name: string) => Promise<void>;
@@ -91,7 +91,7 @@ interface SkillReviewStore {
 
 async function persist(reviewed: Record<string, ReviewedSkill>): Promise<void> {
 	try {
-		await window.omp.prefs.set(PREFS_KEY, reviewed);
+		await window.omsk.prefs.set(PREFS_KEY, reviewed);
 	} catch {
 		// The bookmark is a convenience: a lost write re-shows a skill as unreviewed.
 	}
@@ -105,7 +105,7 @@ export const useSkillReviewStore = create<SkillReviewStore>()((set, get) => ({
 	hydrate: async () => {
 		if (get().hydrated) return;
 		try {
-			set({ reviewed: validReviewed(await window.omp.prefs.get(PREFS_KEY)), hydrated: true });
+			set({ reviewed: validReviewed(await window.omsk.prefs.get(PREFS_KEY)), hydrated: true });
 		} catch {
 			set({ hydrated: true });
 		}

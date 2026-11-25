@@ -91,7 +91,7 @@ const TERMINAL_DISPLAY_SETTINGS = new Set([
 	// Tags read results text/markdown for the TUI's formatted preview; the GUI
 	// renderer never reads contentType, so the flag changes nothing here.
 	"read.renderMarkdown",
-	// `omp stream` is a CLI subcommand with no RPC surface — its server and
+	// `omsk stream` is a CLI subcommand with no RPC surface — its server and
 	// redaction settings can never be exercised from this app.
 	"stream.serverUrl",
 	"stream.redactPatterns",

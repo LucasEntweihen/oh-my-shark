@@ -40,7 +40,7 @@ afterEach(async () => {
 	container?.remove();
 });
 
-describe("omp 17.3.5 renderer parity", () => {
+describe("omsk 17.3.5 renderer parity", () => {
 	it("renders an image block returned by a PDF page read", async () => {
 		await mount(
 			<ReadRenderer
@@ -76,7 +76,7 @@ describe("omp 17.3.5 renderer parity", () => {
 	});
 });
 
-describe("omp 18.1.9 renderer parity", () => {
+describe("omsk 18.1.9 renderer parity", () => {
 	it("renders every image while an eval cell is still streaming", async () => {
 		await mount(
 			<EvalRenderer
@@ -102,7 +102,7 @@ describe("omp 18.1.9 renderer parity", () => {
 	});
 });
 
-describe("omp 18.2.8 renderer parity", () => {
+describe("omsk 18.2.8 renderer parity", () => {
 	it("previews every picture a generate_image call produced", async () => {
 		// The tool's payload is `{data, mimeType}` pairs plus the saved files, not
 		// content blocks: an unmapped name fell through to the key/value view, so
@@ -154,7 +154,7 @@ describe("read preview", () => {
 	});
 });
 
-describe("omp 18.3.0 coordination protocol renderers", () => {
+describe("omsk 18.3.0 coordination protocol renderers", () => {
 	it("renders wait snapshots as compact job and agent rows", async () => {
 		await mount(
 			<WaitRenderer
@@ -237,7 +237,7 @@ describe("omp 18.3.0 coordination protocol renderers", () => {
 	});
 });
 
-describe("omp 19.0.0 coordination protocol renderers", () => {
+describe("omsk 19.0.0 coordination protocol renderers", () => {
 	it("renders current daemon units together with persisted legacy services", async () => {
 		await mount(
 			<ReadRenderer

@@ -7,7 +7,7 @@ import { LogWatcher } from "./log-watcher";
 
 test("opening logs later replays complete lines once, including split appends", async () => {
 	const directory = await fs.mkdtemp(path.join(os.tmpdir(), "omp-log-test-"));
-	const file = path.join(directory, "omp.test.log");
+	const file = path.join(directory, "omsk.test.log");
 	await fs.writeFile(file, "previous run\n");
 	const watcher = new LogWatcher(directory);
 	const batches: string[] = [];
@@ -29,7 +29,7 @@ test("opening logs later replays complete lines once, including split appends", 
 
 test("a day-old log holds no watch handle, and a new write still reaches the viewer", async () => {
 	const directory = await fs.mkdtemp(path.join(os.tmpdir(), "omp-log-test-"));
-	const old = path.join(directory, "omp.2026-01-01.111.log");
+	const old = path.join(directory, "omsk.2026-01-01.111.log");
 	await fs.writeFile(old, "finished run\n");
 	const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
 	await fs.utimes(old, twoDaysAgo, twoDaysAgo);

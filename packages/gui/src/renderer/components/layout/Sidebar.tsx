@@ -216,7 +216,7 @@ export function Sidebar() {
 	const sidebarWidthRef = useRef(236);
 	// Layout widths persist like every other chrome pref; restored on mount.
 	useEffect(() => {
-		void window.omp.prefs
+		void window.omsk.prefs
 			.get("sidebarWidth")
 			.then(value => {
 				if (typeof value !== "number" || !Number.isFinite(value)) return;
@@ -245,7 +245,7 @@ export function Sidebar() {
 	);
 	const endSidebarDrag = useCallback(() => {
 		sidebarDragging.current = false;
-		void window.omp.prefs.set("sidebarWidth", sidebarWidthRef.current).catch(() => {});
+		void window.omsk.prefs.set("sidebarWidth", sidebarWidthRef.current).catch(() => {});
 	}, []);
 	const [deleting, setDeleting] = useState(false);
 	// Bulk deletes run one file at a time; the dialog counts them off.
@@ -369,7 +369,7 @@ export function Sidebar() {
 	const unreadNotices = useUnreadNoticeCount();
 
 	useEffect(() => {
-		void window.omp.sidecar
+		void window.omsk.sidecar
 			.defaultWorkspace()
 			.then(setDefaultWorkspace)
 			.catch(() => {});
@@ -638,7 +638,7 @@ export function Sidebar() {
 	// Explicit parallel action: open this session in a NEW window with its own
 	// sidecar, leaving the current window's running session untouched.
 	const openSessionInNewWindow = async (session: SessionInfo) => {
-		const ok = await window.omp.sessions.openInNewWindow({ sessionPath: session.path, cwd: session.cwd });
+		const ok = await window.omsk.sessions.openInNewWindow({ sessionPath: session.path, cwd: session.cwd });
 		if (!ok) {
 			toast({ variant: "error", message: t("sidebar.newWindowFailed") });
 			return;

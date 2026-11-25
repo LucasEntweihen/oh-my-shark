@@ -29,7 +29,7 @@ function skill(partial: Partial<RpcSkillInfo> & { name: string }): RpcSkillInfo 
 		enabled: true,
 		location: "/tmp/x",
 		provider: "native",
-		providerName: "OMP",
+		providerName: "OMSK",
 		level: "project",
 		managed: false,
 		hidden: false,
@@ -83,7 +83,7 @@ describe("filterList", () => {
 
 describe("shortenPath", () => {
 	it("collapses macOS and Linux home prefixes to ~", () => {
-		expect(shortenPath("/Users/zach/.omp/skills/foo/SKILL.md")).toBe("~/.omp/skills/foo/SKILL.md");
+		expect(shortenPath("/Users/zach/.omsk/skills/foo/SKILL.md")).toBe("~/.omsk/skills/foo/SKILL.md");
 		expect(shortenPath("/home/zach/.config/hook.sh")).toBe("~/.config/hook.sh");
 	});
 

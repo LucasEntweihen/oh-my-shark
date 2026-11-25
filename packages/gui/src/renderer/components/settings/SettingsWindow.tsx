@@ -10,7 +10,7 @@ import { useTabRpc } from "../../lib/tab-rpc";
  * schema. Tabs, groups, labels, and control types all come from the
  * sidecar (get_settings_schema / get_settings RPC); writes go through
  * set_setting and apply immediately. Product pages sit beside the schema
- * tabs: "OMP Capabilities" surfaces differentiating workflows first, the
+ * tabs: "OMSK Capabilities" surfaces differentiating workflows first, the
  * management pages (Skills, MCP, Resources, Hooks, Commands, Security, SSH,
  * Updates) own their own data, and "Interface" and "Shortcuts" hold
  * renderer-local preferences persisted via prefs IPC. Entries without UI
@@ -361,7 +361,7 @@ export function SettingsWindow() {
 		const runtime = focusedSessionRuntime();
 		const sessionFile = useSessionStore.getState().sessionFile;
 		try {
-			await window.omp.sidecar.restart({ tabId: runtime?.tabId, sessionPath: sessionFile ?? undefined });
+			await window.omsk.sidecar.restart({ tabId: runtime?.tabId, sessionPath: sessionFile ?? undefined });
 		} catch (error) {
 			toast({ variant: "error", title: t("settings.connection.restartFailed"), message: describeError(error) });
 		}
@@ -375,7 +375,7 @@ export function SettingsWindow() {
 			return;
 		const runtime = focusedSessionRuntime();
 		const sessionFile = useSessionStore.getState().sessionFile;
-		void window.omp.sidecar
+		void window.omsk.sidecar
 			.restart({ tabId: runtime?.tabId, sessionPath: sessionFile ?? undefined })
 			.catch(error =>
 				toast({ variant: "error", title: t("settings.connection.restartFailed"), message: String(error) }),
@@ -461,7 +461,7 @@ export function SettingsWindow() {
 	useEffect(() => {
 		if (!open) return;
 		let cancelled = false;
-		const unsubscribe = window.omp.events.onConfigUpdate(() => {
+		const unsubscribe = window.omsk.events.onConfigUpdate(() => {
 			const version = ++settingsVersion.current;
 			void tabRpc
 				.getSettings()
@@ -506,7 +506,7 @@ export function SettingsWindow() {
 		if (!open) return;
 		let cancelled = false;
 		setProxyDraft(null);
-		void window.omp.prefs
+		void window.omsk.prefs
 			.get("proxyUrl")
 			.then(value => {
 				if (!cancelled) setSavedProxy(typeof value === "string" ? value : "");
@@ -525,7 +525,7 @@ export function SettingsWindow() {
 		let cancelled = false;
 		const version = ++launchVersion.current;
 		setLaunchDrafts({});
-		void window.omp.prefs
+		void window.omsk.prefs
 			.get("launchProfiles")
 			.then(raw => {
 				if (cancelled || version !== launchVersion.current) return;
@@ -534,7 +534,7 @@ export function SettingsWindow() {
 				setLaunchProfile(parseLaunchProfile(map[cwd]));
 			})
 			.catch(() => {});
-		void window.omp.prefs
+		void window.omsk.prefs
 			.get("codeLineNumbers")
 			.then(value => {
 				if (!cancelled) setCodeLineNumbers(value === true);
@@ -624,7 +624,7 @@ export function SettingsWindow() {
 							message.running === true,
 					);
 				if (state.status !== "ready" || state.isStreaming || state.isCompacting || executing) return null;
-				return window.omp.sidecar.restart({ tabId: origin?.tabId, sessionPath: state.sessionFile ?? undefined });
+				return window.omsk.sidecar.restart({ tabId: origin?.tabId, sessionPath: state.sessionFile ?? undefined });
 			};
 			const restarted = origin
 				? sessionRuntime(origin.tabId) === origin
@@ -653,7 +653,7 @@ export function SettingsWindow() {
 		const pending = (async () => {
 			await previous;
 			try {
-				const saved = await window.omp.prefs.updateLaunchProfile(cwd, patch);
+				const saved = await window.omsk.prefs.updateLaunchProfile(cwd, patch);
 				if (version !== launchVersion.current) return false;
 				setLaunchProfile(saved);
 				return true;
@@ -686,7 +686,7 @@ export function SettingsWindow() {
 	};
 	const pickLaunchAddDirs = async () => {
 		const version = launchVersion.current;
-		const picked = await window.omp.system.showOpenDialog([], { directory: true }).catch(() => null);
+		const picked = await window.omsk.system.showOpenDialog([], { directory: true }).catch(() => null);
 		if (!picked || picked.length === 0 || version !== launchVersion.current) return;
 		const current = launchProfile.addDirs ?? [];
 		const merged = [...current];
@@ -700,7 +700,7 @@ export function SettingsWindow() {
 		// active session (--session) instead of starting a fresh one.
 		const { sessionFile } = useSessionStore.getState();
 		const origin = focusedSessionRuntime();
-		void window.omp.sidecar
+		void window.omsk.sidecar
 			.restart({ tabId: origin?.tabId, sessionPath: sessionFile ?? undefined })
 			.then(() => {
 				toast({ variant: "info", message: t("settings.launch.restarting") });
@@ -785,7 +785,7 @@ export function SettingsWindow() {
 		if (!q) return [];
 		return GUI_SETTING_SEARCH_ITEMS.filter(
 			item =>
-				(item.id !== "configEditor" || window.omp?.platform === "darwin") &&
+				(item.id !== "configEditor" || window.omsk?.platform === "darwin") &&
 				`${item.id} ${en[item.labelKey]} ${zh[item.labelKey]} ${ru[item.labelKey]} ${item.aliases}`
 					.normalize("NFKC")
 					.toLowerCase()
@@ -1382,7 +1382,7 @@ export function SettingsWindow() {
 														{t("settings.gui.fontSizeDesc")}
 													</p>
 												</Section>
-												{window.omp?.platform === "darwin" && <ConfigEditorSetting />}
+												{window.omsk?.platform === "darwin" && <ConfigEditorSetting />}
 												<Section id="setting-gui-panelDefault" title={t("settings.gui.panelDefault")}>
 													<RadioGroup
 														name="defaultPanelTab"

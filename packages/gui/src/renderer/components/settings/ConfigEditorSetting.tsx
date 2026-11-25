@@ -13,7 +13,7 @@ export function ConfigEditorSetting() {
 		const update = (value?: unknown) => {
 			if (active) setEditor(readConfigEditor(value));
 		};
-		void window.omp.prefs.get(CONFIG_EDITOR_PREF).then(update, () => update());
+		void window.omsk.prefs.get(CONFIG_EDITOR_PREF).then(update, () => update());
 		return () => {
 			active = false;
 		};

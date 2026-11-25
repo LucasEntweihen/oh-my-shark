@@ -47,7 +47,7 @@ const command = vi.fn(
 	}),
 );
 
-Object.assign(window as unknown as Record<string, unknown>, { omp: { rpc: { command } } });
+Object.assign(window as unknown as Record<string, unknown>, { omsk: { rpc: { command } } });
 
 function optionRows(): HTMLButtonElement[] {
 	return Array.from(document.body.querySelectorAll("button[role='option']")) as HTMLButtonElement[];
@@ -142,7 +142,7 @@ describe("ModelValueSelect", () => {
 		expect(html).toContain("(unset)");
 	});
 
-	it("renders the dropdown closed without touching window.omp", () => {
+	it("renders the dropdown closed without touching window.omsk", () => {
 		const html = renderToStaticMarkup(
 			<I18nProvider>
 				<ModelValueSelect kind="model" onCommit={() => {}} value="" />

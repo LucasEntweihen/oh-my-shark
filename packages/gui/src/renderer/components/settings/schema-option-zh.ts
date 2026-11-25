@@ -42,7 +42,7 @@ export const ZH_SCHEMA_OPTION_TEXT: Readonly<Record<string, string>> = {
 	"Save role models in the active profile config (current behavior)":
 		"将角色模型保存在当前配置文件的配置中（当前行为）",
 	"Per-project": "按项目",
-	"Save project role models in .omp/config.yml; missing project roles use global defaults":
+	"Save project role models in .omsk/config.yml; missing project roles use global defaults":
 		"将项目角色模型保存在 .omsk/config.yml 中；缺失的项目角色使用全局默认值",
 	Unicode: "Unicode",
 	"Standard symbols (default)": "标准符号（默认）",
@@ -800,7 +800,7 @@ export const ZH_SCHEMA_OPTION_TEXT: Readonly<Record<string, string>> = {
 	unset: "未设置",
 	granted: "已授权",
 	denied: "已拒绝",
-	// ── omp 18.2.x 新增枚举选项 ─────────────────────────────────────────────
+	// ── omsk 18.2.x 新增枚举选项 ─────────────────────────────────────────────
 	Braille: "布莱叶点",
 	"Classic sweep (default)": "经典扫动（默认）",
 	Pulse: "脉冲",
@@ -820,7 +820,7 @@ export const ZH_SCHEMA_OPTION_TEXT: Readonly<Record<string, string>> = {
 		"清空全部终端回滚区，再重放一份当前宽度的转录",
 	View: "只读视图",
 	"Share only when /collab is run": "仅在执行 /collab 时共享",
-	"Auto-host; the registry hands out view-only links (omp collab link --view)":
+	"Auto-host; the registry hands out view-only links (omsk collab link --view)":
 		"自动托管；注册表分发只读链接（OhMyShark collab link --view）",
 	"Any error": "任意错误",
 	"Every provider error may switch models": "任何提供商错误都可以切换模型",

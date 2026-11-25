@@ -1,6 +1,6 @@
 /**
  * FindRenderer contract tests: the semantic-search (`find`) tool renderer added
- * for the omp 18.2.7 upstream. Defends the observable display contract —
+ * for the omsk 18.2.7 upstream. Defends the observable display contract —
  * ranked hit ordering, verified passage ranges, TUI-style sanitization of
  * snippet text, the empty/failed states, and localized labels under a language
  * switch. Follows the linkedom harness pattern (see UpstreamParityRenderers).
@@ -41,7 +41,7 @@ async function mount(element: ReactElement): Promise<void> {
 /** Force the persisted language the provider seeds itself from. */
 function setLanguage(lang: "en" | "zh"): void {
 	(globalThis as Record<string, unknown>).localStorage = {
-		getItem: (key: string) => (key === "omp.lang" ? lang : null),
+		getItem: (key: string) => (key === "omsk.lang" ? lang : null),
 		setItem: () => {},
 	};
 }

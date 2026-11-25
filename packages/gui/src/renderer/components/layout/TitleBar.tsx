@@ -343,7 +343,7 @@ export function TitleBar() {
 					aria-label={t("titlebar.appMenu")}
 					onClick={event => {
 						const { left, bottom } = event.currentTarget.getBoundingClientRect();
-						window.omp.windowChrome.showAppMenu({ x: left, y: bottom });
+						window.omsk.windowChrome.showAppMenu({ x: left, y: bottom });
 					}}
 					title={t("titlebar.appMenu")}
 					className={iconButton}

@@ -312,8 +312,8 @@ export function SplitWorkspace() {
 			setDragTabId(tabId);
 			if (!tabId) setDragOver(false);
 		};
-		window.addEventListener("omp:tab-drag", onTabDrag);
-		return () => window.removeEventListener("omp:tab-drag", onTabDrag);
+		window.addEventListener("omsk:tab-drag", onTabDrag);
+		return () => window.removeEventListener("omsk:tab-drag", onTabDrag);
 	}, []);
 
 	if (!activeTabId) return null;

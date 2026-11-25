@@ -185,7 +185,7 @@ describe("unattended prompts", () => {
 			{
 				worktree_create: () => ({
 					path: "/wt/run",
-					branch: "omp/gui/task-check-ci-bbbbcccc",
+					branch: "omsk/gui/task-check-ci-bbbbcccc",
 					baseCwd: "/work/repo",
 				}),
 				get_git_changes: () => ({ isRepo: true, files: [] }),
@@ -196,7 +196,7 @@ describe("unattended prompts", () => {
 		expect(sidecar.sent).toContainEqual({ type: "extension_ui_response", id: "ui-1", value: "Deny" });
 		expect(sidecar.sent).toContainEqual({ type: "extension_ui_response", id: "ui-2", cancelled: true });
 		expect(sidecar.sent.some(frame => (frame as { id?: string }).id === "ui-3")).toBe(false);
-		// omp gates host tools as exec; the run's own report must still get through.
+		// omsk gates host tools as exec; the run's own report must still get through.
 		expect(sidecar.sent).toContainEqual({ type: "extension_ui_response", id: "ui-4", value: "Approve" });
 		expect(result.blocked).toEqual([{ tool: "bash", target: "rm -rf build" }]);
 		expect(result.report?.status).toBe("blocked");
@@ -270,7 +270,7 @@ describe("run outcomes", () => {
 		expect(signedOut.result.error?.kind).toBe("auth");
 	});
 
-	it("treats a command line omp rejects as a setup problem, and other early exits as transient", async () => {
+	it("treats a command line omsk rejects as a setup problem, and other early exits as transient", async () => {
 		const boot = async (status: "restarting" | "error", message: string) => {
 			let sidecar: FakeSidecar | null = null;
 			const result = await executeRun(
@@ -398,7 +398,7 @@ describe("rounds", () => {
 describe("worktree runs", () => {
 	const bashLog: string[] = [];
 	const worktreeHandlers = (files: string[], verifyExit?: number): Partial<Record<string, Handler>> => ({
-		worktree_create: () => ({ path: "/wt/run", branch: "omp/gui/task-check-ci-bbbbcccc", baseCwd: "/work/repo" }),
+		worktree_create: () => ({ path: "/wt/run", branch: "omsk/gui/task-check-ci-bbbbcccc", baseCwd: "/work/repo" }),
 		get_git_changes: () => ({ isRepo: true, files: files.map(path => ({ path, status: " M" })) }),
 		bash: cmd => {
 			const script = (cmd as { command: string }).command;
@@ -423,7 +423,7 @@ describe("worktree runs", () => {
 		expect(result.changedFiles).toEqual(["src/a.ts"]);
 		expect(result.verification).toMatchObject({ state: "passed", exitCode: 0 });
 		expect(bashLog[0]).toBe("bun test");
-		expect(bashLog[1]).toMatch(/^git add -A && \(git commit -q -m 'omp task: Check CI \(run 0000aaaabbbbcccc\)'/);
+		expect(bashLog[1]).toMatch(/^git add -A && \(git commit -q -m 'omsk task: Check CI \(run 0000aaaabbbbcccc\)'/);
 		expect(result.worktree).toMatchObject({ path: "/wt/run", committed: true, removed: false });
 	});
 
@@ -439,7 +439,7 @@ describe("worktree runs", () => {
 		);
 		expect(bashLog).toHaveLength(1);
 		expect(bashLog[0]).toContain("worktree remove --force '/wt/run'");
-		expect(bashLog[0]).toContain("branch -D 'omp/gui/task-check-ci-bbbbcccc'");
+		expect(bashLog[0]).toContain("branch -D 'omsk/gui/task-check-ci-bbbbcccc'");
 		expect(result.worktree?.removed).toBe(true);
 	});
 
@@ -504,10 +504,10 @@ describe("run prompt", () => {
 				next: "Check the nightly job.",
 				rejectionNote: "Do not touch the lockfile.",
 			},
-			{ branch: "omp/gui/task-x" },
+			{ branch: "omsk/gui/task-x" },
 		);
 		expect(text).toContain("Look at the CI dashboard.");
-		expect(text).toContain("branch `omp/gui/task-x`");
+		expect(text).toContain("branch `omsk/gui/task-x`");
 		expect(text).toContain("Fixed the flaky test.");
 		expect(text).toContain("Check the nightly job.");
 		expect(text).toContain("Do not touch the lockfile.");

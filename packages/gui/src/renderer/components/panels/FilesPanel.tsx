@@ -2,7 +2,7 @@
  * Files panel: workspace file tree sourced via the dedicated `fs:explore` /
  * `fs:read` / `fs:read-image` main-process IPC (node:fs — cross-platform, works
  * with no live agent session), in-drawer preview, and @mention insertion via
- * the "omp:insert-mention" window event.
+ * the "omsk:insert-mention" window event.
  */
 
 import {
@@ -207,7 +207,7 @@ export function FilesPanel() {
 			setPreview({ ...NOTHING_LOADED, path, loading: true });
 			try {
 				if (OFFICE_DOCUMENT.test(path)) {
-					const document = await window.omp.fs.documentPreview(path, false, tabId ?? undefined);
+					const document = await window.omsk.fs.documentPreview(path, false, tabId ?? undefined);
 					if (version !== previewVersion.current) return;
 					setPreview({
 						...NOTHING_LOADED,
@@ -219,8 +219,8 @@ export function FilesPanel() {
 					return;
 				}
 				const result = tabId
-					? await window.omp.fs.read(path, PREVIEW_MAX_BYTES, tabId)
-					: await window.omp.fs.read(path, PREVIEW_MAX_BYTES);
+					? await window.omsk.fs.read(path, PREVIEW_MAX_BYTES, tabId)
+					: await window.omsk.fs.read(path, PREVIEW_MAX_BYTES);
 				if (version !== previewVersion.current) return;
 				if (!result.ok) {
 					setPreview({
@@ -234,7 +234,7 @@ export function FilesPanel() {
 				// is text, so only its name says to draw it.
 				const read =
 					result.binary || SVG_NAME.test(path)
-						? await window.omp.fs.readImage(path, tabId ?? undefined).catch(() => null)
+						? await window.omsk.fs.readImage(path, tabId ?? undefined).catch(() => null)
 						: null;
 				if (version !== previewVersion.current) return;
 				const image = read?.ok && read.dataUrl ? { url: read.dataUrl, mime: read.mime, bytes: read.size } : null;
@@ -288,7 +288,7 @@ export function FilesPanel() {
 
 	const insertMention = useCallback(
 		(path: string) => {
-			window.dispatchEvent(new CustomEvent("omp:insert-mention", { detail: { path, tabId } }));
+			window.dispatchEvent(new CustomEvent("omsk:insert-mention", { detail: { path, tabId } }));
 		},
 		[tabId],
 	);
@@ -356,12 +356,12 @@ export function FilesPanel() {
 		!formattedPreview &&
 		!previewImage &&
 		typeof activePreview?.content === "string" &&
-		typeof window.omp?.fs?.openEdit === "function";
+		typeof window.omsk?.fs?.openEdit === "function";
 	useEffect(() => {
 		if (!filePreviewPath || !wantsEditor || hasDraft) return;
 		let cancelled = false;
 		setEditError(null);
-		void window.omp.fs
+		void window.omsk.fs
 			.openEdit({ path: filePreviewPath, tabId: tabId ?? undefined })
 			.then(result => {
 				if (cancelled) return;

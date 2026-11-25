@@ -6,7 +6,7 @@
  */
 export function startWindowChrome(): void {
 	const root = document.documentElement;
-	const { platform, windowChrome } = window.omp;
+	const { platform, windowChrome } = window.omsk;
 	root.dataset.platform = platform;
 	const setFullScreen = (fullScreen: boolean) => {
 		if (fullScreen) root.dataset.fullscreen = "";

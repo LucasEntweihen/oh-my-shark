@@ -70,13 +70,13 @@ function installMockOmp(
 ): void {
 	batchListener = null;
 	const ompWindow = window as unknown as {
-		omp: {
+		omsk: {
 			rpc: { planApproval: Mock<PlanApprovalFn> };
 			events: { onBatch: (callback: BatchListener) => () => void };
 			system: { showSaveDialog: Mock<SaveDialogFn> };
 		};
 	};
-	ompWindow.omp = {
+	ompWindow.omsk = {
 		rpc: { planApproval },
 		system: { showSaveDialog },
 		events: {

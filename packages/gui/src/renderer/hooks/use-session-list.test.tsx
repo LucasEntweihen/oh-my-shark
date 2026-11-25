@@ -50,7 +50,7 @@ let onSessionsChanged: (() => void) | undefined;
 let listResult: SessionInfo[];
 
 function installMockOmp(): MockOmp {
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		sessions: {
 			list: vi.fn(async () => listResult),
 			delete: vi.fn(async () => {}),
@@ -63,8 +63,8 @@ function installMockOmp(): MockOmp {
 			}),
 		},
 	};
-	(window as unknown as { omp: MockOmp }).omp = omp;
-	return omp;
+	(window as unknown as { omsk: MockOmp }).omsk = omsk;
+	return omsk;
 }
 
 let root: Root;
@@ -136,10 +136,10 @@ describe("useSessionList silent refresh", () => {
 
 	it("reports a failed read as an error, not as an empty session list", async () => {
 		listResult = [session("/s/one.jsonl")];
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		// The sidebar renders "No code sessions yet" whenever the list is empty and
 		// loading is done — so a swallowed rejection becomes a false domain claim.
-		omp.sessions.list.mockRejectedValueOnce(new Error("session index unreadable"));
+		omsk.sessions.list.mockRejectedValueOnce(new Error("session index unreadable"));
 		container = document.createElement("div") as never;
 		document.body.appendChild(container as never);
 		root = createRoot(container as unknown as Element);
@@ -165,7 +165,7 @@ describe("useSessionList silent refresh", () => {
 
 	it("keeps the newest list when an older, slower read answers last", async () => {
 		listResult = [session("/s/one.jsonl")];
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		container = document.createElement("div") as never;
 		document.body.appendChild(container as never);
 		root = createRoot(container as unknown as Element);
@@ -177,7 +177,7 @@ describe("useSessionList silent refresh", () => {
 		// The first refresh stalls on a cold parse of many files; the next one,
 		// started after a new session appeared, answers first.
 		const slow = Promise.withResolvers<SessionInfo[]>();
-		omp.sessions.list.mockReturnValueOnce(slow.promise);
+		omsk.sessions.list.mockReturnValueOnce(slow.promise);
 		await act(async () => {
 			onSessionsChanged?.();
 		});

@@ -1,7 +1,7 @@
 /**
  * Mac bundle config contract. Every mac variant ships its own electron-builder
  * file, so a key the built Info.plist depends on can exist in one and be missing
- * in another — which is how `omp://` deep links came to be dead code in every
+ * in another — which is how `omsk://` deep links came to be dead code in every
  * installed build.
  */
 import * as fs from "node:fs";
@@ -116,8 +116,8 @@ describe("mac bundle configs", () => {
 		const plistPath = path.join(directory, "OhMyShark.app", "Contents", "Info.plist");
 		const loopback = { NSExceptionAllowsInsecureHTTPLoads: true };
 		const original: PlistObject = {
-			CFBundleIdentifier: "sh.omp.gui",
-			CFBundleURLTypes: [{ CFBundleURLSchemes: ["omp"] }],
+			CFBundleIdentifier: "sh.omsk.gui",
+			CFBundleURLTypes: [{ CFBundleURLSchemes: ["omsk"] }],
 			NSAppTransportSecurity: {
 				NSAllowsArbitraryLoads: true,
 				NSAllowsLocalNetworking: true,

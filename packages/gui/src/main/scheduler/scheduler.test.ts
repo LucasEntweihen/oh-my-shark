@@ -178,12 +178,12 @@ describe("the clock", () => {
 	it.each([
 		["a minute", MINUTE],
 		["forty minutes", 40 * MINUTE],
-	])("does not run or record a slot again when omp relaunches %s after it fired", async (_label, away) => {
+	])("does not run or record a slot again when omsk relaunches %s after it fired", async (_label, away) => {
 		vi.setSystemTime(T0 + 15_000);
 		const first = makeScheduler();
 		first.start();
 		const task = created(first, { schedule: { kind: "cron", expr: "0 * * * *", tz: "UTC" } });
-		// Heartbeats land at :15 and :45; the 09:00 run ends and omp quits at 09:00:05, before the next beat.
+		// Heartbeats land at :15 and :45; the 09:00 run ends and omsk quits at 09:00:05, before the next beat.
 		await vi.advanceTimersByTimeAsync(HOUR - 10_000);
 		pending[0].resolve({});
 		await settle();
@@ -369,7 +369,7 @@ describe("failures", () => {
 describe("review", () => {
 	const worktree: RunWorktree = {
 		path: "/wt/1",
-		branch: "omp/gui/task-1",
+		branch: "omsk/gui/task-1",
 		baseCwd: "/work",
 		removed: false,
 		committed: true,
@@ -490,7 +490,7 @@ describe("housekeeping", () => {
 		const task = created(scheduler, { tools: "workspace" });
 		const worktree: RunWorktree = {
 			path: "/wt/old",
-			branch: "omp/gui/task-old",
+			branch: "omsk/gui/task-old",
 			baseCwd: "/work",
 			removed: false,
 			committed: true,

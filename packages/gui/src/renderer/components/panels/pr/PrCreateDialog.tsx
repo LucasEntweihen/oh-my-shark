@@ -75,7 +75,7 @@ export function PrCreateDialog({ open, onClose }: { open: boolean; onClose: () =
 			const result = response.data as RpcPrCreateResult | undefined;
 			if (result) {
 				toast({ variant: "success", message: t("prCenter.created", { number: String(result.number) }) });
-				void window.omp.system.openExternal(result.url);
+				void window.omsk.system.openExternal(result.url);
 			}
 			void usePrCenterStore.getState().refresh();
 			onClose();

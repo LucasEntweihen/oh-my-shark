@@ -27,7 +27,7 @@ const logTail = vi.fn<(lines: number) => Promise<string[]>>(() =>
 );
 const sysInfo = vi.fn<() => Promise<SystemInfo>>(() => Promise.resolve(info));
 
-(window as unknown as { omp: unknown }).omp = {
+(window as unknown as { omsk: unknown }).omsk = {
 	system: { info: sysInfo, openExternal },
 	runtime: { logTail },
 };

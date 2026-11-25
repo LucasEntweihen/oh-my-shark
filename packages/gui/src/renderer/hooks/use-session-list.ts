@@ -40,7 +40,7 @@ export function useSessionList(scope: "local" | "global" = "local"): SessionList
 			if (showSpinner && !firstLoadDone.current) setIsLoading(true);
 			setError(null);
 			const read = ++latestRead.current;
-			window.omp.sessions
+			window.omsk.sessions
 				.list(scope)
 				.then(list => {
 					if (read !== latestRead.current) return;
@@ -63,7 +63,7 @@ export function useSessionList(scope: "local" | "global" = "local"): SessionList
 
 	useEffect(() => {
 		refresh(true);
-		const unsubscribe = window.omp.events.onSessionsChanged(() => {
+		const unsubscribe = window.omsk.events.onSessionsChanged(() => {
 			// Coalesce the per-append storm: trailing debounce, one refresh max
 			// every 350ms while sessions stream.
 			window.clearTimeout(debounceTimer.current);
@@ -77,7 +77,7 @@ export function useSessionList(scope: "local" | "global" = "local"): SessionList
 
 	const deleteSession = useCallback(
 		async (path: string) => {
-			await window.omp.sessions.delete(path);
+			await window.omsk.sessions.delete(path);
 			// Remove the row immediately, then let the debounced background refresh
 			// reconcile authoritatively.
 			setSessions(current => current.filter(session => session.path !== path));
@@ -87,7 +87,7 @@ export function useSessionList(scope: "local" | "global" = "local"): SessionList
 	);
 	const renameSession = useCallback(
 		async (path: string, name: string) => {
-			await window.omp.sessions.rename(path, name);
+			await window.omsk.sessions.rename(path, name);
 			setSessions(current =>
 				current.map(session => (session.path === path ? { ...session, title: name } : session)),
 			);

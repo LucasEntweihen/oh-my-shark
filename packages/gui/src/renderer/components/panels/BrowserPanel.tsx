@@ -171,7 +171,7 @@ export function BrowserPanel() {
 	useEffect(() => {
 		if (!tabId) return;
 		let cancelled = false;
-		void window.omp.browser
+		void window.omsk.browser
 			.getState(tabId)
 			.then(state => {
 				if (!cancelled && state) applyBrowserState(state, { reveal: false });
@@ -186,7 +186,7 @@ export function BrowserPanel() {
 	// the window), and the Edit menu's Find commands.
 	const browserKeyRef = useRef<(payload: IpcBrowserKeyPayload) => void>(() => {});
 	useEffect(() => {
-		const events = window.omp?.events;
+		const events = window.omsk?.events;
 		if (!tabId || typeof events?.onBrowserKey !== "function") return;
 		return events.onBrowserKey(payload => {
 			if (payload.tabId === tabId) browserKeyRef.current(payload);
@@ -207,7 +207,7 @@ export function BrowserPanel() {
 			return;
 		}
 		let cancelled = false;
-		void window.omp.browser
+		void window.omsk.browser
 			.capture(tabId)
 			.catch(() => null)
 			.then(image => {
@@ -224,7 +224,7 @@ export function BrowserPanel() {
 		const element = viewportRef.current;
 		if (!tabId) return;
 		if (!element || !showLive) {
-			window.omp.browser.setViewport({ tabId, bounds: null });
+			window.omsk.browser.setViewport({ tabId, bounds: null });
 			return;
 		}
 		let sent = "";
@@ -234,7 +234,7 @@ export function BrowserPanel() {
 			const key = `${bounds.x},${bounds.y},${bounds.width},${bounds.height}`;
 			if (key === sent) return;
 			sent = key;
-			window.omp.browser.setViewport({ tabId, bounds });
+			window.omsk.browser.setViewport({ tabId, bounds });
 		};
 		report();
 		const observer = new ResizeObserver(report);
@@ -248,13 +248,13 @@ export function BrowserPanel() {
 			window.removeEventListener("resize", report);
 			window.removeEventListener("animationend", report);
 			window.removeEventListener("transitionend", report);
-			window.omp.browser.setViewport({ tabId, bounds: null });
+			window.omsk.browser.setViewport({ tabId, bounds: null });
 		};
 	}, [tabId, showLive]);
 
 	const act = (action: IpcBrowserAction): void => {
 		if (!tabId || !activePage) return;
-		void window.omp.browser
+		void window.omsk.browser
 			.action({ tabId, pageId: activePage.pageId, ...action })
 			.then(state => state && applyBrowserState(state, { reveal: false }))
 			.catch(() => {});
@@ -269,7 +269,7 @@ export function BrowserPanel() {
 			act({ action: "navigate", url: target });
 			return;
 		}
-		void window.omp.browser
+		void window.omsk.browser
 			.open(tabId, target)
 			.then(state => state && applyBrowserState(state, { reveal: false }))
 			.catch(() => {});
@@ -335,14 +335,14 @@ export function BrowserPanel() {
 	useEffect(() => {
 		if (findFor === null || findFor === activePageId) return;
 		setFindFor(null);
-		if (tabId) void window.omp.browser.action({ tabId, pageId: findFor, action: "stopFind" }).catch(() => {});
+		if (tabId) void window.omsk.browser.action({ tabId, pageId: findFor, action: "stopFind" }).catch(() => {});
 	}, [activePageId, findFor, tabId]);
 
 	// Leaving the browser view ends the search too, so no highlights linger in the page.
 	const endFindRef = useRef<() => void>(() => {});
 	endFindRef.current = () => {
 		if (tabId && findFor !== null) {
-			void window.omp.browser.action({ tabId, pageId: findFor, action: "stopFind" }).catch(() => {});
+			void window.omsk.browser.action({ tabId, pageId: findFor, action: "stopFind" }).catch(() => {});
 		}
 	};
 	useEffect(() => () => endFindRef.current(), []);
@@ -457,13 +457,13 @@ export function BrowserPanel() {
 							active={page.pageId === activePage?.pageId}
 							onSelect={() =>
 								tabId &&
-								void window.omp.browser
+								void window.omsk.browser
 									.action({ tabId, pageId: page.pageId, action: "select" })
 									.then(state => state && applyBrowserState(state, { reveal: false }))
 							}
 							onClose={() =>
 								tabId &&
-								void window.omp.browser
+								void window.omsk.browser
 									.action({ tabId, pageId: page.pageId, action: "close" })
 									.then(state => state && applyBrowserState(state, { reveal: false }))
 							}

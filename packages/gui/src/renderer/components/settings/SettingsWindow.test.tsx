@@ -52,7 +52,7 @@ describe("Toggle", () => {
 });
 
 describe("CapabilitiesHome", () => {
-	it("leads with OMP-specific workflows and exposes a direct action for each", () => {
+	it("leads with OMSK-specific workflows and exposes a direct action for each", () => {
 		const noop = () => {};
 		const html = renderToStaticMarkup(
 			<I18nProvider>

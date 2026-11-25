@@ -1,6 +1,6 @@
 /**
  * Theme picker: searchable overlay of the GUI's named themes, "system", and
- * the custom themes in ~/.omp/gui/themes (gui#38). Each card shows a live
+ * the custom themes in ~/.omsk/gui/themes (gui#38). Each card shows a live
  * swatch preview from the theme's token set. Selecting a theme applies it
  * live (inline `--omsk-*` tokens), persists the choice, and keeps the legacy
  * dark/light/system store coherent so the App effect and the settings window
@@ -456,7 +456,7 @@ export function ThemePickerDialog() {
 						size="sm"
 						variant="secondary"
 						onClick={() => {
-							void window.omp.themes
+							void window.omsk.themes
 								.openFolder()
 								.then(result => {
 									if (!result.ok)

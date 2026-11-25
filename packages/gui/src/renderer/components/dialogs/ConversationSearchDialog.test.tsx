@@ -94,7 +94,7 @@ beforeEach(async () => {
 	storage.clear();
 	search = vi.fn(async () => response());
 	openTab = vi.fn(async () => "tab-2");
-	(window as unknown as { omp: unknown }).omp = { sessions: { searchConversations: search } };
+	(window as unknown as { omsk: unknown }).omsk = { sessions: { searchConversations: search } };
 	useTabsStore.setState({ openTab });
 	useSessionStore.setState({ cwd: HERE });
 	useTranscriptFocusStore.setState({ target: null });
@@ -132,7 +132,7 @@ describe("ConversationSearchDialog", () => {
 			await vi.advanceTimersByTimeAsync(200);
 		});
 		expect(search).toHaveBeenLastCalledWith("notarize", null);
-		expect(storage.get("omp.conversationSearch.scope")).toBe("all");
+		expect(storage.get("omsk.conversationSearch.scope")).toBe("all");
 	});
 
 	it("opens the selected message, in a new tab with ⌘↵, and remembers the search", async () => {
@@ -148,7 +148,7 @@ describe("ConversationSearchDialog", () => {
 		});
 		expect(openTab).toHaveBeenCalledWith({ cwd: HERE, sessionPath: "/s/app/one.jsonl", kind: "agent" });
 		expect(useUiStore.getState().conversationSearchOpen).toBe(false);
-		expect(JSON.parse(storage.get("omp.conversationSearch.recent") ?? "[]")).toEqual(["notarize"]);
+		expect(JSON.parse(storage.get("omsk.conversationSearch.recent") ?? "[]")).toEqual(["notarize"]);
 	});
 
 	it("opens a message from another project in its own tab even with plain ↵", async () => {

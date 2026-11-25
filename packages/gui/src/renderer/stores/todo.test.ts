@@ -141,7 +141,7 @@ describe("todo archive of a reopened session", () => {
 	});
 });
 
-describe("todo results saved before omp 18.19", () => {
+describe("todo results saved before omsk 18.19", () => {
 	it("reads a since-removed blocked task as pending instead of dropping the whole plan", () => {
 		const phases = todoPhasesFromToolResult({
 			details: {

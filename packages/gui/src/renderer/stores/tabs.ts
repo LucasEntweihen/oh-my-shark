@@ -13,7 +13,7 @@
  *
  * Wire shapes (IpcTabInfo / IpcTabStatusPayload / IpcSpawnTabPayload) and the
  * main-process pool live in the main slice — this store only consumes
- * window.omp.tabs.* and window.omp.events.onTabStatus.
+ * window.omsk.tabs.* and window.omsk.events.onTabStatus.
  */
 import { useEffect } from "react";
 import { create, type StoreApi } from "zustand";
@@ -170,8 +170,8 @@ function routeTabView(focusedTabId: string, visibleTabIds: string[], groups: rea
 	const key = groupsKey(groups);
 	const request = routingChain.then(async () => {
 		// Main keeps the pairs it already has, so a plain focus change names the tab alone.
-		if (visibleTabIds.length === 1 && key === routedGroupsKey) return window.omp.tabs.setActive(focusedTabId);
-		const routed = await window.omp.tabs.setView(focusedTabId, visibleTabIds, [...groups]);
+		if (visibleTabIds.length === 1 && key === routedGroupsKey) return window.omsk.tabs.setActive(focusedTabId);
+		const routed = await window.omsk.tabs.setView(focusedTabId, visibleTabIds, [...groups]);
 		if (routed) routedGroupsKey = key;
 		return routed;
 	});
@@ -193,7 +193,7 @@ function pairKey(group: SplitLayout): string {
 function syncTabOrder(tabs: readonly SessionTab[]): void {
 	const tabIds = tabs.map(tab => tab.id);
 	void Promise.resolve()
-		.then(() => window.omp.tabs.setOrder(tabIds))
+		.then(() => window.omsk.tabs.setOrder(tabIds))
 		.catch(() => {
 			// Best effort: a stale order only affects the next launch's tab order.
 		});
@@ -416,7 +416,7 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 			// The outgoing tab leaves the foreground role, so its overlays and live
 			// voice must not linger (voice control RPCs route to the focused pane).
 			const ui = useUiStore.getState();
-			stopLive = ui.liveOpen ? window.omp.rpc.liveStop() : null;
+			stopLive = ui.liveOpen ? window.omsk.rpc.liveStop() : null;
 			ui.closeSessionOverlays();
 			useForkHandoffStore.getState().closeHandoffDialog();
 		}
@@ -483,7 +483,7 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 		split: null,
 
 		reconcileTabs: async () => {
-			const list = await window.omp.tabs.list().catch(() => null);
+			const list = await window.omsk.tabs.list().catch(() => null);
 			if (!list) {
 				// Pre-tabs main (dev mismatch) or bridge down — the tab strip simply
 				// stays empty and TAB_STATUS pushes rebuild it.
@@ -584,7 +584,7 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 			const kind = args?.kind ?? "agent";
 			let result: IpcSpawnTabResult | null;
 			try {
-				result = await window.omp.tabs.spawn({
+				result = await window.omsk.tabs.spawn({
 					cwd: args?.work ? undefined : cwd || undefined,
 					sessionPath: args?.sessionPath,
 					kind,
@@ -617,7 +617,7 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 				}
 				if (args?.sessionPath) {
 					try {
-						await window.omp.sessions.openInNewWindow({ sessionPath: args.sessionPath });
+						await window.omsk.sessions.openInNewWindow({ sessionPath: args.sessionPath });
 					} catch {
 						// Best-effort focus — the owner window may be mid-teardown.
 					}
@@ -791,7 +791,7 @@ export const useTabsStore = create<TabsStore>()((set, get) => {
 			closedTabIds.add(id);
 			deleteSessionRuntime(id);
 			try {
-				await window.omp.tabs.close(id);
+				await window.omsk.tabs.close(id);
 			} catch {
 				// Pre-tabs main (dev mismatch) tolerance; the entry is already gone.
 			}
@@ -1110,9 +1110,9 @@ export function useSessionTabs(): void {
 					}
 				}, 0);
 			});
-		const subscribe = window.omp.events.onTabStatus;
+		const subscribe = window.omsk.events.onTabStatus;
 		if (typeof subscribe !== "function") return;
-		return subscribe.call(window.omp.events, payload => {
+		return subscribe.call(window.omsk.events, payload => {
 			const previousStatus = useTabsStore.getState().tabs.find(entry => entry.id === payload.tabId)?.status;
 			useTabsStore.getState().applyTabStatus(payload);
 			if (payload.status !== "ready") return;
@@ -1123,7 +1123,7 @@ export function useSessionTabs(): void {
 			// agents of background tabs too (plan/24 §7). Idempotent server-side.
 			// A background tab needs a tab-addressed command; the active-tab
 			// fallback would land on the wrong sidecar.
-			if (visible || typeof window.omp.rpc.commandForTab === "function") {
+			if (visible || typeof window.omsk.rpc.commandForTab === "function") {
 				void ensureTabRuntime(payload.tabId).command({
 					type: "set_subagent_subscription",
 					level: SUBAGENT_SUBSCRIPTION_LEVEL,

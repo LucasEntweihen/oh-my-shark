@@ -39,11 +39,11 @@ export function FeedbackDialog() {
 		setIncludeErrors(true);
 		setInfo(null);
 		setErrorTail([]);
-		window.omp.system
+		window.omsk.system
 			.info()
 			.then(setInfo)
 			.catch(() => {});
-		window.omp.runtime
+		window.omsk.runtime
 			.logTail(LOG_TAIL_LINES)
 			.then(setErrorTail)
 			.catch(() => setErrorTail([]));
@@ -74,7 +74,7 @@ export function FeedbackDialog() {
 			errors: includeErrors ? errorTail : [],
 			prefillError: prefill?.error ?? null,
 		});
-		void window.omp.system.openExternal(url);
+		void window.omsk.system.openExternal(url);
 		close();
 	}, [canSubmit, kind, title, description, includeEnv, includeErrors, info, errorTail, prefill, close]);
 

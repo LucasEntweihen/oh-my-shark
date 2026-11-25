@@ -44,7 +44,7 @@ describe("contextSegments", () => {
 	});
 
 	it("counts instruction files as their own category, so the measured parts still add up to what is used", () => {
-		// omp 18.18.9+ reports instruction files apart from the system prompt instead of inside it.
+		// omsk 18.18.9+ reports instruction files apart from the system prompt instead of inside it.
 		const sized = { ...breakdown, usedTokens: 120_000, messagesTokens: 97_000, instructionFilesTokens: 3_000 };
 		const segments = contextSegments(sized, contextUsageView(null, sized), null);
 		expect(segments.find(segment => segment.key === "instructionFiles")?.tokens).toBe(3_000);

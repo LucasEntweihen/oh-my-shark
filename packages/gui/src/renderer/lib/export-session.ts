@@ -8,9 +8,9 @@ import { toast } from "../stores/toast";
 import { translate } from "./i18n";
 
 export async function exportSessionHtml(): Promise<boolean> {
-	const outputPath = await window.omp.system.showSaveDialog("session.html");
+	const outputPath = await window.omsk.system.showSaveDialog("session.html");
 	if (!outputPath) return false;
-	const response = await window.omp.rpc.exportHtml(outputPath);
+	const response = await window.omsk.rpc.exportHtml(outputPath);
 	if (!response.success) throw new Error(response.error);
 	toast({ variant: "success", title: translate("export.sessionExported"), message: outputPath });
 	return true;

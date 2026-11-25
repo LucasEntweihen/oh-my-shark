@@ -25,7 +25,7 @@ const setGoal: Mock<(args: { action?: "pause" | "resume" | "drop" }) => Promise<
 	success: true,
 	data: {},
 }));
-(window as unknown as { omp: { rpc: { setGoal: typeof setGoal } } }).omp = { rpc: { setGoal } };
+(window as unknown as { omsk: { rpc: { setGoal: typeof setGoal } } }).omsk = { rpc: { setGoal } };
 
 const { createRoot } = await import("react-dom/client");
 const { GoalDockBar } = await import("./GoalDockBar");

@@ -84,7 +84,7 @@ function installOmpMock(overrides: Partial<OmpMock> = {}): OmpMock {
 		openExternal: vi.fn(async () => {}),
 		...overrides,
 	};
-	(window as unknown as { omp: { rpc: OmpMock; system: { openExternal: Mock } } }).omp = {
+	(window as unknown as { omsk: { rpc: OmpMock; system: { openExternal: Mock } } }).omsk = {
 		rpc: mock,
 		system: { openExternal: mock.openExternal },
 	};
@@ -180,33 +180,33 @@ async function typeInto(element: TestElement, value: string): Promise<void> {
 
 describe("AddMarketplaceForm", () => {
 	it("rejects a bare name inline and fires no RPC", async () => {
-		const omp = installOmpMock();
+		const omsk = installOmpMock();
 		const onAdded = vi.fn(async () => {});
 		await mount(<AddMarketplaceForm onAdded={onAdded} />);
 		await typeInto(queryAll('input[aria-label="Add a marketplace"]')[0], "just-a-name");
 		await click(byText("button", "Add"));
-		expect(omp.marketplaceAction).not.toHaveBeenCalled();
+		expect(omsk.marketplaceAction).not.toHaveBeenCalled();
 		expect(onAdded).not.toHaveBeenCalled();
 		expect((container as unknown as TestElement).textContent).toContain("Unrecognized source");
 	});
 
 	it("submits owner/repo via marketplace_action add and refetches", async () => {
-		const omp = installOmpMock();
+		const omsk = installOmpMock();
 		const onAdded = vi.fn(async () => {});
 		await mount(<AddMarketplaceForm onAdded={onAdded} />);
 		await typeInto(queryAll('input[aria-label="Add a marketplace"]')[0], "owner/repo");
 		await click(byText("button", "Add"));
 		await flush();
-		expect(omp.marketplaceAction).toHaveBeenCalledWith({ action: "add", source: "owner/repo" });
+		expect(omsk.marketplaceAction).toHaveBeenCalledWith({ action: "add", source: "owner/repo" });
 		expect(onAdded).toHaveBeenCalledTimes(1);
 	});
 });
 
 describe("MarketplaceCard", () => {
-	const marketplace = { name: "official", source: "https://github.com/omp/plugins.git", pluginCount: 2 };
+	const marketplace = { name: "official", source: "https://github.com/omsk/plugins.git", pluginCount: 2 };
 
 	it("renders name, count, cache note, and lazily lists available plugins on expand", async () => {
-		const omp = installOmpMock({
+		const omsk = installOmpMock({
 			marketplaceAction: vi.fn(async (payload: { action: string }) =>
 				payload.action === "list_available"
 					? ok({
@@ -224,11 +224,11 @@ describe("MarketplaceCard", () => {
 		expect(text).toContain("official");
 		expect(text).toContain("2 plugins");
 		expect(text).toContain("cache-backed catalog");
-		expect(omp.marketplaceAction).not.toHaveBeenCalled();
+		expect(omsk.marketplaceAction).not.toHaveBeenCalled();
 
 		await click(queryAll('button[aria-label="Browse available plugins"]')[0]);
 		await flush();
-		expect(omp.marketplaceAction).toHaveBeenCalledWith({ action: "list_available", marketplace: "official" });
+		expect(omsk.marketplaceAction).toHaveBeenCalledWith({ action: "list_available", marketplace: "official" });
 		expect(byText("button", "Install")).toBeTruthy();
 		expect(byText("button", "Upgrade")).toBeTruthy();
 		expect(byText("button", "Uninstall")).toBeTruthy();
@@ -276,7 +276,7 @@ describe("MarketplaceCard", () => {
 
 	it("installs a plugin behind the inline confirm swap, then refetches", async () => {
 		const calls: Array<{ action: string; plugin?: string }> = [];
-		const omp = installOmpMock({
+		const omsk = installOmpMock({
 			marketplaceAction: vi.fn(async (payload: { action: string; plugin?: string }) => {
 				calls.push(payload);
 				return payload.action === "list_available"
@@ -291,12 +291,12 @@ describe("MarketplaceCard", () => {
 		// First click only arms the confirm swap — no RPC yet.
 		await click(byText("button", "Install"));
 		await flush();
-		expect(omp.marketplaceAction).not.toHaveBeenCalledWith(expect.objectContaining({ action: "install" }));
+		expect(omsk.marketplaceAction).not.toHaveBeenCalledWith(expect.objectContaining({ action: "install" }));
 		expect((container as unknown as TestElement).textContent ?? "").toContain("full local access");
 		// Confirm fires the install and the refetch chain.
 		await click(queryAll('button[aria-label="Confirm install"]')[0]);
 		await flush();
-		expect(omp.marketplaceAction).toHaveBeenCalledWith({
+		expect(omsk.marketplaceAction).toHaveBeenCalledWith({
 			action: "install",
 			marketplace: "official",
 			plugin: "beta",
@@ -307,7 +307,7 @@ describe("MarketplaceCard", () => {
 	});
 
 	it("cancels the install confirm without firing the RPC", async () => {
-		const omp = installOmpMock({
+		const omsk = installOmpMock({
 			marketplaceAction: vi.fn(async (payload: { action: string }) =>
 				payload.action === "list_available"
 					? ok({ ok: true, plugins: [{ name: "beta", installed: false }] })
@@ -321,20 +321,20 @@ describe("MarketplaceCard", () => {
 		await flush();
 		await click(queryAll('button[aria-label="Cancel"]')[0]);
 		await flush();
-		expect(omp.marketplaceAction).not.toHaveBeenCalledWith(expect.objectContaining({ action: "install" }));
+		expect(omsk.marketplaceAction).not.toHaveBeenCalledWith(expect.objectContaining({ action: "install" }));
 		// Swap returns to the normal action row.
 		expect(byText("button", "Install")).toBeTruthy();
 	});
 
 	it("shows the remove action behind an inline confirm swap", async () => {
-		const omp = installOmpMock();
+		const omsk = installOmpMock();
 		const reload = vi.fn(async () => {});
 		await mount(<MarketplaceCard marketplace={marketplace} reload={reload} />);
 		await click(queryAll('button[aria-label="Remove marketplace"]')[0]);
-		expect(omp.marketplaceAction).not.toHaveBeenCalled();
+		expect(omsk.marketplaceAction).not.toHaveBeenCalled();
 		await click(queryAll('button[aria-label="Confirm removal"]')[0]);
 		await flush();
-		expect(omp.marketplaceAction).toHaveBeenCalledWith({ action: "remove", marketplace: "official" });
+		expect(omsk.marketplaceAction).toHaveBeenCalledWith({ action: "remove", marketplace: "official" });
 		expect(reload).toHaveBeenCalledTimes(1);
 	});
 });
@@ -355,10 +355,10 @@ describe("PluginDetailDrawer", () => {
 	};
 
 	it("renders a configured secret as write-only without receiving its value", async () => {
-		const omp = installOmpMock({ getPluginDetail: vi.fn(async () => ok(detail)) });
+		const omsk = installOmpMock({ getPluginDetail: vi.fn(async () => ok(detail)) });
 		await mount(<PluginDetailDrawer onChanged={vi.fn(async () => {})} onClose={() => {}} plugin={plugin} />);
 		await flush();
-		expect(omp.getPluginDetail).toHaveBeenCalledWith("demo");
+		expect(omsk.getPluginDetail).toHaveBeenCalledWith("demo");
 		const secretInput = queryAll('input[type="password"]')[0] as unknown as { value: string; placeholder: string };
 		expect(secretInput.value).toBe("");
 		expect(secretInput.placeholder).toContain("leave empty to keep");
@@ -367,7 +367,7 @@ describe("PluginDetailDrawer", () => {
 	});
 
 	it("marks the last good detail as stale when its refetch fails instead of going quiet", async () => {
-		const omp = installOmpMock({
+		const omsk = installOmpMock({
 			getPluginDetail: vi
 				.fn()
 				.mockResolvedValueOnce(ok(detail))
@@ -388,11 +388,11 @@ describe("PluginDetailDrawer", () => {
 		expect(queryAll('input[type="number"]')).toHaveLength(1);
 		// The banner is not decoration: Retry re-runs the same read.
 		await click(byText("button", "Retry"));
-		expect(omp.getPluginDetail.mock.calls.length).toBeGreaterThanOrEqual(3);
+		expect(omsk.getPluginDetail.mock.calls.length).toBeGreaterThanOrEqual(3);
 	});
 
 	it("saves staged settings with assembled values and refetches the detail", async () => {
-		const omp = installOmpMock({ getPluginDetail: vi.fn(async () => ok(detail)) });
+		const omsk = installOmpMock({ getPluginDetail: vi.fn(async () => ok(detail)) });
 		await mount(<PluginDetailDrawer onChanged={vi.fn(async () => {})} onClose={() => {}} plugin={plugin} />);
 		await flush();
 		await typeInto(queryAll('input[type="number"]')[0], "5");
@@ -400,10 +400,10 @@ describe("PluginDetailDrawer", () => {
 		await click(queryAll('button[aria-label="verbose"]')[0]);
 		await click(byText("button", "Save settings"));
 		await flush();
-		expect(omp.setPluginSetting).toHaveBeenCalledWith("demo", "workers", 5);
-		expect(omp.setPluginSetting).toHaveBeenCalledWith("demo", "verbose", true);
+		expect(omsk.setPluginSetting).toHaveBeenCalledWith("demo", "workers", 5);
+		expect(omsk.setPluginSetting).toHaveBeenCalledWith("demo", "verbose", true);
 		// Reload may change derived values — the detail refetch is mandatory.
-		expect(omp.getPluginDetail.mock.calls.length).toBeGreaterThanOrEqual(2);
+		expect(omsk.getPluginDetail.mock.calls.length).toBeGreaterThanOrEqual(2);
 	});
 
 	it("keeps boolean reset outside the switch and reset does not toggle the value", async () => {
@@ -412,7 +412,7 @@ describe("PluginDetailDrawer", () => {
 			settingsSchema: { verbose: { type: "boolean" } },
 			values: { verbose: false },
 		};
-		const omp = installOmpMock({ getPluginDetail: vi.fn(async () => ok(booleanOnly)) });
+		const omsk = installOmpMock({ getPluginDetail: vi.fn(async () => ok(booleanOnly)) });
 		await mount(<PluginDetailDrawer onChanged={vi.fn(async () => {})} onClose={() => {}} plugin={plugin} />);
 		await flush();
 
@@ -420,11 +420,11 @@ describe("PluginDetailDrawer", () => {
 		expect(queryAll('button[aria-label="verbose"] button')).toHaveLength(0);
 		await click(queryAll('button[aria-label="Reset to default"]')[0]);
 		expect(toggle.getAttribute("aria-checked")).toBe("false");
-		expect(omp.setPluginSetting).not.toHaveBeenCalled();
+		expect(omsk.setPluginSetting).not.toHaveBeenCalled();
 
 		await click(queryAll('button[aria-label="Confirm reset"]')[0]);
 		await flush();
-		expect(omp.deletePluginSetting).toHaveBeenCalledWith("demo", "verbose");
+		expect(omsk.deletePluginSetting).toHaveBeenCalledWith("demo", "verbose");
 	});
 
 	it("saves false against an unset boolean whose manifest default is true", async () => {
@@ -434,7 +434,7 @@ describe("PluginDetailDrawer", () => {
 			values: {},
 			configuredKeys: [],
 		};
-		const omp = installOmpMock({ getPluginDetail: vi.fn(async () => ok(defaulted)) });
+		const omsk = installOmpMock({ getPluginDetail: vi.fn(async () => ok(defaulted)) });
 		await mount(<PluginDetailDrawer onChanged={vi.fn(async () => {})} onClose={() => {}} plugin={plugin} />);
 		await flush();
 
@@ -445,7 +445,7 @@ describe("PluginDetailDrawer", () => {
 		expect(toggle.getAttribute("aria-checked")).toBe("false");
 		await click(byText("button", "Save settings"));
 		await flush();
-		expect(omp.setPluginSetting).toHaveBeenCalledWith("demo", "verbose", false);
+		expect(omsk.setPluginSetting).toHaveBeenCalledWith("demo", "verbose", false);
 	});
 
 	it("renders server validation errors under the field and keeps the input", async () => {
@@ -464,7 +464,7 @@ describe("PluginDetailDrawer", () => {
 	});
 
 	it("saves feature checkbox selections via set_plugin_features", async () => {
-		const omp = installOmpMock({ getPluginDetail: vi.fn(async () => ok(detail)) });
+		const omsk = installOmpMock({ getPluginDetail: vi.fn(async () => ok(detail)) });
 		await mount(<PluginDetailDrawer onChanged={vi.fn(async () => {})} onClose={() => {}} plugin={plugin} />);
 		await flush();
 		const checkbox = queryAll('input[type="checkbox"]')[0];
@@ -472,6 +472,6 @@ describe("PluginDetailDrawer", () => {
 		await click(checkbox);
 		await click(byText("button", "Save features"));
 		await flush();
-		expect(omp.setPluginFeatures).toHaveBeenCalledWith("demo", ["extras"]);
+		expect(omsk.setPluginFeatures).toHaveBeenCalledWith("demo", ["extras"]);
 	});
 });

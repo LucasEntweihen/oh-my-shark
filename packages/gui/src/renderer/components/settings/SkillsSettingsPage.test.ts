@@ -52,7 +52,7 @@ function skill(partial: Partial<RpcSkillInfo> & { name: string }): RpcSkillInfo 
 		enabled: true,
 		location: "/tmp/SKILL.md",
 		provider: "native",
-		providerName: "OMP",
+		providerName: "OMSK",
 		level: "user",
 		managed: false,
 		hidden: false,
@@ -94,9 +94,9 @@ describe("Skills settings management", () => {
 		const getSkills = vi.fn(async () => ({ success: true as const, data: { skills: [listed] } }));
 		const getSkillDetail = vi.fn(async () => ({ success: true as const, data: detail }));
 		const ompWindow = window as unknown as {
-			omp: { rpc: { getSkills: typeof getSkills; getSkillDetail: typeof getSkillDetail } };
+			omsk: { rpc: { getSkills: typeof getSkills; getSkillDetail: typeof getSkillDetail } };
 		};
-		ompWindow.omp = { rpc: { getSkills, getSkillDetail } };
+		ompWindow.omsk = { rpc: { getSkills, getSkillDetail } };
 		useSessionStore.setState({ status: "ready", cwd: "/repo" });
 		useTabsStore.setState({
 			activeTabId: "tab-1",

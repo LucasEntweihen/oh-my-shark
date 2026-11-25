@@ -1,5 +1,5 @@
 /**
- * ModelRolesWindow contract tests for the omp 18.2.7 model-roles migration: the
+ * ModelRolesWindow contract tests for the omsk 18.2.7 model-roles migration: the
  * backend now owns role metadata AND the eligible candidate pool per role
  * (get_model_roles returns candidates inline). Defends the observable contract —
  * the window requests roles once, filters backend-hidden roles, groups visible
@@ -78,7 +78,7 @@ function installRpc(getModelRoles?: (...args: unknown[]) => Promise<unknown>) {
 		getModelRoles: vi.fn(getModelRoles ?? (async () => ({ success: true, data: { roles: ROLES } }))),
 		setModelRole: vi.fn(async () => ({ success: true })),
 	};
-	(window as unknown as { omp?: unknown }).omp = { rpc };
+	(window as unknown as { omsk?: unknown }).omsk = { rpc };
 	return rpc;
 }
 
@@ -94,7 +94,7 @@ function buttonWithLabel(label: string): HTMLButtonElement | undefined {
 
 afterEach(async () => {
 	await act(async () => root?.unmount());
-	delete (window as unknown as { omp?: unknown }).omp;
+	delete (window as unknown as { omsk?: unknown }).omsk;
 	useUiStore.getState().closeModelRoles();
 	useSessionStore.getState().reset();
 	vi.restoreAllMocks();

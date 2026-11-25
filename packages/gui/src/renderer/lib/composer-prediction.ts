@@ -1,5 +1,5 @@
 /**
- * Composer predictions (omp 19): after a run finishes, the agent guesses the
+ * Composer predictions (omsk 19): after a run finishes, the agent guesses the
  * user's next message with a short side turn on the same context. The sidecar
  * owns the request (the `composer.predictions` setting, billing, staleness);
  * the GUI asks only while its composer is empty, shows the guess over it, and

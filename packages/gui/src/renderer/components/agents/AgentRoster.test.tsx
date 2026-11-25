@@ -86,7 +86,7 @@ async function mount(): Promise<void> {
 	});
 	sessionRuntimeStore<SubagentsStore>("t1", "subagents")!.getState().setSnapshots(agents);
 	// The roster re-reads the agent list when it opens.
-	(window as unknown as { omp: unknown }).omp = {
+	(window as unknown as { omsk: unknown }).omsk = {
 		rpc: {
 			commandForTab: async () => ({
 				type: "response",

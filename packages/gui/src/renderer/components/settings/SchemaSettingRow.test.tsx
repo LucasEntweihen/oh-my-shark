@@ -74,7 +74,7 @@ function savedChip(): string | null | undefined {
 
 beforeEach(() => {
 	setFocusedSessionRuntime(TAB);
-	(window as unknown as Record<string, unknown>).omp = {
+	(window as unknown as Record<string, unknown>).omsk = {
 		rpc: { setSetting },
 		events: {
 			onTabSidecarStatus: (listener: typeof statusListener) => {

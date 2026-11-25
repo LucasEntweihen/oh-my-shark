@@ -509,7 +509,7 @@ type ExtensionResponse =
 	| { cancelled: true };
 
 function answerExtensionRequest(id: string, response: ExtensionResponse): void {
-	window.omp.ui.respondExtensionUi({ type: "extension_ui_response", id, ...response });
+	window.omsk.ui.respondExtensionUi({ type: "extension_ui_response", id, ...response });
 	removeExtensionRequest(id);
 }
 
@@ -643,7 +643,7 @@ function OpenUrlDialog({
 						autoFocus={!loginPrompt}
 						icon={<ExternalLink size={12} />}
 						onClick={() => {
-							void window.omp.system.openExternal(target);
+							void window.omsk.system.openExternal(target);
 							setOpened(true);
 						}}
 						size="sm"
@@ -814,7 +814,7 @@ export function ExtensionDialog() {
 				removeExtensionRequest(req.id);
 			} else if (req.method === "set_editor_text") {
 				window.dispatchEvent(
-					new CustomEvent("omp:fill-composer", {
+					new CustomEvent("omsk:fill-composer", {
 						detail: { text: req.text, images: req.images, prepend: req.prepend },
 					}),
 				);
@@ -831,7 +831,7 @@ export function ExtensionDialog() {
 	// Timeout: auto-cancel with timedOut marker.
 	useEffect(() => {
 		if (!request || remaining === null || remaining > 0) return;
-		window.omp.ui.respondExtensionUi({
+		window.omsk.ui.respondExtensionUi({
 			type: "extension_ui_response",
 			id: request.id,
 			cancelled: true,

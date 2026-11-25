@@ -1041,7 +1041,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"providers.maxInFlightRequests": {
 		label: "最大并发请求数",
 		description:
-			'每个提供商 id 的最大并发 LLM 请求数（例如 "openai" 或 "anthropic"），在使用此配置根目录的本地 OMP 进程间共享。未列出的提供商不受限制。',
+			'每个提供商 id 的最大并发 LLM 请求数（例如 "openai" 或 "anthropic"），在使用此配置根目录的本地 OMSK 进程间共享。未列出的提供商不受限制。',
 	},
 	"secrets.enabled": {
 		label: "隐藏密钥",
@@ -1537,7 +1537,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 		description: "每个提供商的搜索传输硬超时；超时后 web_search 会尝试下一个回退项，单位为秒（最大 300）",
 	},
 	"searxng.safesearch": { label: "SearXNG 安全搜索" },
-	// ── omp 18.2.x 上游新增设置 ─────────────────────────────────────────────
+	// ── omsk 18.2.x 上游新增设置 ─────────────────────────────────────────────
 	"advisor.maxNotesPerUpdate": {
 		label: "Advisor 每次更新最大笔记数",
 		description: "Advisor 单次更新允许写入的笔记上限；较低值更严格、可防刷屏。",
@@ -1872,7 +1872,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 		label: "压缩闲置天数",
 		description: "压缩闲置超过此天数的会话文件（默认 7）。",
 	},
-	// omp 18.14–18.15
+	// omsk 18.14–18.15
 	"btw.inject": {
 		label: "/btw 引导注入",
 		description:
@@ -1959,7 +1959,7 @@ export const ZH_SETTINGS: Record<string, { label: string; description?: string }
 	"browser.webkit": {
 		label: "WebKit 浏览器",
 		description:
-			'引擎已安装时，在 omp 自带的无头 WebKit 引擎中打开浏览器标签页，而不是托管的 Chromium（未安装任何浏览器时，omp 会先把它下载到 ~/.o2/lib/abkit，再考虑 Chrome for Testing；见“浏览器 WebKit 路径”）。在引擎不提供查看窗口的平台上，可见浏览器仍使用 Chromium，引擎无法启动的标签页也是如此；显式的 app、中继、浏览器 CDP URL、Tern 和 cmux 优先；app "chromium" 可让单次打开不用它。设置 PI_BROWSER_WEBKIT=0 或 PI_BROWSER_WEBKIT=1 可覆盖。',
+			'引擎已安装时，在 omsk 自带的无头 WebKit 引擎中打开浏览器标签页，而不是托管的 Chromium（未安装任何浏览器时，omsk 会先把它下载到 ~/.o2/lib/abkit，再考虑 Chrome for Testing；见“浏览器 WebKit 路径”）。在引擎不提供查看窗口的平台上，可见浏览器仍使用 Chromium，引擎无法启动的标签页也是如此；显式的 app、中继、浏览器 CDP URL、Tern 和 cmux 优先；app "chromium" 可让单次打开不用它。设置 PI_BROWSER_WEBKIT=0 或 PI_BROWSER_WEBKIT=1 可覆盖。',
 	},
 	"browser.webkitPath": {
 		label: "浏览器 WebKit 路径",

@@ -1,9 +1,9 @@
 /**
  * The GUI's built-in stats dashboard server, spawned from the SAME bundled
- * omp binary as the agent sidecar (`omp stats --no-open`).
+ * omsk binary as the agent sidecar (`omsk stats --no-open`).
  *
  * Internal to the GUI's closed loop: spawned on app start, killed on quit (and
- * exits by itself if the app dies without quitting), localhost-only. No external `omp stats` process is required and none is
+ * exits by itself if the app dies without quitting), localhost-only. No external `omsk stats` process is required and none is
  * consulted — if an external process already owns the port, this reports the
  * conflict rather than silently using it.
  */
@@ -53,8 +53,8 @@ export class StatsServerManager extends EventEmitter {
 	}
 
 	#spawn(): void {
-		// The bundled omp registers this flag as --no-open (kebab-case, per
-		// `omp stats --help`), not the camelCase --noOpen the oclif property
+		// The bundled omsk registers this flag as --no-open (kebab-case, per
+		// `omsk stats --help`), not the camelCase --noOpen the oclif property
 		// name suggests — the latter is rejected as an unknown option.
 		const args = ["stats", "--host", "127.0.0.1", "--port", String(DEFAULT_PORT), "--no-open"];
 		const isWinTs = process.platform === "win32" && this.#binaryPath.toLowerCase().endsWith(".ts");

@@ -160,7 +160,7 @@ export function refreshConfigWarnings(tabId = useTabsStore.getState().activeTabI
 async function refreshProxyWarnings(tabId: string): Promise<void> {
 	const runtime = sessionRuntime(tabId);
 	try {
-		const proxyWarnings = await window.omp.sidecar.getProxyWarnings();
+		const proxyWarnings = await window.omsk.sidecar.getProxyWarnings();
 		if (sessionRuntime(tabId) !== runtime) return;
 		withSessionRuntime(tabId, () => useSessionStore.setState({ proxyWarnings }));
 	} catch {

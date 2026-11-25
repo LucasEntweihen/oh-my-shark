@@ -1,5 +1,5 @@
 /**
- * Named theme registry for the omp GUI.
+ * Named theme registry for the omsk GUI.
  *
  * Every theme defines the exact same set of `--omsk-*` design tokens (see
  * THEME_TOKEN_KEYS — the canonical 119 keys shared with theme-dark.css and
@@ -2198,9 +2198,9 @@ export async function getPersistedThemeSelection(prefs?: Readonly<Record<string,
 		return isThemeSelection(prefs.theme) ? prefs.theme : "sharkOcean";
 	}
 	try {
-		const named = await window.omp.prefs.get("themeName");
+		const named = await window.omsk.prefs.get("themeName");
 		if (isThemeSelection(named)) return named;
-		const legacy = await window.omp.prefs.get("theme");
+		const legacy = await window.omsk.prefs.get("theme");
 		if (isThemeSelection(legacy)) return legacy;
 	} catch {
 		// prefs IPC unavailable (tests, storybook) — use the default.
@@ -2312,7 +2312,7 @@ let agentThemeSettingsRequestId = 0;
 async function fetchAgentThemeOverrides(name: string): Promise<Partial<Record<ThemeTokenKey, string>> | null> {
 	let colors: Record<string, string> | undefined;
 	try {
-		const res = await window.omp.rpc.getThemeColors(name);
+		const res = await window.omsk.rpc.getThemeColors(name);
 		if (!res.success) return null;
 		colors = (res.data as RpcThemeColorsResult | undefined)?.colors;
 	} catch {
@@ -2487,7 +2487,7 @@ export async function refreshPluginThemes(): Promise<void> {
 	const requestId = ++pluginThemeRequestId;
 	let merged: Record<string, string> | null = null;
 	try {
-		const res = await window.omp.rpc.getGuiThemes();
+		const res = await window.omsk.rpc.getGuiThemes();
 		if (requestId !== pluginThemeRequestId) return;
 		if (res.success) {
 			const data = res.data as { themes?: Array<{ tokens: Record<string, string> }> } | undefined;
@@ -2536,7 +2536,7 @@ async function syncAgentThemeSettings(): Promise<void> {
 	if (!acceptsActiveTabEvents()) return;
 	const requestId = ++agentThemeSettingsRequestId;
 	try {
-		const res = await window.omp.rpc.getSettings([...AGENT_THEME_SETTING_PATHS]);
+		const res = await window.omsk.rpc.getSettings([...AGENT_THEME_SETTING_PATHS]);
 		if (requestId !== agentThemeSettingsRequestId || !acceptsActiveTabEvents()) return;
 		const values = res.success ? (res.data as { values?: Record<string, unknown> } | undefined)?.values : undefined;
 		const dark = values?.["theme.dark"];
@@ -2564,7 +2564,7 @@ async function syncAgentThemeSettings(): Promise<void> {
  */
 export function initAgentThemeSync(): () => void {
 	void syncAgentThemeSettings();
-	const unsubscribe = window.omp.events.onConfigUpdate(() => {
+	const unsubscribe = window.omsk.events.onConfigUpdate(() => {
 		if (acceptsActiveTabEvents()) void syncAgentThemeSettings();
 	});
 	const unsubscribeRoute = onActiveTabRouteSettled(() => void syncAgentThemeSettings());

@@ -107,7 +107,7 @@ export function PanelContainer() {
 
 	useEffect(() => {
 		let cancelled = false;
-		const prefs = window.omp?.prefs;
+		const prefs = window.omsk?.prefs;
 		if (typeof prefs?.get !== "function") return;
 		void prefs
 			.get(PANEL_WIDTH_PREF)
@@ -125,9 +125,9 @@ export function PanelContainer() {
 	}, []);
 
 	useEffect(() => {
-		if (width === null || typeof window.omp?.prefs?.set !== "function") return;
+		if (width === null || typeof window.omsk?.prefs?.set !== "function") return;
 		const timer = window.setTimeout(() => {
-			void window.omp.prefs.set(PANEL_WIDTH_PREF, width).catch(() => {});
+			void window.omsk.prefs.set(PANEL_WIDTH_PREF, width).catch(() => {});
 		}, 150);
 		return () => window.clearTimeout(timer);
 	}, [width]);

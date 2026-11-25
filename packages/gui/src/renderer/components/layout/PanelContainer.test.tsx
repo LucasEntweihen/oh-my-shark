@@ -32,8 +32,8 @@ globals.HTMLElement = HTMLElement;
 globals.Node = Node;
 globals.IS_REACT_ACT_ENVIRONMENT = true;
 globals.requestAnimationFrame = (callback: () => void) => setTimeout(callback, 0);
-const ompWindow = window as unknown as { omp?: unknown };
-const initialOmp = ompWindow.omp;
+const ompWindow = window as unknown as { omsk?: unknown };
+const initialOmp = ompWindow.omsk;
 
 interface TestElement {
 	textContent: string | null;
@@ -72,8 +72,8 @@ afterEach(async () => {
 	useTabsStore.getState().reset();
 	useFileTabs.setState({ workspaces: new Map() });
 	useUiStore.setState({ panelTab: "files", panelVisible: true, filePreviewPath: null, filePreviewLine: null });
-	if (initialOmp === undefined) delete ompWindow.omp;
-	else ompWindow.omp = initialOmp;
+	if (initialOmp === undefined) delete ompWindow.omsk;
+	else ompWindow.omsk = initialOmp;
 	Object.defineProperty(window, "innerWidth", { configurable: true, value: 1440 });
 });
 
@@ -219,7 +219,7 @@ describe("PanelContainer chat tab filter", () => {
 			binary: false,
 			size: 34,
 		}));
-		ompWindow.omp = {
+		ompWindow.omsk = {
 			fs: {
 				explore: vi.fn(async () => ({ ok: true, entries: [], truncated: false })),
 				read,
@@ -258,7 +258,7 @@ describe("PanelContainer chat tab filter", () => {
 			binary: false,
 			size: 9,
 		}));
-		ompWindow.omp = {
+		ompWindow.omsk = {
 			fs: {
 				explore: vi.fn(async () => ({ ok: true, entries: [], truncated: false })),
 				read,
@@ -284,7 +284,7 @@ describe("PanelContainer chat tab filter", () => {
 	it("opens a Markdown link that names a line as source with that line marked", async () => {
 		seedActiveTab("agent");
 		useUiStore.setState({ panelVisible: false, filePreviewPath: null });
-		ompWindow.omp = {
+		ompWindow.omsk = {
 			fs: {
 				explore: vi.fn(async () => ({ ok: true, entries: [], truncated: false })),
 				read: vi.fn(async () => ({

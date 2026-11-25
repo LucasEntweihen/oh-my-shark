@@ -59,13 +59,13 @@ function config(partial: Partial<CustomProviderView> & { id: string }): CustomPr
 }
 
 function installMockOmp(providers: ProviderInfo[] = [], configs: CustomProviderView[] = []): MockOmp {
-	const omp: MockOmp = {
+	const omsk: MockOmp = {
 		rpc: { getProviders: vi.fn(async () => success(providers)) },
 		models: { listProviders: vi.fn(async () => configs) },
 	};
-	const testWindow = window as unknown as { omp: MockOmp };
-	testWindow.omp = omp;
-	return omp;
+	const testWindow = window as unknown as { omsk: MockOmp };
+	testWindow.omsk = omsk;
+	return omsk;
 }
 
 let container: InstanceType<typeof HTMLElement> | null = null;
@@ -131,9 +131,9 @@ describe("hasUsableModelProvider", () => {
 
 describe("FirstRunOnboardingDialog", () => {
 	it("keeps the user's settings dialog accessible when the startup readiness check finishes late", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		const pending = Promise.withResolvers<RpcResponse>();
-		omp.rpc.getProviders.mockReturnValue(pending.promise);
+		omsk.rpc.getProviders.mockReturnValue(pending.promise);
 		useSessionStore.getState().setStatus("ready", "/tmp/project");
 		await mount(
 			<>
@@ -150,7 +150,7 @@ describe("FirstRunOnboardingDialog", () => {
 	});
 
 	it("opens for an empty profile, links both setup surfaces, and closes after readiness succeeds", async () => {
-		const omp = installMockOmp();
+		const omsk = installMockOmp();
 		useSessionStore.getState().setStatus("ready", "/tmp/project");
 		await mount(<FirstRunOnboardingDialog />);
 
@@ -160,7 +160,7 @@ describe("FirstRunOnboardingDialog", () => {
 		await act(async () => buttonNamed("Configure custom provider").click());
 		expect(useUiStore.getState().providerConfigOpen).toBe(true);
 
-		omp.rpc.getProviders.mockResolvedValue(
+		omsk.rpc.getProviders.mockResolvedValue(
 			success([provider({ id: "deepseek", authenticated: true, modelCount: 2 })]),
 		);
 		await act(async () => buttonNamed("I've configured it").click());

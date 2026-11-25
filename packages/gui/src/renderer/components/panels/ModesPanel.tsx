@@ -713,7 +713,7 @@ export function ModesPanel({ open, onClose, initialTab = "vibe" }: ModesPanelPro
 	const applyLoop = loop.apply;
 	useEffect(() => {
 		if (!open) return;
-		return window.omp.events.onBatch((events: AgentSessionEvent[]) => {
+		return window.omsk.events.onBatch((events: AgentSessionEvent[]) => {
 			if (!acceptsActiveTabEvents()) return;
 			for (const event of events) {
 				if (event.type === "goal_updated") {

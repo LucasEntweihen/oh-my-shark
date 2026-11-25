@@ -583,10 +583,10 @@ export async function executeRun(input: RunInput, deps: RunnerDeps): Promise<Run
 		const target = sidecar;
 		if (!target || !worktree || target.status !== "ready") return;
 		if (changedFiles.length > 0) {
-			const message = shellQuote(`omp task: ${clip(config.title, 60)} (run ${input.runId})`);
+			const message = shellQuote(`omsk task: ${clip(config.title, 60)} (run ${input.runId})`);
 			const result = await bash(
 				target,
-				`git add -A && (git commit -q -m ${message} || git -c user.name='omp scheduled task' -c user.email='omp-task@localhost' commit -q -m ${message})`,
+				`git add -A && (git commit -q -m ${message} || git -c user.name='omsk scheduled task' -c user.email='omp-task@localhost' commit -q -m ${message})`,
 				COMMAND_TIMEOUT_MS,
 			);
 			worktree = { ...worktree, committed: result.exitCode === 0 };

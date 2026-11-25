@@ -1,7 +1,7 @@
 /**
  * Sidebar presentation prefs: pinned workspaces/sessions, archived sessions,
  * explicit MRU access times, and workspace display aliases (rename). Persisted as one JSON blob
- * under the "sidebar" prefs key via window.omp.prefs (electron-store in main);
+ * under the "sidebar" prefs key via window.omsk.prefs (electron-store in main);
  * hydrate once at App mount. Recency bookkeeping writes fire-and-forget; the
  * pins, archive and aliases the user can SEE are optimistic writes that roll back when
  * the persist rejects, so a row never stays pinned across a restart.
@@ -114,7 +114,7 @@ function persist(get: () => SidebarPrefsStore): void {
 
 async function writePrefs(get: () => SidebarPrefsStore): Promise<{ success: boolean; error?: string }> {
 	try {
-		await window.omp.prefs.set(PREFS_KEY, prefsBlob(get()));
+		await window.omsk.prefs.set(PREFS_KEY, prefsBlob(get()));
 		return { success: true };
 	} catch (cause) {
 		return { success: false, error: describeError(cause) };
@@ -136,7 +136,7 @@ export const useSidebarPrefs = create<SidebarPrefsStore>()((set, get) => ({
 	hydrate: async () => {
 		if (get().hydrated) return;
 		try {
-			const blob = (await window.omp.prefs.get(PREFS_KEY)) as SidebarPrefsBlob | null | undefined;
+			const blob = (await window.omsk.prefs.get(PREFS_KEY)) as SidebarPrefsBlob | null | undefined;
 			set({
 				registeredWorkspaces: Array.isArray(blob?.registeredWorkspaces)
 					? [...new Set(blob.registeredWorkspaces.filter(path => typeof path === "string" && path.length > 0))]

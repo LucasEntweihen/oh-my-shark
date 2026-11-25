@@ -139,7 +139,7 @@ export function SshSettingsPage() {
 	};
 
 	const chooseKey = async () => {
-		const paths = await window.omp.system.showOpenDialog([], { directory: false }).catch(() => null);
+		const paths = await window.omsk.system.showOpenDialog([], { directory: false }).catch(() => null);
 		if (paths?.[0]) setDraft(current => ({ ...current, keyPath: paths[0] }));
 	};
 

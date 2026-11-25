@@ -38,7 +38,7 @@ function menuItem(name: string): CommandMenuItem {
 }
 
 beforeEach(() => {
-	(globalThis as Record<string, unknown>).window = { omp: { rpc: {} }, dispatchEvent: vi.fn() };
+	(globalThis as Record<string, unknown>).window = { omsk: { rpc: {} }, dispatchEvent: vi.fn() };
 });
 
 afterEach(() => {

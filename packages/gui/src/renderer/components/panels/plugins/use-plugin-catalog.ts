@@ -83,13 +83,13 @@ export interface PluginCatalogState {
 }
 
 async function readSources(pref: string): Promise<string[]> {
-	const stored = await window.omp.prefs.get(pref);
+	const stored = await window.omsk.prefs.get(pref);
 	return Array.isArray(stored) ? stored.filter((entry): entry is string => typeof entry === "string") : [];
 }
 
 async function rememberSources(pref: string, sources: readonly string[]): Promise<string[]> {
 	const next = [...new Set([...(await readSources(pref)), ...sources])];
-	await window.omp.prefs.set(pref, next);
+	await window.omsk.prefs.set(pref, next);
 	return next;
 }
 

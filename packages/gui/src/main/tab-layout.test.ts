@@ -24,7 +24,7 @@ describe("persisted tab layout", () => {
 				{
 					cwd: "/b",
 					kind: "chat",
-					worktree: { name: "feature", branch: "omp/gui/feature", baseCwd: "/repo" },
+					worktree: { name: "feature", branch: "omsk/gui/feature", baseCwd: "/repo" },
 				},
 			],
 		};

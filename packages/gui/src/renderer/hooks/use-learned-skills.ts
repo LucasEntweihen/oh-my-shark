@@ -18,7 +18,7 @@ export async function refreshLearnedSkills(rpc: Pick<TabRpc, "getSkills">): Prom
 
 /**
  * Keeps the learned-skill review count current for the whole window: once the
- * sidecar is up, and whenever omp writes a learned skill (from any session or
+ * sidecar is up, and whenever omsk writes a learned skill (from any session or
  * process — the main process watches the folder).
  */
 export function useLearnedSkillsSync(): void {
@@ -33,7 +33,7 @@ export function useLearnedSkillsSync(): void {
 	useEffect(() => {
 		if (!ready || !routeReady) return;
 		void refreshLearnedSkills(rpc);
-		return window.omp.events.onMemoryChanged(change => {
+		return window.omsk.events.onMemoryChanged(change => {
 			if (change.skills) void refreshLearnedSkills(rpc);
 		});
 	}, [ready, routeReady, rpc]);

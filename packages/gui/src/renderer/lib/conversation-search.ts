@@ -11,7 +11,7 @@ import { useTranscriptFocusStore } from "../stores/transcript-focus";
 /** Snippet match delimiters written by the main-process index. */
 const MARK_OPEN = "\u0001";
 const MARK_CLOSE = "\u0002";
-const RECENT_KEY = "omp.conversationSearch.recent";
+const RECENT_KEY = "omsk.conversationSearch.recent";
 const RECENT_LIMIT = 6;
 
 export interface SnippetPart {

@@ -40,7 +40,7 @@ const command = vi.fn(
 			: { type: "response", command: req.type, success: true, data: { provenance: {} } },
 );
 
-Object.assign(window as unknown as Record<string, unknown>, { omp: { rpc: { command } } });
+Object.assign(window as unknown as Record<string, unknown>, { omsk: { rpc: { command } } });
 
 const roots: Root[] = [];
 

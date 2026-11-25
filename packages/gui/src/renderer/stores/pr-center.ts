@@ -49,7 +49,7 @@ export const usePrCenterStore = create<PrCenterStore>()((set, get) => ({
 	probe: async () => {
 		set({ error: null });
 		try {
-			const response = await window.omp.rpc.prRepo();
+			const response = await window.omsk.rpc.prRepo();
 			if (!response.success) {
 				set({ repo: null, error: describeError(response.error) });
 				return;
@@ -66,7 +66,7 @@ export const usePrCenterStore = create<PrCenterStore>()((set, get) => ({
 		if (get().listLoading) return;
 		set({ listLoading: true, error: null });
 		try {
-			const response = await window.omp.rpc.prList(get().listState, 50);
+			const response = await window.omsk.rpc.prList(get().listState, 50);
 			if (!response.success) {
 				set({ error: describeError(response.error), listLoading: false });
 				return;
@@ -86,7 +86,7 @@ export const usePrCenterStore = create<PrCenterStore>()((set, get) => ({
 	select: async number => {
 		set({ selected: number, detail: null, detailLoading: true, expandedFiles: {}, error: null });
 		try {
-			const response = await window.omp.rpc.prGet(number);
+			const response = await window.omsk.rpc.prGet(number);
 			if (!response.success) {
 				set({ error: describeError(response.error), detailLoading: false });
 				return;
@@ -109,7 +109,7 @@ export const usePrCenterStore = create<PrCenterStore>()((set, get) => ({
 		if (number === null) return;
 		set(state => ({ expandedFiles: { ...state.expandedFiles, [path]: { phase: "loading" } } }));
 		try {
-			const response = await window.omp.rpc.prDiff(number, path);
+			const response = await window.omsk.rpc.prDiff(number, path);
 			set(state => {
 				// pr_diff success arm carries { diff: string } (rpc-types.ts) — named
 				// const instead of inline-cast-access so the assertion has one home.
@@ -128,7 +128,7 @@ export const usePrCenterStore = create<PrCenterStore>()((set, get) => ({
 
 	checkout: async number => {
 		try {
-			const response = await window.omp.rpc.prCheckout(number);
+			const response = await window.omsk.rpc.prCheckout(number);
 			if (!response.success) {
 				toast({ variant: "error", title: translate("prCenter.checkoutFailed"), message: response.error });
 				return;

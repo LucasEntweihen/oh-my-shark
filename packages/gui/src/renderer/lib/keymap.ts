@@ -1,9 +1,9 @@
 /**
  * GUI keybinding remap layer (B3 — plan/15 §3.5, plan/17 §6.3).
  *
- * The TUI's `~/.omp/agent/keybindings.yml` is inert for the GUI: the agent
+ * The TUI's `~/.omsk/agent/keybindings.yml` is inert for the GUI: the agent
  * process's KeybindingsManager feeds only the TUI key dispatch, and
- * `omp --mode rpc-ui` never parses keys. GUI remapping is therefore GUI-local
+ * `omsk --mode rpc-ui` never parses keys. GUI remapping is therefore GUI-local
  * by design — overrides live in the `keymapOverrides` prefs key and turned-off
  * shortcuts in `keymapDisabled` (ui store hydrates/persists; the main process
  * reads both for the menu and the system-wide show/hide shortcut). They are

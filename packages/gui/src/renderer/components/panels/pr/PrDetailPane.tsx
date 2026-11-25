@@ -163,7 +163,7 @@ export function PrDetailPane({ onCreateOpen }: { onCreateOpen: () => void }) {
 					)}
 				</div>
 				<div className="mt-1 flex items-center gap-2">
-					<Button variant="secondary" size="sm" onClick={() => void window.omp.system.openExternal(detail.url)}>
+					<Button variant="secondary" size="sm" onClick={() => void window.omsk.system.openExternal(detail.url)}>
 						<ExternalLink size={11} /> {t("prCenter.openInBrowser")}
 					</Button>
 					<Button

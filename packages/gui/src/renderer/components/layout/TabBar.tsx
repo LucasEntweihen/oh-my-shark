@@ -198,9 +198,9 @@ function TabChip({
 			onDragStart={(event: ReactDragEvent<HTMLDivElement>) => {
 				event.dataTransfer.effectAllowed = "move";
 				event.dataTransfer.setData("application/x-omsk-tab", tab.id);
-				window.dispatchEvent(new CustomEvent("omp:tab-drag", { detail: { tabId: tab.id } }));
+				window.dispatchEvent(new CustomEvent("omsk:tab-drag", { detail: { tabId: tab.id } }));
 			}}
-			onDragEnd={() => window.dispatchEvent(new CustomEvent("omp:tab-drag", { detail: { tabId: null } }))}
+			onDragEnd={() => window.dispatchEvent(new CustomEvent("omsk:tab-drag", { detail: { tabId: null } }))}
 			onKeyDown={event => {
 				// Only the tab itself: Enter on a nested close/confirm button must
 				// activate that button, not switch tabs.
@@ -437,8 +437,8 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 			setDragTabId(tabId);
 			if (!tabId) setDropMark(null);
 		};
-		window.addEventListener("omp:tab-drag", onTabDrag);
-		return () => window.removeEventListener("omp:tab-drag", onTabDrag);
+		window.addEventListener("omsk:tab-drag", onTabDrag);
+		return () => window.removeEventListener("omsk:tab-drag", onTabDrag);
 	}, []);
 
 	// How many chips are out of view (the all-tabs button's count), and which

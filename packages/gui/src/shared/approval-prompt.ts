@@ -2,7 +2,7 @@
  * The agent's tool-approval prompt as it arrives over RPC: a plain `select`
  * whose title reads "Allow tool: <name>\n<details>" and whose options end in
  * "Deny". Shared by the approval dialog and by scheduled runs, which answer
- * every such prompt with "Deny" except for the GUI's own host tools: omp
+ * every such prompt with "Deny" except for the GUI's own host tools: omsk
  * gives every host tool the exec tier, so those prompt in any mode below yolo.
  */
 

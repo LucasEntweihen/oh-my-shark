@@ -138,7 +138,7 @@ export function InsightsView() {
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the newest run's id and state pace the refetch, so a landing run updates the figures.
 	useEffect(() => {
 		let live = true;
-		window.omp.scheduler.insights(period).then(
+		window.omsk.scheduler.insights(period).then(
 			result => live && setInsights(result),
 			() => {},
 		);

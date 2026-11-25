@@ -137,12 +137,12 @@ beforeEach(() => {
 		getAvailableCommands: vi.fn(async () => ok({ commands: sidecarCommands })),
 		prompt: vi.fn(async () => ok()),
 	};
-	(window as unknown as { omp: { rpc: Record<string, Mock> } }).omp = { rpc };
-	window.addEventListener("omp:fill-composer", onFillComposer);
+	(window as unknown as { omsk: { rpc: Record<string, Mock> } }).omsk = { rpc };
+	window.addEventListener("omsk:fill-composer", onFillComposer);
 });
 
 afterEach(async () => {
-	window.removeEventListener("omp:fill-composer", onFillComposer);
+	window.removeEventListener("omsk:fill-composer", onFillComposer);
 	await act(async () => root?.unmount());
 	container?.remove();
 	document.body.innerHTML = "";

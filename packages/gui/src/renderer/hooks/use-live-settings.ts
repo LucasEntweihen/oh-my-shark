@@ -50,7 +50,7 @@ export function useLiveSettings<T>(
 			return;
 		}
 		void read();
-		return window.omp.events.onConfigUpdate(() => void read());
+		return window.omsk.events.onConfigUpdate(() => void read());
 	}, [ready, sessionId, read]);
 
 	const write = useCallback(

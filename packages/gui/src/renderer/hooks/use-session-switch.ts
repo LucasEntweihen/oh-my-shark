@@ -84,7 +84,7 @@ export function resetSessionSurface(closeOverlays = true): void {
 /** Start a new in-place session and remove the previous surface at the commit boundary. */
 export async function newSessionNow(): Promise<RpcResponse> {
 	const runtime = focusedSessionRuntime();
-	const response = await (runtime ? createTabRpc(runtime.command) : window.omp.rpc).newSession();
+	const response = await (runtime ? createTabRpc(runtime.command) : window.omsk.rpc).newSession();
 	if (!response.success) throw new Error(response.error);
 	if ((response.data as { cancelled?: boolean } | undefined)?.cancelled) return response;
 	if (runtime) {
@@ -103,7 +103,7 @@ export async function newSessionNow(): Promise<RpcResponse> {
 /** Delete the attached idle session, then project its fresh replacement. */
 export async function dropSessionNow(): Promise<RpcResponse> {
 	const runtime = focusedSessionRuntime();
-	const response = await (runtime ? createTabRpc(runtime.command) : window.omp.rpc).dropSession();
+	const response = await (runtime ? createTabRpc(runtime.command) : window.omsk.rpc).dropSession();
 	if (!response.success) throw new Error(response.error);
 	if ((response.data as { cancelled?: boolean } | undefined)?.cancelled) return response;
 	if (runtime) {
@@ -132,7 +132,7 @@ export async function routeToSessionOwner(owner: IpcSessionOwner, sessionPath: s
 		await tabsStore.switchTab(owner.tabId);
 		return true;
 	}
-	return window.omp.sessions.openInNewWindow({ sessionPath });
+	return window.omsk.sessions.openInNewWindow({ sessionPath });
 }
 
 /**
@@ -158,7 +158,7 @@ export async function switchSessionNow(session: SessionInfo, model?: SessionMode
 	const stillCurrent = () =>
 		!runtime || (sessionRuntime(runtime.tabId) === runtime && originStore.getState().sessionId === originSessionId);
 	try {
-		const owner = await window.omp.tabs.getSessionOwner(session.path);
+		const owner = await window.omsk.tabs.getSessionOwner(session.path);
 		if (owner) return await routeToSessionOwner(owner, session.path);
 	} catch {
 		// Pre-check best-effort — the main-process refusal is the backstop.
@@ -187,7 +187,7 @@ export async function switchSessionNow(session: SessionInfo, model?: SessionMode
 		if (originStore.getState().switchPending === pending) originStore.getState().setSwitchPending(null);
 	};
 	try {
-		const rpc = runtime ? createTabRpc(runtime.command) : window.omp.rpc;
+		const rpc = runtime ? createTabRpc(runtime.command) : window.omsk.rpc;
 		const response = await (model ? rpc.switchSession(session.path, model) : rpc.switchSession(session.path));
 		if (!response.success) {
 			clearPending();
@@ -269,7 +269,7 @@ function canBrowseInPlace(tab: SessionTab, session: SessionInfo): boolean {
 }
 
 /**
- * Open `session` from the sidebar (gui#29). A new tab boots an omp process for
+ * Open `session` from the sidebar (gui#29). A new tab boots an omsk process for
  * it — instant only when the warm spare is idle, seconds otherwise and tens of
  * seconds on slow Windows hosts — so an unused focused tab switches onto the
  * session in place instead, and browsing history keeps to one tab. Otherwise

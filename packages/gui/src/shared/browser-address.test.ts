@@ -29,8 +29,8 @@ describe("isPageUrl", () => {
 describe("chromeUserAgent", () => {
 	it("drops the Electron and app tokens sites use to reject embedded browsers", () => {
 		const electron =
-			"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) omp/0.9.20 Chrome/136.0.7103.177 Electron/36.9.5 Safari/537.36";
-		expect(chromeUserAgent(electron, "omp")).toBe(
+			"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) omsk/0.9.20 Chrome/136.0.7103.177 Electron/36.9.5 Safari/537.36";
+		expect(chromeUserAgent(electron, "omsk")).toBe(
 			"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.7103.177 Safari/537.36",
 		);
 	});

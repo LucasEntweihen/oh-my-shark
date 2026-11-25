@@ -27,7 +27,7 @@ async function waitForReady(sidecar: SidecarManager): Promise<void> {
 }
 
 /**
- * A fake omp that logs each spawn's argv and every command, raises one
+ * A fake omsk that logs each spawn's argv and every command, raises one
  * extension prompt at boot, and answers `switch_session` per `onSwitch`:
  * "ok", "cancel", or "model" (the saved model is gone until the switch names
  * one explicitly). `bootMs` delays its ready frame.
@@ -507,9 +507,9 @@ describe("SidecarManager", () => {
 			sidecar.start();
 			expect(statuses[0]).toMatchObject({ status: "error" });
 			expect(statuses[0].message).toContain("Reinstall");
-			// A packaged user has no source checkout — sending them to build:omp
+			// A packaged user has no source checkout — sending them to build:omsk
 			// is an instruction they cannot follow.
-			expect(statuses[0].message).not.toContain("build:omp");
+			expect(statuses[0].message).not.toContain("build:omsk");
 		} finally {
 			sidecar.dispose();
 			await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 15, retryDelay: 60 });
@@ -549,7 +549,7 @@ describe("SidecarManager", () => {
 				'import * as fs from "node:fs/promises";',
 				"const argv = process.argv.slice(2);",
 				'if (!argv.includes("--model")) {',
-				'\tprocess.stderr.write("error: Could not restore model gone/model-x\\n      at createAgentSession (omp)\\n");',
+				'\tprocess.stderr.write("error: Could not restore model gone/model-x\\n      at createAgentSession (omsk)\\n");',
 				"\tprocess.exit(1);",
 				"}",
 				`await fs.writeFile(${JSON.stringify(logPath)}, JSON.stringify(argv));`,
@@ -616,7 +616,7 @@ describe("SidecarManager", () => {
 		const binaryPath = path.join(tempDir, "fake-sidecar.ts");
 		await fs.writeFile(
 			binaryPath,
-			`#!/usr/bin/env bun\nprocess.stderr.write("\\x1b[31mdyld: Library not loaded: pi_natives\\x1b[39m\\n  Referenced by: omp\\n");\nsetTimeout(() => process.exit(4), 120);\n`,
+			`#!/usr/bin/env bun\nprocess.stderr.write("\\x1b[31mdyld: Library not loaded: pi_natives\\x1b[39m\\n  Referenced by: omsk\\n");\nsetTimeout(() => process.exit(4), 120);\n`,
 		);
 		await fs.chmod(binaryPath, 0o755);
 
@@ -635,14 +635,14 @@ describe("SidecarManager", () => {
 			expect(reason).toContain("dyld: Library not loaded: pi_natives");
 			// Stack-ish continuation lines stay out of the one-line reason.
 			expect(reason).not.toContain("Referenced by");
-			// The reason is shown as plain text; omp's color codes stay in the raw report.
+			// The reason is shown as plain text; omsk's color codes stay in the raw report.
 			expect(reason).not.toContain("\x1b");
 
 			const report = reportFailure.mock.calls[0]?.[0] as SidecarFailureReport;
 			expect(report).toMatchObject({ attempt: 1, maxAttempts: 3, cwd: tempDir });
 			expect(report.stderr).toEqual([
 				"\x1b[31mdyld: Library not loaded: pi_natives\x1b[39m",
-				"  Referenced by: omp",
+				"  Referenced by: omsk",
 			]);
 		} finally {
 			sidecar.dispose();

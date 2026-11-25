@@ -118,7 +118,7 @@ export function ShortcutsSettingsPage() {
 	const toggleKeys = actionChords(shortcutEntry("window.toggle") ?? { id: "", defaults: [] }, effective).join();
 	// biome-ignore lint/correctness/useExhaustiveDependencies: re-read whenever the shortcut's keys change.
 	useEffect(() => {
-		const read = window.omp?.prefs?.windowToggleStatus;
+		const read = window.omsk?.prefs?.windowToggleStatus;
 		if (typeof read !== "function") return;
 		let current = true;
 		read()

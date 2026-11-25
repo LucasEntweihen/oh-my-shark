@@ -14,7 +14,7 @@ test("late ranges cannot replace the selected range, failed refresh retains only
 		.mockReturnValueOnce(fast.promise)
 		.mockRejectedValueOnce(new Error("offline"));
 	vi.stubGlobal("document", document);
-	vi.stubGlobal("window", Object.assign(window, { omp: { stats: { fetch } } }));
+	vi.stubGlobal("window", Object.assign(window, { omsk: { stats: { fetch } } }));
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 	const node = document.getElementById("root")!;
 	const root = createRoot(node);
@@ -57,7 +57,7 @@ test("an unavailable stats server keeps the route loading and self-heals once th
 			: { error: "The bundled stats server is not ready. Please retry shortly.", unavailable: true },
 	);
 	vi.stubGlobal("document", document);
-	vi.stubGlobal("window", Object.assign(window, { omp: { stats: { fetch } } }));
+	vi.stubGlobal("window", Object.assign(window, { omsk: { stats: { fetch } } }));
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 	const node = document.getElementById("root")!;
 	const root = createRoot(node);
@@ -90,7 +90,7 @@ test("a list endpoint that replies with a non-array becomes an error state, neve
 	const { document, window } = parseHTML("<html><body><div id='root'></div></body></html>");
 	const fetch = vi.fn(async () => ({}));
 	vi.stubGlobal("document", document);
-	vi.stubGlobal("window", Object.assign(window, { omp: { stats: { fetch } } }));
+	vi.stubGlobal("window", Object.assign(window, { omsk: { stats: { fetch } } }));
 	vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
 	const node = document.getElementById("root")!;
 	const root = createRoot(node);

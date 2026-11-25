@@ -22,7 +22,7 @@ Object.assign(globalThis as Record<string, unknown>, {
 	IS_REACT_ACT_ENVIRONMENT: true,
 });
 
-const ompWindow = window as unknown as { omp?: unknown };
+const ompWindow = window as unknown as { omsk?: unknown };
 const claude: UsageReport = {
 	provider: "anthropic",
 	fetchedAt: 0,
@@ -47,7 +47,7 @@ async function settle(): Promise<void> {
 
 beforeEach(() => {
 	getUsage = vi.fn(async () => ({ success: true, data: { reports: [claude] } }));
-	ompWindow.omp = { rpc: { getUsage } };
+	ompWindow.omsk = { rpc: { getUsage } };
 	useModelStore.setState({ providers: [{ id: "anthropic", name: "Anthropic (Claude Pro/Max)" } as ProviderInfo] });
 	useQuotaStore.setState({ reports: null, fetchedAt: 0 });
 });
@@ -56,7 +56,7 @@ afterEach(async () => {
 	if (root) await act(async () => root?.unmount());
 	root = null;
 	document.body.innerHTML = "";
-	delete ompWindow.omp;
+	delete ompWindow.omsk;
 	useSessionStore.getState().reset();
 	useModelStore.setState({ providers: [] });
 });

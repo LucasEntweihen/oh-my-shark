@@ -500,7 +500,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"providers.maxInFlightRequests": {
 		label: "Максимум одновременных запросов",
 		description:
-			'Максимальное число одновременных запросов LLM для каждого идентификатора провайдера (например, "openai" или "anthropic"). Лимит общий для локальных процессов OMP с этим корнем конфигурации. Для неуказанных провайдеров лимит не задан.',
+			'Максимальное число одновременных запросов LLM для каждого идентификатора провайдера (например, "openai" или "anthropic"). Лимит общий для локальных процессов OMSK с этим корнем конфигурации. Для неуказанных провайдеров лимит не задан.',
 	},
 	"images.describeForTextModels": {
 		label: "Описывать изображения для текстовых моделей",
@@ -2401,7 +2401,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 		description:
 			"Сообщения пользователя короче этого числа символов пропускают извлечение Sharpshooter (по умолчанию 16).",
 	},
-	// omp 18.14–18.15
+	// omsk 18.14–18.15
 	"btw.inject": {
 		label: "Внедрение подсказки из /btw",
 		description:
@@ -2490,7 +2490,7 @@ export const RU_SETTINGS: Record<string, { label?: string; description?: string 
 	"browser.webkit": {
 		label: "Браузер WebKit",
 		description:
-			'Открывать вкладки в собственном безголовом движке WebKit от omp вместо управляемого Chromium, если движок установлен (когда браузера нет, omp скачивает его в ~/.o2/lib/abkit раньше Chrome for Testing; см. «Путь к WebKit браузера»). Видимый браузер там, где у движка нет окна просмотра, и вкладки, которые движок не смог запустить, по-прежнему открываются в Chromium; явный app, ретранслятор, URL CDP браузера, Tern и cmux имеют приоритет; app "chromium" отключает его для одного открытия. Задайте PI_BROWSER_WEBKIT=0 или PI_BROWSER_WEBKIT=1, чтобы переопределить.',
+			'Открывать вкладки в собственном безголовом движке WebKit от omsk вместо управляемого Chromium, если движок установлен (когда браузера нет, omsk скачивает его в ~/.o2/lib/abkit раньше Chrome for Testing; см. «Путь к WebKit браузера»). Видимый браузер там, где у движка нет окна просмотра, и вкладки, которые движок не смог запустить, по-прежнему открываются в Chromium; явный app, ретранслятор, URL CDP браузера, Tern и cmux имеют приоритет; app "chromium" отключает его для одного открытия. Задайте PI_BROWSER_WEBKIT=0 или PI_BROWSER_WEBKIT=1, чтобы переопределить.',
 	},
 	"browser.webkitPath": {
 		label: "Путь к WebKit браузера",

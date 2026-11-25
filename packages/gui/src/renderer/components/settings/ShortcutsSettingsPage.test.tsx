@@ -38,7 +38,7 @@ function install(status: IpcWindowToggleStatus = { accelerator: "CommandOrContro
 		set: vi.fn(async () => {}),
 		windowToggleStatus: vi.fn(async () => status),
 	};
-	(window as unknown as { omp: unknown }).omp = { prefs };
+	(window as unknown as { omsk: unknown }).omsk = { prefs };
 }
 
 async function flush(): Promise<void> {
