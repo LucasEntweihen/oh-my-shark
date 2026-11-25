@@ -1,7 +1,7 @@
 /**
  * Shell CLI command handlers.
  *
- * Handles `omp shell` subcommand for testing the native embedded bash engine.
+ * Handles `omsk shell` subcommand for testing the native embedded bash engine.
  */
 import * as path from "node:path";
 import { createInterface } from "node:readline/promises";

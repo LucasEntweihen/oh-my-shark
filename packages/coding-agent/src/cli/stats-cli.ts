@@ -1,7 +1,7 @@
 /**
  * Stats CLI command handlers.
  *
- * Handles `omp stats` subcommand for viewing AI usage statistics.
+ * Handles `omsk stats` subcommand for viewing AI usage statistics.
  */
 
 import { formatKeyHint } from "../ui/keys/hints";
@@ -137,7 +137,7 @@ export async function runStatsCommand(cmd: StatsCommandArgs): Promise<void> {
 		console.log(`Press ${formatKeyHint("ctrl+c")} to stop\n`);
 	}
 
-	// Ctrl+C and the other signals exit through omp's cleanup, which takes the
+	// Ctrl+C and the other signals exit through omsk's cleanup, which takes the
 	// page away with the dashboard.
 	postmortem.register("stats-dashboard", async () => {
 		await page?.close();

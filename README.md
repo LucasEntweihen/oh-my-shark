@@ -13,18 +13,18 @@
 </p>
 
 OhMyShark (`ohms`) é um agente de programação para terminal e **desktop GUI nativa** com modelos, sessões,
-ferramentas de código, **Shark Orchestrator** (estilo Antigravity / Claude Code), subagentes e modos especializados já integrados (v0.1.0 sobre OMP 19.0.1 + GUI-RPC). Ele
+ferramentas de código, **Shark Orchestrator** (estilo Antigravity / Claude Code), subagentes e modos especializados já integrados (v0.1.0 sobre OMSK 19.0.1 + GUI-RPC). Ele
 prioriza execução prática: ler o repositório, editar com segurança, validar o
 resultado e manter o contexto útil em sessões longas.
 
 O projeto é um fork público independente construído sobre a base do
 [Oh My Shark](https://github.com/can1357/oh-my-pi), que por sua vez descende do
-[Pi](https://github.com/badlogic/pi-mono). OMP fornece a fundação de agente,
+[Pi](https://github.com/badlogic/pi-mono). OMSK fornece a fundação de agente,
 ferramentas e runtime; o OMSK mantém identidade, comandos, branding, releases,
 configuração e fluxos próprios.
 
 > **Proporção de escopo:** este README documenta o OMSK como produto principal.
-> Conceitos herdados do OMP aparecem apenas onde ajudam a explicar a base
+> Conceitos herdados do OMSK aparecem apenas onde ajudam a explicar a base
 > arquitetural compartilhada; comandos e URLs abaixo são do OMSK.
 
 ## Instalação
@@ -136,7 +136,7 @@ ambiguidade entre arquivos, código e execução:
 - `browser` para páginas e sessões Chromium, quando habilitado;
 - `task`, `hub` e `todo` para subagentes, jobs e execução por fases.
 
-A ideia vem da arquitetura do OMP: ferramentas de leitura, edição, busca e
+A ideia vem da arquitetura do OMSK: ferramentas de leitura, edição, busca e
 coordenação compartilham contratos previsíveis. No OMSK, elas permanecem
 subordinadas aos modos, à identidade visual e às regras de execução do produto.
 
@@ -168,7 +168,7 @@ Exemplo de login e seleção durante uma sessão:
 
 Para provedores adicionais, consulte os arquivos de configuração criados em
 `~/.ohms/agent` ou `%USERPROFILE%\\.ohms\\agent`. Não copie configurações do
-OMP diretamente: nomes de provedores, versões, endpoints e capacidades podem
+OMSK diretamente: nomes de provedores, versões, endpoints e capacidades podem
 divergir entre os projetos.
 
 ## Atualização segura
@@ -245,7 +245,7 @@ parte importante da linhagem técnica do OMSK. O OMSK não é um espelho automá
 - alterações de arquitetura que removam recursos do OMSK não são incorporadas
   automaticamente.
 
-A referência do OMP é usada principalmente para ideias de superfície de agente:
+A referência do OMSK é usada principalmente para ideias de superfície de agente:
 ferramentas nativas, LSP, sessões, subagentes, memória e extensibilidade. A
 experiência final, a distribuição e os contratos de compatibilidade são os do
 OhMyShark.

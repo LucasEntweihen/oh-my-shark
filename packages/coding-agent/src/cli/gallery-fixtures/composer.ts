@@ -1,5 +1,5 @@
 /**
- * `omp gallery --surface composer`: every registered composer shape, drawn by
+ * `omsk gallery --surface composer`: every registered composer shape, drawn by
  * the shape picker's preview with the gallery session's status line where
  * the shape puts it.
  */

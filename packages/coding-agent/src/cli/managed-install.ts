@@ -1,9 +1,9 @@
 /**
- * Installs another app keeps: an app that manages omp's executables or its
+ * Installs another app keeps: an app that manages omsk's executables or its
  * WebKit engine (Tern) puts `manager.json` (`{"manager": "tern", "name":
  * "Tern"}`) in the root it installs them in, two folders above each one
- * (`<root>/versions/<version>`, `<root>/bin/omp.exe`), and updates them
- * itself. `omp update` and omp's engine install leave such installs alone.
+ * (`<root>/versions/<version>`, `<root>/bin/omsk.exe`), and updates them
+ * itself. `omsk update` and omsk's engine install leave such installs alone.
  */
 import * as fs from "node:fs";
 import * as path from "node:path";

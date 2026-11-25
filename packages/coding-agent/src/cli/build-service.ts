@@ -1,8 +1,8 @@
 /**
- * Client for Stencil's build service, the source of omp's standalone binaries
+ * Client for Stencil's build service, the source of omsk's standalone binaries
  * ({@link OMP_BUILD}) and of the engine its WebKit browser downloads (ABKit).
  *
- * `omp update` on a standalone binary install, the binary takeover of a
+ * `omsk update` on a standalone binary install, the binary takeover of a
  * package-manager install, and the startup update check of a compiled binary
  * all ask the service which build to install ({@link fetchBuild}), as does the
  * browser's engine install:
@@ -15,7 +15,7 @@
  * Both products are public, so no token is sent. The origin is `PI_BUILD_URL`
  * ({@link DEFAULT_BUILD_URL} when unset). `{target}` is
  * `{macos|linux|linux-musl|windows}-{arm64|x86_64}` ({@link resolveBuildHost}).
- * Requests carry `User-Agent: omp/<version>`, which the service counts in its
+ * Requests carry `User-Agent: omsk/<version>`, which the service counts in its
  * update-check statistics.
  *
  * Adding `from_version=<installed version>` makes the answer carry an
@@ -70,15 +70,15 @@ export interface BuildHost {
 
 /** A product the build service publishes, and what its file for a host is called. */
 export interface BuildProduct {
-	/** Product id in the service's routes, e.g. `omp`. */
+	/** Product id in the service's routes, e.g. `omsk`. */
 	id: string;
 	/** The file name a build of `version` has for `host`; an answer naming another file is refused. */
 	fileName(host: BuildHost, version: string): string;
 }
 
-/** omp's standalone binary, named like its GitHub release asset: `omp-darwin-arm64`, `omp-windows-x64.exe`. */
+/** omsk's standalone binary, named like its GitHub release asset: `omp-darwin-arm64`, `omp-windows-x64.exe`. */
 export const OMP_BUILD: BuildProduct = {
-	id: "omp",
+	id: "omsk",
 	fileName: host => `${APP_NAME}-${host.asset}${host.windows ? ".exe" : ""}`,
 };
 

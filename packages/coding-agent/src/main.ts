@@ -798,7 +798,7 @@ async function runInteractiveMode(
 			await mode.maybeAutoCreateWorktree();
 		}
 
-		// `omp join <link>`: dispatch through the same builtin path as a typed
+		// `omsk join <link>`: dispatch through the same builtin path as a typed
 		// `/join` so collab guards and error rendering stay in one place.
 		if (joinLink !== undefined) {
 			const executeBuiltinSlashCommand = await loadBuiltinSlashCommandExecutor();
@@ -1007,7 +1007,7 @@ async function openRelocatedSession(
 		// Its directory is gone, so it cannot be resumed in place either.
 		throw new SessionResolutionError(
 			err.message,
-			"Close the session in the other omp process, then resume it again.",
+			"Close the session in the other omsk process, then resume it again.",
 		);
 	}
 }
@@ -1170,7 +1170,7 @@ export interface ScopedModelSink {
  * whose model first materializes through runtime discovery (e.g.
  * `opencode-go/ox-alpha-free` on a fresh launch with no cache row) is absent from
  * the frozen scoped `/models` list even though it is in `enabledModels`, invokable
- * via `--model`, and listed by `omp models find`. Once the initial refresh settles,
+ * via `--model`, and listed by `omsk models find`. Once the initial refresh settles,
  * re-resolve the scope and, when the set changed, push the fuller list into the
  * session so the scoped picker and Ctrl+P cycle include it. A scope that resolved
  * to zero models may become active here when the startup discovery pass returned
@@ -1280,7 +1280,7 @@ export function normalizeContinueSessionArgs(parsed: Args, rawArgs?: readonly st
 	parsed.messages.splice(messageIndex, 1);
 }
 const SESSION_NOT_FOUND_HINT =
-	"Run `omp --resume` without an argument to pick from recent sessions, or `omp` to start a new one.";
+	"Run `omsk --resume` without an argument to pick from recent sessions, or `omsk` to start a new one.";
 
 function validateSessionPersistenceArgs(parsed: Pick<Args, "continue" | "noSession" | "resume">): void {
 	if (!parsed.noSession) return;
@@ -1985,7 +1985,7 @@ export async function runRootCommand(
 		// RPC hosts have no stderr reader for startup warnings; collect them like the TUI
 		// does and hand them to the session, where `get_config_warnings` reports them.
 		const collectsStartupNotices = isInteractive || mode === "rpc" || mode === "rpc-ui";
-		// The TUI owns the Tern pane or cmux workspace it draws in; an omp its commands start sees the claim and
+		// The TUI owns the Tern pane or cmux workspace it draws in; an omsk its commands start sees the claim and
 		// keeps its browser tabs out of this session's pane.
 		if (isInteractive) claimTerminal();
 		// Before session resolution: resume, fork, and import act on these same
@@ -2196,7 +2196,7 @@ export async function runRootCommand(
 		normalizeContinueSessionArgs(parsedArgs, rawArgs);
 
 		// Resolve native resume/fork flags or import one foreign transcript into a
-		// fresh persisted OMP session before constructing the AgentSession.
+		// fresh persisted OMSK session before constructing the AgentSession.
 		const explicitSessionSelection = Boolean(
 			parsedArgs.continue ||
 			parsedArgs.resume ||
@@ -2439,7 +2439,7 @@ export async function runRootCommand(
 		// read of a live store elsewhere in this process can corrupt it (issue #15586).
 		if (process.platform === "linux" && !ensureSqliteLockShim()) {
 			startupWarning(
-				"SQLite lock protection is unavailable with this Bun build: reading omp's own databases from inside omp (e.g. `grep -r ~/.omp`, `cp ~/.omp/agent/agent.db`) can corrupt them. Avoid it, and report this with your Bun version (#15586).",
+				"SQLite lock protection is unavailable with this Bun build: reading omsk's own databases from inside omsk (e.g. `grep -r ~/.omsk`, `cp ~/.omsk/agent/agent.db`) can corrupt them. Avoid it, and report this with your Bun version (#15586).",
 			);
 		}
 		const buildStartupSessionOptions = async (manager: SessionManager | undefined) => {
@@ -2611,7 +2611,7 @@ export async function runRootCommand(
 					process.stderr.write(`${chalk.yellow(`${message}\n`)}`);
 				}
 			}
-			// Fail fast on stale/typo flags (e.g. `omp --list-models`) and invalid
+			// Fail fast on stale/typo flags (e.g. `omsk --list-models`) and invalid
 			// built-in enum values now that we know the real extension flag set —
 			// an extension may shadow `--mode`/`--thinking`/`--approval-mode`, so
 			// neither can be judged by the pre-extension parse. Without this check

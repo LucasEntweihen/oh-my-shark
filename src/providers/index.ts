@@ -313,9 +313,9 @@ export class OmskSharedProviders {
 					supportsThinking: m.supportsThinking ?? false,
 					pricing: m.cost
 						? {
-								inputPerMillion: m.cost.input,
-								outputPerMillion: m.cost.output,
-							}
+							inputPerMillion: m.cost.input,
+							outputPerMillion: m.cost.output,
+						}
 						: undefined,
 				});
 			}
@@ -414,7 +414,7 @@ export class OmskSharedProviders {
 						options.onDelta(event.delta);
 					}
 				}
-			})().catch(() => {});
+			})().catch(() => { });
 		}
 
 		return stream;
@@ -541,7 +541,7 @@ export class OmskSharedProviders {
 		if (this.localStore) {
 			try {
 				this.localStore.close();
-			} catch {}
+			} catch { }
 		}
 		if (cachedSharedProviders === this) {
 			cachedSharedProviders = undefined;

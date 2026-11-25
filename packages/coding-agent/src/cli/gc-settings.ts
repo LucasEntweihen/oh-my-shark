@@ -17,7 +17,7 @@ export const cfgGcRetainNewestGlobal = register({ id: "gc.retainNewestGlobal", t
 export const cfgGcRetainNewestPerCwd = register({ id: "gc.retainNewestPerCwd", type: "number", default: 10 });
 
 // Opt-in: unlike the other phases it deletes user-visible files (debug reports,
-// collab replicas), so an unqualified `omp gc --apply` leaves them alone.
+// collab replicas), so an unqualified `omsk gc --apply` leaves them alone.
 export const cfgGcStale = register({ id: "gc.stale", type: "boolean", default: false });
 
 export const cfgGcStaleRetainNewest = register({ id: "gc.staleRetainNewest", type: "number", default: 20 });
@@ -36,6 +36,6 @@ export const cfgGcStrip = register({ id: "gc.strip", type: "boolean", default: f
 
 export const cfgGcStripAfterDays = register({ id: "gc.stripAfterDays", type: "number", default: 30 });
 
-// Opt-in: an interactive launch starts a detached `omp gc --compress --apply`
+// Opt-in: an interactive launch starts a detached `omsk gc --compress --apply`
 // at most once a day, so idle sessions get compressed without anyone asking.
 export const cfgGcAutoCompress = register({ id: "gc.autoCompress", type: "boolean", default: false });

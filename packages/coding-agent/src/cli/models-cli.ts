@@ -1,11 +1,11 @@
 /**
- * `omp models` — list, search, and refresh available models.
+ * `omsk models` — list, search, and refresh available models.
  *
  * Subcommands:
  * - `ls` (default): list available chat models grouped by provider.
  * - `find <substring>`: list models of the selected kind whose provider, id, or name contains the substring.
  * - `refresh`: force an online catalog re-fetch (ignoring the model cache TTL),
- *   then list. This is the supported replacement for `rm -rf ~/.omp/models.db`
+ *   then list. This is the supported replacement for `rm -rf ~/.omsk/models.db`
  *   when a provider ships a new model that the 24h cache has not picked up yet.
  *
  * `ls`/`find` use the cache when fresh (`online-if-uncached`); only `refresh`
@@ -50,7 +50,7 @@ export interface ModelsCommandArgs {
 /**
  * Known action keywords. Any other first token (e.g. `openai-codex`) is treated
  * as a provider/substring filter for the default `ls` view, so every provider
- * name doubles as an `omp models <provider>` shortcut.
+ * name doubles as an `omsk models <provider>` shortcut.
  */
 const KNOWN_ACTIONS: Record<string, ModelsAction> = {
 	ls: "ls",
@@ -190,7 +190,7 @@ export interface ModelsListingSource {
 }
 
 /**
- * Render `omp models ls`/`find` as one box table per provider, selecting chat
+ * Render `omsk models ls`/`find` as one box table per provider, selecting chat
  * models by default or the caller-requested catalog kind.
  */
 export function renderProviderModels(
@@ -384,7 +384,7 @@ export async function runModelsListing(options: RunModelsListingOptions): Promis
 }
 
 /**
- * Entry point for the standalone `omp models` command: bootstraps auth storage,
+ * Entry point for the standalone `omsk models` command: bootstraps auth storage,
  * settings, and the model registry, force/cache-refreshes built-in providers per
  * the chosen action, then delegates to {@link runModelsListing}.
  */
@@ -394,7 +394,7 @@ export async function runModelsCommand(command: ModelsCommandArgs): Promise<void
 	const kind = command.flags.kind ?? "chat";
 
 	if (action === "find" && (!pattern || pattern.trim().length === 0)) {
-		process.stderr.write("`omp models find` requires a search substring, e.g. `omp models find minimax`\n");
+		process.stderr.write("`omsk models find` requires a search substring, e.g. `omsk models find minimax`\n");
 		process.exitCode = 1;
 		return;
 	}

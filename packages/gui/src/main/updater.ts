@@ -53,7 +53,7 @@ export function appVersion(): string {
 		if (parsed && typeof parsed === "object" && "version" in parsed && typeof parsed.version === "string") {
 			return parsed.version;
 		}
-	} catch {}
+	} catch { }
 	return app.getVersion();
 }
 
@@ -138,7 +138,7 @@ async function downloadManualInstaller(version: string, asset: MacInstallerAsset
 
 	try {
 		const reader = response.body.getReader();
-		for (;;) {
+		for (; ;) {
 			const { done, value } = await reader.read();
 			if (done) break;
 			let offset = 0;
@@ -335,6 +335,6 @@ export function setupUpdater(): void {
 				const settled = settleIncompleteUpdateCheck(current, false);
 				if (settled !== current) broadcast(settled);
 			})
-			.catch(() => {});
+			.catch(() => { });
 	}, CHECK_INTERVAL_MS);
 }

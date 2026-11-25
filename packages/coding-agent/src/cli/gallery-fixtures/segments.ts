@@ -1,5 +1,5 @@
 /**
- * `omp gallery --surface segment`: every status-line segment alone on a bar,
+ * `omsk gallery --surface segment`: every status-line segment alone on a bar,
  * in the variants that change how it reads, over the gallery session's
  * status facts.
  */

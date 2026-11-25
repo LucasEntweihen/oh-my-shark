@@ -372,7 +372,7 @@ install_binary() {
     ln -sf "$OUT" "${INSTALL_DIR}/ohms" 2>/dev/null || cp "$OUT" "${INSTALL_DIR}/ohms" 2>/dev/null || true
     # Seed the portable preset and model catalog, but never overwrite the
     # user's own files. Sources are the release assets pinned to this tag —
-    # never the main branch, never ~/.omp.
+    # never the main branch, never ~/.omsk.
     mkdir -p "$AGENT_DIR"
     if [ ! -e "$AGENT_DIR/config.yml" ] && [ ! -e "$AGENT_DIR/config.yaml" ]; then
         seed_preset "$TAG" "ohmyshark.config.yml" "$AGENT_DIR/config.yml"

@@ -1,5 +1,5 @@
 /**
- * Provider replay data stripping for idle session transcripts (`omp gc --strip`).
+ * Provider replay data stripping for idle session transcripts (`omsk gc --strip`).
  *
  * Assistant turns persist state only their provider can read back, so a
  * resumed turn replays natively: signed or encrypted reasoning, the verbatim

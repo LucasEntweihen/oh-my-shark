@@ -1,5 +1,5 @@
 /**
- * `omp browser-relay` implementation: install and sync the omp Chrome extension, and run its native host (which
+ * `omsk browser-relay` implementation: install and sync the omsk Chrome extension, and run its native host (which
  * serves the browser relay while Chrome runs). Standalone CLI command — console output here is intentional
  * user-facing output.
  */
@@ -11,7 +11,7 @@ import { runNativeHost } from "../tools/browser/relay/native-host";
 import { registerRelayNativeHost } from "../tools/browser/relay/native-host-manifest";
 import { installRelayInChrome } from "../tools/browser/relay/chrome";
 
-/** Subcommands supported by `omp browser-relay`. */
+/** Subcommands supported by `omsk browser-relay`. */
 export const BROWSER_RELAY_ACTIONS = ["install", "sync", "native-host"] as const;
 
 /** Selected browser-relay subcommand. */
@@ -20,7 +20,7 @@ export type BrowserRelayAction = (typeof BROWSER_RELAY_ACTIONS)[number];
 /** Parsed browser-relay command and options. */
 export interface BrowserRelayCommandArgs {
 	action: BrowserRelayAction;
-	/** Install target directory; defaults to ~/.omp/browser-relay/extension. */
+	/** Install target directory; defaults to ~/.omsk/browser-relay/extension. */
 	dir?: string;
 	/** Install into real Chrome profiles (default true; `--no-chrome` falls back to the manual steps). */
 	chrome?: boolean;
@@ -43,7 +43,7 @@ export async function runBrowserRelayCommand(args: BrowserRelayCommandArgs): Pro
 async function runSync(): Promise<void> {
 	const results = await syncRelayInstalls();
 	if (results.length === 0) {
-		console.log("No omp extension directories registered. Use `omp browser-relay install` to register one.");
+		console.log("No omsk extension directories registered. Use `omsk browser-relay install` to register one.");
 		return;
 	}
 	let failed = false;
@@ -61,7 +61,7 @@ async function runSync(): Promise<void> {
 async function runInstall(args: BrowserRelayCommandArgs): Promise<void> {
 	const dir = await installRelayExtension(args.dir ?? defaultRelayExtensionDir());
 	await registerRelayNativeHost(await registeredRelayExtensionIds());
-	console.log(`Installed the omp extension to ${dir}`);
+	console.log(`Installed the omsk extension to ${dir}`);
 	const extensionId = extensionIdForPath(dir);
 	const profiles = await findUnpackedInstalls(extensionId);
 
@@ -105,7 +105,7 @@ async function runInstall(args: BrowserRelayCommandArgs): Promise<void> {
 	}
 	if (loaded.length > 0) {
 		console.log("");
-		console.log("Optional: `omp config set browser.relay true` makes the browser tool drive this Chrome by default.");
+		console.log("Optional: `omsk config set browser.relay true` makes the browser tool drive this Chrome by default.");
 		return;
 	}
 	const developerMode = profiles.some(profile => profile.developerMode);
@@ -115,7 +115,7 @@ async function runInstall(args: BrowserRelayCommandArgs): Promise<void> {
 		`  open chrome://extensions${developerMode ? "" : ", turn on Developer mode"}, click "Load unpacked" and pick ${dir}`,
 	);
 	console.log(
-		"From then on omp updates and reloads it by itself. Its toolbar badge shows 'on' while its native host serves the relay.",
+		"From then on omsk updates and reloads it by itself. Its toolbar badge shows 'on' while its native host serves the relay.",
 	);
-	console.log("Optional: `omp config set browser.relay true` makes the browser tool drive this Chrome by default.");
+	console.log("Optional: `omsk config set browser.relay true` makes the browser tool drive this Chrome by default.");
 }

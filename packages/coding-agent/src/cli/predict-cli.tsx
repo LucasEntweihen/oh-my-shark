@@ -1,6 +1,6 @@
 /** @jsxImportSource @oh-my-pi/pi-tui */
 /**
- * `omp predict`: type a prompt and watch every word-completion engine's ghost
+ * `omsk predict`: type a prompt and watch every word-completion engine's ghost
  * text side by side.
  *
  * Each lane runs the composer's {@link WordCompletionProvider} (prose gates,
@@ -173,7 +173,7 @@ function ActionButton(props: {
 		nativeSupports("button") ? (
 			<button
 				key={props.act}
-				role="omp.btn"
+				role="omsk.btn"
 				text={props.label}
 				actions={{ click: props.act }}
 				title={`${props.label}  ${formatTooltipKey(props.keys)}`}
@@ -182,7 +182,7 @@ function ActionButton(props: {
 				tone={props.tone}
 			/>
 		) : (
-			<row key={props.act} role="omp.btn" align="center" gap="xs" actions={{ click: props.act }} title={props.label}>
+			<row key={props.act} role="omsk.btn" align="center" gap="xs" actions={{ click: props.act }} title={props.label}>
 				<text spans={[props.tone ? { s: props.tone, t: props.label } : { t: props.label }]} />
 				{() =>
 					props.native() ? (
@@ -203,18 +203,18 @@ function PredictPage(props: {
 	const page = props.page;
 	const native = props.native;
 	const head = (
-		<row key="head" role="omp.app.head" justify="between" align="center">
-			<row role="omp.app.where" gap="sm" align="center">
-				<text text="omp predict" role="omp.app.title" />
+		<row key="head" role="omsk.app.head" justify="between" align="center">
+			<row role="omsk.app.where" gap="sm" align="center">
+				<text text="omsk predict" role="omsk.app.title" />
 				<text
 					spans={[{ s: "muted", t: `${page.lanes.length} engines · comparison typing never teaches them` }]}
 					truncate="end"
 				/>
 			</row>
-			<row role="omp.app.tools" gap="md" align="center">
+			<row role="omsk.app.tools" gap="md" align="center">
 				{() =>
 					page.pending() && (
-						<row key="fresh" role="omp.app.fresh" gap="xs" align="center">
+						<row key="fresh" role="omsk.app.fresh" gap="xs" align="center">
 							<spinner style="dots" />
 							<text spans={[{ s: "dim", t: "predicting" }]} />
 						</row>
@@ -239,7 +239,7 @@ function PredictPage(props: {
 		});
 	};
 	return (
-		<col role="omp.app.predict" gap="md" grow={1} onKey={key => page.key(key)} onAction={act => page.action(act)}>
+		<col role="omsk.app.predict" gap="md" grow={1} onKey={key => page.key(key)} onAction={act => page.action(act)}>
 			{head}
 			<input
 				key="input"
@@ -264,7 +264,7 @@ function PredictPage(props: {
 				]}
 				rows={rows}
 			/>
-			<row key="actions" role="omp.actions" gap="sm" align="center">
+			<row key="actions" role="omsk.actions" gap="sm" align="center">
 				<ActionButton act="accept" label={`Accept ${ENGINES[0]}`} keys="tab" tone="accent" native={native} />
 				<ActionButton act="clear" label="Clear" keys="enter" native={native} />
 				<spacer grow={1} />
@@ -277,7 +277,7 @@ function PredictPage(props: {
 /** Run the fullscreen engine comparison until the user quits. */
 export async function runPredictCompare(): Promise<void> {
 	try {
-		await runStandalone({ title: "omp predict" }, screen => {
+		await runStandalone({ title: "omsk predict" }, screen => {
 			const page = new PredictCompare();
 			let input: UiNode | undefined;
 			return {

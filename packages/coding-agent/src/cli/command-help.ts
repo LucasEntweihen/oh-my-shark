@@ -1,7 +1,7 @@
 import type { CommandMetadata } from "@oh-my-pi/pi-utils/cli";
 
 export const acpHelp = {
-	description: "Run omp as an ACP (Agent Client Protocol) server over stdio",
+	description: "Run omsk as an ACP (Agent Client Protocol) server over stdio",
 } satisfies CommandMetadata;
 
 export const agentsHelp = { description: "Manage bundled task agents" } satisfies CommandMetadata;
@@ -16,7 +16,7 @@ export const authHelp = {
 } satisfies CommandMetadata;
 
 export const authBrokerHelp = {
-	description: "Manage the omp auth-broker (credential vault)",
+	description: "Manage the omsk auth-broker (credential vault)",
 } satisfies CommandMetadata;
 
 export const authGatewayHelp = {
@@ -29,9 +29,9 @@ export const benchHelp = {
 		"Benchmark models: TTFT/prefill vs decode throughput with p50/p95, across chat, prefill, generation, and prompt-cache workloads, or single-user vs parallel load (--detailed)",
 } satisfies CommandMetadata;
 
-/** Root help description for managing omp's Chrome extension and relay. */
+/** Root help description for managing omsk's Chrome extension and relay. */
 export const browserRelayHelp = {
-	description: "Install or sync the omp Chrome extension; its native host serves the browser relay",
+	description: "Install or sync the omsk Chrome extension; its native host serves the browser relay",
 } satisfies CommandMetadata;
 
 export const cleanseHelp = {
@@ -44,7 +44,7 @@ export const collabHelp = {
 } satisfies CommandMetadata;
 
 export const clipHelp = {
-	description: "Upload a /record recording to live.omp.sh as a public clip and print its URL",
+	description: "Upload a /record recording to live.omsk.sh as a public clip and print its URL",
 } satisfies CommandMetadata;
 
 export const commitHelp = { description: "Generate a commit message and update changelogs" } satisfies CommandMetadata;
@@ -133,7 +133,7 @@ export const searchHelp = { description: "Test web search providers" } satisfies
 
 export const sessionHelp = {
 	description:
-		"Hand a session to another machine (pack, unpack, moved) or check which sessions a running omp owns (lease)",
+		"Hand a session to another machine (pack, unpack, moved) or check which sessions a running omsk owns (lease)",
 } satisfies CommandMetadata;
 
 export const shareHelp = {
@@ -152,7 +152,7 @@ const NATIVE_SHELL_DESCRIPTIONS = {
 	sh: "Run a POSIX sh on the built-in shell engine (all arguments go to sh)",
 } as const;
 
-/** `omp zsh|bash|sh`: the whole command line after the word goes to the shell. */
+/** `omsk zsh|bash|sh`: the whole command line after the word goes to the shell. */
 export function nativeShellHelp(name: keyof typeof NATIVE_SHELL_DESCRIPTIONS) {
 	return {
 		description: NATIVE_SHELL_DESCRIPTIONS[name],
@@ -167,7 +167,7 @@ export function nativeShellHelp(name: keyof typeof NATIVE_SHELL_DESCRIPTIONS) {
 }
 
 export const skillHelp = {
-	description: "Install, search, publish, and manage skills on the Skillshare registry (skills.omp.sh)",
+	description: "Install, search, publish, and manage skills on the Skillshare registry (skills.omsk.sh)",
 } satisfies CommandMetadata;
 
 export const sshHelp = { description: "Manage SSH host configurations" } satisfies CommandMetadata;
@@ -175,7 +175,7 @@ export const sshHelp = { description: "Manage SSH host configurations" } satisfi
 export const statsHelp = { description: "View usage statistics" } satisfies CommandMetadata;
 
 export const streamHelp = {
-	description: "Broadcast local omp session screens and chat to your public live channel",
+	description: "Broadcast local omsk session screens and chat to your public live channel",
 } satisfies CommandMetadata;
 
 export const tinyModelsHelp = {
