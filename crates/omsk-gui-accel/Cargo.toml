@@ -1,0 +1,9 @@
+[package]
+name = "omsk-gui-accel"
+version = "0.3.0"
+edition = "2021"
+description = "Rust native performance accelerators for OhMyShark (OMSK) Desktop GUI"
+license = "MIT"
+
+[lib]
+crate-type = ["rlib"]
