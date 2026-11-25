@@ -5,5 +5,7 @@ edition = "2021"
 description = "Rust native performance accelerators for OhMyShark (OMSK) Desktop GUI"
 license = "MIT"
 
+[workspace]
+
 [lib]
 crate-type = ["rlib"]

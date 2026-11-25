@@ -83,7 +83,7 @@ export function OceanAquariumBackdrop({ seedKey, className }: OceanAquariumBackd
 		const syncCanvasSize = () => {
 			width = Math.max(container.clientWidth, 320);
 			height = Math.max(container.clientHeight, 240);
-			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 			canvas.width = Math.floor(width * dpr);
 			canvas.height = Math.floor(height * dpr);
 			canvas.style.width = `${width}px`;
@@ -104,7 +104,7 @@ export function OceanAquariumBackdrop({ seedKey, className }: OceanAquariumBackd
 		let rafId = 0;
 		let lastDrawMs = 0;
 		let elapsed = 0;
-		const FRAME_INTERVAL_MS = 42; // ~24fps crisp ASCII ocean motion without burning CPU
+		let frameIntervalMs = 42; // ~24fps crisp ASCII ocean motion, adapts to 15fps on slower GPUs
 
 		// Draw initial frame immediately
 		renderOceanToCanvas(ctx, width, height, habitat, 0, overridesRef.current);
@@ -117,13 +117,16 @@ export function OceanAquariumBackdrop({ seedKey, className }: OceanAquariumBackd
 			if (!document.hidden) {
 				if (lastDrawMs === 0) lastDrawMs = now;
 				const deltaMs = now - lastDrawMs;
-				if (deltaMs >= FRAME_INTERVAL_MS) {
+				if (deltaMs >= frameIntervalMs) {
 					const dt = deltaMs / 1000;
 					lastDrawMs = now;
 					elapsed += dt;
 					const cols = Math.floor(width / 7.8);
+					const t0 = performance.now();
 					stepOceanHabitat(habitat, dt, elapsed, cols, pointerRef.current);
 					if (ctx) renderOceanToCanvas(ctx, width, height, habitat, elapsed, overridesRef.current);
+					const drawCost = performance.now() - t0;
+					frameIntervalMs = drawCost > 16 ? 66 : 42;
 				}
 			} else {
 				lastDrawMs = now;
