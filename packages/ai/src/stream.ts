@@ -39,8 +39,6 @@ import type { BedrockOptions } from "./providers/amazon-bedrock";
 import { reachesOfficialEndpoint } from "./providers/anthropic-state";
 import type { AnthropicOptions } from "./providers/anthropic";
 import type { AntigravityCliOptions } from "./providers/antigravity-cli";
-import type { AntigravityInteractionsOptions } from "./providers/antigravity-interactions";
-import type { AntigravitySdkOptions } from "./providers/antigravity-sdk";
 import type { AppleFoundationModelsOptions } from "./providers/apple-foundation-models";
 import type { CursorOptions } from "./providers/cursor";
 import type { DevinOptions } from "./providers/devin";
@@ -48,6 +46,7 @@ import { type FactoryDroidOptions, streamFactoryDroid } from "./providers/factor
 import { streamGitLabDuo } from "./providers/gitlab-duo";
 import { type GitLabDuoWorkflowOptions, streamGitLabDuoWorkflow } from "./providers/gitlab-duo-workflow";
 import type { GoogleOptions } from "./providers/google";
+import { perturbContext } from "./prompts/perturbation";
 import { getVertexAccessToken } from "./providers/google-auth";
 import type { GoogleGeminiCliOptions } from "./providers/google-gemini-cli";
 import type { GoogleVertexOptions } from "./providers/google-vertex";
@@ -60,8 +59,6 @@ import { streamSynthetic } from "./providers/synthetic";
 import {
 	streamAnthropic,
 	streamAntigravityCli,
-	streamAntigravityInteractions,
-	streamAntigravitySdk,
 	streamAppleFoundationModels,
 	streamAzureOpenAIResponses,
 	streamBedrock,
@@ -76,7 +73,9 @@ import {
 	streamOpenAICompletions,
 	streamOpenAIResponses,
 } from "./providers/register-builtins";
+import { getProviderHooks } from "./provider-hooks";
 import { getProviderDefinition } from "./registry";
+import type { PreparedProviderRequest } from "./registry/types";
 import type {
 	Api,
 	AssistantMessage,
@@ -893,6 +892,13 @@ export function stream<TApi extends Api>(
 	);
 }
 
+/** Applies the provider's own model normalization and request shaping ahead of its api adapter. */
+function prepareProviderRequest(model: Model<Api>, options: StreamOptions): PreparedProviderRequest {
+	const definition = getProviderDefinition(model.provider);
+	const requestModel = definition?.prepareModel?.(model) ?? model;
+	return definition?.prepareRequest?.(requestModel, options) ?? { model: requestModel, options };
+}
+
 function streamDispatch<TApi extends Api>(
 	model: Model<TApi>,
 	context: Context,
@@ -900,12 +906,24 @@ function streamDispatch<TApi extends Api>(
 	limited: boolean,
 ): AssistantMessageEventStream {
 	// A provider turned off in its auth rules is never called, even with a key passed in directly.
+	context = perturbContext(model, context);
 	assertProviderEnabled(model.provider);
 	const requestOptions = withSupportedSamplingParams(
 		model,
 		withTransportFetch(model, (options || {}) as StreamOptions),
 	) as OptionsForApi<TApi>;
 	assertExplicitOpenAIResponsesPromptCacheSupport(model, requestOptions);
+
+	// A provider hook owns every request to the provider, ahead of api-level dispatch.
+	const hooks = getProviderHooks(model.provider);
+	if (hooks?.stream) {
+		const prepared = prepareProviderRequest(model, requestOptions as StreamOptions);
+		return hooks.stream(prepared.model, context, {
+			...prepared.options,
+			apiKey: prepared.options.apiKey || getEnvApiKey(prepared.model.provider),
+			waitForTerminalDrain: limited,
+		});
+	}
 
 	// Check custom API registry first (extension-provided APIs like "vertex-claude-api")
 	const customApiProvider = getCustomApi(model.api);
@@ -950,11 +968,10 @@ function streamDispatch<TApi extends Api>(
 		});
 	}
 
-	const providerDefinition = getProviderDefinition(model.provider);
-	const requestModel = providerDefinition?.prepareModel?.(model) ?? model;
-	const prepared = providerDefinition?.prepareRequest?.(requestModel, requestOptions as StreamOptions);
-	const providerModel = prepared?.model ?? requestModel;
-	const preparedOptions = prepared?.options ?? (requestOptions as StreamOptions);
+	const { model: providerModel, options: preparedOptions } = prepareProviderRequest(
+		model,
+		requestOptions as StreamOptions,
+	);
 	const apiKey = preparedOptions.apiKey || getEnvApiKey(providerModel.provider);
 	if (!apiKey) {
 		throw new AIError.MissingApiKeyError(providerModel.provider);
@@ -1040,20 +1057,6 @@ function streamDispatch<TApi extends Api>(
 				providerModel as Model<"antigravity-acp">,
 				context,
 				providerOptions as AntigravityCliOptions,
-			);
-
-		case "antigravity-sdk":
-			return streamAntigravitySdk(
-				providerModel as Model<"antigravity-sdk">,
-				context,
-				providerOptions as AntigravitySdkOptions,
-			);
-
-		case "antigravity-interactions":
-			return streamAntigravityInteractions(
-				providerModel as Model<"antigravity-interactions">,
-				context,
-				providerOptions as AntigravityInteractionsOptions,
 			);
 
 		case "apple-foundation-models":
@@ -1152,8 +1155,9 @@ function isRetryableUpstreamError(
 	// denied by plan, model policy, or org restriction — a sibling account may
 	// not share it). Explicit account-scoped policy errors such as Codex
 	// `cyber_policy` are likewise rotatable. A denial of only the requested
-	// model (Codex ChatGPT account, Cursor plan, Anthropic model-not-found 404)
-	// is rotatable when its provider and requested model match.
+	// model (Codex ChatGPT account, Cursor plan, Anthropic model-not-found 404,
+	// agy `Unknown model ID`) is rotatable when its provider and requested model
+	// match.
 	// Usage-limit phrasing (Codex's
 	// "You have hit your ChatGPT usage limit", Anthropic's "usage_limit_reached",
 	// Google's "resource_exhausted", OpenAI's "insufficient_quota") and 429s
@@ -1482,6 +1486,13 @@ function streamSimpleDispatch<TApi extends Api>(
 				return streamPiNative(model, context, nativeOptions);
 			}),
 		);
+	}
+
+	// A hooked provider keeps its api's option mapping; stream() then hands the request to the hook.
+	if (getProviderHooks(model.provider)?.stream) {
+		const providerModel = getProviderDefinition(model.provider)?.prepareModel?.(model) ?? model;
+		const apiKey = typeof requestOptions.apiKey === "string" ? requestOptions.apiKey : getEnvApiKey(model.provider);
+		return stream(providerModel, context, mapOptionsForApi(providerModel, requestOptions, apiKey));
 	}
 
 	// Check custom API registry (extension-provided APIs)
@@ -2456,27 +2467,6 @@ function mapOptionsForApi<TApi extends Api>(
 					? requireSupportedEffort(agyModel, options.reasoning)
 					: undefined;
 			return castApi<"antigravity-acp">({ ...base, cwd: options?.cwd, reasoning });
-		}
-		case "antigravity-sdk": {
-			const sdkModel = model as Model<"antigravity-sdk">;
-			const reasoning =
-				options?.reasoning && !options.disableReasoning && !options.forceReasoningOff && sdkModel.reasoning
-					? requireSupportedEffort(sdkModel, options.reasoning)
-					: undefined;
-			return castApi<"antigravity-sdk">({
-				...base,
-				cwd: options?.cwd,
-				reasoning,
-				serviceTier: options?.serviceTier,
-			});
-		}
-		case "antigravity-interactions": {
-			const intModel = model as Model<"antigravity-interactions">;
-			const reasoning =
-				options?.reasoning && !options.disableReasoning && !options.forceReasoningOff && intModel.reasoning
-					? requireSupportedEffort(intModel, options.reasoning)
-					: undefined;
-			return castApi<"antigravity-interactions">({ ...base, reasoning });
 		}
 		default:
 			throw new AIError.ConfigurationError(`Unhandled API in mapOptionsForApi: ${model.api}`);

@@ -4,7 +4,7 @@
  */
 import type { PromptResponse } from "@oh-my-pi/pi-utils/acp";
 import type { FinalizeResult } from "../../error/finalize";
-import type { Api, AssistantMessage, Model, ProviderPayload, ToolCall } from "../../types";
+import type { Api, AntigravityCliPayload, AssistantMessage, Model, ToolCall } from "../../types";
 import type { AssistantMessageEventStream } from "../../utils/event-stream";
 
 export class StepWriter {
@@ -108,7 +108,7 @@ export class StepWriter {
 	}
 
 	/** Finish once, retaining the conversation fingerprint needed by the next request. */
-	finish(reason: "stop" | "length" | "toolUse", payload: ProviderPayload): void {
+	finish(reason: "stop" | "length" | "toolUse", payload: AntigravityCliPayload): void {
 		if (this.done) return;
 		this.#endText();
 		this.#endThinking();

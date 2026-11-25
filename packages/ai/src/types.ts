@@ -41,8 +41,6 @@ import type { OAuthRequestIdentity } from "./auth/types";
 import type { BedrockOptions } from "./providers/amazon-bedrock";
 import type { AnthropicOptions } from "./providers/anthropic";
 import type { AntigravityCliOptions } from "./providers/antigravity-cli";
-import type { AntigravityInteractionsOptions } from "./providers/antigravity-interactions";
-import type { AntigravitySdkOptions } from "./providers/antigravity-sdk";
 import type { FallbackParam, MessageCreateParamsStreaming, StopDetails } from "./providers/anthropic-wire";
 import type { AzureOpenAIResponsesOptions } from "./providers/azure-openai-responses";
 import type { CursorOptions } from "./providers/cursor";
@@ -94,8 +92,6 @@ export interface ApiOptionsMap {
 	"gitlab-duo-agent": GitLabDuoWorkflowOptions;
 	"devin-agent": DevinOptions;
 	"antigravity-acp": AntigravityCliOptions;
-	"antigravity-sdk": AntigravitySdkOptions;
-	"antigravity-interactions": AntigravityInteractionsOptions;
 	"apple-foundation-models": AppleFoundationModelsOptions;
 }
 // Compile-time exhaustiveness check - this will fail if ApiOptionsMap doesn't have all KnownApi keys
@@ -214,7 +210,7 @@ export function serviceTierFamily(model: ServiceTierModel): ServiceTierFamily | 
 	}
 	if (provider === "openai" || provider === "openai-codex") return "openai";
 	if (model.api === "anthropic-messages") return "anthropic";
-	if (provider === "google" || provider === "google-vertex" || provider === "google-antigravity-sdk") return "google";
+	if (provider === "google" || provider === "google-vertex") return "google";
 	if (isOpenAIServiceTierModel(model)) return "openai";
 	return undefined;
 }
@@ -281,7 +277,7 @@ export function shouldSendServiceTier(
 		return serviceTier === "flex" || serviceTier === "scale" || serviceTier === "priority";
 	}
 	if (typeof target !== "string" && target && isOpenAIServiceTierModel(target)) return true;
-	if (provider === "google" || provider === "google-antigravity-sdk") {
+	if (provider === "google") {
 		return serviceTier === "flex" || serviceTier === "priority";
 	}
 	// Vertex realizes only priority (via header); flex has no documented control.
@@ -647,7 +643,8 @@ export interface StreamOptions {
 	 * prefix. Providers that keep per-conversation request controls (OpenAI
 	 * `configuration_update` effort baselines) plan the request against a copy
 	 * of that session's controls, never changing the parent's state; the Codex
-	 * backend also routes it with the parent's cache affinity (session headers).
+	 * backend and OpenCode (`x-opencode-session`) also route it with the
+	 * parent's cache affinity (session headers).
 	 */
 	parentSessionId?: string;
 	/**
@@ -713,7 +710,7 @@ export interface StreamOptions {
 	 * in the iterator while waiting for the first semantic stream event. Set to
 	 * `0` to disable both layers for this request. After the first semantic
 	 * event arrives, `streamIdleTimeoutMs` governs inter-event stalls. Falls
-	 * back to `PI_STREAM_FIRST_EVENT_TIMEOUT_MS` and then to a 100s default.
+	 * back to `PI_STREAM_FIRST_EVENT_TIMEOUT_MS` and then to a 900s default.
 	 * OpenAI-family transports additionally honor
 	 * `PI_OPENAI_STREAM_FIRST_EVENT_TIMEOUT_MS` as the most-specific override and
 	 * floor the first-event budget at the resolved idle (per-call
@@ -732,7 +729,7 @@ export interface StreamOptions {
 	 * mid-stream stalls (broker dies, half-open socket, model produces no real
 	 * progress for too long). Set to `0` to disable. Falls back to
 	 * `PI_STREAM_IDLE_TIMEOUT_MS` (alias: `PI_OPENAI_STREAM_IDLE_TIMEOUT_MS`)
-	 * and then to a 120s default.
+	 * and then to a 900s default.
 	 */
 	streamIdleTimeoutMs?: number;
 	/**
@@ -1275,40 +1272,13 @@ export interface AntigravityCliPayload {
 	checkpoint?: AntigravityCliCheckpoint;
 }
 
-/**
- * Stateful session fingerprint for the official Google Antigravity Python SDK
- * (`antigravity-sdk` API).
- */
-export interface AntigravitySdkPayload {
-	type: "antigravitySdk";
-	/** Native SDK conversation ID inside `saveDir`. */
-	conversationId: string;
-	/** Account/session-scoped directory holding native SDK state. */
-	saveDir: string;
-	/** Structural digest of the transcript through this step. */
-	digest: string;
-}
-
-/**
- * Stateful remote sandbox fingerprint for the Gemini Interactions API
- * (`antigravity-interactions` API).
- */
-export interface AntigravityInteractionsPayload {
-	type: "antigravityInteractions";
-	interactionId: string;
-	environmentId: string;
-	digest: string;
-}
-
 export type ProviderPayload =
 	| OpenAIResponsesHistoryPayload
 	| AnthropicMessagePayload
 	| AnthropicCompactionPayload
 	| CursorHistoryPayload
 	| GeminiNativeContentPayload
-	| AntigravityCliPayload
-	| AntigravitySdkPayload
-	| AntigravityInteractionsPayload;
+	| AntigravityCliPayload;
 
 /** Provider-reported rewrite applied to request content before inference. */
 export interface ProviderInputTransformation {
@@ -1419,6 +1389,8 @@ export interface AssistantMessage {
 	contextSnapshot?: ContextSnapshot;
 	retryRecovery?: AssistantRetryRecovery;
 	responseId?: string; // Provider-specific response/message identifier when the upstream API exposes one
+	/** Provider request id (Anthropic's `request-id` response header); provider support asks for it when a request is refused or fails. */
+	requestId?: string;
 	/**
 	 * Name of the upstream provider an aggregator routed this request to, as
 	 * reported in the response (e.g. OpenRouter's top-level `provider` field:
@@ -1464,6 +1436,11 @@ export interface AssistantMessage {
 	errorStatus?: number;
 	/** Structured machine-readable error classifier; see `utils/error-id.ts` for bit layout and helpers. */
 	errorId?: number;
+	/**
+	 * True when the agent loop ended the turn with this error itself (for example, after the model
+	 * kept missing a soft tool requirement), so no provider request failed.
+	 */
+	errorFromAgentLoop?: boolean;
 	/**
 	 * Stable identifiers for request features the provider silently dropped
 	 * during this turn (e.g. `"priority"`). Set when a server-side rejection

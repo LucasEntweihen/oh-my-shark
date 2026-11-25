@@ -424,7 +424,7 @@ export async function connectProxiedSocket(
 		timeout.unref?.();
 	}
 
-	const rawSocket: net.Socket = useProxySsl
+	const rawSocket = useProxySsl
 		? tls.connect({
 				host: proxyHost,
 				port: proxyPort,
