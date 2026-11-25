@@ -39,6 +39,8 @@ import type { BedrockOptions } from "./providers/amazon-bedrock";
 import { reachesOfficialEndpoint } from "./providers/anthropic-state";
 import type { AnthropicOptions } from "./providers/anthropic";
 import type { AntigravityCliOptions } from "./providers/antigravity-cli";
+import type { AntigravityInteractionsOptions } from "./providers/antigravity-interactions";
+import type { AntigravitySdkOptions } from "./providers/antigravity-sdk";
 import type { AppleFoundationModelsOptions } from "./providers/apple-foundation-models";
 import type { CursorOptions } from "./providers/cursor";
 import type { DevinOptions } from "./providers/devin";
@@ -58,6 +60,8 @@ import { streamSynthetic } from "./providers/synthetic";
 import {
 	streamAnthropic,
 	streamAntigravityCli,
+	streamAntigravityInteractions,
+	streamAntigravitySdk,
 	streamAppleFoundationModels,
 	streamAzureOpenAIResponses,
 	streamBedrock,
@@ -1036,6 +1040,20 @@ function streamDispatch<TApi extends Api>(
 				providerModel as Model<"antigravity-acp">,
 				context,
 				providerOptions as AntigravityCliOptions,
+			);
+
+		case "antigravity-sdk":
+			return streamAntigravitySdk(
+				providerModel as Model<"antigravity-sdk">,
+				context,
+				providerOptions as AntigravitySdkOptions,
+			);
+
+		case "antigravity-interactions":
+			return streamAntigravityInteractions(
+				providerModel as Model<"antigravity-interactions">,
+				context,
+				providerOptions as AntigravityInteractionsOptions,
 			);
 
 		case "apple-foundation-models":
@@ -2438,6 +2456,27 @@ function mapOptionsForApi<TApi extends Api>(
 					? requireSupportedEffort(agyModel, options.reasoning)
 					: undefined;
 			return castApi<"antigravity-acp">({ ...base, cwd: options?.cwd, reasoning });
+		}
+		case "antigravity-sdk": {
+			const sdkModel = model as Model<"antigravity-sdk">;
+			const reasoning =
+				options?.reasoning && !options.disableReasoning && !options.forceReasoningOff && sdkModel.reasoning
+					? requireSupportedEffort(sdkModel, options.reasoning)
+					: undefined;
+			return castApi<"antigravity-sdk">({
+				...base,
+				cwd: options?.cwd,
+				reasoning,
+				serviceTier: options?.serviceTier,
+			});
+		}
+		case "antigravity-interactions": {
+			const intModel = model as Model<"antigravity-interactions">;
+			const reasoning =
+				options?.reasoning && !options.disableReasoning && !options.forceReasoningOff && intModel.reasoning
+					? requireSupportedEffort(intModel, options.reasoning)
+					: undefined;
+			return castApi<"antigravity-interactions">({ ...base, reasoning });
 		}
 		default:
 			throw new AIError.ConfigurationError(`Unhandled API in mapOptionsForApi: ${model.api}`);

@@ -317,6 +317,18 @@ export const streamAntigravityCli = createLazyProviderStream(
 	mod => mod.streamAntigravityCli,
 );
 
+/** Stream the official Google Antigravity Python SDK sidecar through the shared watchdog. */
+export const streamAntigravitySdk = createLazyProviderStream(
+	() => import("./antigravity-sdk"),
+	mod => mod.streamAntigravitySdk,
+);
+
+/** Stream the managed remote Antigravity Agent via Gemini Interactions API. */
+export const streamAntigravityInteractions = createLazyProviderStream(
+	() => import("./antigravity-interactions"),
+	mod => mod.streamAntigravityInteractions,
+);
+
 /** Stream Apple's on-device Foundation Model through the shared watchdog. */
 export const streamAppleFoundationModels = createLazyProviderStream(
 	() => import("./apple-foundation-models"),

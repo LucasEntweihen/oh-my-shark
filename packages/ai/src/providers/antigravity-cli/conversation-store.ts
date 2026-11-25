@@ -64,7 +64,7 @@ export function forkConversation(
 		} finally {
 			source.close();
 		}
-		const fork = new Database(target, { readwrite: true, create: false });
+		const fork = new Database(target, { create: false });
 		try {
 			fork.transaction(() => {
 				assertIdentity(fork, sourceId);

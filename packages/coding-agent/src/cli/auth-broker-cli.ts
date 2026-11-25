@@ -337,7 +337,6 @@ const CLIPROXY_TYPE_TO_PROVIDER: Record<string, string> = {
 	codex: "openai-codex",
 	gemini: "google-gemini-cli",
 	antigravity: "google-antigravity",
-	"google-antigravity": "google-antigravity",
 	"gemini-cli": "google-gemini-cli",
 };
 
@@ -346,14 +345,10 @@ interface CliProxyCredentialJson {
 	access_token?: string;
 	refresh_token?: string;
 	id_token?: string;
-	expired?: string | number;
-	expiry?: string | number;
-	expires_at?: string | number;
+	expired?: string;
 	last_refresh?: string;
 	email?: string;
 	account_id?: string;
-	project_id?: string;
-	projectId?: string;
 	disabled?: boolean;
 }
 
@@ -380,18 +375,10 @@ function resolveCliProxyProvider(json: CliProxyCredentialJson, filename: string,
 	return null;
 }
 
-function parseCliProxyExpiry(raw: string | number | undefined): number | null {
-	if (typeof raw === "number" && Number.isFinite(raw)) {
-		return raw > 0 && raw < 1_000_000_000_000 ? raw * 1000 : raw;
-	}
-	if (typeof raw !== "string" || raw.trim().length === 0) return null;
-	const trimmed = raw.trim();
-	if (/^\d+$/.test(trimmed)) {
-		const numeric = Number(trimmed);
-		return numeric > 0 && numeric < 1_000_000_000_000 ? numeric * 1000 : numeric;
-	}
+function parseCliProxyExpiry(raw: string | undefined): number | null {
+	if (!raw) return null;
 	// CLIProxyAPI writes RFC3339-ish dates. `Date.parse` handles both `Z` and offsets.
-	const ms = Date.parse(trimmed);
+	const ms = Date.parse(raw);
 	if (!Number.isFinite(ms)) return null;
 	return ms;
 }
@@ -445,16 +432,13 @@ async function loadImportPlan(
 			skipped.push({ file, reason: "missing access_token or refresh_token" });
 			continue;
 		}
-		const rawExpiry = json.expired ?? json.expiry ?? json.expires_at;
-		const expiresAt = parseCliProxyExpiry(rawExpiry);
+		const expiresAt = parseCliProxyExpiry(json.expired);
 		if (expiresAt === null) {
-			skipped.push({ file, reason: `cannot parse expired=${String(rawExpiry ?? "?")}` });
+			skipped.push({ file, reason: `cannot parse expired=${json.expired ?? "?"}` });
 			continue;
 		}
 		const email = typeof json.email === "string" && json.email.length > 0 ? json.email : null;
 		const accountId = typeof json.account_id === "string" && json.account_id.length > 0 ? json.account_id : null;
-		const rawProjectId = json.project_id ?? json.projectId;
-		const projectId = typeof rawProjectId === "string" && rawProjectId.length > 0 ? rawProjectId : null;
 		const credential: OAuthCredential = {
 			type: "oauth",
 			access: json.access_token,
@@ -462,7 +446,6 @@ async function loadImportPlan(
 			expires: expiresAt,
 			...(email !== null ? { email } : {}),
 			...(accountId !== null ? { accountId } : {}),
-			...(projectId !== null ? { projectId } : {}),
 		};
 		entries.push({
 			sourceFile: file,

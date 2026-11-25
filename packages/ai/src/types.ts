@@ -41,6 +41,8 @@ import type { OAuthRequestIdentity } from "./auth/types";
 import type { BedrockOptions } from "./providers/amazon-bedrock";
 import type { AnthropicOptions } from "./providers/anthropic";
 import type { AntigravityCliOptions } from "./providers/antigravity-cli";
+import type { AntigravityInteractionsOptions } from "./providers/antigravity-interactions";
+import type { AntigravitySdkOptions } from "./providers/antigravity-sdk";
 import type { FallbackParam, MessageCreateParamsStreaming, StopDetails } from "./providers/anthropic-wire";
 import type { AzureOpenAIResponsesOptions } from "./providers/azure-openai-responses";
 import type { CursorOptions } from "./providers/cursor";
@@ -92,6 +94,8 @@ export interface ApiOptionsMap {
 	"gitlab-duo-agent": GitLabDuoWorkflowOptions;
 	"devin-agent": DevinOptions;
 	"antigravity-acp": AntigravityCliOptions;
+	"antigravity-sdk": AntigravitySdkOptions;
+	"antigravity-interactions": AntigravityInteractionsOptions;
 	"apple-foundation-models": AppleFoundationModelsOptions;
 }
 // Compile-time exhaustiveness check - this will fail if ApiOptionsMap doesn't have all KnownApi keys
@@ -210,7 +214,7 @@ export function serviceTierFamily(model: ServiceTierModel): ServiceTierFamily | 
 	}
 	if (provider === "openai" || provider === "openai-codex") return "openai";
 	if (model.api === "anthropic-messages") return "anthropic";
-	if (provider === "google" || provider === "google-vertex") return "google";
+	if (provider === "google" || provider === "google-vertex" || provider === "google-antigravity-sdk") return "google";
 	if (isOpenAIServiceTierModel(model)) return "openai";
 	return undefined;
 }
@@ -277,7 +281,7 @@ export function shouldSendServiceTier(
 		return serviceTier === "flex" || serviceTier === "scale" || serviceTier === "priority";
 	}
 	if (typeof target !== "string" && target && isOpenAIServiceTierModel(target)) return true;
-	if (provider === "google") {
+	if (provider === "google" || provider === "google-antigravity-sdk") {
 		return serviceTier === "flex" || serviceTier === "priority";
 	}
 	// Vertex realizes only priority (via header); flex has no documented control.
@@ -1271,13 +1275,40 @@ export interface AntigravityCliPayload {
 	checkpoint?: AntigravityCliCheckpoint;
 }
 
+/**
+ * Stateful session fingerprint for the official Google Antigravity Python SDK
+ * (`antigravity-sdk` API).
+ */
+export interface AntigravitySdkPayload {
+	type: "antigravitySdk";
+	/** Native SDK conversation ID inside `saveDir`. */
+	conversationId: string;
+	/** Account/session-scoped directory holding native SDK state. */
+	saveDir: string;
+	/** Structural digest of the transcript through this step. */
+	digest: string;
+}
+
+/**
+ * Stateful remote sandbox fingerprint for the Gemini Interactions API
+ * (`antigravity-interactions` API).
+ */
+export interface AntigravityInteractionsPayload {
+	type: "antigravityInteractions";
+	interactionId: string;
+	environmentId: string;
+	digest: string;
+}
+
 export type ProviderPayload =
 	| OpenAIResponsesHistoryPayload
 	| AnthropicMessagePayload
 	| AnthropicCompactionPayload
 	| CursorHistoryPayload
 	| GeminiNativeContentPayload
-	| AntigravityCliPayload;
+	| AntigravityCliPayload
+	| AntigravitySdkPayload
+	| AntigravityInteractionsPayload;
 
 /** Provider-reported rewrite applied to request content before inference. */
 export interface ProviderInputTransformation {

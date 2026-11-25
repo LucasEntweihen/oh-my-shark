@@ -1362,6 +1362,109 @@ export function streamGoogleGenAI<T extends "google-generative-ai" | "google-ver
 	return stream;
 }
 
+export interface GoogleTokenCountResult {
+	totalTokens: number;
+	cachedContentTokenCount?: number;
+}
+
+export interface CountGoogleTokensOptions {
+	apiKey?: string;
+	project?: string;
+	location?: string;
+	headers?: Record<string, string>;
+	signal?: AbortSignal;
+	fetch?: FetchImpl;
+	endpointUrl?: string;
+}
+
+/**
+ * Exact preflight token count via Gemini Developer API or Vertex AI `:countTokens`.
+ * Reuses the exact `contents`, `systemInstruction`, and `tools` encoding built
+ * for `generateContent` so preflight budgets match wire payloads accurately.
+ */
+export async function countGoogleTokens(
+	model: Model<"google-generative-ai" | "google-vertex">,
+	context: Context,
+	options: CountGoogleTokensOptions = {},
+): Promise<GoogleTokenCountResult> {
+	const params = buildGoogleGenerateContentParams(model, context, {});
+	const wire = paramsToWireBody(params);
+	const baseBody: Record<string, unknown> = {
+		contents: wire.contents,
+		...(wire.systemInstruction !== undefined ? { systemInstruction: wire.systemInstruction } : {}),
+		...(wire.tools !== undefined ? { tools: wire.tools } : {}),
+	};
+
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+		...model.headers,
+		...options.headers,
+	};
+	let url = options.endpointUrl;
+	let body: Record<string, unknown> = baseBody;
+
+	if (model.api === "google-generative-ai") {
+		if (!options.apiKey?.trim()) {
+			throw new AIError.MissingApiKeyError(
+				model.provider,
+				"Google Generative AI token counting requires an API key.",
+			);
+		}
+		headers["x-goog-api-key"] = options.apiKey.trim();
+		const base = (model.baseUrl?.trim() || "https://generativelanguage.googleapis.com/v1beta").replace(/\/+$/, "");
+		url ??= `${base}/models/${model.id}:countTokens`;
+		body = {
+			generateContentRequest: {
+				model: `models/${model.id}`,
+				...baseBody,
+			},
+		};
+	} else {
+		if (options.apiKey?.trim() && !options.apiKey.startsWith("<") && options.apiKey !== "N/A") {
+			headers["x-goog-api-key"] = options.apiKey.trim();
+			const base = (model.baseUrl?.trim() || "https://aiplatform.googleapis.com").replace(/\/+$/, "");
+			url ??= `${base}/v1beta1/publishers/google/models/${model.id}:countTokens`;
+		} else {
+			if (!options.project?.trim() || !options.location?.trim()) {
+				throw new AIError.ConfigurationError("Vertex AI token counting requires project and location or an API key.");
+			}
+			const base = (model.baseUrl?.trim() || "https://aiplatform.googleapis.com").replace(/\/+$/, "");
+			url ??= `${base}/v1beta1/projects/${options.project.trim()}/locations/${options.location.trim()}/publishers/google/models/${model.id}:countTokens`;
+		}
+	}
+
+	const fetchImpl = options.fetch ?? (globalThis.fetch.bind(globalThis) as FetchImpl);
+	const response = await fetchImpl(url, {
+		method: "POST",
+		headers,
+		body: JSON.stringify(body),
+		signal: options.signal,
+	});
+	if (!response.ok) {
+		const errorText = await response.text().catch(() => "");
+		throw new AIError.GoogleApiError(
+			`Google countTokens error (${response.status}): ${extractGoogleErrorMessage(errorText, response.status)}`,
+			response.status,
+			{ headers: response.headers },
+		);
+	}
+	const data = (await response.json()) as {
+		totalTokens?: number;
+		cachedContentTokenCount?: number;
+	};
+	if (typeof data.totalTokens !== "number" || !Number.isFinite(data.totalTokens)) {
+		throw new AIError.ProviderResponseError("Google countTokens response missing numeric totalTokens", {
+			kind: "envelope",
+		});
+	}
+	return {
+		totalTokens: data.totalTokens,
+		...(typeof data.cachedContentTokenCount === "number" && Number.isFinite(data.cachedContentTokenCount)
+			? { cachedContentTokenCount: data.cachedContentTokenCount }
+			: {}),
+	};
+}
+
 /**
  * Lift the SDK's `params.config` fields out of `config` and place them where the
  * Gemini / Vertex AI REST API expects them on the request body. Mirrors the
