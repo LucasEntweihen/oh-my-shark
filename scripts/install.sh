@@ -14,7 +14,7 @@ set -e
 #   -r <ref>       Shorthand for --ref
 
 REPO="LucasEntweihen/oh-my-shark"
-DEFAULT_TAG="omsk-v0.3.0"
+DEFAULT_TAG="omsk-v0.3.1"
 BIN_NAME="omsk"
 INSTALL_DIR="${PI_INSTALL_DIR:-$HOME/.local/bin}"
 MIN_BUN_VERSION="1.3.14"

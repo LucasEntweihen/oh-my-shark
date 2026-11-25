@@ -24,7 +24,7 @@ name: OhMyShark Release
         description: "Existing omsk-v* or ohms-v* tag to build and publish"
         required: true
         type: string
-        default: "omsk-v0.3.0"
+        default: "omsk-v0.3.1"
 
 permissions:
   contents: read
@@ -295,9 +295,10 @@ jobs:
           cat > "$NOTES" <<EOF
           OhMyShark v${VERSION} — Standalone CLI + Native Desktop GUI release.
 
-          - Full upstream core, provider, catalog, and OAuth/Antigravity parity sync (`can1357/oh-my-pi`), plus 100% OMSK/OhMyShark branding across CLI, TUI, and Desktop GUI.
+          - Restored full \`google-antigravity\` OAuth (endpoint failover, paid-tier selection, \`projectId\` recovery), Gemini 4 wire profiles & catalog discovery, \`antigravity-cli\` Windows ACP support, and clearer \`google\` API key diagnostics.
+          - Full upstream core, provider, catalog, and OAuth/Antigravity parity sync (\`can1357/oh-my-pi\`), plus 100% OMSK/OhMyShark branding across CLI, TUI, and Desktop GUI.
           - Powered by the 5 OMSK architectural pillars, Deep Sea Cockpit, Mente em Teia, Transactional Edit Engine, GUI-RPC bridge, and magic modes.
-          - Includes Rust native GUI accelerators (`crates/omsk-gui-accel`), optimized Electron + React 19 + adaptive Canvas Ocean Shark Aquarium, compact art-first Liquid Glass layout, and synthesized underwater UI sound effects.
+          - Includes Rust native GUI accelerators (\`crates/omsk-gui-accel\`), optimized Electron + React 19 + adaptive Canvas Ocean Shark Aquarium, compact art-first Liquid Glass layout, and synthesized underwater UI sound effects.
           - Six standalone CLI binaries for Linux x64/arm64, macOS x64/arm64, and Windows x64/arm64 (\`ohms-*\` + \`omsk-*\` aliases), Desktop GUI installers/portables, configs, \`SHA256SUMS.txt\`, and build-provenance attestations.
 
           Install: see README or https://ohmyshark.vercel.app
