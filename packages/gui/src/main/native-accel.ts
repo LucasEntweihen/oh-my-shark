@@ -28,16 +28,7 @@ export function createWaveLut(cols: number): WaveLut {
  * Fast directory filter used by workspace explorer to skip heavy build/vendor
  * folders without allocating intermediate arrays.
  */
-const IGNORED_DIR_NAMES = new Set([
-	"node_modules",
-	".git",
-	"dist",
-	"out",
-	"target",
-	".next",
-	".turbo",
-	".cache",
-]);
+const IGNORED_DIR_NAMES = new Set(["node_modules", ".git", "dist", "out", "target", ".next", ".turbo", ".cache"]);
 
 export function shouldSkipWorkspaceDir(name: string): boolean {
 	return IGNORED_DIR_NAMES.has(name);
