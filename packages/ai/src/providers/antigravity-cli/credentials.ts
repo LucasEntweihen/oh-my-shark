@@ -18,10 +18,19 @@ const PROVIDER = "antigravity-cli";
 const TOKEN_FILE = path.join("antigravity-cli", "antigravity-oauth-token");
 const REQUEST_TIMEOUT_MS = 30_000;
 const EXPIRY_SKEW_MS = 60_000;
-// These public installed-application credentials match agy's getOauthParams
-// consumer branch, not Gemini CLI's different OAuth client.
-export const AGY_OAUTH_CLIENT_ID = "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com";
-const CLIENT_SECRET = Buffer.from("R09DU1BYLUs1OEZXUjQ4NkxkTEoxbUxCOHNYQzR6NnFEQWY=", "base64").toString();
+// Public installed-application OAuth parameters matching official `agy acp --login`,
+// overridable via environment variables.
+const DEFAULT_AGY_CLIENT_ID = Buffer.from(
+	"MTA3MTAwNjA2MDU5MS10bWhzc2luMmgyMWxjcmUyMzV2dG9sb2poNGc0MDNlcC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbQ==",
+	"base64",
+).toString("utf8");
+const DEFAULT_AGY_CLIENT_SECRET = Buffer.from("R09DU1BYLUs1OEZXUjQ4NkxkTEoxbUxCOHNYQzR6NnFEQWY=", "base64").toString(
+	"utf8",
+);
+export const AGY_OAUTH_CLIENT_ID =
+	process.env.OMSK_AGY_OAUTH_CLIENT_ID ?? process.env.AGY_OAUTH_CLIENT_ID ?? DEFAULT_AGY_CLIENT_ID;
+const CLIENT_SECRET =
+	process.env.OMSK_AGY_OAUTH_CLIENT_SECRET ?? process.env.AGY_OAUTH_CLIENT_SECRET ?? DEFAULT_AGY_CLIENT_SECRET;
 
 function invalid(message: string): AIError.OAuthError {
 	return new AIError.OAuthError(message, { kind: "validation", provider: PROVIDER });
@@ -61,6 +70,21 @@ function identity(idToken: unknown): Pick<OAuthCredentials, "email" | "accountId
 	}
 }
 
+function parseTokenExpiry(expiry: unknown): number {
+	if (typeof expiry === "number" && Number.isFinite(expiry)) {
+		return expiry > 0 && expiry < 1_000_000_000_000 ? expiry * 1000 : expiry;
+	}
+	if (typeof expiry === "string") {
+		const trimmed = expiry.trim();
+		if (/^\d+$/.test(trimmed)) {
+			const numeric = Number(trimmed);
+			return numeric > 0 && numeric < 1_000_000_000_000 ? numeric * 1000 : numeric;
+		}
+		return Date.parse(trimmed);
+	}
+	return Number.NaN;
+}
+
 /** Parse the native consumer grant, not Gemini CLI's oauth_creds.json. */
 export function parseAgyStoredCredentials(value: unknown): OAuthCredentials {
 	const stored = record(value);
@@ -68,7 +92,7 @@ export function parseAgyStoredCredentials(value: unknown): OAuthCredentials {
 	if (stored?.auth_method !== "consumer") {
 		throw invalid("Antigravity CLI requires a consumer OAuth login; sign in with Google again");
 	}
-	const expires = typeof token?.expiry === "string" ? Date.parse(token.expiry) : Number.NaN;
+	const expires = parseTokenExpiry(token?.expiry);
 	if (!nonempty(token?.access_token) || !Number.isFinite(expires) || expires <= 0) {
 		throw invalid("Antigravity CLI did not export a valid access token and expiry; sign in again");
 	}
@@ -179,8 +203,10 @@ export async function stageAgyCredentials(apiKey: string, geminiDir: string): Pr
 		// Non-Linux locks create `${geminiDir}.lock` beside this directory.
 		await fs.mkdir(path.dirname(file), { recursive: true, mode: 0o700 });
 		await withFileLock(geminiDir, async () => {
-			await fs.chmod(geminiDir, 0o700);
-			await fs.chmod(path.dirname(file), 0o700);
+			if (process.platform !== "win32") {
+				await fs.chmod(geminiDir, 0o700);
+				await fs.chmod(path.dirname(file), 0o700);
+			}
 			await fs.writeFile(
 				temporary,
 				JSON.stringify({ token, auth_method: "consumer", id_token_email: credentials.email }),
@@ -204,8 +230,9 @@ export async function stageAgyCredentials(apiKey: string, geminiDir: string): Pr
 				throw new Error();
 			}
 		});
-	} catch {
-		throw invalid("Could not stage the isolated Antigravity CLI account credentials");
+	} catch (error) {
+		const code = error instanceof Error && "code" in error ? ` (${String(error.code)})` : "";
+		throw invalid(`Could not stage the isolated Antigravity CLI account credentials${code}`);
 	} finally {
 		await fs.rm(temporary, { force: true }).catch(() => {});
 	}

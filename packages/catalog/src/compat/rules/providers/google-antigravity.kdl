@@ -13,13 +13,90 @@ provider "google-antigravity" {
 	// target stay near 41 MB. Gemini counts images only against its context.
 	image-count-budget 60
 
-	seed api="google-gemini-cli" base-url="https://daily-cloudcode-pa.googleapis.com" bundle="always" {
+	seed api="google-gemini-cli" base-url="https://daily-cloudcode-pa.googleapis.com" bundle="fallback" {
 		model "gemini-3-pro-image" name="Gemini 3 Pro Image" {
 			reasoning #false
 			input "text" "image"
 			cost input=0 output=0 cache-read=0 cache-write=0
 			limits
 			supports-tools #false
+		}
+		model "gemini-4-carbon-low" name="Gemini 4 Carbon (Low)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-carbon-medium" name="Gemini 4 Carbon (Medium)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-carbon-high" name="Gemini 4 Carbon (High)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-hydrogen-low" name="Gemini 4 Hydrogen (Low)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-hydrogen-medium" name="Gemini 4 Hydrogen (Medium)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-hydrogen-high" name="Gemini 4 Hydrogen (High)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-hydrogen-xhigh" name="Gemini 4 Hydrogen (XHigh)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-neon-low" name="Gemini 4 Neon (Low)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-neon-medium" name="Gemini 4 Neon (Medium)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-neon-high" name="Gemini 4 Neon (High)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
+		}
+		model "gemini-4-neon-xhigh" name="Gemini 4 Neon (XHigh)" {
+			reasoning #true
+			input "text" "image"
+			cost input=0 output=0 cache-read=0 cache-write=0
+			limits context=1048576 max-tokens=262144
+			supports-tools #true
 		}
 	}
 

@@ -23,7 +23,7 @@ export const streamGoogle: StreamFunction<"google-generative-ai"> = (
 	if (!apiKey) {
 		throw new AIError.MissingApiKeyError(
 			undefined,
-			"Google Generative AI requires an API key (GEMINI_API_KEY or options.apiKey).",
+			"Google Generative AI requires an API key (GEMINI_API_KEY or options.apiKey). To use Antigravity OAuth instead, select a google-antigravity/* or antigravity-cli/* model.",
 		);
 	}
 

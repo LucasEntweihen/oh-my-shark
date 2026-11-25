@@ -8,4 +8,5 @@ auth "antigravity-cli" {
 	login "custom" hook="antigravity-cli"
 	refresh hook="antigravity-cli"
 	api-key-format "structured"
+	paste-code #true
 }

@@ -82,8 +82,8 @@ const validationRequiredBody = JSON.stringify({
 describe("Google Gemini CLI alignment", () => {
 	it("encodes enriched OAuth JSON while preserving token + projectId", async () => {
 		const expiresAt = Date.now() + 60 * 60 * 1000;
-		const result = await getOAuthApiKey("google-gemini-cli", {
-			"google-gemini-cli": {
+		const result = await getOAuthApiKey("google-antigravity", {
+			"google-antigravity": {
 				access: "access-token",
 				refresh: "refresh-token",
 				expires: expiresAt,

@@ -1317,8 +1317,9 @@ export function buildRequest(
 		};
 		// Gemini 3 models use thinkingLevel, older models use thinkingBudget
 		if (options.thinking.level !== undefined) {
-			// Cast to any since our GoogleThinkingLevel mirrors Google's ThinkingLevel enum values
-			generationConfig.thinkingConfig.thinkingLevel = options.thinking.level as any;
+			generationConfig.thinkingConfig.thinkingLevel = options.thinking.level as NonNullable<
+				ThinkingConfig["thinkingLevel"]
+			>;
 		} else if (options.thinking.budgetTokens !== undefined) {
 			generationConfig.thinkingConfig.thinkingBudget = options.thinking.budgetTokens;
 		}
@@ -1328,8 +1329,7 @@ export function buildRequest(
 		const suppress = options.thinking.suppress;
 		generationConfig.thinkingConfig = { includeThoughts: false };
 		if ("level" in suppress) {
-			// Cast to any since our GoogleThinkingLevel mirrors Google's ThinkingLevel enum values
-			generationConfig.thinkingConfig.thinkingLevel = suppress.level as any;
+			generationConfig.thinkingConfig.thinkingLevel = suppress.level as NonNullable<ThinkingConfig["thinkingLevel"]>;
 		} else {
 			generationConfig.thinkingConfig.thinkingBudget = suppress.budget;
 		}

@@ -221,6 +221,10 @@ class "gemini" {
 	on "google-antigravity" {
 		family "flash" {
 			stream-first-event-timeout-ms 60000
+		}
+	}
+	on-api "google-gemini-cli" {
+		family "flash" {
 			flash-stream-leak-workaround #true
 		}
 	}
