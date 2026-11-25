@@ -221,7 +221,7 @@ export function ImageViewer({ src, alt, onClose }: { src: string; alt: string; o
 		<div
 			aria-label={alt || t("imageViewer.title")}
 			aria-modal="true"
-			className={`omp-fade-in fixed inset-0 ${DIALOG_OVERLAY_Z} bg-black/85`}
+			className={`omsk-fade-in fixed inset-0 ${DIALOG_OVERLAY_Z} bg-black/85`}
 			data-image-viewer
 			onKeyDown={onKeyDown}
 			ref={overlayRef}
@@ -260,7 +260,7 @@ export function ImageViewer({ src, alt, onClose }: { src: string; alt: string; o
 					}
 				/>
 			</div>
-			<div className="omp-image-viewer-tools absolute top-3 flex items-center gap-1 rounded-xl bg-black/60 p-1 text-omp-sm text-white/80">
+			<div className="omsk-image-viewer-tools absolute top-3 flex items-center gap-1 rounded-xl bg-black/60 p-1 text-omsk-sm text-white/80">
 				<button
 					aria-label={t("imageViewer.zoomOut")}
 					className={iconButton}

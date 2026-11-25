@@ -96,45 +96,45 @@ export function ResolveRenderer({
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 text-omp-sm">
-				<Icon size={12} className="shrink-0" style={{ color: `var(--omp-${tone})` }} />
-				<span className="font-semibold" style={{ color: `var(--omp-${tone})` }}>
+			<div className="flex items-center gap-1.5 text-omsk-sm">
+				<Icon size={12} className="shrink-0" style={{ color: `var(--omsk-${tone})` }} />
+				<span className="font-semibold" style={{ color: `var(--omsk-${tone})` }}>
 					{verb}
 				</span>
-				{summary && <span className="min-w-0 flex-1 truncate text-[var(--omp-text)]">{summary}</span>}
+				{summary && <span className="min-w-0 flex-1 truncate text-[var(--omsk-text)]">{summary}</span>}
 				{!summary && <span className="flex-1" />}
 				{source && (
 					<span
-						className="shrink-0 rounded bg-[var(--omp-bg-tertiary)] px-1 py-px font-mono text-omp-xxs text-[var(--omp-muted)]" // surface-ok: tiny source pill
+						className="shrink-0 rounded bg-[var(--omsk-bg-tertiary)] px-1 py-px font-mono text-omsk-xxs text-[var(--omsk-muted)]" // surface-ok: tiny source pill
 					>
 						{source}
 					</span>
 				)}
 				{ops != null && (
 					<span
-						className="shrink-0 rounded bg-[var(--omp-bg-tertiary)] px-1 py-px font-mono text-omp-xxs tabular-nums text-[var(--omp-muted)]" // surface-ok: tiny ops count pill
+						className="shrink-0 rounded bg-[var(--omsk-bg-tertiary)] px-1 py-px font-mono text-omsk-xxs tabular-nums text-[var(--omsk-muted)]" // surface-ok: tiny ops count pill
 					>
 						{t("tools.resolve.ops", { count: ops, plural: ops === 1 ? "" : "s" })}
 					</span>
 				)}
 			</div>
-			{reason && <div className="text-omp-sm italic leading-[1.45] text-[var(--omp-muted)]">{reason}</div>}
+			{reason && <div className="text-omsk-sm italic leading-[1.45] text-[var(--omsk-muted)]">{reason}</div>}
 			{files.length > 0 && (
-				<div className="rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.5] text-[var(--omp-tool-output)]">
+				<div className="rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.5] text-[var(--omsk-tool-output)]">
 					{files.slice(0, MAX_LISTED_FILES).map(file => (
 						<div key={file} className="truncate">
 							{file}
 						</div>
 					))}
 					{files.length > MAX_LISTED_FILES && (
-						<div className="text-[var(--omp-dim)]">
+						<div className="text-[var(--omsk-dim)]">
 							{t("tools.resolve.more", { count: files.length - MAX_LISTED_FILES })}
 						</div>
 					)}
 				</div>
 			)}
 			{!reason && fallback && (
-				<pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.45] text-[var(--omp-tool-output)]">
+				<pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] text-[var(--omsk-tool-output)]">
 					{fallback}
 				</pre>
 			)}

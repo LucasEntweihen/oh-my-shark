@@ -40,8 +40,8 @@ function Switch({ checked, label, onChange }: { checked: boolean; label: string;
 			aria-checked={checked}
 			aria-label={label}
 			className={cx(
-				"relative inline-flex h-4.5 w-8 shrink-0 items-center rounded-full border transition-colors duration-(--omp-motion-fast)",
-				checked ? "border-(--omp-accent) bg-(--omp-accent)" : "border-(--omp-border-strong) bg-transparent",
+				"relative inline-flex h-4.5 w-8 shrink-0 items-center rounded-full border transition-colors duration-(--omsk-motion-fast)",
+				checked ? "border-(--omsk-accent) bg-(--omsk-accent)" : "border-(--omsk-border-strong) bg-transparent",
 			)}
 			onClick={event => {
 				event.stopPropagation();
@@ -53,8 +53,8 @@ function Switch({ checked, label, onChange }: { checked: boolean; label: string;
 		>
 			<span
 				className={cx(
-					"absolute size-3 rounded-full transition-transform duration-(--omp-motion-fast)",
-					checked ? "translate-x-[0.9rem] bg-(--omp-bg-elevated)" : "translate-x-0.5 bg-(--omp-muted)",
+					"absolute size-3 rounded-full transition-transform duration-(--omsk-motion-fast)",
+					checked ? "translate-x-[0.9rem] bg-(--omsk-bg-elevated)" : "translate-x-0.5 bg-(--omsk-muted)",
 				)}
 			/>
 		</button>
@@ -182,7 +182,7 @@ function SkillCard({
 	};
 
 	return (
-		<li className={cx("omp-card overflow-hidden", !skill.enabled && "opacity-70")}>
+		<li className={cx("omsk-card overflow-hidden", !skill.enabled && "opacity-70")}>
 			<div className="flex items-center gap-3 px-3.5 py-3">
 				<button
 					aria-expanded={expanded}
@@ -193,25 +193,25 @@ function SkillCard({
 					<ChevronRight
 						aria-hidden="true"
 						className={cx(
-							"mt-0.5 shrink-0 text-(--omp-dim) transition-transform duration-(--omp-motion-fast)",
+							"mt-0.5 shrink-0 text-(--omsk-dim) transition-transform duration-(--omsk-motion-fast)",
 							expanded && "rotate-90",
 						)}
 						size={14}
 					/>
 					<span className="min-w-0 flex-1">
 						<span className="flex items-center gap-2">
-							<span className="truncate font-mono text-omp-md text-(--omp-text)">{skill.name}</span>
+							<span className="truncate font-mono text-omsk-md text-(--omsk-text)">{skill.name}</span>
 							{state === "new" && <Badge variant="info">{t("memory.skills.new")}</Badge>}
 							{state === "changed" && <Badge variant="warning">{t("memory.skills.changed")}</Badge>}
 							{!skill.enabled && <Badge variant="muted">{t("memory.skills.off")}</Badge>}
 						</span>
-						<span className="mt-0.5 line-clamp-2 block text-omp-sm leading-snug text-(--omp-muted)">
+						<span className="mt-0.5 line-clamp-2 block text-omsk-sm leading-snug text-(--omsk-muted)">
 							{skill.description}
 						</span>
 					</span>
 				</button>
 				{skill.modifiedAt !== undefined && (
-					<span className="hidden shrink-0 text-omp-xs text-(--omp-dim) sm:block">
+					<span className="hidden shrink-0 text-omsk-xs text-(--omsk-dim) sm:block">
 						{formatTimeAgo(iso(skill.modifiedAt))}
 					</span>
 				)}
@@ -223,9 +223,9 @@ function SkillCard({
 			</div>
 
 			{expanded && (
-				<div className="border-t border-(--omp-border-muted) px-4 py-3.5">
+				<div className="border-t border-(--omsk-border-muted) px-4 py-3.5">
 					{loadError ? (
-						<p className="text-omp-sm text-(--omp-warning)">{loadError}</p>
+						<p className="text-omsk-sm text-(--omsk-warning)">{loadError}</p>
 					) : !detail ? (
 						<div className="flex justify-center py-4">
 							<Spinner size="md" />
@@ -244,7 +244,7 @@ function SkillCard({
 							<TextArea
 								aria-label={t("memory.skills.instructions")}
 								autoGrow
-								className="max-h-[40vh] min-h-40 overflow-y-auto text-omp-sm"
+								className="max-h-[40vh] min-h-40 overflow-y-auto text-omsk-sm"
 								label={t("memory.skills.instructions")}
 								mono
 								onChange={event => setEditing({ ...editing, body: event.target.value })}
@@ -269,14 +269,14 @@ function SkillCard({
 								<Button icon={<X size={12} />} onClick={() => setEditing(null)} size="sm" variant="ghost">
 									{t("common.cancel")}
 								</Button>
-								<span className="ml-auto text-omp-xs text-(--omp-dim)">{t("memory.skills.editHint")}</span>
+								<span className="ml-auto text-omsk-xs text-(--omsk-dim)">{t("memory.skills.editHint")}</span>
 							</div>
 						</div>
 					) : (
 						<div className="flex flex-col gap-3">
 							{diff ? (
 								<div className="flex flex-col gap-1.5">
-									<p className="text-omp-xs text-(--omp-dim)">
+									<p className="text-omsk-xs text-(--omsk-dim)">
 										{t("memory.skills.diffCaption", {
 											when: formatTimeAgo(iso(reviewed?.reviewedAt)),
 										})}
@@ -288,11 +288,11 @@ function SkillCard({
 									/>
 								</div>
 							) : (
-								<div className="max-h-[42vh] overflow-y-auto text-omp-sm">
+								<div className="max-h-[42vh] overflow-y-auto text-omsk-sm">
 									<MarkdownRenderer content={detail.body} />
 								</div>
 							)}
-							<div className="flex items-center gap-2 border-t border-(--omp-border-muted) pt-3">
+							<div className="flex items-center gap-2 border-t border-(--omsk-border-muted) pt-3">
 								{state !== "reviewed" && (
 									<Button
 										icon={<Check size={12} />}
@@ -394,7 +394,7 @@ export function SkillsView({ open }: { open: boolean }) {
 
 	if (!connected) {
 		return (
-			<div className="flex h-full items-center justify-center gap-2 text-omp-sm text-(--omp-dim)">
+			<div className="flex h-full items-center justify-center gap-2 text-omsk-sm text-(--omsk-dim)">
 				<Spinner size="sm" />
 				{t("memory.connecting")}
 			</div>
@@ -405,8 +405,8 @@ export function SkillsView({ open }: { open: boolean }) {
 		<div className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-6 py-5">
 			<div className="flex items-start justify-between gap-4">
 				<div className="min-w-0">
-					<h2 className="text-omp-lg font-semibold text-(--omp-text)">{t("memory.skills.title")}</h2>
-					<p className="mt-1 text-omp-sm leading-relaxed text-(--omp-muted)">{t("memory.skills.caption")}</p>
+					<h2 className="text-omsk-lg font-semibold text-(--omsk-text)">{t("memory.skills.title")}</h2>
+					<p className="mt-1 text-omsk-sm leading-relaxed text-(--omsk-muted)">{t("memory.skills.caption")}</p>
 				</div>
 				{pending > 1 && (
 					<Button className="shrink-0" onClick={() => void reviewAll()} size="sm" variant="ghost">
@@ -415,7 +415,7 @@ export function SkillsView({ open }: { open: boolean }) {
 				)}
 			</div>
 
-			<div className="omp-card">
+			<div className="omsk-card">
 				<Toggle
 					checked={autolearn === true}
 					description={t("memory.skills.autolearnHint")}
@@ -431,9 +431,9 @@ export function SkillsView({ open }: { open: boolean }) {
 				</div>
 			) : cards.length === 0 ? (
 				<div className="flex flex-col items-center gap-2 py-10 text-center">
-					<Sparkles className="text-(--omp-dim)" size={20} />
-					<p className="text-omp-md text-(--omp-text)">{t("memory.skills.emptyTitle")}</p>
-					<p className="max-w-sm text-omp-sm text-(--omp-muted)">
+					<Sparkles className="text-(--omsk-dim)" size={20} />
+					<p className="text-omsk-md text-(--omsk-text)">{t("memory.skills.emptyTitle")}</p>
+					<p className="max-w-sm text-omsk-sm text-(--omsk-muted)">
 						{autolearn ? t("memory.skills.emptyOn") : t("memory.skills.emptyOff")}
 					</p>
 				</div>

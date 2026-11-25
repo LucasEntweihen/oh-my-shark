@@ -171,7 +171,7 @@ function TabChip({
 
 	return (
 		<div
-			id={`omp-tab-${tab.id}`}
+			id={`omsk-tab-${tab.id}`}
 			role="tab"
 			draggable={!renaming}
 			aria-selected={selected}
@@ -197,7 +197,7 @@ function TabChip({
 			onContextMenu={onContextMenu}
 			onDragStart={(event: ReactDragEvent<HTMLDivElement>) => {
 				event.dataTransfer.effectAllowed = "move";
-				event.dataTransfer.setData("application/x-omp-tab", tab.id);
+				event.dataTransfer.setData("application/x-omsk-tab", tab.id);
 				window.dispatchEvent(new CustomEvent("omp:tab-drag", { detail: { tabId: tab.id } }));
 			}}
 			onDragEnd={() => window.dispatchEvent(new CustomEvent("omp:tab-drag", { detail: { tabId: null } }))}
@@ -219,35 +219,35 @@ function TabChip({
 			}}
 			title={`${label} — ${workspaceLabel}${tab.worktree ? ` — ${tab.worktree.branch}` : ""}${tab.pinned ? ` (${t("tabs.pinned")})` : ""}`}
 			className={cx(
-				"no-drag group relative flex shrink cursor-pointer items-center gap-1.5 overflow-hidden text-omp-md select-none transition-[background-color,border-color,color,box-shadow] duration-150",
+				"no-drag group relative flex shrink cursor-pointer items-center gap-1.5 overflow-hidden text-omsk-md select-none transition-[background-color,border-color,color,box-shadow] duration-150",
 				tab.pinned && !paired ? "min-w-24 max-w-40" : CHIP_WIDTH[width],
-				paired ? "h-7 rounded-md px-2" : "omp-tab-unit h-8 rounded-lg px-2.5",
+				paired ? "h-7 rounded-md px-2" : "omsk-tab-unit h-8 rounded-lg px-2.5",
 				selected
-					? "bg-[var(--omp-selected-bg)] font-medium text-[var(--omp-text)] after:pointer-events-none after:absolute after:inset-x-2.5 after:bottom-0 after:h-[2px] after:rounded-full after:bg-[var(--omp-accent)]"
+					? "bg-[var(--omsk-selected-bg)] font-medium text-[var(--omsk-text)] after:pointer-events-none after:absolute after:inset-x-2.5 after:bottom-0 after:h-[2px] after:rounded-full after:bg-[var(--omsk-accent)]"
 					: visible || active
 						? paired
-							? "text-[var(--omp-text)] hover:bg-[var(--omp-sidebar-item-hover)]"
-							: "bg-[var(--omp-selected-bg)]/55 text-[var(--omp-text)] ring-1 ring-inset ring-[var(--omp-border)]"
-						: "text-[var(--omp-muted)] hover:bg-[var(--omp-sidebar-item-hover)] hover:text-[var(--omp-text)]",
+							? "text-[var(--omsk-text)] hover:bg-[var(--omsk-sidebar-item-hover)]"
+							: "bg-[var(--omsk-selected-bg)]/55 text-[var(--omsk-text)] ring-1 ring-inset ring-[var(--omsk-border)]"
+						: "text-[var(--omsk-muted)] hover:bg-[var(--omsk-sidebar-item-hover)] hover:text-[var(--omsk-text)]",
 			)}
 		>
 			<span
 				role="img"
 				aria-label={signalLabel}
 				title={signalLabel}
-				className={cx("omp-signal-light omp-tab-signal", signal.active && "omp-signal-light--active")}
-				data-idle={(!signal.active && signal.color === "var(--omp-dim)") || undefined}
+				className={cx("omsk-signal-light omsk-tab-signal", signal.active && "omsk-signal-light--active")}
+				data-idle={(!signal.active && signal.color === "var(--omsk-dim)") || undefined}
 				style={{ color: signal.color }}
 			/>
-			{tab.pinned && <Pin size={10} className="shrink-0 text-[var(--omp-accent)]" aria-label={t("tabs.pinned")} />}
+			{tab.pinned && <Pin size={10} className="shrink-0 text-[var(--omsk-accent)]" aria-label={t("tabs.pinned")} />}
 			{tab.worktree && (
-				<GitBranch size={11} className="shrink-0 text-[var(--omp-accent)]" aria-label={t("tabs.kind.worktree")} />
+				<GitBranch size={11} className="shrink-0 text-[var(--omsk-accent)]" aria-label={t("tabs.kind.worktree")} />
 			)}
 			{tab.kind === "chat" && (
-				<MessageCircle size={11} className="shrink-0 text-[var(--omp-muted)]" aria-label={t("tabs.kind.chat")} />
+				<MessageCircle size={11} className="shrink-0 text-[var(--omsk-muted)]" aria-label={t("tabs.kind.chat")} />
 			)}
 			{confirmingClose ? (
-				<span className="min-w-0 truncate text-[var(--omp-error)]" title={t("tabs.confirmClose")}>
+				<span className="min-w-0 truncate text-[var(--omsk-error)]" title={t("tabs.confirmClose")}>
 					{t("tabs.confirmClose")}
 				</span>
 			) : renaming ? (
@@ -268,7 +268,7 @@ function TabChip({
 					}}
 					onBlur={() => onCommitRename(draftTitle)}
 					aria-label={t("tabs.menu.rename")}
-					className="min-w-0 flex-1 rounded bg-[var(--omp-input-bg)] px-1 text-omp-md text-[var(--omp-text)] outline-1 outline-[var(--omp-accent)]"
+					className="min-w-0 flex-1 rounded bg-[var(--omsk-input-bg)] px-1 text-omsk-md text-[var(--omsk-text)] outline-1 outline-[var(--omsk-accent)]"
 				/>
 			) : (
 				<span className="min-w-0 flex-1 leading-tight">
@@ -293,7 +293,7 @@ function TabChip({
 								event.stopPropagation();
 								onConfirmClose();
 							}}
-							className="omp-pressable flex h-4 w-4 items-center justify-center rounded bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)] hover:brightness-110"
+							className="omsk-pressable flex h-4 w-4 items-center justify-center rounded bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)] hover:brightness-110"
 						>
 							<Check size={11} strokeWidth={3} />
 						</button>
@@ -305,7 +305,7 @@ function TabChip({
 								event.stopPropagation();
 								onCancelClose();
 							}}
-							className="omp-pressable flex h-4 w-4 items-center justify-center rounded text-[var(--omp-dim)] hover:bg-[var(--omp-bg-primary)] hover:text-[var(--omp-text)]"
+							className="omsk-pressable flex h-4 w-4 items-center justify-center rounded text-[var(--omsk-dim)] hover:bg-[var(--omsk-bg-primary)] hover:text-[var(--omsk-text)]"
 						>
 							<X size={11} />
 						</button>
@@ -325,7 +325,7 @@ function TabChip({
 							else onConfirmClose();
 						}}
 						className={cx(
-							"omp-pressable -mr-1 flex h-4 w-4 shrink-0 items-center justify-center rounded text-[var(--omp-dim)] hover:bg-[var(--omp-bg-primary)] hover:text-[var(--omp-text)]",
+							"omsk-pressable -mr-1 flex h-4 w-4 shrink-0 items-center justify-center rounded text-[var(--omsk-dim)] hover:bg-[var(--omsk-bg-primary)] hover:text-[var(--omsk-text)]",
 							active ? "flex" : "hidden group-hover:flex",
 						)}
 					>
@@ -356,16 +356,16 @@ function PairChip({
 			data-tab-pair=""
 			{...dropProps}
 			className={cx(
-				"omp-tab-unit no-drag relative flex h-8 shrink items-center gap-0.5 rounded-lg pr-0.5 pl-2",
+				"omsk-tab-unit no-drag relative flex h-8 shrink items-center gap-0.5 rounded-lg pr-0.5 pl-2",
 				onScreen
-					? "bg-[var(--omp-selected-bg)]/40 ring-1 ring-inset ring-[var(--omp-border)]"
-					: "ring-1 ring-inset ring-[var(--omp-border-muted)]",
+					? "bg-[var(--omsk-selected-bg)]/40 ring-1 ring-inset ring-[var(--omsk-border)]"
+					: "ring-1 ring-inset ring-[var(--omsk-border-muted)]",
 			)}
 		>
 			<PairIcon
 				aria-label={t("tabs.pair")}
 				size={11}
-				className={cx("shrink-0", onScreen ? "text-[var(--omp-accent)]" : "text-[var(--omp-dim)]")}
+				className={cx("shrink-0", onScreen ? "text-[var(--omsk-accent)]" : "text-[var(--omsk-dim)]")}
 			/>
 			{children}
 		</div>
@@ -481,8 +481,8 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 	useEffect(() => {
 		if (!activeTabId) return;
 		const nearest = { block: "nearest", inline: "nearest" } as const;
-		document.getElementById(`omp-tab-${activeTabId}`)?.scrollIntoView?.(nearest);
-		if (shownPage) document.getElementById(`omp-tab-${activeTabId}-agent-${shownPage}`)?.scrollIntoView?.(nearest);
+		document.getElementById(`omsk-tab-${activeTabId}`)?.scrollIntoView?.(nearest);
+		if (shownPage) document.getElementById(`omsk-tab-${activeTabId}-agent-${shownPage}`)?.scrollIntoView?.(nearest);
 	}, [activeTabId, shownPage, tabs.length, pageCount]);
 
 	useEffect(() => {
@@ -692,7 +692,7 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 				const target = tabOrder[targetIndex];
 				if (target) {
 					void useTabsStore.getState().switchTab(target);
-					requestAnimationFrame(() => document.getElementById(`omp-tab-${target}`)?.focus());
+					requestAnimationFrame(() => document.getElementById(`omsk-tab-${target}`)?.focus());
 				}
 			}}
 		/>
@@ -734,7 +734,7 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 				});
 
 	const iconButtonClass =
-		"no-drag omp-pressable flex h-6 shrink-0 items-center justify-center gap-0.5 rounded-lg text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]";
+		"no-drag omsk-pressable flex h-6 shrink-0 items-center justify-center gap-0.5 rounded-lg text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]";
 	const scrollStripBy = (delta: number) => {
 		stripRef.current?.scrollBy?.({ left: delta, behavior: "smooth" });
 	};
@@ -750,7 +750,7 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 		<>
 			<div
 				className={cx(
-					"drag-region flex shrink-0 gap-1 border-b border-[var(--omp-border-muted)] bg-[var(--omp-titlebar-bg)] px-2.5",
+					"drag-region flex shrink-0 gap-1 border-b border-[var(--omsk-border-muted)] bg-[var(--omsk-titlebar-bg)] px-2.5",
 					multiRow ? "min-h-10 items-start py-1" : "h-10 items-center",
 				)}
 			>
@@ -775,7 +775,7 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 					data-fade-start={overflow.start || undefined}
 					data-fade-end={overflow.end || undefined}
 					className={cx(
-						"omp-tab-scroller flex min-w-0 items-center gap-1",
+						"omsk-tab-scroller flex min-w-0 items-center gap-1",
 						multiRow ? "max-h-[6.5rem] flex-wrap overflow-y-auto" : "overflow-x-auto",
 					)}
 					onWheel={multiRow ? undefined : scrollStripOnWheel}
@@ -811,7 +811,7 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 									{unit.tabs.map((tab, index) => (
 										<Fragment key={tab.id}>
 											{index > 0 && (
-												<span aria-hidden className="h-4 w-px shrink-0 bg-[var(--omp-border)]" />
+												<span aria-hidden className="h-4 w-px shrink-0 bg-[var(--omsk-border)]" />
 											)}
 											{renderChip(tab, true)}
 										</Fragment>
@@ -845,7 +845,7 @@ export function TabBar({ confirmCloseMs = CONFIRM_CLOSE_MS }: { confirmCloseMs?:
 					>
 						<ChevronDown aria-hidden="true" size={14} />
 						{overflow.hidden > 0 && (
-							<span className="text-omp-xs tabular-nums text-[var(--omp-text)]">{overflow.hidden}</span>
+							<span className="text-omsk-xs tabular-nums text-[var(--omsk-text)]">{overflow.hidden}</span>
 						)}
 					</button>
 				)}

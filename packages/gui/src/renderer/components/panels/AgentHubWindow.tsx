@@ -80,7 +80,7 @@ function Toggle({
 			<button
 				aria-checked={checked}
 				aria-label={label}
-				className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omp-accent) disabled:cursor-not-allowed disabled:opacity-50"
+				className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omsk-accent) disabled:cursor-not-allowed disabled:opacity-50"
 				disabled={disabled}
 				onClick={() => onChange(!checked)}
 				role="switch"
@@ -88,7 +88,7 @@ function Toggle({
 			>
 				<SwitchTrack on={checked} />
 			</button>
-			<span className="text-omp-sm text-(--omp-muted)">{label}</span>
+			<span className="text-omsk-sm text-(--omsk-muted)">{label}</span>
 		</label>
 	);
 }
@@ -106,7 +106,7 @@ type PrewalkState = (typeof PrewalkState)[keyof typeof PrewalkState];
 
 /** A compact field-like control: bordered, with a trailing glyph that says how it changes. */
 const AGENT_FIELD_BUTTON =
-	"omp-pressable inline-flex h-6 max-w-64 items-center gap-1.5 rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2 text-omp-sm hover:border-(--omp-border-strong) disabled:cursor-not-allowed disabled:opacity-50";
+	"omsk-pressable inline-flex h-6 max-w-64 items-center gap-1.5 rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2 text-omsk-sm hover:border-(--omsk-border-strong) disabled:cursor-not-allowed disabled:opacity-50";
 
 /** Current prewalk override state for an agent (TUI dashboard cycle: agent default → on → off). */
 function prewalkStateOf(overrides: Record<string, string>, name: string): PrewalkState {
@@ -117,9 +117,9 @@ function prewalkStateOf(overrides: Record<string, string>, name: string): Prewal
 }
 
 const PREWALK_TONE: Record<PrewalkState, string> = {
-	default: "text-(--omp-text-secondary)",
-	on: "text-(--omp-accent)",
-	off: "text-(--omp-dim)",
+	default: "text-(--omsk-text-secondary)",
+	on: "text-(--omsk-accent)",
+	off: "text-(--omsk-dim)",
 };
 
 /** Known definition sources; anything else renders raw (e.g. future extension sources). */
@@ -187,13 +187,13 @@ function DefinitionDetails({
 	].filter((row): row is [string, string] => typeof row[1] === "string" && row[1].length > 0);
 
 	return (
-		<details className="mt-2 border-t border-(--omp-border-muted) pt-1.5">
-			<summary className="cursor-pointer text-omp-xs text-(--omp-muted)">{t("agentHub.defs.inspect")}</summary>
-			<div className="mt-1.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-omp-xs">
+		<details className="mt-2 border-t border-(--omsk-border-muted) pt-1.5">
+			<summary className="cursor-pointer text-omsk-xs text-(--omsk-muted)">{t("agentHub.defs.inspect")}</summary>
+			<div className="mt-1.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-omsk-xs">
 				{details.map(([label, value]) => (
 					<div className="contents" key={label}>
-						<span className="text-(--omp-dim)">{label}</span>
-						<span className="break-all font-mono text-(--omp-muted)">{value}</span>
+						<span className="text-(--omsk-dim)">{label}</span>
+						<span className="break-all font-mono text-(--omsk-muted)">{value}</span>
 					</div>
 				))}
 			</div>
@@ -236,12 +236,12 @@ const DefinitionRow = memo(function DefinitionRow({
 	const submit = () => onSaveModel(entry.name, draft);
 
 	return (
-		<div className="rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-2">
+		<div className="rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-2">
 			<div className="flex items-center gap-2.5">
 				<span
 					className={cx(
-						"min-w-0 flex-1 truncate font-mono text-omp-md font-medium",
-						disabled ? "text-(--omp-dim) line-through" : "text-(--omp-text)",
+						"min-w-0 flex-1 truncate font-mono text-omsk-md font-medium",
+						disabled ? "text-(--omsk-dim) line-through" : "text-(--omsk-text)",
 					)}
 				>
 					{entry.name}
@@ -255,15 +255,17 @@ const DefinitionRow = memo(function DefinitionRow({
 					onChange={enabled => onToggle(entry.name, !enabled)}
 				/>
 			</div>
-			{entry.description && <p className="mt-1 text-omp-xs leading-relaxed text-(--omp-dim)">{entry.description}</p>}
+			{entry.description && (
+				<p className="mt-1 text-omsk-xs leading-relaxed text-(--omsk-dim)">{entry.description}</p>
+			)}
 			<div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-				<span className="flex items-center gap-1.5 text-omp-sm">
-					<span className="text-(--omp-dim)">{t("agentHub.defs.modelLabel")}</span>
+				<span className="flex items-center gap-1.5 text-omsk-sm">
+					<span className="text-(--omsk-dim)">{t("agentHub.defs.modelLabel")}</span>
 					{editing ? (
 						<span className="flex items-center gap-1">
 							<Input
 								autoFocus
-								className="h-6 w-52 text-omp-sm"
+								className="h-6 w-52 text-omsk-sm"
 								disabled={busy}
 								mono
 								onChange={event => setDraft(event.target.value)}
@@ -290,7 +292,7 @@ const DefinitionRow = memo(function DefinitionRow({
 								aria-label={`${t("agentHub.defs.modelLabel")}: ${override ?? t("agentHub.defs.modelSession")} — ${t("agentHub.defs.modelEdit")}`}
 								className={cx(
 									AGENT_FIELD_BUTTON,
-									override ? "font-mono text-(--omp-text)" : "text-(--omp-muted)",
+									override ? "font-mono text-(--omsk-text)" : "text-(--omsk-muted)",
 								)}
 								disabled={busy}
 								onClick={() => onBeginModelEdit(entry.name)}
@@ -298,13 +300,13 @@ const DefinitionRow = memo(function DefinitionRow({
 								type="button"
 							>
 								<span className="truncate">{override ?? t("agentHub.defs.modelSession")}</span>
-								<Pencil aria-hidden className="shrink-0 text-(--omp-dim)" size={11} />
+								<Pencil aria-hidden className="shrink-0 text-(--omsk-dim)" size={11} />
 							</button>
 						</>
 					)}
 				</span>
-				<span className="flex items-center gap-1.5 text-omp-sm">
-					<span className="text-(--omp-dim)">{t("agentHub.defs.prewalkLabel")}</span>
+				<span className="flex items-center gap-1.5 text-omsk-sm">
+					<span className="text-(--omsk-dim)">{t("agentHub.defs.prewalkLabel")}</span>
 					<button
 						className={cx(AGENT_FIELD_BUTTON, PREWALK_TONE[prewalk])}
 						disabled={busy}
@@ -313,7 +315,7 @@ const DefinitionRow = memo(function DefinitionRow({
 						type="button"
 					>
 						<span className="truncate">{t(`agentHub.defs.prewalk.${prewalk}`)}</span>
-						<ChevronsUpDown aria-hidden className="shrink-0 text-(--omp-dim)" size={11} />
+						<ChevronsUpDown aria-hidden className="shrink-0 text-(--omsk-dim)" size={11} />
 					</button>
 				</span>
 			</div>
@@ -427,7 +429,7 @@ function DefinitionsTab({ rpc }: { rpc: AgentSettingsRpc }) {
 		<div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
 			<div className="flex shrink-0 items-center gap-2">
 				<Input
-					className="h-7 flex-1 text-omp-sm"
+					className="h-7 flex-1 text-omsk-sm"
 					onChange={event => setQuery(event.target.value)}
 					placeholder={t("agentHub.defs.searchPlaceholder")}
 					value={query}
@@ -448,10 +450,10 @@ function DefinitionsTab({ rpc }: { rpc: AgentSettingsRpc }) {
 				{DEFINITION_SOURCE_FILTERS.map(source => (
 					<button
 						className={cx(
-							"rounded-md px-2 py-1 text-omp-xs",
+							"rounded-md px-2 py-1 text-omsk-xs",
 							sourceFilter === source
-								? "bg-(--omp-selected-bg) text-(--omp-text)"
-								: "text-(--omp-dim) hover:text-(--omp-muted)",
+								? "bg-(--omsk-selected-bg) text-(--omsk-text)"
+								: "text-(--omsk-dim) hover:text-(--omsk-muted)",
 						)}
 						key={source}
 						onClick={() => setSourceFilter(source)}
@@ -469,9 +471,9 @@ function DefinitionsTab({ rpc }: { rpc: AgentSettingsRpc }) {
 							<Spinner label={t("common.loading")} />
 						</div>
 					) : (
-						<div className="m-auto flex max-w-md flex-col items-center gap-2 rounded-lg border border-(--omp-border-muted) px-4 py-6 text-center">
-							<span className="text-omp-md font-medium text-(--omp-error)">{t("agentHub.loadFailed")}</span>
-							<span className="text-omp-sm break-all text-(--omp-dim)">{rpc.error}</span>
+						<div className="m-auto flex max-w-md flex-col items-center gap-2 rounded-lg border border-(--omsk-border-muted) px-4 py-6 text-center">
+							<span className="text-omsk-md font-medium text-(--omsk-error)">{t("agentHub.loadFailed")}</span>
+							<span className="text-omsk-sm break-all text-(--omsk-dim)">{rpc.error}</span>
 							<Button
 								disabled={!rpc.ready}
 								icon={<RefreshCw size={12} />}
@@ -487,7 +489,7 @@ function DefinitionsTab({ rpc }: { rpc: AgentSettingsRpc }) {
 				) : (
 					<div className="flex flex-col gap-2">
 						{filtered.length === 0 ? (
-							<div className="px-3 py-8 text-center text-omp-sm leading-relaxed text-(--omp-dim)">
+							<div className="px-3 py-8 text-center text-omsk-sm leading-relaxed text-(--omsk-dim)">
 								{t("agentHub.defs.empty")}
 								<br />
 								{t("agentHub.defs.emptyHint")}
@@ -511,7 +513,7 @@ function DefinitionsTab({ rpc }: { rpc: AgentSettingsRpc }) {
 					</div>
 				)}
 			</div>
-			<div className="shrink-0 border-t border-(--omp-border-muted) pt-2 text-omp-xs text-(--omp-dim)">
+			<div className="shrink-0 border-t border-(--omsk-border-muted) pt-2 text-omsk-xs text-(--omsk-dim)">
 				{t("agentHub.defs.footerNote")}
 			</div>
 		</div>
@@ -572,7 +574,7 @@ const HubRow = memo(function HubRow({
 	const revivable = parked && agent.kind !== "advisor";
 
 	return (
-		<div className="rounded-lg border border-(--omp-border-muted) bg-transparent">
+		<div className="rounded-lg border border-(--omsk-border-muted) bg-transparent">
 			<div className="flex items-center">
 				<button
 					className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 px-3 py-2 text-left"
@@ -582,9 +584,9 @@ const HubRow = memo(function HubRow({
 					<Badge dot pulse={meta.live} variant={meta.variant}>
 						{t(meta.labelKey)}
 					</Badge>
-					<span className="shrink-0 font-mono text-omp-xs text-(--omp-dim) tabular-nums">#{agent.index}</span>
-					<span className="min-w-0 truncate text-omp-md font-medium text-(--omp-text)">{title}</span>
-					<span className="ml-auto shrink-0 text-omp-xs text-(--omp-dim) tabular-nums">
+					<span className="shrink-0 font-mono text-omsk-xs text-(--omsk-dim) tabular-nums">#{agent.index}</span>
+					<span className="min-w-0 truncate text-omsk-md font-medium text-(--omsk-text)">{title}</span>
+					<span className="ml-auto shrink-0 text-omsk-xs text-(--omsk-dim) tabular-nums">
 						{elapsed !== null ? formatElapsed(elapsed) : "—"}
 					</span>
 				</button>
@@ -595,7 +597,7 @@ const HubRow = memo(function HubRow({
 					type="button"
 					title={t("agentHub.hub.viewMessages")}
 					onClick={onView}
-					className="omp-pressable mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-accent)"
+					className="omsk-pressable mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-accent)"
 				>
 					<MessageSquare size={11} />
 				</button>
@@ -605,7 +607,7 @@ const HubRow = memo(function HubRow({
 						disabled={actionState === "working" || !sidecarReady}
 						title={!sidecarReady ? t("agentHub.notConnected") : t("agentHub.hub.abortAgent")}
 						onClick={onAbort}
-						className="omp-pressable mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-error-dim) hover:text-(--omp-error) disabled:opacity-40"
+						className="omsk-pressable mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-error-dim) hover:text-(--omsk-error) disabled:opacity-40"
 					>
 						<Square size={10} fill="currentColor" />
 					</button>
@@ -617,7 +619,7 @@ const HubRow = memo(function HubRow({
 							disabled={!sidecarReady}
 							title={t("agentHub.hub.confirmAbort")}
 							onClick={onAbortConfirm}
-							className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent text-(--omp-error)"
+							className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent text-(--omsk-error)"
 						>
 							<Check size={12} />
 						</button>
@@ -625,7 +627,7 @@ const HubRow = memo(function HubRow({
 							type="button"
 							title={t("agentHub.hub.cancelAbort")}
 							onClick={onAbortCancel}
-							className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg)"
+							className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg)"
 						>
 							<X size={12} />
 						</button>
@@ -637,7 +639,7 @@ const HubRow = memo(function HubRow({
 						disabled={actionState === "working" || !sidecarReady}
 						title={!sidecarReady ? t("agentHub.notConnected") : t("agentHub.hub.reviveAgent")}
 						onClick={onRevive}
-						className="omp-pressable mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-accent) disabled:opacity-40"
+						className="omsk-pressable mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-accent) disabled:opacity-40"
 					>
 						<RefreshCw size={11} />
 					</button>
@@ -645,19 +647,19 @@ const HubRow = memo(function HubRow({
 			</div>
 			{/* Secondary line: agent type, provenance/kind badges, resolved model,
 			    and the latest progress note. */}
-			<div className="flex items-center gap-2 px-3 pb-2 text-omp-xs">
-				<span className="min-w-16 shrink-0 font-medium text-(--omp-muted)">{agent.agent}</span>
+			<div className="flex items-center gap-2 px-3 pb-2 text-omsk-xs">
+				<span className="min-w-16 shrink-0 font-medium text-(--omsk-muted)">{agent.agent}</span>
 				{agent.agentSource && <Badge variant="muted">{sourceLabel(t, agent.agentSource)}</Badge>}
 				<Badge variant="muted">
 					{agent.kind === "advisor" ? t("agentHub.hub.readOnly") : t("agentHub.hub.kind.sub")}
 				</Badge>
 				{model && (
-					<span className="min-w-0 truncate font-mono text-(--omp-dim)" title={model}>
+					<span className="min-w-0 truncate font-mono text-(--omsk-dim)" title={model}>
 						{model}
 					</span>
 				)}
 				{lastUpdate && (
-					<span className="ml-auto min-w-0 flex-1 truncate text-right text-(--omp-dim)">{lastUpdate}</span>
+					<span className="ml-auto min-w-0 flex-1 truncate text-right text-(--omsk-dim)">{lastUpdate}</span>
 				)}
 			</div>
 		</div>
@@ -685,11 +687,11 @@ function AgentTranscriptDrawer({ agent, onClose }: { agent: SubagentSnapshot; on
 	}, [onClose]);
 
 	return (
-		<div className="omp-slide-in-right absolute inset-0 z-10 flex flex-col bg-(--omp-modal-bg)">
-			<div className="flex shrink-0 items-center gap-2 border-b border-(--omp-border-muted) px-3 py-2">
+		<div className="omsk-slide-in-right absolute inset-0 z-10 flex flex-col bg-(--omsk-modal-bg)">
+			<div className="flex shrink-0 items-center gap-2 border-b border-(--omsk-border-muted) px-3 py-2">
 				<button
 					aria-label={t("agentHub.hub.backToHub")}
-					className="omp-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+					className="omsk-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 					onClick={onClose}
 					type="button"
 				>
@@ -698,10 +700,10 @@ function AgentTranscriptDrawer({ agent, onClose }: { agent: SubagentSnapshot; on
 				<Badge dot pulse={meta.live} variant={meta.variant}>
 					{t(meta.labelKey)}
 				</Badge>
-				<span className="min-w-0 truncate text-omp-md font-medium text-(--omp-text)">
+				<span className="min-w-0 truncate text-omsk-md font-medium text-(--omsk-text)">
 					{subagentPrimaryLabel(agent)}
 				</span>
-				<span className="shrink-0 text-omp-xs text-(--omp-dim)">{agent.agent}</span>
+				<span className="shrink-0 text-omsk-xs text-(--omsk-dim)">{agent.agent}</span>
 			</div>
 			<div className="min-h-0 flex-1 overflow-y-auto">
 				<SubagentTranscript agent={agent} />
@@ -919,11 +921,11 @@ function HubTab() {
 			</div>
 			<div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
 				{sorted.length === 0 ? (
-					<div className="m-auto flex flex-col items-center gap-2 px-3 py-8 text-center text-omp-sm leading-relaxed text-(--omp-dim)">
+					<div className="m-auto flex flex-col items-center gap-2 px-3 py-8 text-center text-omsk-sm leading-relaxed text-(--omsk-dim)">
 						{/* The roster never loaded is a different claim from none spawned. */}
 						{loadError ? (
 							<>
-								<p role="alert" className="text-(--omp-error)">
+								<p role="alert" className="text-(--omsk-error)">
 									{t("subagent.loadFailed")}
 									<br />
 									{loadError}
@@ -964,7 +966,7 @@ function HubTab() {
 					))
 				)}
 			</div>
-			<div className="shrink-0 border-t border-(--omp-border-muted) pt-2 text-omp-xs leading-relaxed text-(--omp-dim)">
+			<div className="shrink-0 border-t border-(--omsk-border-muted) pt-2 text-omsk-xs leading-relaxed text-(--omsk-dim)">
 				{t("agentHub.hub.gapNote")}
 			</div>
 			{viewing && <AgentTranscriptDrawer agent={viewing} onClose={() => setViewingId(null)} />}
@@ -1005,7 +1007,7 @@ export function AgentHubWindow({ open, onClose, initialTab = "definitions" }: Ag
 
 	return (
 		<Modal dockable onClose={onClose} open={open} size="lg" title={t("agentHub.title")} bodyClassName="p-0">
-			<div className="omp-docked-fill flex max-h-[70vh] min-h-72 flex-col">
+			<div className="omsk-docked-fill flex max-h-[70vh] min-h-72 flex-col">
 				<Tabs
 					activeId={tab}
 					ariaLabel={t("agentHub.title")}

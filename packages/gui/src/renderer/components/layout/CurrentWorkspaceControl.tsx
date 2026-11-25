@@ -35,10 +35,10 @@ export function CurrentWorkspaceControl({ tabId, disabled }: CurrentWorkspaceCon
 			onClick={() => void changeWorkspace()}
 			aria-label={t("workspaceDirs.currentWorkspace", { name })}
 			title={`${cwd || name}\n${t("workspaceDirs.changeWorkspace")}`}
-			className="omp-pressable flex h-8 max-w-36 shrink items-center gap-1.5 rounded-full px-2 text-omp-xs text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)] disabled:cursor-not-allowed disabled:opacity-50"
+			className="omsk-pressable flex h-8 max-w-36 shrink items-center gap-1.5 rounded-full px-2 text-omsk-xs text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)] disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			<FolderOpen aria-hidden="true" className="shrink-0" size={14} />
-			<span className="omp-composer-control-label min-w-0 truncate">{name}</span>
+			<span className="omsk-composer-control-label min-w-0 truncate">{name}</span>
 		</button>
 	);
 }

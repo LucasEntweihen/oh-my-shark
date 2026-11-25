@@ -166,16 +166,16 @@ describe("ExecutionGroup", () => {
 			</>,
 		);
 		await act(async () => {
-			(container.querySelector(".omp-execution-group-header") as unknown as { click: () => void }).click();
+			(container.querySelector(".omsk-execution-group-header") as unknown as { click: () => void }).click();
 		});
 		await act(async () => {
-			for (const button of container.querySelectorAll(".omp-tool-header")) {
+			for (const button of container.querySelectorAll(".omsk-tool-header")) {
 				(button as unknown as { click: () => void }).click();
 			}
 		});
 
-		expect(container.querySelectorAll(".animate-spin, .animate-pulse, .omp-working-dot")).toHaveLength(1);
-		expect(container.querySelectorAll(".omp-tool-status-icon")).toHaveLength(2);
+		expect(container.querySelectorAll(".animate-spin, .animate-pulse, .omsk-working-dot")).toHaveLength(1);
+		expect(container.querySelectorAll(".omsk-tool-status-icon")).toHaveLength(2);
 		expect(container.querySelector('[role="status"]')?.textContent).toContain("2 running");
 	});
 });

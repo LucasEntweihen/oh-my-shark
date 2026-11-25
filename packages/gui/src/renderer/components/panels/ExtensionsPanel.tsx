@@ -234,7 +234,7 @@ function EnableToggle({
 		<button
 			aria-checked={enabled}
 			aria-label={label}
-			className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omp-accent) disabled:cursor-not-allowed disabled:opacity-50"
+			className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omsk-accent) disabled:cursor-not-allowed disabled:opacity-50"
 			disabled={disabled}
 			onClick={onToggle}
 			role="switch"
@@ -359,9 +359,9 @@ function TabFrame({
 			);
 		} else if (error) {
 			body = (
-				<div className="m-auto flex max-w-md flex-col items-center gap-2 rounded-lg border border-(--omp-border-muted) px-4 py-6 text-center">
-					<span className="text-omp-md font-medium text-(--omp-error)">{t("extPanel.loadFailed")}</span>
-					<span className="text-omp-sm break-all text-(--omp-dim)">{error}</span>
+				<div className="m-auto flex max-w-md flex-col items-center gap-2 rounded-lg border border-(--omsk-border-muted) px-4 py-6 text-center">
+					<span className="text-omsk-md font-medium text-(--omsk-error)">{t("extPanel.loadFailed")}</span>
+					<span className="text-omsk-sm break-all text-(--omsk-dim)">{error}</span>
 					<Button
 						disabled={!ready}
 						icon={<RefreshCw size={12} />}
@@ -377,13 +377,13 @@ function TabFrame({
 		}
 	} else if (total === 0) {
 		body = (
-			<div className="m-auto w-full rounded-md border border-(--omp-border-muted) px-3 py-4 text-center text-omp-md text-(--omp-dim)">
+			<div className="m-auto w-full rounded-md border border-(--omsk-border-muted) px-3 py-4 text-center text-omsk-md text-(--omsk-dim)">
 				{t(`extPanel.empty.${tabId}`)}
 			</div>
 		);
 	} else if (visible === 0) {
 		body = (
-			<div className="m-auto w-full rounded-md border border-(--omp-border-muted) px-3 py-4 text-center text-omp-md text-(--omp-dim)">
+			<div className="m-auto w-full rounded-md border border-(--omsk-border-muted) px-3 py-4 text-center text-omsk-md text-(--omsk-dim)">
 				{t("extPanel.noMatch", { query: trimmed })}
 			</div>
 		);
@@ -395,11 +395,11 @@ function TabFrame({
 		<div className={cx("flex min-h-0 flex-col gap-3 py-3", embedded ? "flex-none" : "flex-1 px-4")}>
 			<div className="settings-management-toolbar flex shrink-0 items-center gap-2">
 				{showSearch ? (
-					<div className="flex min-w-[160px] flex-1 items-center gap-2 rounded-md border border-(--omp-border-muted) bg-(--omp-input-bg) px-2.5 py-1.5">
-						<Search className="shrink-0 text-(--omp-dim)" size={13} />
+					<div className="flex min-w-[160px] flex-1 items-center gap-2 rounded-md border border-(--omsk-border-muted) bg-(--omsk-input-bg) px-2.5 py-1.5">
+						<Search className="shrink-0 text-(--omsk-dim)" size={13} />
 						<input
 							aria-label={t(`extPanel.search.${tabId}`)}
-							className="min-w-0 flex-1 bg-transparent text-omp-xs text-(--omp-text) placeholder:text-(--omp-dim) focus:outline-none"
+							className="min-w-0 flex-1 bg-transparent text-omsk-xs text-(--omsk-text) placeholder:text-(--omsk-dim) focus:outline-none"
 							onChange={event => onQueryChange(event.target.value)}
 							placeholder={t(`extPanel.search.${tabId}`)}
 							value={query}
@@ -408,7 +408,7 @@ function TabFrame({
 				) : (
 					<div className="flex-1" />
 				)}
-				{countText && <span className="shrink-0 text-omp-sm tabular-nums text-(--omp-dim)">{countText}</span>}
+				{countText && <span className="shrink-0 text-omsk-sm tabular-nums text-(--omsk-dim)">{countText}</span>}
 				{actions}
 				<Button
 					disabled={!ready}
@@ -423,7 +423,7 @@ function TabFrame({
 				</Button>
 			</div>
 			{loaded && error && (
-				<div className="shrink-0 rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent px-3 py-2 text-omp-md text-(--omp-error)">
+				<div className="shrink-0 rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent px-3 py-2 text-omsk-md text-(--omsk-error)">
 					{error}
 				</div>
 			)}
@@ -455,16 +455,16 @@ function HookRow({
 	const phase = hookPhase(hook.event);
 	const eventVariant: BadgeVariant = phase === "pre" ? "info" : phase === "post" ? "warning" : "default";
 	return (
-		<div className="flex flex-col gap-1 rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-2">
+		<div className="flex flex-col gap-1 rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-2">
 			<div className="flex flex-wrap items-center gap-2">
-				<span className="font-mono text-omp-md font-medium text-(--omp-text)">{hook.name}</span>
+				<span className="font-mono text-omsk-md font-medium text-(--omsk-text)">{hook.name}</span>
 				<Badge variant={eventVariant}>{hook.event}</Badge>
 				<Badge variant="default">{hook.source}</Badge>
 				<span className="ml-auto">
 					<EnableToggle busy={busy} disabled={disabled} enabled={enabled} onToggle={onToggle} />
 				</span>
 			</div>
-			<span className="block truncate font-mono text-omp-xs text-(--omp-dim)" title={hook.path}>
+			<span className="block truncate font-mono text-omsk-xs text-(--omsk-dim)" title={hook.path}>
 				{shortenPath(hook.path)}
 			</span>
 		</div>
@@ -510,8 +510,8 @@ function HooksTab({
 				{groups.map(([tool, hooks]) => (
 					<section className="flex flex-col gap-1.5" key={tool}>
 						<header className="flex items-center gap-2 px-1">
-							<span className="font-mono text-omp-xs font-semibold text-(--omp-muted)">{tool}</span>
-							<span className="text-omp-xs tabular-nums text-(--omp-dim)">{hooks.length}</span>
+							<span className="font-mono text-omsk-xs font-semibold text-(--omsk-muted)">{tool}</span>
+							<span className="text-omsk-xs tabular-nums text-(--omsk-dim)">{hooks.length}</span>
 						</header>
 						{hooks.map(hook => {
 							const enabled = mutation.effective(hook.id, hook.enabled);
@@ -811,22 +811,22 @@ function McpTab({
 
 function CommandRow({ command }: { command: AvailableCommand }) {
 	return (
-		<div className="flex flex-col gap-1 rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-2">
+		<div className="flex flex-col gap-1 rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-2">
 			<div className="flex flex-wrap items-center gap-2">
-				<span className="font-mono text-omp-md font-medium text-(--omp-text)">/{command.name}</span>
+				<span className="font-mono text-omsk-md font-medium text-(--omsk-text)">/{command.name}</span>
 				{command.aliases && command.aliases.length > 0 && (
-					<span className="text-omp-xs text-(--omp-dim)">
+					<span className="text-omsk-xs text-(--omsk-dim)">
 						{command.aliases.map(alias => `/${alias}`).join(", ")}
 					</span>
 				)}
 				{command.input?.hint && (
-					<code className="rounded bg-(--omp-code-bg) px-1.5 py-px font-mono text-omp-xs text-(--omp-muted)">
+					<code className="rounded bg-(--omsk-code-bg) px-1.5 py-px font-mono text-omsk-xs text-(--omsk-muted)">
 						{command.input.hint}
 					</code>
 				)}
 			</div>
 			{command.description && (
-				<p className="line-clamp-2 text-omp-sm leading-snug text-(--omp-muted)">{command.description}</p>
+				<p className="line-clamp-2 text-omsk-sm leading-snug text-(--omsk-muted)">{command.description}</p>
 			)}
 		</div>
 	);
@@ -874,10 +874,10 @@ function CommandsTab({
 				{groups.map(([source, commands]) => (
 					<section className="flex flex-col gap-1.5" key={source}>
 						<header className="flex items-center gap-2 px-1">
-							<span className="font-mono text-omp-xs font-semibold text-(--omp-muted)">
+							<span className="font-mono text-omsk-xs font-semibold text-(--omsk-muted)">
 								{KNOWN_COMMAND_SOURCES[source] ? t(`extPanel.commands.source.${source}`) : source}
 							</span>
-							<span className="text-omp-xs tabular-nums text-(--omp-dim)">{commands.length}</span>
+							<span className="text-omsk-xs tabular-nums text-(--omsk-dim)">{commands.length}</span>
 						</header>
 						{commands.map(command => (
 							<CommandRow command={command} key={`${source}:${command.name}`} />
@@ -912,7 +912,7 @@ export function ExtensionSettingsPage({ tabId, query }: { tabId: TabId; query: s
 				{tabId === "commands" && (
 					<CommandsTab embedded onQueryChange={onQueryChange} query={query} rpc={commands} showSearch={false} />
 				)}
-				<div className="shrink-0 border-t border-(--omp-border-muted) px-4 py-2 text-omp-xs leading-relaxed text-(--omp-dim)">
+				<div className="shrink-0 border-t border-(--omsk-border-muted) px-4 py-2 text-omsk-xs leading-relaxed text-(--omsk-dim)">
 					{t(`extPanel.footer.${tabId}`)}
 				</div>
 			</div>
@@ -957,7 +957,7 @@ export function ExtensionsPanel({ open, onClose, initialTab = "hooks" }: Extensi
 
 	return (
 		<Modal dockable bodyClassName="p-0" onClose={onClose} open={open} size="lg" title={t("extPanel.title")}>
-			<div className="omp-docked-fill flex h-[70vh] min-h-0 flex-col">
+			<div className="omsk-docked-fill flex h-[70vh] min-h-0 flex-col">
 				<Tabs
 					activeId={tab}
 					ariaLabel={t("extPanel.title")}
@@ -968,7 +968,7 @@ export function ExtensionsPanel({ open, onClose, initialTab = "hooks" }: Extensi
 				{tab === "hooks" && <HooksTab onQueryChange={setQuery} query={query} rpc={hooks} />}
 				{tab === "mcp" && <McpTab onQueryChange={setQuery} query={query} rpc={mcp} />}
 				{tab === "commands" && <CommandsTab onQueryChange={setQuery} query={query} rpc={commands} />}
-				<div className="shrink-0 border-t border-(--omp-border-muted) px-4 py-2 text-omp-xs text-(--omp-dim)">
+				<div className="shrink-0 border-t border-(--omsk-border-muted) px-4 py-2 text-omsk-xs text-(--omsk-dim)">
 					{t(`extPanel.footer.${tab}`)}
 				</div>
 			</div>

@@ -35,7 +35,7 @@ export function ProvidersRoute({ range, refreshKey }: { range: StatsRange; refre
 			{
 				key: "provider",
 				label: t("stats.col.provider"),
-				render: row => <span className="font-medium text-(--omp-text)">{row.provider}</span>,
+				render: row => <span className="font-medium text-(--omsk-text)">{row.provider}</span>,
 			},
 			{ key: "requests", label: t("stats.col.requests"), align: "right", render: row => compact(row.totalRequests) },
 			{ key: "models", label: t("stats.models"), align: "right", render: row => row.models },
@@ -56,7 +56,7 @@ export function ProvidersRoute({ range, refreshKey }: { range: StatsRange; refre
 			{
 				key: "provider",
 				label: t("stats.col.provider"),
-				render: row => <span className="font-medium text-(--omp-text)">{row.provider}</span>,
+				render: row => <span className="font-medium text-(--omsk-text)">{row.provider}</span>,
 			},
 			{ key: "window", label: t("stats.providers.col.window"), render: row => row.windowLabel },
 			{ key: "accounts", label: t("stats.providers.col.accounts"), align: "right", render: row => row.accounts },
@@ -79,7 +79,7 @@ export function ProvidersRoute({ range, refreshKey }: { range: StatsRange; refre
 				label: t("stats.providers.col.exhausted"),
 				align: "right",
 				render: row =>
-					row.exhaustedEvents > 0 ? <span className="text-(--omp-error)">{row.exhaustedEvents}</span> : "0",
+					row.exhaustedEvents > 0 ? <span className="text-(--omsk-error)">{row.exhaustedEvents}</span> : "0",
 			},
 		],
 		[t],

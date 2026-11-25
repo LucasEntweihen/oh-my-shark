@@ -27,18 +27,18 @@ interface Row {
 function Section({ title, rows }: { title: string; rows: Row[] }) {
 	return (
 		<section>
-			<h3 className="mb-1 text-omp-xxs font-semibold text-(--omp-dim)">{title}</h3>
-			<div className="overflow-hidden rounded-md border border-(--omp-border-muted)">
+			<h3 className="mb-1 text-omsk-xxs font-semibold text-(--omsk-dim)">{title}</h3>
+			<div className="overflow-hidden rounded-md border border-(--omsk-border-muted)">
 				{rows.map(row => (
 					<div
-						className="flex items-center gap-2 border-b border-(--omp-border-muted) px-2.5 py-1.5 last:border-b-0"
+						className="flex items-center gap-2 border-b border-(--omsk-border-muted) px-2.5 py-1.5 last:border-b-0"
 						key={row.label}
 					>
-						<span className="flex-1 text-omp-sm text-(--omp-muted)">{row.label}</span>
+						<span className="flex-1 text-omsk-sm text-(--omsk-muted)">{row.label}</span>
 						<span
 							className={cx(
-								"font-mono text-omp-sm font-medium tabular-nums",
-								row.tone === "warning" ? "text-(--omp-warning)" : "text-(--omp-text)",
+								"font-mono text-omsk-sm font-medium tabular-nums",
+								row.tone === "warning" ? "text-(--omsk-warning)" : "text-(--omsk-text)",
 							)}
 						>
 							{row.value}
@@ -126,7 +126,7 @@ export function SessionInfoDialog() {
 								]}
 							/>
 						)}
-						<p className="text-omp-xs text-(--omp-dim)">{t("sessionInfo.scope")}</p>
+						<p className="text-omsk-xs text-(--omsk-dim)">{t("sessionInfo.scope")}</p>
 						<Section
 							title={t("sessionInfo.section.session")}
 							rows={[
@@ -190,10 +190,10 @@ export function SessionInfoDialog() {
 						)}
 						{stats.contextUsage && contextView && (
 							<section>
-								<h3 className="mb-1 text-omp-xxs font-semibold text-(--omp-dim)">
+								<h3 className="mb-1 text-omsk-xxs font-semibold text-(--omsk-dim)">
 									{t("sessionInfo.contextWindow")}
 								</h3>
-								<div className="rounded-md border border-(--omp-border-muted) px-2.5 py-2">
+								<div className="rounded-md border border-(--omsk-border-muted) px-2.5 py-2">
 									<ProgressBar
 										value={contextView.capacityKnown ? contextView.percent / 100 : 0}
 										valueText={
@@ -202,7 +202,7 @@ export function SessionInfoDialog() {
 												: t("contextUsage.windowUnknown")
 										}
 									/>
-									<div className="mt-1.5 flex items-center justify-between text-omp-xs text-(--omp-muted)">
+									<div className="mt-1.5 flex items-center justify-between text-omsk-xs text-(--omsk-muted)">
 										<span>
 											{contextView.capacityKnown
 												? `${formatTokens(contextView.usedTokens)} / ${formatTokens(contextView.contextWindow)}`

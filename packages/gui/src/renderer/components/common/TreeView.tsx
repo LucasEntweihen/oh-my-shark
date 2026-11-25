@@ -148,7 +148,7 @@ export function TreeView({
 
 	if (nodes.length === 0) {
 		return (
-			<div className={`px-3 py-6 text-center text-omp-sm text-(--omp-dim) ${className ?? ""}`.trim()}>
+			<div className={`px-3 py-6 text-center text-omsk-sm text-(--omsk-dim) ${className ?? ""}`.trim()}>
 				{emptyMessage ?? t("tree.empty")}
 			</div>
 		);
@@ -164,10 +164,10 @@ export function TreeView({
 						aria-expanded={row.hasChildren ? row.isExpanded : undefined}
 						aria-level={row.depth + 1}
 						aria-selected={selected}
-						className={`omp-color-fade group flex h-7 cursor-default items-center gap-1.5 rounded-md pr-2 text-omp-sm outline-none focus-visible:bg-(--omp-selected-bg) ${
+						className={`omsk-color-fade group flex h-7 cursor-default items-center gap-1.5 rounded-md pr-2 text-omsk-sm outline-none focus-visible:bg-(--omsk-selected-bg) ${
 							selected
-								? "bg-(--omp-selected-bg) text-(--omp-text)"
-								: "text-(--omp-text-secondary) hover:bg-(--omp-sidebar-item-hover) hover:text-(--omp-text)"
+								? "bg-(--omsk-selected-bg) text-(--omsk-text)"
+								: "text-(--omsk-text-secondary) hover:bg-(--omsk-sidebar-item-hover) hover:text-(--omsk-text)"
 						} ${row.node.className ?? ""}`.trim()}
 						data-tree-id={row.node.id}
 						key={row.node.id}
@@ -181,7 +181,7 @@ export function TreeView({
 						{row.hasChildren ? (
 							<button
 								aria-label={row.isExpanded ? t("tree.collapse") : t("tree.expand")}
-								className="omp-disclosure-chevron flex size-4 shrink-0 items-center justify-center rounded text-(--omp-dim) hover:text-(--omp-text)"
+								className="omsk-disclosure-chevron flex size-4 shrink-0 items-center justify-center rounded text-(--omsk-dim) hover:text-(--omsk-text)"
 								onClick={event => {
 									event.stopPropagation();
 									toggle(row.node.id);
@@ -196,7 +196,7 @@ export function TreeView({
 							<span className="size-4 shrink-0" />
 						)}
 						{row.node.icon && (
-							<span className="flex shrink-0 text-(--omp-dim) group-hover:text-(--omp-muted)">
+							<span className="flex shrink-0 text-(--omsk-dim) group-hover:text-(--omsk-muted)">
 								{row.node.icon}
 							</span>
 						)}

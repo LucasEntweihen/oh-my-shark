@@ -59,17 +59,17 @@ export type ThemePicks = Partial<Record<ThemeComponent, string>>;
 
 /** The token that holds each component's own color. */
 export const COMPONENT_TOKENS: Record<ThemeComponent, ThemeTokenKey> = {
-	background: "--omp-bg-primary",
-	text: "--omp-text",
-	accent: "--omp-accent",
-	sidebar: "--omp-sidebar-bg",
-	titlebar: "--omp-titlebar-bg",
-	border: "--omp-border",
-	userMessage: "--omp-user-msg-bg",
-	success: "--omp-success",
-	warning: "--omp-warning",
-	error: "--omp-error",
-	info: "--omp-info",
+	background: "--omsk-bg-primary",
+	text: "--omsk-text",
+	accent: "--omsk-accent",
+	sidebar: "--omsk-sidebar-bg",
+	titlebar: "--omsk-titlebar-bg",
+	border: "--omsk-border",
+	userMessage: "--omsk-user-msg-bg",
+	success: "--omsk-success",
+	warning: "--omsk-warning",
+	error: "--omsk-error",
+	info: "--omsk-info",
 };
 
 export interface GeneratedTheme {
@@ -87,134 +87,137 @@ type HueComponent = "accent" | "success" | "warning" | "error" | "info";
 /** Tokens that take their family's color; each is checked against the base before it follows. */
 const HUE_FAMILIES: Record<HueComponent, readonly ThemeTokenKey[]> = {
 	accent: [
-		"--omp-accent",
-		"--omp-accent-bright",
-		"--omp-accent-dim",
-		"--omp-accent-glow",
-		"--omp-border-accent",
-		"--omp-selection-bg",
-		"--omp-selected-bg",
-		"--omp-input-glow",
-		"--omp-streaming-highlight",
-		"--omp-link",
-		"--omp-md-link",
-		"--omp-custom-msg-label",
-		"--omp-thinking-medium",
-		"--omp-thinking-high",
-		"--omp-input-focus-border",
-		"--omp-progress-fill",
-		"--omp-badge-accent",
-		"--omp-status-subagents",
-		"--omp-tool-rail-running",
-		"--omp-sidebar-item-active",
+		"--omsk-accent",
+		"--omsk-accent-bright",
+		"--omsk-accent-dim",
+		"--omsk-accent-glow",
+		"--omsk-border-accent",
+		"--omsk-selection-bg",
+		"--omsk-selected-bg",
+		"--omsk-input-glow",
+		"--omsk-streaming-highlight",
+		"--omsk-link",
+		"--omsk-md-link",
+		"--omsk-custom-msg-label",
+		"--omsk-thinking-medium",
+		"--omsk-thinking-high",
+		"--omsk-input-focus-border",
+		"--omsk-progress-fill",
+		"--omsk-badge-accent",
+		"--omsk-status-subagents",
+		"--omsk-tool-rail-running",
+		"--omsk-sidebar-item-active",
 	],
 	success: [
-		"--omp-success",
-		"--omp-success-dim",
-		"--omp-diff-added",
-		"--omp-diff-added-bg",
-		"--omp-tool-success-bg",
-		"--omp-tool-rail-done",
-		"--omp-status-git-clean",
+		"--omsk-success",
+		"--omsk-success-dim",
+		"--omsk-diff-added",
+		"--omsk-diff-added-bg",
+		"--omsk-tool-success-bg",
+		"--omsk-tool-rail-done",
+		"--omsk-status-git-clean",
 	],
-	warning: ["--omp-warning", "--omp-warning-dim", "--omp-status-git-dirty"],
+	warning: ["--omsk-warning", "--omsk-warning-dim", "--omsk-status-git-dirty"],
 	error: [
-		"--omp-error",
-		"--omp-error-dim",
-		"--omp-diff-removed",
-		"--omp-diff-removed-bg",
-		"--omp-tool-error-bg",
-		"--omp-tool-rail-error",
-		"--omp-btn-danger-bg",
+		"--omsk-error",
+		"--omsk-error-dim",
+		"--omsk-diff-removed",
+		"--omsk-diff-removed-bg",
+		"--omsk-tool-error-bg",
+		"--omsk-tool-rail-error",
+		"--omsk-btn-danger-bg",
 	],
-	info: ["--omp-info", "--omp-info-dim"],
+	info: ["--omsk-info", "--omsk-info-dim"],
 };
 
 type SurfaceComponent = "sidebar" | "titlebar" | "border" | "userMessage";
 
 /** Opaque tokens that move with a picked surface color. */
 const SURFACE_GROUPS: Record<SurfaceComponent, readonly ThemeTokenKey[]> = {
-	sidebar: ["--omp-sidebar-bg", "--omp-sidebar-item-hover"],
-	titlebar: ["--omp-titlebar-bg"],
+	sidebar: ["--omsk-sidebar-bg", "--omsk-sidebar-item-hover"],
+	titlebar: ["--omsk-titlebar-bg"],
 	border: [
-		"--omp-border",
-		"--omp-border-muted",
-		"--omp-border-strong",
-		"--omp-md-hr",
-		"--omp-status-sep",
-		"--omp-input-border",
-		"--omp-modal-border",
-		"--omp-toast-border",
-		"--omp-panel-border",
-		"--omp-md-code-block-border",
-		"--omp-md-quote-border",
+		"--omsk-border",
+		"--omsk-border-muted",
+		"--omsk-border-strong",
+		"--omsk-md-hr",
+		"--omsk-status-sep",
+		"--omsk-input-border",
+		"--omsk-modal-border",
+		"--omsk-toast-border",
+		"--omsk-panel-border",
+		"--omsk-md-code-block-border",
+		"--omsk-md-quote-border",
 	],
-	userMessage: ["--omp-user-msg-bg"],
+	userMessage: ["--omsk-user-msg-bg"],
 };
 
 /** Text on the main surfaces; the base theme keeps these readable on all four. */
 const TEXT_TOKENS: readonly ThemeTokenKey[] = [
-	"--omp-text-secondary",
-	"--omp-muted",
-	"--omp-dim",
-	"--omp-accent",
-	"--omp-accent-bright",
-	"--omp-link",
-	"--omp-md-link",
-	"--omp-md-link-url",
-	"--omp-md-heading",
-	"--omp-md-quote",
-	"--omp-md-list-bullet",
-	"--omp-md-code",
-	"--omp-tool-output",
-	"--omp-diff-context",
-	"--omp-custom-msg-label",
-	"--omp-panel-header",
-	"--omp-success",
-	"--omp-warning",
-	"--omp-error",
-	"--omp-info",
-	"--omp-thinking-off",
-	"--omp-thinking-minimal",
-	"--omp-thinking-low",
-	"--omp-thinking-medium",
-	"--omp-thinking-high",
-	"--omp-thinking-xhigh",
+	"--omsk-text-secondary",
+	"--omsk-muted",
+	"--omsk-dim",
+	"--omsk-accent",
+	"--omsk-accent-bright",
+	"--omsk-link",
+	"--omsk-md-link",
+	"--omsk-md-link-url",
+	"--omsk-md-heading",
+	"--omsk-md-quote",
+	"--omsk-md-list-bullet",
+	"--omsk-md-code",
+	"--omsk-tool-output",
+	"--omsk-diff-context",
+	"--omsk-custom-msg-label",
+	"--omsk-panel-header",
+	"--omsk-success",
+	"--omsk-warning",
+	"--omsk-error",
+	"--omsk-info",
+	"--omsk-thinking-off",
+	"--omsk-thinking-minimal",
+	"--omsk-thinking-low",
+	"--omsk-thinking-medium",
+	"--omsk-thinking-high",
+	"--omsk-thinking-xhigh",
 ];
 /** In priority order: the page background first, the sidebar last. */
 const TEXT_SURFACES: readonly ThemeTokenKey[] = [
-	"--omp-bg-primary",
-	"--omp-bg-elevated",
-	"--omp-bg-tertiary",
-	"--omp-sidebar-bg",
+	"--omsk-bg-primary",
+	"--omsk-bg-elevated",
+	"--omsk-bg-tertiary",
+	"--omsk-sidebar-bg",
 ];
 
 const STATUS_TEXT: readonly ThemeTokenKey[] = [
-	"--omp-status-text",
-	"--omp-status-model",
-	"--omp-status-path",
-	"--omp-status-context",
-	"--omp-status-spend",
-	"--omp-status-muted",
-	"--omp-status-dim",
-	"--omp-status-git-clean",
-	"--omp-status-git-dirty",
+	"--omsk-status-text",
+	"--omsk-status-model",
+	"--omsk-status-path",
+	"--omsk-status-context",
+	"--omsk-status-spend",
+	"--omsk-status-muted",
+	"--omsk-status-dim",
+	"--omsk-status-git-clean",
+	"--omsk-status-git-dirty",
 ];
 
 /** Text tokens and the surface each one sits on (drawn over `over` when translucent). */
 const PAIRS: readonly { fg: ThemeTokenKey; bg: ThemeTokenKey; over?: ThemeTokenKey }[] = [
-	{ fg: "--omp-titlebar-text", bg: "--omp-titlebar-bg" },
-	{ fg: "--omp-btn-primary-text", bg: "--omp-btn-primary-bg" },
-	{ fg: "--omp-btn-secondary-text", bg: "--omp-btn-secondary-bg" },
-	{ fg: "--omp-btn-danger-text", bg: "--omp-btn-danger-bg" },
-	{ fg: "--omp-toast-text", bg: "--omp-toast-bg" },
-	{ fg: "--omp-badge-text", bg: "--omp-badge-bg" },
-	{ fg: "--omp-selection-text", bg: "--omp-selection-bg" },
-	{ fg: "--omp-panel-header", bg: "--omp-panel-bg" },
-	{ fg: "--omp-diff-added", bg: "--omp-diff-added-bg", over: "--omp-code-bg" },
-	{ fg: "--omp-diff-removed", bg: "--omp-diff-removed-bg", over: "--omp-code-bg" },
-	...STATUS_TEXT.map(fg => ({ fg, bg: "--omp-status-bg" as const })),
-	...THEME_TOKEN_KEYS.filter(key => key.startsWith("--omp-syntax-")).map(fg => ({ fg, bg: "--omp-code-bg" as const })),
+	{ fg: "--omsk-titlebar-text", bg: "--omsk-titlebar-bg" },
+	{ fg: "--omsk-btn-primary-text", bg: "--omsk-btn-primary-bg" },
+	{ fg: "--omsk-btn-secondary-text", bg: "--omsk-btn-secondary-bg" },
+	{ fg: "--omsk-btn-danger-text", bg: "--omsk-btn-danger-bg" },
+	{ fg: "--omsk-toast-text", bg: "--omsk-toast-bg" },
+	{ fg: "--omsk-badge-text", bg: "--omsk-badge-bg" },
+	{ fg: "--omsk-selection-text", bg: "--omsk-selection-bg" },
+	{ fg: "--omsk-panel-header", bg: "--omsk-panel-bg" },
+	{ fg: "--omsk-diff-added", bg: "--omsk-diff-added-bg", over: "--omsk-code-bg" },
+	{ fg: "--omsk-diff-removed", bg: "--omsk-diff-removed-bg", over: "--omsk-code-bg" },
+	...STATUS_TEXT.map(fg => ({ fg, bg: "--omsk-status-bg" as const })),
+	...THEME_TOKEN_KEYS.filter(key => key.startsWith("--omsk-syntax-")).map(fg => ({
+		fg,
+		bg: "--omsk-code-bg" as const,
+	})),
 ];
 
 const AA = 4.5;
@@ -230,7 +233,7 @@ function schemeOf(color: Rgba): "dark" | "light" {
 function resolve(tokens: ThemeTokens, key: ThemeTokenKey): string {
 	let value = tokens[key];
 	for (let depth = 0; depth < 4; depth++) {
-		const ref = /^var\((--omp-[a-z0-9-]+)\)$/.exec(value)?.[1] as ThemeTokenKey | undefined;
+		const ref = /^var\((--omsk-[a-z0-9-]+)\)$/.exec(value)?.[1] as ThemeTokenKey | undefined;
 		if (!ref || !(ref in tokens)) break;
 		value = tokens[ref];
 	}
@@ -238,7 +241,7 @@ function resolve(tokens: ThemeTokens, key: ThemeTokenKey): string {
 }
 
 /** A token as an opaque color, translucent ones drawn over `over` (the page background by default). */
-function surface(tokens: ThemeTokens, key: ThemeTokenKey, over: ThemeTokenKey = "--omp-bg-primary"): Rgba | null {
+function surface(tokens: ThemeTokens, key: ThemeTokenKey, over: ThemeTokenKey = "--omsk-bg-primary"): Rgba | null {
 	const color = parseCssColor(resolve(tokens, key));
 	if (!color) return null;
 	if (color.alpha >= 1) return color;
@@ -265,7 +268,7 @@ function closestBuiltin(scheme: "dark" | "light", background: Oklab): ThemeName 
 	let bestDistance = Number.POSITIVE_INFINITY;
 	for (const name of Object.keys(THEMES) as ThemeName[]) {
 		if (THEMES[name].scheme !== scheme) continue;
-		const bg = parseCssColor(THEMES[name].tokens["--omp-bg-primary"]);
+		const bg = parseCssColor(THEMES[name].tokens["--omsk-bg-primary"]);
 		if (!bg) continue;
 		const d = sub(toOklab(bg), background);
 		const distance = Math.hypot(d.l, d.a, d.b);
@@ -359,8 +362,8 @@ export function generateTheme(start: ThemeBase, picks: ThemePicks): GeneratedThe
 		return color ? { ...color, alpha: 1 } : null;
 	};
 	const baseColor = (key: ThemeTokenKey) => parseCssColor(base.tokens[key]);
-	const bg0 = surface(base.tokens, "--omp-bg-primary");
-	const fg0 = surface(base.tokens, "--omp-text");
+	const bg0 = surface(base.tokens, "--omsk-bg-primary");
+	const fg0 = surface(base.tokens, "--omsk-text");
 	if (!bg0 || !fg0) return { ...base, tokens: { ...base.tokens } };
 
 	const bg1 = picked("background") ?? bg0;
@@ -372,7 +375,7 @@ export function generateTheme(start: ThemeBase, picks: ThemePicks): GeneratedThe
 			...(["sidebar", "titlebar", "userMessage"] as const).flatMap(component => {
 				const color = picked(component);
 				const key = COMPONENT_TOKENS[component];
-				return color ? [{ color, target: targetContrast(base.tokens, "--omp-text", key) }] : [];
+				return color ? [{ color, target: targetContrast(base.tokens, "--omsk-text", key) }] : [];
 			}),
 		]);
 		if (fixed) fg1 = fixed;
@@ -448,12 +451,12 @@ export function generateTheme(start: ThemeBase, picks: ThemePicks): GeneratedThe
 		border: [...SURFACE_GROUPS.border],
 		userMessage: [...SURFACE_GROUPS.userMessage],
 	};
-	const baseUserBorder = baseColor("--omp-user-msg-border");
-	if (sameColor(baseUserBorder, baseColor("--omp-user-msg-bg"))) groups.userMessage.push("--omp-user-msg-border");
-	else if (sameColor(baseUserBorder, baseColor("--omp-border"))) groups.border.push("--omp-user-msg-border");
+	const baseUserBorder = baseColor("--omsk-user-msg-border");
+	if (sameColor(baseUserBorder, baseColor("--omsk-user-msg-bg"))) groups.userMessage.push("--omsk-user-msg-border");
+	else if (sameColor(baseUserBorder, baseColor("--omsk-border"))) groups.border.push("--omsk-user-msg-border");
 	// A title bar drawn in the sidebar color stays in it.
-	if (!picks.titlebar && sameColor(baseColor("--omp-titlebar-bg"), baseColor("--omp-sidebar-bg"))) {
-		groups.sidebar.push("--omp-titlebar-bg");
+	if (!picks.titlebar && sameColor(baseColor("--omsk-titlebar-bg"), baseColor("--omsk-sidebar-bg"))) {
+		groups.sidebar.push("--omsk-titlebar-bg");
 	}
 	for (const component of Object.keys(groups) as SurfaceComponent[]) {
 		const pick = picked(component);
@@ -467,12 +470,12 @@ export function generateTheme(start: ThemeBase, picks: ThemePicks): GeneratedThe
 		}
 	}
 
-	if (!picks.text && !sameColor(fg1, fg0)) out.set("--omp-text", { lab: toOklab(fg1), alpha: 1 });
+	if (!picks.text && !sameColor(fg1, fg0)) out.set("--omsk-text", { lab: toOklab(fg1), alpha: 1 });
 
 	// White hover overlays on a light sidebar (or black on a dark one) would not show: flip them.
 	const sidebar = picked("sidebar");
 	if (sidebar) {
-		for (const key of ["--omp-sidebar-item-hover", "--omp-sidebar-item-active"] as const) {
+		for (const key of ["--omsk-sidebar-item-hover", "--omsk-sidebar-item-active"] as const) {
 			if (familyOf.has(key)) continue;
 			const working = current(key);
 			if (!working || working.alpha >= 1 || chroma(working.lab) > 0.02) continue;
@@ -530,16 +533,16 @@ export function componentColor(tokens: ThemeTokens, component: ThemeComponent): 
 
 /** Contrast each picked component must keep, against what sits on it or under it. */
 const COMPONENT_CONTRAST: Partial<Record<ThemeComponent, { fg: ThemeTokenKey; bg: ThemeTokenKey; target: number }>> = {
-	background: { fg: "--omp-text", bg: "--omp-bg-primary", target: AA },
-	text: { fg: "--omp-text", bg: "--omp-bg-primary", target: AA },
-	sidebar: { fg: "--omp-text", bg: "--omp-sidebar-bg", target: AA },
-	titlebar: { fg: "--omp-text", bg: "--omp-titlebar-bg", target: AA },
-	userMessage: { fg: "--omp-text", bg: "--omp-user-msg-bg", target: AA },
-	accent: { fg: "--omp-accent", bg: "--omp-bg-primary", target: 3 },
-	success: { fg: "--omp-success", bg: "--omp-bg-primary", target: 3 },
-	warning: { fg: "--omp-warning", bg: "--omp-bg-primary", target: 3 },
-	error: { fg: "--omp-error", bg: "--omp-bg-primary", target: 3 },
-	info: { fg: "--omp-info", bg: "--omp-bg-primary", target: 3 },
+	background: { fg: "--omsk-text", bg: "--omsk-bg-primary", target: AA },
+	text: { fg: "--omsk-text", bg: "--omsk-bg-primary", target: AA },
+	sidebar: { fg: "--omsk-text", bg: "--omsk-sidebar-bg", target: AA },
+	titlebar: { fg: "--omsk-text", bg: "--omsk-titlebar-bg", target: AA },
+	userMessage: { fg: "--omsk-text", bg: "--omsk-user-msg-bg", target: AA },
+	accent: { fg: "--omsk-accent", bg: "--omsk-bg-primary", target: 3 },
+	success: { fg: "--omsk-success", bg: "--omsk-bg-primary", target: 3 },
+	warning: { fg: "--omsk-warning", bg: "--omsk-bg-primary", target: 3 },
+	error: { fg: "--omsk-error", bg: "--omsk-bg-primary", target: 3 },
+	info: { fg: "--omsk-info", bg: "--omsk-bg-primary", target: 3 },
 };
 
 /** Picked components that end up hard to read: text on them, or them as text, below WCAG. */
@@ -605,7 +608,7 @@ export interface CustomThemeFileJson {
 	description?: string;
 	extends: ThemeName;
 	scheme: "dark" | "light";
-	/** Only the tokens that differ from the built-in theme it extends, without the `--omp-` prefix. */
+	/** Only the tokens that differ from the built-in theme it extends, without the `--omsk-` prefix. */
 	tokens: Record<string, string>;
 }
 
@@ -614,7 +617,7 @@ export function customThemeFileFor(theme: GeneratedTheme, name: string, descript
 	const builtin = THEMES[theme.extends].tokens;
 	const tokens: Record<string, string> = {};
 	for (const key of THEME_TOKEN_KEYS) {
-		if (theme.tokens[key] !== builtin[key]) tokens[key.slice("--omp-".length)] = theme.tokens[key];
+		if (theme.tokens[key] !== builtin[key]) tokens[key.slice("--omsk-".length)] = theme.tokens[key];
 	}
 	const desc = description.trim();
 	return {

@@ -137,11 +137,11 @@ export function TabSearchMenu({
 					pick(matches[activeIndex]);
 				}
 			}}
-			className="omp-pop-in fixed z-50 flex max-h-[min(30rem,74vh)] w-84 flex-col overflow-hidden rounded-xl border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] shadow-xl backdrop-blur-md"
+			className="omsk-pop-in fixed z-50 flex max-h-[min(30rem,74vh)] w-84 flex-col overflow-hidden rounded-xl border border-[var(--omsk-border)] bg-[var(--omsk-bg-elevated)] shadow-xl backdrop-blur-md"
 		>
-			{title && <div className="truncate px-3 pt-2.5 text-omp-xs font-medium text-[var(--omp-dim)]">{title}</div>}
-			<label className="flex shrink-0 items-center gap-2 border-b border-[var(--omp-border-muted)] px-3 py-2">
-				<Search aria-hidden size={13} strokeWidth={1.65} className="shrink-0 text-[var(--omp-dim)]" />
+			{title && <div className="truncate px-3 pt-2.5 text-omsk-xs font-medium text-[var(--omsk-dim)]">{title}</div>}
+			<label className="flex shrink-0 items-center gap-2 border-b border-[var(--omsk-border-muted)] px-3 py-2">
+				<Search aria-hidden size={13} strokeWidth={1.65} className="shrink-0 text-[var(--omsk-dim)]" />
 				<input
 					autoFocus
 					value={query}
@@ -151,11 +151,11 @@ export function TabSearchMenu({
 					}}
 					placeholder={t("tabs.search")}
 					aria-label={t("tabs.search")}
-					className="min-w-0 flex-1 bg-transparent text-omp-md text-[var(--omp-text)] outline-none placeholder:text-[var(--omp-dim)]"
+					className="min-w-0 flex-1 bg-transparent text-omsk-md text-[var(--omsk-text)] outline-none placeholder:text-[var(--omsk-dim)]"
 				/>
 			</label>
 			{entries.length > 2 && (
-				<div className="flex shrink-0 items-center gap-1 border-b border-[var(--omp-border-muted)] px-2.5 py-1.5">
+				<div className="flex shrink-0 items-center gap-1 border-b border-[var(--omsk-border-muted)] px-2.5 py-1.5">
 					{filters.map(item => (
 						<button
 							key={item.id}
@@ -166,10 +166,10 @@ export function TabSearchMenu({
 								setActiveIndex(0);
 							}}
 							className={cx(
-								"omp-pressable rounded-md px-2 py-0.5 text-omp-xs font-medium",
+								"omsk-pressable rounded-md px-2 py-0.5 text-omsk-xs font-medium",
 								filter === item.id
-									? "bg-[var(--omp-selected-bg)] text-[var(--omp-accent)]"
-									: "text-[var(--omp-dim)] hover:text-[var(--omp-text)]",
+									? "bg-[var(--omsk-selected-bg)] text-[var(--omsk-accent)]"
+									: "text-[var(--omsk-dim)] hover:text-[var(--omsk-text)]",
 							)}
 						>
 							{item.label}
@@ -179,7 +179,7 @@ export function TabSearchMenu({
 			)}
 			<div role="listbox" aria-label={title ?? t("tabs.allTabs")} className="min-h-0 overflow-y-auto py-1">
 				{matches.length === 0 ? (
-					<div className="px-3 py-3 text-omp-sm text-[var(--omp-dim)]">{t("tabs.searchEmpty")}</div>
+					<div className="px-3 py-3 text-omsk-sm text-[var(--omsk-dim)]">{t("tabs.searchEmpty")}</div>
 				) : (
 					matches.map((entry, index) => {
 						const PairIcon = entry.axis === "rows" ? Rows2 : Columns2;
@@ -194,33 +194,33 @@ export function TabSearchMenu({
 								onClick={() => pick(entry)}
 								onKeyDown={() => {}}
 								className={cx(
-									"mx-1 flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-omp-md",
-									index === activeIndex ? "bg-[var(--omp-selected-bg)]" : "",
+									"mx-1 flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-omsk-md",
+									index === activeIndex ? "bg-[var(--omsk-selected-bg)]" : "",
 								)}
 							>
 								{entry.axis ? (
-									<PairIcon aria-hidden size={12} className="shrink-0 text-[var(--omp-accent)]" />
+									<PairIcon aria-hidden size={12} className="shrink-0 text-[var(--omsk-accent)]" />
 								) : entry.pinned ? (
-									<Pin aria-hidden size={11} className="shrink-0 text-[var(--omp-accent)]" />
+									<Pin aria-hidden size={11} className="shrink-0 text-[var(--omsk-accent)]" />
 								) : entry.worktree ? (
-									<GitBranch aria-hidden size={11} className="shrink-0 text-[var(--omp-accent)]" />
+									<GitBranch aria-hidden size={11} className="shrink-0 text-[var(--omsk-accent)]" />
 								) : entry.kind === "chat" ? (
-									<MessageCircle aria-hidden size={11} className="shrink-0 text-[var(--omp-muted)]" />
+									<MessageCircle aria-hidden size={11} className="shrink-0 text-[var(--omsk-muted)]" />
 								) : (
 									<span
 										aria-hidden
 										className={cx(
 											"h-1.5 w-1.5 shrink-0 rounded-full",
-											entry.running ? "bg-[var(--omp-accent)]" : "bg-[var(--omp-dim)]/40",
+											entry.running ? "bg-[var(--omsk-accent)]" : "bg-[var(--omsk-dim)]/40",
 										)}
 									/>
 								)}
 								<span className="flex min-w-0 flex-1 flex-col leading-tight">
-									<span className="flex min-w-0 items-center gap-1.5 text-[var(--omp-text)]">
+									<span className="flex min-w-0 items-center gap-1.5 text-[var(--omsk-text)]">
 										{entry.labels.map((label, labelIndex) => (
 											<span key={label + String(labelIndex)} className="flex min-w-0 items-center gap-1.5">
 												{labelIndex > 0 && (
-													<span aria-hidden className="text-[var(--omp-dim)]">
+													<span aria-hidden className="text-[var(--omsk-dim)]">
 														│
 													</span>
 												)}
@@ -228,10 +228,10 @@ export function TabSearchMenu({
 											</span>
 										))}
 									</span>
-									<span className="truncate text-omp-xs text-[var(--omp-dim)]">{entry.detail}</span>
+									<span className="truncate text-omsk-xs text-[var(--omsk-dim)]">{entry.detail}</span>
 								</span>
 								{entry.shortcutHint && (
-									<kbd className="shrink-0 rounded border border-[var(--omp-border-muted)] px-1 font-mono text-omp-xxs text-[var(--omp-dim)]">
+									<kbd className="shrink-0 rounded border border-[var(--omsk-border-muted)] px-1 font-mono text-omsk-xxs text-[var(--omsk-dim)]">
 										{entry.shortcutHint}
 									</kbd>
 								)}
@@ -239,7 +239,7 @@ export function TabSearchMenu({
 									<Check
 										aria-label={t("tabs.current")}
 										size={13}
-										className="shrink-0 text-[var(--omp-accent)]"
+										className="shrink-0 text-[var(--omsk-accent)]"
 									/>
 								)}
 							</div>
@@ -248,14 +248,14 @@ export function TabSearchMenu({
 				)}
 			</div>
 			{hasClosedTabs && onReopenClosed && (
-				<div className="border-t border-[var(--omp-border-muted)] p-1.5">
+				<div className="border-t border-[var(--omsk-border-muted)] p-1.5">
 					<button
 						type="button"
 						onClick={() => {
 							onClose();
 							onReopenClosed();
 						}}
-						className="omp-pressable flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-omp-sm font-medium text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-omsk-sm font-medium text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 					>
 						<RotateCcw size={12} strokeWidth={1.65} />
 						<span>{t("tabs.menu.reopenClosed")}</span>

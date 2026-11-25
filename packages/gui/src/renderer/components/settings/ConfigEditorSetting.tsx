@@ -31,7 +31,7 @@ export function ConfigEditorSetting() {
 		<Section id="setting-gui-configEditor" title={label}>
 			<select
 				aria-label={label}
-				className="max-w-full rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2.5 py-1.5 text-omp-sm text-(--omp-text)"
+				className="max-w-full rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2.5 py-1.5 text-omsk-sm text-(--omsk-text)"
 				disabled={editor === null || saving}
 				onChange={event => void select(event.target.value)}
 				value={editor ?? "auto"}

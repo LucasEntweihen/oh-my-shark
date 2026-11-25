@@ -88,7 +88,7 @@ export function OrchestratorPhaseStepper({ run }: { run: RpcOrchestratorRun | nu
 	const failedState = run?.phase === "ABORTED" || run?.phase === "BLOCKED";
 
 	return (
-		<div className="rounded-xl border border-[var(--omp-border-muted)] p-3.5">
+		<div className="rounded-xl border border-[var(--omsk-border-muted)] p-3.5">
 			<div className="mb-3 flex flex-wrap items-center justify-between gap-2">
 				<div className="flex flex-wrap items-center gap-2">
 					{run ? (
@@ -105,14 +105,14 @@ export function OrchestratorPhaseStepper({ run }: { run: RpcOrchestratorRun | nu
 						</Badge>
 					)}
 					{run && (
-						<span className="font-mono text-omp-xs text-[var(--omp-muted)]">
+						<span className="font-mono text-omsk-xs text-[var(--omsk-muted)]">
 							Wave {Math.min(run.currentWaveIndex + 1, Math.max(1, run.waves.length))}/
 							{Math.max(1, run.waves.length)}
 						</span>
 					)}
 				</div>
 				{run && (
-					<div className="flex items-center gap-3 text-omp-xs text-[var(--omp-dim)] tabular-nums">
+					<div className="flex items-center gap-3 text-omsk-xs text-[var(--omsk-dim)] tabular-nums">
 						<span className="flex items-center gap-1" title="Elapsed time since plan creation">
 							<Clock size={12} />
 							{formatDuration(elapsedMs)}
@@ -133,34 +133,34 @@ export function OrchestratorPhaseStepper({ run }: { run: RpcOrchestratorRun | nu
 							className={cx(
 								"flex items-center gap-2 rounded-lg border px-2.5 py-2 transition-colors",
 								completed &&
-									"border-[color-mix(in_srgb,var(--omp-success)_45%,transparent)] bg-[var(--omp-success-dim)]",
-								current && !haltedHere && "border-[var(--omp-border-accent)] bg-[var(--omp-accent-dim)]",
+									"border-[color-mix(in_srgb,var(--omsk-success)_45%,transparent)] bg-[var(--omsk-success-dim)]",
+								current && !haltedHere && "border-[var(--omsk-border-accent)] bg-[var(--omsk-accent-dim)]",
 								haltedHere &&
-									"border-[color-mix(in_srgb,var(--omp-error)_50%,transparent)] bg-[var(--omp-error-dim)]",
-								!completed && !current && "border-[var(--omp-border-muted)]",
+									"border-[color-mix(in_srgb,var(--omsk-error)_50%,transparent)] bg-[var(--omsk-error-dim)]",
+								!completed && !current && "border-[var(--omsk-border-muted)]",
 							)}
 						>
 							<span
 								className={cx(
-									"flex size-5 shrink-0 items-center justify-center rounded-full border font-mono text-omp-xxs font-semibold",
-									completed && "border-[var(--omp-success)] text-[var(--omp-success)]",
-									current && !haltedHere && "border-[var(--omp-accent)] text-[var(--omp-accent)]",
-									haltedHere && "border-[var(--omp-error)] text-[var(--omp-error)]",
-									!completed && !current && "border-[var(--omp-border)] text-[var(--omp-dim)]",
+									"flex size-5 shrink-0 items-center justify-center rounded-full border font-mono text-omsk-xxs font-semibold",
+									completed && "border-[var(--omsk-success)] text-[var(--omsk-success)]",
+									current && !haltedHere && "border-[var(--omsk-accent)] text-[var(--omsk-accent)]",
+									haltedHere && "border-[var(--omsk-error)] text-[var(--omsk-error)]",
+									!completed && !current && "border-[var(--omsk-border)] text-[var(--omsk-dim)]",
 								)}
 							>
 								{completed ? <Check size={11} /> : haltedHere ? <AlertTriangle size={11} /> : index + 1}
 							</span>
 							<span
 								className={cx(
-									"truncate text-omp-xs font-semibold tracking-wide",
+									"truncate text-omsk-xs font-semibold tracking-wide",
 									completed
-										? "text-[var(--omp-success)]"
+										? "text-[var(--omsk-success)]"
 										: haltedHere
-											? "text-[var(--omp-error)]"
+											? "text-[var(--omsk-error)]"
 											: current
-												? "text-[var(--omp-text)]"
-												: "text-[var(--omp-dim)]",
+												? "text-[var(--omsk-text)]"
+												: "text-[var(--omsk-dim)]",
 								)}
 							>
 								{step.label}

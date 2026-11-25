@@ -107,7 +107,7 @@ function ImagePreview({
 			<ZoomableImage
 				src={image.url}
 				alt={name}
-				className="omp-image-checker block h-auto max-w-full rounded-md border border-(--omp-border-muted)"
+				className="omsk-image-checker block h-auto max-w-full rounded-md border border-(--omsk-border-muted)"
 				onLoad={event => {
 					const { naturalWidth, naturalHeight } = event.currentTarget;
 					// A vector has no pixel size of its own; the browser would report a default.
@@ -116,7 +116,7 @@ function ImagePreview({
 				onError={onFailed}
 			/>
 			{(pixels || image.bytes !== undefined) && (
-				<span className="text-omp-xs text-(--omp-dim)">
+				<span className="text-omsk-xs text-(--omsk-dim)">
 					{[pixels, image.bytes === undefined ? null : formatBytes(image.bytes)].filter(Boolean).join(" · ")}
 				</span>
 			)}
@@ -418,17 +418,17 @@ export function FilesPanel() {
 	const hasPreview = Boolean(filePreviewPath || filePreviewImage);
 	const previewBody =
 		filePreviewPath && activeTab ? (
-			<div className="omp-file-preview flex min-h-0 min-w-0 flex-1 flex-col">
-				<PanelToolbar className="omp-file-preview-toolbar gap-1 border-b border-(--omp-border-muted) pl-1.5">
-					<span className="omp-file-preview-label min-w-0 flex-1 px-1 text-omp-sm font-medium">
+			<div className="omsk-file-preview flex min-h-0 min-w-0 flex-1 flex-col">
+				<PanelToolbar className="omsk-file-preview-toolbar gap-1 border-b border-(--omsk-border-muted) pl-1.5">
+					<span className="omsk-file-preview-label min-w-0 flex-1 px-1 text-omsk-sm font-medium">
 						<FileLabel path={filePreviewPath} />
 					</span>
 					{formattedFile && (
-						<div className="omp-segmented no-drag flex shrink-0">
+						<div className="omsk-segmented no-drag flex shrink-0">
 							{(["source", "preview"] as const).map(view => (
 								<button
 									aria-pressed={activeTab.view === view}
-									className="rounded px-2 py-1 text-omp-xs aria-pressed:bg-(--omp-selected-bg)"
+									className="rounded px-2 py-1 text-omsk-xs aria-pressed:bg-(--omsk-selected-bg)"
 									key={view}
 									onClick={() => useFileTabs.getState().changeView(cwd, activeTab.id, view)}
 									type="button"
@@ -448,7 +448,7 @@ export function FilesPanel() {
 							})
 						}
 					>
-						{copied ? <Check size={14} className="text-(--omp-success)" /> : <Copy size={14} />}
+						{copied ? <Check size={14} className="text-(--omsk-success)" /> : <Copy size={14} />}
 					</ToolbarIconButton>
 					<ToolbarIconButton
 						label={t("filesPanel.insertMention")}
@@ -462,13 +462,17 @@ export function FilesPanel() {
 						path={filePreviewPath}
 						external
 						label={t("filesPanel.openExternal")}
-						className="omp-pressable flex size-7 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text) hover:no-underline"
+						className="omsk-pressable flex size-7 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text) hover:no-underline"
 					>
 						<ExternalLinkIcon size={14} />
 					</PathLink>
 				</PanelToolbar>
 				{!formattedPreview && editStatus && (
-					<p className="shrink-0 px-3 py-2 text-omp-sm text-(--omp-error)" role="alert" title={editStatus.detail}>
+					<p
+						className="shrink-0 px-3 py-2 text-omsk-sm text-(--omsk-error)"
+						role="alert"
+						title={editStatus.detail}
+					>
 						{t(`filesPanel.editError.${editStatus.failure}`)}
 					</p>
 				)}
@@ -491,12 +495,12 @@ export function FilesPanel() {
 							event.preventDefault();
 							selectContents(previewContentRef.current);
 						}}
-						className="min-h-0 flex-1 overflow-auto bg-(--omp-code-bg) outline-none"
+						className="min-h-0 flex-1 overflow-auto bg-(--omsk-code-bg) outline-none"
 					>
 						{!activePreview || activePreview.loading || (wantsEditor && !editStatus) ? (
 							<div className="flex items-center gap-2 p-4">
 								<Spinner size="sm" />
-								<span className="text-omp-sm text-(--omp-dim)">{t("filesPanel.reading")}</span>
+								<span className="text-omsk-sm text-(--omsk-dim)">{t("filesPanel.reading")}</span>
 							</div>
 						) : activePreview.notice ? (
 							<PanelEmpty icon={FileX} title={activePreview.notice.title} hint={activePreview.notice.hint} />
@@ -523,46 +527,52 @@ export function FilesPanel() {
 						) : formattedPreview && TABLE_DOCUMENT.test(filePreviewPath) ? (
 							<DelimitedTable content={previewDraft ?? activePreview.content ?? ""} path={filePreviewPath} />
 						) : formattedPreview ? (
-							<div ref={setPreviewContent} className="mx-auto max-w-3xl px-5 py-4 text-omp-md text-(--omp-text)">
+							<div
+								ref={setPreviewContent}
+								className="mx-auto max-w-3xl px-5 py-4 text-omsk-md text-(--omsk-text)"
+							>
 								<MarkdownRenderer
 									content={previewDraft ?? activePreview.content ?? ""}
 									sourcePath={filePreviewPath}
 								/>
 								{previewDraft === undefined && activePreview.truncated && (
-									<div className="mt-3 text-omp-xs text-(--omp-dim)">
+									<div className="mt-3 text-omsk-xs text-(--omsk-dim)">
 										{t("filesPanel.truncated", { kb: PREVIEW_MAX_BYTES / 1000 })}
 									</div>
 								)}
 							</div>
 						) : (
-							<div className="relative flex min-w-max py-2 font-mono text-omp-xs leading-[1.6]">
+							<div className="relative flex min-w-max py-2 font-mono text-omsk-xs leading-[1.6]">
 								{lineBand && (
 									<div
 										aria-hidden="true"
 										data-marked-line={markedLine ?? undefined}
-										className="pointer-events-none absolute inset-x-0 bg-[var(--omp-accent)]/12"
+										className="pointer-events-none absolute inset-x-0 bg-[var(--omsk-accent)]/12"
 										style={{ top: lineBand.top, height: lineBand.height }}
 									/>
 								)}
 								<div
 									ref={gutterRef}
 									aria-hidden="true"
-									className="sticky left-0 shrink-0 select-none bg-(--omp-code-bg) pr-3 pl-3 text-right text-(--omp-dim) opacity-70"
+									className="sticky left-0 shrink-0 select-none bg-(--omsk-code-bg) pr-3 pl-3 text-right text-(--omsk-dim) opacity-70"
 								>
 									{Array.from({ length: previewLines }, (_, index) => (
 										<div
 											key={index}
 											data-marked={index + 1 === markedLine || undefined}
-											className={index + 1 === markedLine ? "font-semibold text-(--omp-accent)" : undefined}
+											className={index + 1 === markedLine ? "font-semibold text-(--omsk-accent)" : undefined}
 										>
 											{index + 1}
 										</div>
 									))}
 								</div>
-								<pre ref={setPreviewContent} className="m-0 pr-4 whitespace-pre text-(--omp-text) [tab-size:4]">
+								<pre
+									ref={setPreviewContent}
+									className="m-0 pr-4 whitespace-pre text-(--omsk-text) [tab-size:4]"
+								>
 									{activePreview.content}
 									{activePreview.truncated && (
-										<span className="text-(--omp-dim)">
+										<span className="text-(--omsk-dim)">
 											{"\n"}
 											{t("filesPanel.truncated", { kb: PREVIEW_MAX_BYTES / 1000 })}
 										</span>
@@ -575,17 +585,17 @@ export function FilesPanel() {
 			</div>
 		) : filePreviewImage ? (
 			<div className="flex min-h-0 min-w-0 flex-1 flex-col">
-				<PanelToolbar className="gap-1 border-b border-(--omp-border-muted)">
+				<PanelToolbar className="gap-1 border-b border-(--omsk-border-muted)">
 					<ToolbarIconButton label={t("filesPanel.back")} onClick={closeFilePreview}>
 						<X size={14} />
 					</ToolbarIconButton>
-					<span className="min-w-0 flex-1 truncate text-omp-sm font-medium">{filePreviewImage.label}</span>
+					<span className="min-w-0 flex-1 truncate text-omsk-sm font-medium">{filePreviewImage.label}</span>
 				</PanelToolbar>
 				<div className="min-h-0 flex-1 overflow-auto" data-file-preview="">
 					<ZoomableImage
 						src={filePreviewImage.src}
 						alt={filePreviewImage.label}
-						className="omp-image-checker mx-auto block h-auto max-w-full object-contain p-3"
+						className="omsk-image-checker mx-auto block h-auto max-w-full object-contain p-3"
 					/>
 				</div>
 			</div>
@@ -629,7 +639,7 @@ export function FilesPanel() {
 					aria-valuemin={17}
 					aria-valuemax={74}
 					aria-valuenow={treeShare}
-					className="z-10 cursor-col-resize touch-none border-x border-(--omp-border-muted) hover:bg-(--omp-accent) focus-visible:bg-(--omp-accent)"
+					className="z-10 cursor-col-resize touch-none border-x border-(--omsk-border-muted) hover:bg-(--omsk-accent) focus-visible:bg-(--omsk-accent)"
 					role="separator"
 					tabIndex={0}
 					onKeyDown={event => {
@@ -653,7 +663,7 @@ export function FilesPanel() {
 			)}
 			<section className="flex min-h-0 min-w-0 flex-col">
 				<PanelToolbar className="gap-1 px-2">
-					<span className="min-w-0 flex-1 truncate text-omp-sm font-medium">{t("filesPanel.title")}</span>
+					<span className="min-w-0 flex-1 truncate text-omsk-sm font-medium">{t("filesPanel.title")}</span>
 					<ToolbarIconButton
 						label={t(showIgnored ? "filesPanel.hideIgnored" : "filesPanel.showIgnored")}
 						pressed={showIgnored}
@@ -672,7 +682,7 @@ export function FilesPanel() {
 					{!directory ? (
 						<div className="flex items-center justify-center gap-2 py-10">
 							<Spinner size="sm" />
-							<span className="text-omp-sm text-(--omp-dim)">
+							<span className="text-omsk-sm text-(--omsk-dim)">
 								{t(term ? "common.loading" : "filesPanel.scanning")}
 							</span>
 						</div>
@@ -689,7 +699,7 @@ export function FilesPanel() {
 							}
 						/>
 					) : term && nodes.length === 0 ? (
-						<p className="px-3 py-6 text-center text-omp-sm text-(--omp-dim)">{t("filesPanel.noMatch")}</p>
+						<p className="px-3 py-6 text-center text-omsk-sm text-(--omsk-dim)">{t("filesPanel.noMatch")}</p>
 					) : (
 						<TreeView
 							emptyMessage={t("filesPanel.empty")}

@@ -67,7 +67,7 @@ export function ActiveToolsDialog() {
 			<div className="space-y-3">
 				<div className="relative">
 					<Search
-						className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-(--omp-dim)"
+						className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-(--omsk-dim)"
 						size={14}
 					/>
 					<Input
@@ -89,25 +89,25 @@ export function ActiveToolsDialog() {
 					onRetry={() => void reload()}
 				>
 					{groups.length === 0 ? (
-						<div className="py-4 text-omp-md text-(--omp-dim)">{t("activeTools.noMatch")}</div>
+						<div className="py-4 text-omsk-md text-(--omsk-dim)">{t("activeTools.noMatch")}</div>
 					) : (
 						<div className="space-y-4">
 							{groups.map(group => (
 								<section key={group.source}>
 									<div className="mb-1.5 flex items-center gap-2">
-										<span className="text-omp-xs font-semibold text-(--omp-text)">
+										<span className="text-omsk-xs font-semibold text-(--omsk-text)">
 											{t(`activeTools.source.${group.source}`)}
 										</span>
 										<Badge variant="muted">{group.tools.length}</Badge>
 									</div>
-									<div className="divide-y divide-(--omp-border-muted) rounded-lg border border-(--omp-border-muted)">
+									<div className="divide-y divide-(--omsk-border-muted) rounded-lg border border-(--omsk-border-muted)">
 										{group.tools.map(tool => (
 											<div className="px-3 py-2" key={`${group.source}:${tool.name}`}>
-												<div className="font-mono text-omp-xs font-medium text-(--omp-text)">
+												<div className="font-mono text-omsk-xs font-medium text-(--omsk-text)">
 													{tool.name}
 												</div>
 												{tool.description ? (
-													<div className="mt-0.5 line-clamp-2 text-omp-xs text-(--omp-dim)">
+													<div className="mt-0.5 line-clamp-2 text-omsk-xs text-(--omsk-dim)">
 														{tool.description}
 													</div>
 												) : null}

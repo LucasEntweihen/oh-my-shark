@@ -18,7 +18,7 @@ export function SettingsPageIntro({
 }) {
 	return (
 		<header className={cx("flex flex-wrap items-start justify-between gap-4", className)}>
-			<p className="max-w-2xl text-omp-sm leading-relaxed text-(--omp-muted)">{description}</p>
+			<p className="max-w-2xl text-omsk-sm leading-relaxed text-(--omsk-muted)">{description}</p>
 			{actions}
 		</header>
 	);

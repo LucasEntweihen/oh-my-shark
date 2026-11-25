@@ -48,13 +48,13 @@ describe("dark-first themes and manual color customizer", () => {
 		});
 
 		const style = document.documentElement.style;
-		expect(style.getPropertyValue("--omp-accent")).toBe("#ff5500");
+		expect(style.getPropertyValue("--omsk-accent")).toBe("#ff5500");
 		expect(style.getPropertyValue("--omsk-ocean-top")).toBe("#091828");
 		expect(style.getPropertyValue("--omsk-shark-color")).toBe("#00e5ff");
 		expect(style.getPropertyValue("--omsk-glass-blur")).toBe("12px");
 
 		applyManualColorOverrides({});
 		expect(style.getPropertyValue("--omsk-ocean-top")).toBe("");
-		expect(style.getPropertyValue("--omp-accent")).toBe("");
+		expect(style.getPropertyValue("--omsk-accent")).toBe("");
 	});
 });

@@ -18,15 +18,15 @@ describe("parseCustomThemeFile", () => {
 		const entry = parse({
 			name: "  Midnight  ",
 			extends: "nord",
-			tokens: { accent: "#c792ea", "--omp-bg-primary": "rgb(10 12 20)" },
+			tokens: { accent: "#c792ea", "--omsk-bg-primary": "rgb(10 12 20)" },
 		});
 		expect(entry.problem).toBeUndefined();
 		expect(entry.selection).toBe("custom:midnight");
 		expect(entry.theme).toMatchObject({ label: "Midnight", scheme: THEMES.nord.scheme });
 		expect(entry.theme?.tokens).toEqual({
 			...THEMES.nord.tokens,
-			"--omp-accent": "#c792ea",
-			"--omp-bg-primary": "rgb(10 12 20)",
+			"--omsk-accent": "#c792ea",
+			"--omsk-bg-primary": "rgb(10 12 20)",
 		});
 	});
 
@@ -55,13 +55,13 @@ describe("parseCustomThemeFile", () => {
 		});
 		expect(entry.skipped).toEqual(["not-a-token", "text", "bg-secondary", "shadow-sm", "border-muted"]);
 		expect(entry.theme?.tokens).toMatchObject({
-			"--omp-accent": "#123456",
-			"--omp-bg-elevated": "transparent",
-			"--omp-shadow-md": "0 6px 18px rgba(0, 0, 0, 0.4)",
-			"--omp-text": THEMES.dark.tokens["--omp-text"],
-			"--omp-bg-secondary": THEMES.dark.tokens["--omp-bg-secondary"],
-			"--omp-shadow-sm": THEMES.dark.tokens["--omp-shadow-sm"],
-			"--omp-border-muted": THEMES.dark.tokens["--omp-border-muted"],
+			"--omsk-accent": "#123456",
+			"--omsk-bg-elevated": "transparent",
+			"--omsk-shadow-md": "0 6px 18px rgba(0, 0, 0, 0.4)",
+			"--omsk-text": THEMES.dark.tokens["--omsk-text"],
+			"--omsk-bg-secondary": THEMES.dark.tokens["--omsk-bg-secondary"],
+			"--omsk-shadow-sm": THEMES.dark.tokens["--omsk-shadow-sm"],
+			"--omsk-border-muted": THEMES.dark.tokens["--omsk-border-muted"],
 		});
 	});
 
@@ -69,7 +69,7 @@ describe("parseCustomThemeFile", () => {
 		vi.stubGlobal("CSS", { supports: (_property: string, value: string) => value !== "rgb(not-a-color)" });
 		const entry = parse({ tokens: { accent: "rgb(not-a-color)" } });
 		expect(entry.skipped).toEqual(["accent"]);
-		expect(entry.theme?.tokens["--omp-accent"]).toBe(THEMES.dark.tokens["--omp-accent"]);
+		expect(entry.theme?.tokens["--omsk-accent"]).toBe(THEMES.dark.tokens["--omsk-accent"]);
 	});
 
 	it("reports a tokens field that is not a map", () => {
@@ -100,7 +100,7 @@ describe("parseCustomThemeFile", () => {
 describe("a custom theme on screen", () => {
 	const { document } = parseHTML("<html><head></head><body></body></html>");
 	const style = document.documentElement.style;
-	const accent = () => style.getPropertyValue("--omp-accent");
+	const accent = () => style.getPropertyValue("--omsk-accent");
 	const storage = new Map<string, string>();
 	const localStorage = {
 		getItem: (key: string) => storage.get(key) ?? null,
@@ -145,12 +145,12 @@ describe("a custom theme on screen", () => {
 		expect(storage.get("omp.themeBackground")).toBe("#202840");
 
 		setCustomThemes(themes());
-		expect(accent()).toBe(THEMES.dark.tokens["--omp-accent"]);
+		expect(accent()).toBe(THEMES.dark.tokens["--omsk-accent"]);
 	});
 
 	it("leaves a built-in theme on screen when theme files change", () => {
 		applyThemeByName("nord", { persist: false });
 		setCustomThemes(themes(midnight("#111111")));
-		expect(accent()).toBe(THEMES.nord.tokens["--omp-accent"]);
+		expect(accent()).toBe(THEMES.nord.tokens["--omsk-accent"]);
 	});
 });

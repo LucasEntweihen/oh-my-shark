@@ -21,9 +21,9 @@ export function EvalRenderer({ args, result, isError, isPartial, partialResult }
 	return (
 		<div className="flex flex-col gap-1.5">
 			{title && (
-				<div className="flex items-center gap-1.5 text-omp-sm">
-					<Code2 size={12} className="text-[var(--omp-dim)]" />
-					<span className="font-medium text-[var(--omp-text)]">{title}</span>
+				<div className="flex items-center gap-1.5 text-omsk-sm">
+					<Code2 size={12} className="text-[var(--omsk-dim)]" />
+					<span className="font-medium text-[var(--omsk-text)]">{title}</span>
 				</div>
 			)}
 			{code && <CodeBlock code={code} language={language} showCopy={false} maxHeightClass="max-h-64" />}
@@ -31,19 +31,19 @@ export function EvalRenderer({ args, result, isError, isPartial, partialResult }
 				<div>
 					<div
 						className={
-							"mb-0.5 text-omp-xxs font-semibold " +
-							(isError ? "text-[var(--omp-error)]" : "text-[var(--omp-dim)]")
+							"mb-0.5 text-omsk-xxs font-semibold " +
+							(isError ? "text-[var(--omsk-error)]" : "text-[var(--omsk-dim)]")
 						}
 					>
 						{isError ? t("tools.eval.error") : t("tools.eval.output")}
 					</div>
 					<pre
 						className={cx(
-							"whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omp-sm leading-[1.45]",
+							"whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omsk-sm leading-[1.45]",
 							PREVIEW_SCROLL_SM,
 							isError
-								? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-								: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]",
+								? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+								: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]",
 						)}
 					>
 						<OutputText text={output} />
@@ -52,7 +52,7 @@ export function EvalRenderer({ args, result, isError, isPartial, partialResult }
 			)}
 			<ResultImages images={images} />
 			{isPartial && !output && images.length === 0 && (
-				<div className="text-omp-sm italic text-[var(--omp-accent)]">{t("tools.eval.evaluating")}</div>
+				<div className="text-omsk-sm italic text-[var(--omsk-accent)]">{t("tools.eval.evaluating")}</div>
 			)}
 		</div>
 	);

@@ -22,7 +22,8 @@ function readOceanCssOverrides(): OceanThemeOverrides {
 	const waterTop = style.getPropertyValue("--omsk-ocean-top").trim();
 	const waterBottom = style.getPropertyValue("--omsk-ocean-bottom").trim();
 	const sharkTint = style.getPropertyValue("--omsk-shark-color").trim();
-	const accent = style.getPropertyValue("--omp-accent-bright").trim() || style.getPropertyValue("--omp-accent").trim();
+	const accent =
+		style.getPropertyValue("--omsk-accent-bright").trim() || style.getPropertyValue("--omsk-accent").trim();
 	return {
 		waterTop: waterTop || undefined,
 		waterBottom: waterBottom || undefined,

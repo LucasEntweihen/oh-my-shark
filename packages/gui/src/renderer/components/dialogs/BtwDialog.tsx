@@ -124,37 +124,39 @@ export function BtwDialog() {
 			<div className="flex max-h-[70vh] flex-col">
 				<div className="min-h-0 flex-1 overflow-y-auto pr-1">
 					{pending && !record ? (
-						<div className="flex items-center justify-center gap-2 py-16 text-omp-md text-(--omp-dim)">
+						<div className="flex items-center justify-center gap-2 py-16 text-omsk-md text-(--omsk-dim)">
 							<Spinner size="sm" /> {t("btw.thinking")}
 						</div>
 					) : error ? (
-						<div className="rounded-lg border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent p-3 text-omp-md text-[var(--omp-error)]">
+						<div className="rounded-lg border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent p-3 text-omsk-md text-[var(--omsk-error)]">
 							{error}
 						</div>
 					) : record && latest ? (
 						<div className="space-y-4">
 							<div className="flex flex-col items-end gap-1">
-								<div className="max-w-[85%] rounded-xl border border-[var(--omp-user-msg-border)] bg-[var(--omp-user-msg-bg)] px-3.5 py-3 text-omp-lg leading-[1.6] text-[var(--omp-text)]">
+								<div className="max-w-[85%] rounded-xl border border-[var(--omsk-user-msg-border)] bg-[var(--omsk-user-msg-bg)] px-3.5 py-3 text-omsk-lg leading-[1.6] text-[var(--omsk-text)]">
 									<MarkdownRenderer content={latest.question} />
 								</div>
-								<div className="text-omp-xs tabular-nums text-(--omp-dim)">{formatClock(latest.createdAt)}</div>
+								<div className="text-omsk-xs tabular-nums text-(--omsk-dim)">
+									{formatClock(latest.createdAt)}
+								</div>
 							</div>
 							<div className="flex flex-col items-start gap-1.5">
 								{answerText ? (
 									<BtwAnswer answer={answerText} inject={record.inject} recordId={record.id} />
 								) : running ? (
-									<div className="flex items-center gap-2 py-3 text-omp-md text-(--omp-dim)">
+									<div className="flex items-center gap-2 py-3 text-omsk-md text-(--omsk-dim)">
 										<Spinner size="sm" /> {t("btw.thinking")}
 									</div>
 								) : null}
-								{statusNote ? <div className="text-omp-xs text-(--omp-dim)">{statusNote}</div> : null}
+								{statusNote ? <div className="text-omsk-xs text-(--omsk-dim)">{statusNote}</div> : null}
 							</div>
 						</div>
 					) : null}
 				</div>
-				<div className="mt-4 shrink-0 border-t border-(--omp-border-muted) pt-3">
+				<div className="mt-4 shrink-0 border-t border-(--omsk-border-muted) pt-3">
 					{busy && !running ? (
-						<div className="mb-1.5 flex items-center gap-2 text-omp-xs text-(--omp-dim)">
+						<div className="mb-1.5 flex items-center gap-2 text-omsk-xs text-(--omsk-dim)">
 							<span className="min-w-0 flex-1">{t("btw.busyHint")}</span>
 							<Button
 								onClick={() => {

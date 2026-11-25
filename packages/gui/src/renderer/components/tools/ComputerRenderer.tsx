@@ -16,33 +16,33 @@ export function ComputerRenderer({ args, result, isError, isPartial, partialResu
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<Monitor size={12} className="shrink-0 text-[var(--omp-status-path)]" />
-				{action && <span className="font-semibold text-[var(--omp-text)]">{action}</span>}
-				{coordinate && <span className="text-[var(--omp-dim)]">({coordinate})</span>}
-				{text && <span className="min-w-0 flex-1 truncate text-[var(--omp-muted)]">“{text}”</span>}
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<Monitor size={12} className="shrink-0 text-[var(--omsk-status-path)]" />
+				{action && <span className="font-semibold text-[var(--omsk-text)]">{action}</span>}
+				{coordinate && <span className="text-[var(--omsk-dim)]">({coordinate})</span>}
+				{text && <span className="min-w-0 flex-1 truncate text-[var(--omsk-muted)]">“{text}”</span>}
 			</div>
 			{screenshot && (
 				<ZoomableImage
 					src={screenshot}
 					alt={t("tools.computer.captureAlt")}
-					className="max-h-64 rounded-md border border-[var(--omp-border-muted)] object-contain"
+					className="max-h-64 rounded-md border border-[var(--omsk-border-muted)] object-contain"
 				/>
 			)}
 			{output && !screenshot && (
 				<pre
 					className={
-						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omp-sm leading-[1.45] " +
+						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] " +
 						(isError
-							? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-							: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]")
+							? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+							: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]")
 					}
 				>
 					{output}
 				</pre>
 			)}
 			{isPartial && !screenshot && !output && (
-				<div className="text-omp-sm italic text-[var(--omp-accent)]">{t("tools.computer.acting")}</div>
+				<div className="text-omsk-sm italic text-[var(--omsk-accent)]">{t("tools.computer.acting")}</div>
 			)}
 		</div>
 	);

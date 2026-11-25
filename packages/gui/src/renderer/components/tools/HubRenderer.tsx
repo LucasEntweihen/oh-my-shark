@@ -185,17 +185,17 @@ function messageAge(ts: number | undefined): string {
 }
 
 const STATE_COLOR: Record<string, string> = {
-	running: "var(--omp-success)",
-	ready: "var(--omp-success)",
-	completed: "var(--omp-dim)",
-	exited: "var(--omp-dim)",
-	idle: "var(--omp-dim)",
-	parked: "var(--omp-warning)",
-	starting: "var(--omp-accent)",
-	stopping: "var(--omp-warning)",
-	cancelled: "var(--omp-warning)",
-	failed: "var(--omp-error)",
-	stale: "var(--omp-warning)",
+	running: "var(--omsk-success)",
+	ready: "var(--omsk-success)",
+	completed: "var(--omsk-dim)",
+	exited: "var(--omsk-dim)",
+	idle: "var(--omsk-dim)",
+	parked: "var(--omsk-warning)",
+	starting: "var(--omsk-accent)",
+	stopping: "var(--omsk-warning)",
+	cancelled: "var(--omsk-warning)",
+	failed: "var(--omsk-error)",
+	stale: "var(--omsk-warning)",
 };
 
 /** Hub: peer roster, job list, process list, or message log depending on the op. */
@@ -257,31 +257,33 @@ export function HubRenderer({ args, result, isError, isPartial, partialResult }:
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<Icon size={12} className="shrink-0 text-[var(--omp-status-subagents)]" />
-				<span className="font-semibold text-[var(--omp-text)]">{op || "hub"}</span>
-				{typeof args.to === "string" && <span className="text-[var(--omp-md-link)]">→ {args.to}</span>}
-				{typeof args.name === "string" && <span className="text-[var(--omp-status-path)]">{args.name}</span>}
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<Icon size={12} className="shrink-0 text-[var(--omsk-status-subagents)]" />
+				<span className="font-semibold text-[var(--omsk-text)]">{op || "hub"}</span>
+				{typeof args.to === "string" && <span className="text-[var(--omsk-md-link)]">→ {args.to}</span>}
+				{typeof args.name === "string" && <span className="text-[var(--omsk-status-path)]">{args.name}</span>}
 				{hubState && (
 					<span
-						className="ml-auto shrink-0 text-omp-xs"
-						style={{ color: STATE_COLOR[hubState] ?? "var(--omp-dim)" }}
+						className="ml-auto shrink-0 text-omsk-xs"
+						style={{ color: STATE_COLOR[hubState] ?? "var(--omsk-dim)" }}
 					>
 						{stateLabel(hubState)}
 					</span>
 				)}
 				{timedOut && (
-					<span className="ml-auto shrink-0 text-omp-xs text-[var(--omp-warning)]">{t("tools.hub.timedOut")}</span>
+					<span className="ml-auto shrink-0 text-omsk-xs text-[var(--omsk-warning)]">
+						{t("tools.hub.timedOut")}
+					</span>
 				)}
 			</div>
 			{spec && (
-				<div className="rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.6] text-[var(--omp-tool-output)]">
+				<div className="rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.6] text-[var(--omsk-tool-output)]">
 					<div className="truncate">
-						<span className="text-[var(--omp-dim)]">$ </span>
+						<span className="text-[var(--omsk-dim)]">$ </span>
 						{String(spec.application ?? "")} {asArray(spec.args).map(String).join(" ")}
 					</div>
-					{typeof spec.cwd === "string" && <div className="truncate text-[var(--omp-dim)]">cwd: {spec.cwd}</div>}
-					<div className="text-[var(--omp-dim)]">
+					{typeof spec.cwd === "string" && <div className="truncate text-[var(--omsk-dim)]">cwd: {spec.cwd}</div>}
+					<div className="text-[var(--omsk-dim)]">
 						pty: {spec.pty === true ? "on" : "off"} · restart: {String(spec.restart ?? "no")} · persist:{" "}
 						{spec.persist === true ? "on" : "off"}
 						{spec.detached === true ? " · detached" : ""}
@@ -289,70 +291,72 @@ export function HubRenderer({ args, result, isError, isPartial, partialResult }:
 				</div>
 			)}
 			{typeof args.message === "string" && args.message && (
-				<div className="rounded-md bg-[var(--omp-code-bg)] px-2 py-1.5 text-omp-sm leading-[1.45] text-[var(--omp-muted)]">
+				<div className="rounded-md bg-[var(--omsk-code-bg)] px-2 py-1.5 text-omsk-sm leading-[1.45] text-[var(--omsk-muted)]">
 					{args.message}
 				</div>
 			)}
 
 			{receipts.length > 0 && (
-				<div className="rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.7]">
+				<div className="rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.7]">
 					{receipts.map(r => (
 						<div key={r.to} className="flex items-center gap-2">
 							<span
 								className="h-1.5 w-1.5 shrink-0 rounded-full"
-								style={{ background: r.outcome === "failed" ? "var(--omp-error)" : "var(--omp-success)" }}
+								style={{ background: r.outcome === "failed" ? "var(--omsk-error)" : "var(--omsk-success)" }}
 							/>
-							<span className="text-[var(--omp-md-link)]">→ {r.to}</span>
-							<span className="text-[var(--omp-dim)]">{r.outcome ?? "sent"}</span>
-							{r.error && <span className="truncate text-[var(--omp-error)]">{r.error}</span>}
+							<span className="text-[var(--omsk-md-link)]">→ {r.to}</span>
+							<span className="text-[var(--omsk-dim)]">{r.outcome ?? "sent"}</span>
+							{r.error && <span className="truncate text-[var(--omsk-error)]">{r.error}</span>}
 						</div>
 					))}
 				</div>
 			)}
 
 			{waited && (
-				<div className="rounded-md bg-[var(--omp-code-bg)] px-2 py-1.5">
-					<div className="flex items-center gap-2 font-mono text-omp-xs text-[var(--omp-dim)]">
-						{waited.from && <span className="font-semibold text-[var(--omp-text)]">{waited.from}</span>}
+				<div className="rounded-md bg-[var(--omsk-code-bg)] px-2 py-1.5">
+					<div className="flex items-center gap-2 font-mono text-omsk-xs text-[var(--omsk-dim)]">
+						{waited.from && <span className="font-semibold text-[var(--omsk-text)]">{waited.from}</span>}
 						{messageAge(waited.ts) && <span>{messageAge(waited.ts)}</span>}
 					</div>
 					{waited.body && (
-						<div className="mt-0.5 text-omp-sm leading-[1.45] text-[var(--omp-muted)]">{waited.body}</div>
+						<div className="mt-0.5 text-omsk-sm leading-[1.45] text-[var(--omsk-muted)]">{waited.body}</div>
 					)}
 				</div>
 			)}
 
 			{inbox.length > 0 && (
-				<div className="max-h-48 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1">
+				<div className="max-h-48 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1">
 					{inbox.map((m, i) => (
 						<div key={i} className="py-0.5">
-							<span className="font-mono text-omp-xs font-semibold text-[var(--omp-text)]">{m.from ?? "?"}</span>
+							<span className="font-mono text-omsk-xs font-semibold text-[var(--omsk-text)]">
+								{m.from ?? "?"}
+							</span>
 							{messageAge(m.ts) && (
-								<span className="ml-2 font-mono text-omp-xs text-[var(--omp-dim)]">{messageAge(m.ts)}</span>
+								<span className="ml-2 font-mono text-omsk-xs text-[var(--omsk-dim)]">{messageAge(m.ts)}</span>
 							)}
-							{m.body && <div className="text-omp-sm leading-[1.45] text-[var(--omp-muted)]">{m.body}</div>}
+							{m.body && <div className="text-omsk-sm leading-[1.45] text-[var(--omsk-muted)]">{m.body}</div>}
 						</div>
 					))}
 				</div>
 			)}
 
 			{peers.length > 0 && (
-				<div className="max-h-48 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.7]">
+				<div className="max-h-48 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.7]">
 					{peers.map(peer => (
 						<div key={peer.id} className="flex items-center gap-2">
 							<span
 								className="h-1.5 w-1.5 shrink-0 rounded-full"
-								style={{ background: STATE_COLOR[peer.state ?? ""] ?? "var(--omp-dim)" }}
+								style={{ background: STATE_COLOR[peer.state ?? ""] ?? "var(--omsk-dim)" }}
 							/>
-							<span className="font-semibold text-[var(--omp-text)]">{peer.id}</span>
-							{peer.agent && <span className="text-[var(--omp-dim)]">({peer.agent})</span>}
+							<span className="font-semibold text-[var(--omsk-text)]">{peer.id}</span>
+							{peer.agent && <span className="text-[var(--omsk-dim)]">({peer.agent})</span>}
 							{peer.unread != null && (
-								<span className="rounded bg-[var(--omp-accent)]/15 px-1 py-px text-omp-xxs font-semibold text-[var(--omp-accent)]">
+								<span className="rounded bg-[var(--omsk-accent)]/15 px-1 py-px text-omsk-xxs font-semibold text-[var(--omsk-accent)]">
 									{peer.unread}
 								</span>
 							)}
 							{peer.state && (
-								<span className="ml-auto text-omp-xs text-[var(--omp-dim)]">{stateLabel(peer.state)}</span>
+								<span className="ml-auto text-omsk-xs text-[var(--omsk-dim)]">{stateLabel(peer.state)}</span>
 							)}
 						</div>
 					))}
@@ -360,26 +364,26 @@ export function HubRenderer({ args, result, isError, isPartial, partialResult }:
 			)}
 
 			{jobs.length > 0 && (
-				<div className="max-h-48 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.7]">
+				<div className="max-h-48 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.7]">
 					{jobs.map(job => (
 						<div key={job.id} className="flex items-center gap-2">
 							<span
 								className="h-1.5 w-1.5 shrink-0 rounded-full"
-								style={{ background: STATE_COLOR[job.status ?? ""] ?? "var(--omp-dim)" }}
+								style={{ background: STATE_COLOR[job.status ?? ""] ?? "var(--omsk-dim)" }}
 							/>
-							<span className="shrink-0 font-semibold text-[var(--omp-text)]">{job.id}</span>
+							<span className="shrink-0 font-semibold text-[var(--omsk-text)]">{job.id}</span>
 							{job.label && (
-								<span className="min-w-0 flex-1 truncate text-[var(--omp-muted)]" title={job.label}>
+								<span className="min-w-0 flex-1 truncate text-[var(--omsk-muted)]" title={job.label}>
 									{job.label}
 								</span>
 							)}
 							{job.status === "stale" && (
-								<span className="ml-auto shrink-0 text-omp-xs text-[var(--omp-warning)]">
+								<span className="ml-auto shrink-0 text-omsk-xs text-[var(--omsk-warning)]">
 									{stateLabel(job.status)}
 								</span>
 							)}
 							{job.durationMs != null && (
-								<span className="shrink-0 text-omp-xs tabular-nums text-[var(--omp-dim)]">
+								<span className="shrink-0 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 									{formatDuration(job.durationMs)}
 								</span>
 							)}
@@ -389,40 +393,40 @@ export function HubRenderer({ args, result, isError, isPartial, partialResult }:
 			)}
 
 			{cancelled.length > 0 && (
-				<div className="rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.7]">
+				<div className="rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.7]">
 					{cancelled.map(c => (
 						<div key={c.id} className="flex items-center gap-2">
-							<span className="font-semibold text-[var(--omp-text)]">{c.id}</span>
-							<span className="text-[var(--omp-dim)]">{stateLabel(c.status ?? "cancelled")}</span>
+							<span className="font-semibold text-[var(--omsk-text)]">{c.id}</span>
+							<span className="text-[var(--omsk-dim)]">{stateLabel(c.status ?? "cancelled")}</span>
 						</div>
 					))}
 				</div>
 			)}
 
 			{procs.length > 0 && (
-				<div className="max-h-48 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.7]">
+				<div className="max-h-48 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.7]">
 					{procs.map(proc => (
 						<div key={proc.name} className="flex items-center gap-2">
 							<span
 								className="h-1.5 w-1.5 shrink-0 rounded-full"
-								style={{ background: STATE_COLOR[proc.state ?? ""] ?? "var(--omp-dim)" }}
+								style={{ background: STATE_COLOR[proc.state ?? ""] ?? "var(--omsk-dim)" }}
 							/>
-							<span className="font-semibold text-[var(--omp-text)]">{proc.name}</span>
+							<span className="font-semibold text-[var(--omsk-text)]">{proc.name}</span>
 							{proc.pid != null && (
-								<span className="text-omp-xs text-[var(--omp-dim)]">
+								<span className="text-omsk-xs text-[var(--omsk-dim)]">
 									{t("tools.hub.pid", { pid: proc.pid })}
 								</span>
 							)}
 							{proc.exitCode != null && (
-								<span className="text-omp-xs text-[var(--omp-dim)]">
+								<span className="text-omsk-xs text-[var(--omsk-dim)]">
 									{t("tools.hub.exit", { code: proc.exitCode })}
 								</span>
 							)}
 							{proc.restartCount != null && (
-								<span className="text-omp-xs text-[var(--omp-dim)]">↻ {proc.restartCount}</span>
+								<span className="text-omsk-xs text-[var(--omsk-dim)]">↻ {proc.restartCount}</span>
 							)}
 							{proc.state && (
-								<span className="ml-auto text-omp-xs text-[var(--omp-dim)]">{stateLabel(proc.state)}</span>
+								<span className="ml-auto text-omsk-xs text-[var(--omsk-dim)]">{stateLabel(proc.state)}</span>
 							)}
 						</div>
 					))}
@@ -430,13 +434,13 @@ export function HubRenderer({ args, result, isError, isPartial, partialResult }:
 			)}
 
 			{matched && (
-				<div className="font-mono text-omp-sm text-[var(--omp-success)]">
+				<div className="font-mono text-omsk-sm text-[var(--omsk-success)]">
 					{t("tools.hub.matched", { value: matched })}
 				</div>
 			)}
 
 			{terminalRows.length > 0 && (
-				<pre className="max-h-56 overflow-auto whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.45] text-[var(--omp-tool-output)]">
+				<pre className="max-h-56 overflow-auto whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] text-[var(--omsk-tool-output)]">
 					<OutputText text={terminalRows.join("\n")} />
 				</pre>
 			)}
@@ -444,10 +448,10 @@ export function HubRenderer({ args, result, isError, isPartial, partialResult }:
 			{!hasStructured && text && (
 				<pre
 					className={cx(
-						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omp-sm leading-[1.45]",
+						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omsk-sm leading-[1.45]",
 						isError
-							? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-							: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]",
+							? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+							: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]",
 					)}
 				>
 					{text}

@@ -33,10 +33,10 @@ export function GlobRenderer({ args, result, isPartial, partialResult }: ToolRen
 
 	return (
 		<div className="flex flex-col gap-1">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<FolderOpen size={12} className="shrink-0 text-[var(--omp-dim)]" />
-				<span className="truncate text-[var(--omp-text)]">{pattern}</span>
-				<span className="ml-auto shrink-0 text-omp-xs text-[var(--omp-dim)]">
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<FolderOpen size={12} className="shrink-0 text-[var(--omsk-dim)]" />
+				<span className="truncate text-[var(--omsk-text)]">{pattern}</span>
+				<span className="ml-auto shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 					{isPartial
 						? t("tools.glob.matching")
 						: Number.isFinite(totalCount)
@@ -48,7 +48,7 @@ export function GlobRenderer({ args, result, isPartial, partialResult }: ToolRen
 			{paths.length > 0 && (
 				<div
 					className={cx(
-						"rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.5]",
+						"rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.5]",
 						PREVIEW_SCROLL_MD,
 					)}
 				>
@@ -56,9 +56,9 @@ export function GlobRenderer({ args, result, isPartial, partialResult }: ToolRen
 						<PathLink
 							key={i}
 							path={p.endsWith("/") ? p.slice(0, -1) : p}
-							className="block truncate whitespace-pre text-[var(--omp-muted)] transition-colors hover:bg-[var(--omp-selected-bg)]/50"
+							className="block truncate whitespace-pre text-[var(--omsk-muted)] transition-colors hover:bg-[var(--omsk-selected-bg)]/50"
 						>
-							{p.endsWith("/") ? <span className="text-[var(--omp-status-path)]">{p}</span> : p}
+							{p.endsWith("/") ? <span className="text-[var(--omsk-status-path)]">{p}</span> : p}
 						</PathLink>
 					))}
 				</div>

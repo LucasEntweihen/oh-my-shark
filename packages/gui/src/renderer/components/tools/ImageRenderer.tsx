@@ -27,12 +27,12 @@ export function ImageRenderer({ args, result, isError, isPartial, partialResult 
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<ImageIcon size={12} className="shrink-0 text-[var(--omp-thinking-xhigh)]" />
-				{path && <span className="min-w-0 flex-1 truncate text-[var(--omp-text)]">{path}</span>}
-				{!path && prompt && <span className="min-w-0 flex-1 truncate text-[var(--omp-muted)]">{prompt}</span>}
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<ImageIcon size={12} className="shrink-0 text-[var(--omsk-thinking-xhigh)]" />
+				{path && <span className="min-w-0 flex-1 truncate text-[var(--omsk-text)]">{path}</span>}
+				{!path && prompt && <span className="min-w-0 flex-1 truncate text-[var(--omsk-muted)]">{prompt}</span>}
 				{images.length > 1 && (
-					<span className="shrink-0 tabular-nums text-[var(--omp-dim)]">
+					<span className="shrink-0 tabular-nums text-[var(--omsk-dim)]">
 						{t("tools.image.count", { count: images.length })}
 					</span>
 				)}
@@ -42,7 +42,7 @@ export function ImageRenderer({ args, result, isError, isPartial, partialResult 
 					{images.map(src => (
 						<ZoomableImage
 							alt={path || prompt || t("tools.image.alt")}
-							className="max-h-72 rounded-md border border-[var(--omp-border-muted)] object-contain"
+							className="max-h-72 rounded-md border border-[var(--omsk-border-muted)] object-contain"
 							key={src}
 							src={src}
 						/>
@@ -52,10 +52,10 @@ export function ImageRenderer({ args, result, isError, isPartial, partialResult 
 				caption && (
 					<pre
 						className={
-							"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omp-sm leading-[1.45] " +
+							"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] " +
 							(isError
-								? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-								: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]")
+								? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+								: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]")
 						}
 					>
 						{caption}
@@ -63,7 +63,7 @@ export function ImageRenderer({ args, result, isError, isPartial, partialResult 
 				)
 			)}
 			{isPartial && images.length === 0 && !caption && (
-				<div className="text-omp-sm italic text-[var(--omp-accent)]">{t("tools.image.generating")}</div>
+				<div className="text-omsk-sm italic text-[var(--omsk-accent)]">{t("tools.image.generating")}</div>
 			)}
 		</div>
 	);

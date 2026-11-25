@@ -14,22 +14,22 @@ import {
 } from "react";
 
 const BASE_INPUT =
-	"w-full rounded-lg border bg-(--omp-input-bg) leading-[1.45] text-(--omp-text) placeholder:text-(--omp-dim) shadow-(--omp-shadow-sm) transition-[border-color,box-shadow] duration-150 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
+	"w-full rounded-lg border bg-(--omsk-input-bg) leading-[1.45] text-(--omsk-text) placeholder:text-(--omsk-dim) shadow-(--omsk-shadow-sm) transition-[border-color,box-shadow] duration-150 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
 
 /**
  * Field metrics. `compact` is the dense-form size (settings rows), the same
  * height and type step as the dropdowns beside it; the default suits dialogs.
  */
 export const FIELD_SIZE = {
-	default: "px-3 py-[9px] text-omp-lg",
-	compact: "px-2.5 py-1.5 text-omp-md",
+	default: "px-3 py-[9px] text-omsk-lg",
+	compact: "px-2.5 py-1.5 text-omsk-md",
 } as const;
 
 /** Resting hairline + teal focus ring; error swaps both for the error tokens. */
 function stateClasses(error: boolean): string {
 	return error
-		? "border-(--omp-error) focus:border-(--omp-error) focus:shadow-[0_0_0_3px_var(--omp-error-dim)]"
-		: "border-(--omp-input-border) hover:border-(--omp-border-strong) focus:border-(--omp-input-focus-border) focus:shadow-[0_0_0_3px_var(--omp-input-glow)] disabled:hover:border-(--omp-input-border)";
+		? "border-(--omsk-error) focus:border-(--omsk-error) focus:shadow-[0_0_0_3px_var(--omsk-error-dim)]"
+		: "border-(--omsk-input-border) hover:border-(--omsk-border-strong) focus:border-(--omsk-input-focus-border) focus:shadow-[0_0_0_3px_var(--omsk-input-glow)] disabled:hover:border-(--omsk-input-border)";
 }
 
 function FieldShell({
@@ -45,14 +45,14 @@ function FieldShell({
 }) {
 	return (
 		<label className="block">
-			{label && <span className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)">{label}</span>}
+			{label && <span className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)">{label}</span>}
 			{children}
 			{error ? (
-				<span data-field-error="" className="mt-1.5 block text-omp-md text-(--omp-error)">
+				<span data-field-error="" className="mt-1.5 block text-omsk-md text-(--omsk-error)">
 					{error}
 				</span>
 			) : hint ? (
-				<span className="mt-1.5 block text-omp-md text-(--omp-dim)">{hint}</span>
+				<span className="mt-1.5 block text-omsk-md text-(--omsk-dim)">{hint}</span>
 			) : null}
 		</label>
 	);

@@ -40,7 +40,7 @@ import { useUiStore } from "../../stores/ui";
 import { Button, ConfirmDialog, Input, Modal } from "../common";
 
 const SELECT_CLASS =
-	"w-full rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-3 py-[7px] text-omp-lg text-(--omp-text) transition-colors duration-150 hover:border-(--omp-border-strong) focus:border-(--omp-input-focus-border) focus:outline-none";
+	"w-full rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-3 py-[7px] text-omsk-lg text-(--omsk-text) transition-colors duration-150 hover:border-(--omsk-border-strong) focus:border-(--omsk-input-focus-border) focus:outline-none";
 
 /** `#abc`, `abc`, `#aabbcc` or `aabbcc` as lowercase `#aabbcc`; null for anything else. */
 function normalizeHex(value: string): string | null {
@@ -108,7 +108,7 @@ function ColorRow({
 	return (
 		<div data-theme-component={component} data-picked={picked || undefined} className="flex items-center gap-3 py-1">
 			<span
-				className="relative h-7 w-7 shrink-0 overflow-hidden rounded-md border border-(--omp-border-strong) shadow-(--omp-shadow-sm)"
+				className="relative h-7 w-7 shrink-0 overflow-hidden rounded-md border border-(--omsk-border-strong) shadow-(--omsk-shadow-sm)"
 				style={{ background: value }}
 			>
 				<input
@@ -122,8 +122,8 @@ function ColorRow({
 			<span className="min-w-0 flex-1">
 				<span
 					className={cx(
-						"block truncate text-omp-md",
-						picked ? "font-medium text-(--omp-text)" : "text-(--omp-text-secondary)",
+						"block truncate text-omsk-md",
+						picked ? "font-medium text-(--omsk-text)" : "text-(--omsk-text-secondary)",
 					)}
 				>
 					{label}
@@ -132,7 +132,7 @@ function ColorRow({
 					<span
 						data-low-contrast
 						title={t("themeEditor.lowContrastHint")}
-						className="flex items-center gap-1 text-omp-sm text-(--omp-warning)"
+						className="flex items-center gap-1 text-omsk-sm text-(--omsk-warning)"
 					>
 						<AlertTriangle size={11} className="shrink-0" />
 						{t("themeEditor.lowContrast")}
@@ -151,7 +151,7 @@ function ColorRow({
 				}}
 				spellCheck={false}
 				aria-label={t("themeEditor.hex", { name: label })}
-				className="w-[5.75rem] rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2 py-1 font-mono text-omp-sm text-(--omp-text) focus:border-(--omp-input-focus-border) focus:outline-none"
+				className="w-[5.75rem] rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2 py-1 font-mono text-omsk-sm text-(--omsk-text) focus:border-(--omsk-input-focus-border) focus:outline-none"
 			/>
 			<button
 				type="button"
@@ -159,7 +159,7 @@ function ColorRow({
 				disabled={!picked}
 				aria-label={t("themeEditor.reset", { name: label })}
 				title={t("themeEditor.reset", { name: label })}
-				className="rounded-md p-1 text-(--omp-dim) transition-colors hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text) disabled:invisible"
+				className="rounded-md p-1 text-(--omsk-dim) transition-colors hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text) disabled:invisible"
 			>
 				<RotateCcw size={13} />
 			</button>
@@ -178,81 +178,81 @@ function ThemePreview({ theme }: { theme: GeneratedTheme }) {
 		<div
 			data-theme-preview={theme.scheme}
 			style={style}
-			className="flex h-[26rem] flex-col overflow-hidden rounded-xl border border-(--omp-border) bg-(--omp-bg-primary) text-omp-md text-(--omp-text) shadow-(--omp-shadow-md) select-none" // surface-ok: the sample canvas displays the prospective theme.
+			className="flex h-[26rem] flex-col overflow-hidden rounded-xl border border-(--omsk-border) bg-(--omsk-bg-primary) text-omsk-md text-(--omsk-text) shadow-(--omsk-shadow-md) select-none" // surface-ok: the sample canvas displays the prospective theme.
 		>
-			<div className="flex h-8 shrink-0 items-center gap-1.5 border-b border-(--omp-border-muted) bg-(--omp-titlebar-bg) px-3">
-				<span className="h-2.5 w-2.5 rounded-full bg-(--omp-error)" />
-				<span className="h-2.5 w-2.5 rounded-full bg-(--omp-warning)" />
-				<span className="h-2.5 w-2.5 rounded-full bg-(--omp-success)" />
-				<span className="ml-3 truncate text-omp-sm text-(--omp-muted)">{t("themeEditor.preview.title")}</span>
+			<div className="flex h-8 shrink-0 items-center gap-1.5 border-b border-(--omsk-border-muted) bg-(--omsk-titlebar-bg) px-3">
+				<span className="h-2.5 w-2.5 rounded-full bg-(--omsk-error)" />
+				<span className="h-2.5 w-2.5 rounded-full bg-(--omsk-warning)" />
+				<span className="h-2.5 w-2.5 rounded-full bg-(--omsk-success)" />
+				<span className="ml-3 truncate text-omsk-sm text-(--omsk-muted)">{t("themeEditor.preview.title")}</span>
 			</div>
 			<div className="flex min-h-0 flex-1">
-				<div className="flex w-[34%] shrink-0 flex-col gap-0.5 border-r border-(--omp-border-muted) bg-(--omp-sidebar-bg) p-2">
-					<span className="px-2 pt-1 pb-1.5 text-omp-xs font-medium tracking-wide text-(--omp-dim) uppercase">
+				<div className="flex w-[34%] shrink-0 flex-col gap-0.5 border-r border-(--omsk-border-muted) bg-(--omsk-sidebar-bg) p-2">
+					<span className="px-2 pt-1 pb-1.5 text-omsk-xs font-medium tracking-wide text-(--omsk-dim) uppercase">
 						{t("themeEditor.preview.sessions")}
 					</span>
-					<span className="truncate rounded-md bg-(--omp-sidebar-item-active) px-2 py-1 text-(--omp-text)">
+					<span className="truncate rounded-md bg-(--omsk-sidebar-item-active) px-2 py-1 text-(--omsk-text)">
 						{t("themeEditor.preview.session1")}
 					</span>
-					<span className="truncate rounded-md bg-(--omp-sidebar-item-hover) px-2 py-1 text-(--omp-text-secondary)">
+					<span className="truncate rounded-md bg-(--omsk-sidebar-item-hover) px-2 py-1 text-(--omsk-text-secondary)">
 						{t("themeEditor.preview.session2")}
 					</span>
-					<span className="truncate px-2 py-1 text-(--omp-muted)">{t("themeEditor.preview.session3")}</span>
+					<span className="truncate px-2 py-1 text-(--omsk-muted)">{t("themeEditor.preview.session3")}</span>
 				</div>
 				<div className="flex min-w-0 flex-1 flex-col gap-2.5 overflow-hidden p-3">
-					<div className="ml-auto max-w-[85%] rounded-xl border border-(--omp-user-msg-border) bg-(--omp-user-msg-bg) px-3 py-1.5">
+					<div className="ml-auto max-w-[85%] rounded-xl border border-(--omsk-user-msg-border) bg-(--omsk-user-msg-bg) px-3 py-1.5">
 						{t("themeEditor.preview.user")}
 					</div>
-					<div className="leading-relaxed text-(--omp-text)">
-						{t("themeEditor.preview.reply")} <span className="text-(--omp-md-link) underline">upload.ts</span>{" "}
-						<code className="rounded bg-(--omp-code-bg) px-1 font-mono text-omp-sm text-(--omp-md-code)">
+					<div className="leading-relaxed text-(--omsk-text)">
+						{t("themeEditor.preview.reply")} <span className="text-(--omsk-md-link) underline">upload.ts</span>{" "}
+						<code className="rounded bg-(--omsk-code-bg) px-1 font-mono text-omsk-sm text-(--omsk-md-code)">
 							retry()
 						</code>
 					</div>
-					<div className="overflow-hidden rounded-lg border border-(--omp-md-code-block-border) bg-(--omp-code-bg) font-mono text-omp-sm leading-relaxed whitespace-pre">
+					<div className="overflow-hidden rounded-lg border border-(--omsk-md-code-block-border) bg-(--omsk-code-bg) font-mono text-omsk-sm leading-relaxed whitespace-pre">
 						<div className="px-2.5 pt-1.5">
-							<span className="text-(--omp-syntax-keyword)">async function</span>{" "}
-							<span className="text-(--omp-syntax-function)">upload</span>
-							<span className="text-(--omp-syntax-punctuation)">(</span>
-							<span className="text-(--omp-syntax-variable)">file</span>
-							<span className="text-(--omp-syntax-punctuation)">: </span>
-							<span className="text-(--omp-syntax-type)">File</span>
-							<span className="text-(--omp-syntax-punctuation)">) {"{"}</span>
+							<span className="text-(--omsk-syntax-keyword)">async function</span>{" "}
+							<span className="text-(--omsk-syntax-function)">upload</span>
+							<span className="text-(--omsk-syntax-punctuation)">(</span>
+							<span className="text-(--omsk-syntax-variable)">file</span>
+							<span className="text-(--omsk-syntax-punctuation)">: </span>
+							<span className="text-(--omsk-syntax-type)">File</span>
+							<span className="text-(--omsk-syntax-punctuation)">) {"{"}</span>
 						</div>
-						<div className="bg-(--omp-diff-removed-bg) px-2.5 text-(--omp-diff-removed)">
-							- {"  "}return send(file, <span className="text-(--omp-syntax-number)">1</span>);
+						<div className="bg-(--omsk-diff-removed-bg) px-2.5 text-(--omsk-diff-removed)">
+							- {"  "}return send(file, <span className="text-(--omsk-syntax-number)">1</span>);
 						</div>
-						<div className="bg-(--omp-diff-added-bg) px-2.5 text-(--omp-diff-added)">
-							+ {"  "}return retry(() =&gt; send(file), <span className="text-(--omp-syntax-number)">3</span>);
+						<div className="bg-(--omsk-diff-added-bg) px-2.5 text-(--omsk-diff-added)">
+							+ {"  "}return retry(() =&gt; send(file), <span className="text-(--omsk-syntax-number)">3</span>);
 						</div>
-						<div className="px-2.5 pb-1.5 text-(--omp-syntax-comment)">
+						<div className="px-2.5 pb-1.5 text-(--omsk-syntax-comment)">
 							{`  // ${t("themeEditor.preview.comment")}`}
 						</div>
 					</div>
-					<div className="flex items-center gap-2 rounded-lg border border-(--omp-border-muted) bg-(--omp-tool-success-bg) py-1.5 pr-2.5 pl-0">
-						<span className="h-5 w-0.5 rounded-full bg-(--omp-tool-rail-done)" />
-						<span className="text-(--omp-tool-output)">{t("themeEditor.preview.tool")}</span>
+					<div className="flex items-center gap-2 rounded-lg border border-(--omsk-border-muted) bg-(--omsk-tool-success-bg) py-1.5 pr-2.5 pl-0">
+						<span className="h-5 w-0.5 rounded-full bg-(--omsk-tool-rail-done)" />
+						<span className="text-(--omsk-tool-output)">{t("themeEditor.preview.tool")}</span>
 					</div>
-					<div className="flex flex-wrap gap-1.5 text-omp-sm">
-						<span className="rounded-full bg-(--omp-success-dim) px-2 text-(--omp-success)">
+					<div className="flex flex-wrap gap-1.5 text-omsk-sm">
+						<span className="rounded-full bg-(--omsk-success-dim) px-2 text-(--omsk-success)">
 							{t("themeEditor.component.success")}
 						</span>
-						<span className="rounded-full bg-(--omp-warning-dim) px-2 text-(--omp-warning)">
+						<span className="rounded-full bg-(--omsk-warning-dim) px-2 text-(--omsk-warning)">
 							{t("themeEditor.component.warning")}
 						</span>
-						<span className="rounded-full bg-(--omp-error-dim) px-2 text-(--omp-error)">
+						<span className="rounded-full bg-(--omsk-error-dim) px-2 text-(--omsk-error)">
 							{t("themeEditor.component.error")}
 						</span>
-						<span className="rounded-full bg-(--omp-info-dim) px-2 text-(--omp-info)">
+						<span className="rounded-full bg-(--omsk-info-dim) px-2 text-(--omsk-info)">
 							{t("themeEditor.component.info")}
 						</span>
-						<span className="rounded-full bg-(--omp-accent-dim) px-2 text-(--omp-accent)">
+						<span className="rounded-full bg-(--omsk-accent-dim) px-2 text-(--omsk-accent)">
 							{t("themeEditor.component.accent")}
 						</span>
 					</div>
-					<div className="mt-auto flex items-center gap-2 rounded-xl border border-(--omp-input-focus-border) bg-(--omp-input-bg) py-1.5 pr-1.5 pl-3">
-						<span className="flex-1 truncate text-(--omp-dim)">{t("themeEditor.preview.input")}</span>
-						<span className="rounded-lg bg-(--omp-btn-primary-bg) px-2.5 py-0.5 text-omp-sm font-medium text-(--omp-btn-primary-text)">
+					<div className="mt-auto flex items-center gap-2 rounded-xl border border-(--omsk-input-focus-border) bg-(--omsk-input-bg) py-1.5 pr-1.5 pl-3">
+						<span className="flex-1 truncate text-(--omsk-dim)">{t("themeEditor.preview.input")}</span>
+						<span className="rounded-lg bg-(--omsk-btn-primary-bg) px-2.5 py-0.5 text-omsk-sm font-medium text-(--omsk-btn-primary-text)">
 							{t("themeEditor.preview.send")}
 						</span>
 					</div>
@@ -446,7 +446,7 @@ export function ThemeEditorDialog() {
 				bodyClassName="p-0"
 			>
 				<div className="grid grid-cols-1 min-[860px]:grid-cols-[minmax(0,23rem)_minmax(0,1fr)]">
-					<div className="flex flex-col gap-4 px-5 py-4 min-[860px]:border-r min-[860px]:border-(--omp-border-muted)">
+					<div className="flex flex-col gap-4 px-5 py-4 min-[860px]:border-r min-[860px]:border-(--omsk-border-muted)">
 						<Input
 							label={t("themeEditor.name")}
 							value={name}
@@ -468,7 +468,7 @@ export function ThemeEditorDialog() {
 							}}
 						/>
 						<label className="block">
-							<span className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)">
+							<span className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)">
 								{t("themeEditor.startFrom")}
 							</span>
 							<select
@@ -495,10 +495,10 @@ export function ThemeEditorDialog() {
 							</select>
 						</label>
 						<div>
-							<div className="text-omp-md font-medium text-(--omp-text-secondary)">
+							<div className="text-omsk-md font-medium text-(--omsk-text-secondary)">
 								{t("themeEditor.colors")}
 							</div>
-							<p className="mt-0.5 mb-1.5 text-omp-sm text-(--omp-dim)">{t("themeEditor.colorsHint")}</p>
+							<p className="mt-0.5 mb-1.5 text-omsk-sm text-(--omsk-dim)">{t("themeEditor.colorsHint")}</p>
 							{THEME_COMPONENTS.map(component => (
 								<ColorRow
 									key={component}
@@ -539,24 +539,24 @@ export function ThemeEditorDialog() {
 					<div className="px-5 py-4">
 						{/* Stays in view while the color list scrolls past. */}
 						<div className="flex flex-col gap-2 min-[860px]:sticky min-[860px]:top-4">
-							<div className="text-omp-md font-medium text-(--omp-text-secondary)">
+							<div className="text-omsk-md font-medium text-(--omsk-text-secondary)">
 								{t("themeEditor.preview")}
 							</div>
 							<ThemePreview theme={generated} />
-							<p className="text-omp-sm text-(--omp-dim)">
+							<p className="text-omsk-sm text-(--omsk-dim)">
 								{t(generated.scheme === "light" ? "themeEditor.schemeLight" : "themeEditor.schemeDark")}
 							</p>
 						</div>
 					</div>
 				</div>
-				<div className="sticky bottom-0 flex items-center gap-2 border-t border-(--omp-border-muted) bg-(--omp-modal-bg) px-5 py-3">
+				<div className="sticky bottom-0 flex items-center gap-2 border-t border-(--omsk-border-muted) bg-(--omsk-modal-bg) px-5 py-3">
 					{editing?.theme && (
 						<Button size="sm" variant="ghost" onClick={() => setConfirmDelete(true)} disabled={saving}>
 							<Trash2 size={13} />
 							{t("themeEditor.delete")}
 						</Button>
 					)}
-					<span role="status" className="min-w-0 flex-1 text-omp-sm text-(--omp-warning)">
+					<span role="status" className="min-w-0 flex-1 text-omsk-sm text-(--omsk-warning)">
 						{discardArmed && t("themeEditor.discardArmed")}
 					</span>
 					<Button size="sm" variant="ghost" onClick={requestClose}>

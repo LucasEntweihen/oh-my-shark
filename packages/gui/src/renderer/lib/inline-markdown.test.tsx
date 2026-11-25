@@ -11,7 +11,7 @@ const render = (text: string) => renderToStaticMarkup(<InlineMarkdown text={text
 describe("InlineMarkdown", () => {
 	it("renders code and bold spans instead of printing their markers", () => {
 		const html = render("Bump `undici` — **2 advisories**");
-		expect(html).toContain('<code class="omp-inline-code">undici</code>');
+		expect(html).toContain('<code class="omsk-inline-code">undici</code>');
 		expect(html).toContain("<strong");
 		expect(html).toContain(">2 advisories</strong>");
 		expect(html).not.toContain("`");
@@ -22,7 +22,7 @@ describe("InlineMarkdown", () => {
 		const html = render('<img src=x onerror="alert(1)"> and `<b>`');
 		expect(html).not.toContain("<img");
 		expect(html).toContain("&lt;img");
-		expect(html).toContain('<code class="omp-inline-code">&lt;b&gt;</code>');
+		expect(html).toContain('<code class="omsk-inline-code">&lt;b&gt;</code>');
 	});
 
 	it("leaves an unclosed marker as literal text", () => {

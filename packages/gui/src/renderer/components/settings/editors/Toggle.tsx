@@ -33,7 +33,7 @@ export function Toggle({
 	description?: string;
 	disabled?: boolean;
 	badge?: React.ReactNode;
-	/** Row geometry from the host; Settings passes `omp-settings-row` so its switches align with its other rows. */
+	/** Row geometry from the host; Settings passes `omsk-settings-row` so its switches align with its other rows. */
 	className?: string;
 }) {
 	const t = useT();
@@ -63,7 +63,7 @@ export function Toggle({
 			aria-checked={checked}
 			aria-label={label}
 			className={cx(
-				"flex w-full cursor-pointer items-start justify-between gap-4 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-(--omp-sidebar-item-hover) disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent",
+				"flex w-full cursor-pointer items-start justify-between gap-4 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-(--omsk-sidebar-item-hover) disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent",
 				className,
 			)}
 			disabled={disabled}
@@ -73,11 +73,11 @@ export function Toggle({
 		>
 			<span className="min-w-0">
 				<span className="flex items-center gap-2">
-					<span className="block text-omp-md font-medium text-(--omp-text)">{label}</span>
+					<span className="block text-omsk-md font-medium text-(--omsk-text)">{label}</span>
 					{badge}
 					{confirmed && (
 						<span
-							className="omp-fade-in flex items-center gap-0.5 text-omp-xs font-normal text-(--omp-success)"
+							className="omsk-fade-in flex items-center gap-0.5 text-omsk-xs font-normal text-(--omsk-success)"
 							role="status"
 						>
 							<Check aria-hidden size={11} />
@@ -86,7 +86,7 @@ export function Toggle({
 					)}
 				</span>
 				{description && (
-					<span className="mt-0.5 block text-omp-sm leading-snug text-(--omp-muted)">{description}</span>
+					<span className="mt-0.5 block text-omsk-sm leading-snug text-(--omsk-muted)">{description}</span>
 				)}
 			</span>
 			<SwitchTrack className="mt-0.5" on={checked} />

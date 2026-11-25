@@ -32,8 +32,8 @@ export function ModelsRoute({ range, refreshKey }: { range: StatsRange; refreshK
 				label: t("stats.col.model"),
 				render: row => (
 					<span>
-						<span className="block font-mono font-medium text-(--omp-text)">{row.model}</span>
-						<span className="block text-omp-xs text-(--omp-dim)">{row.provider}</span>
+						<span className="block font-mono font-medium text-(--omsk-text)">{row.model}</span>
+						<span className="block text-omsk-xs text-(--omsk-dim)">{row.provider}</span>
 					</span>
 				),
 			},
@@ -43,7 +43,7 @@ export function ModelsRoute({ range, refreshKey }: { range: StatsRange; refreshK
 				label: t("stats.col.errors"),
 				align: "right",
 				render: row => (
-					<span className={row.errorRate > 0.05 ? "text-(--omp-error)" : undefined}>
+					<span className={row.errorRate > 0.05 ? "text-(--omsk-error)" : undefined}>
 						{(row.errorRate * 100).toFixed(1)}%
 					</span>
 				),

@@ -54,14 +54,14 @@ function ExtensionSurfaces() {
 			{widgets.map(([key, lines]) => (
 				<div
 					aria-label={key}
-					className="pointer-events-auto rounded-md border border-(--omp-border-muted) bg-(--omp-bg-elevated) px-2.5 py-1.5 shadow-lg shadow-black/40"
+					className="pointer-events-auto rounded-md border border-(--omsk-border-muted) bg-(--omsk-bg-elevated) px-2.5 py-1.5 shadow-lg shadow-black/40"
 					key={key}
 					role="region"
 				>
-					<div className="mb-0.5 text-omp-xxs font-medium text-(--omp-dim)">{key}</div>
+					<div className="mb-0.5 text-omsk-xxs font-medium text-(--omsk-dim)">{key}</div>
 					{lines.map((line, index) => (
 						<div
-							className="font-mono text-omp-xs leading-snug break-words whitespace-pre-wrap text-(--omp-text)"
+							className="font-mono text-omsk-xs leading-snug break-words whitespace-pre-wrap text-(--omsk-text)"
 							key={index}
 						>
 							{line === "" ? "\u00A0" : <AnsiText text={line} />}
@@ -113,7 +113,7 @@ function TimeoutFooter({ remaining }: { remaining: number | null }) {
 	const t = useT();
 	if (remaining === null) return null;
 	return (
-		<span className="text-omp-xs tabular-nums text-(--omp-dim)">
+		<span className="text-omsk-xs tabular-nums text-(--omsk-dim)">
 			{t("extDialog.autoDismiss", { seconds: Math.ceil(remaining / 1000) })}
 		</span>
 	);
@@ -137,16 +137,16 @@ function SelectDialog({
 				{request.options.map((option, index) => (
 					<button
 						autoFocus={index === 0}
-						className="flex w-full items-center gap-2 rounded-md border border-(--omp-border-muted) px-3 py-2 text-left text-omp-xs text-(--omp-text) transition-colors hover:border-(--omp-border-accent) hover:bg-(--omp-selected-bg) focus-visible:outline-2 focus-visible:outline-(--omp-border-accent)"
+						className="flex w-full items-center gap-2 rounded-md border border-(--omsk-border-muted) px-3 py-2 text-left text-omsk-xs text-(--omsk-text) transition-colors hover:border-(--omsk-border-accent) hover:bg-(--omsk-selected-bg) focus-visible:outline-2 focus-visible:outline-(--omsk-border-accent)"
 						key={option}
 						onClick={() => onValue(option)}
 						type="button"
 					>
-						<span className="w-4 shrink-0 text-omp-xs text-(--omp-dim)">{index + 1}</span>
+						<span className="w-4 shrink-0 text-omsk-xs text-(--omsk-dim)">{index + 1}</span>
 						<span className="min-w-0 break-words">
 							<span className="block">{option}</span>
 							{request.optionDetails?.[index]?.description && (
-								<span className="mt-1 block text-omp-xs whitespace-pre-wrap text-(--omp-muted)">
+								<span className="mt-1 block text-omsk-xs whitespace-pre-wrap text-(--omsk-muted)">
 									{request.optionDetails[index].description}
 								</span>
 							)}
@@ -178,7 +178,7 @@ function ConfirmDialog({
 	const t = useT();
 	return (
 		<Modal onClose={onCancel} open size="sm" title={request.title}>
-			<p className="text-omp-xs leading-relaxed break-words whitespace-pre-wrap text-(--omp-muted)">
+			<p className="text-omsk-xs leading-relaxed break-words whitespace-pre-wrap text-(--omsk-muted)">
 				{request.message}
 			</p>
 			<div className="mt-4 flex items-center justify-between gap-2">
@@ -342,9 +342,9 @@ function AskDialog({
 					return (
 						<div className="space-y-2" key={question.id}>
 							{question.header && (
-								<div className="text-omp-xxs font-medium text-(--omp-dim)">{question.header}</div>
+								<div className="text-omsk-xxs font-medium text-(--omsk-dim)">{question.header}</div>
 							)}
-							<p className="text-omp-xs leading-relaxed font-medium break-words whitespace-pre-wrap text-(--omp-text)">
+							<p className="text-omsk-xs leading-relaxed font-medium break-words whitespace-pre-wrap text-(--omsk-text)">
 								{request.questions.length > 1 ? `${questionIndex + 1}. ` : ""}
 								{question.question}
 							</p>
@@ -358,16 +358,16 @@ function AskDialog({
 											multi={question.multi ?? false}
 											onClick={() => toggleOption(questionIndex, option.label)}
 										>
-											<span className="flex items-center gap-1.5 text-omp-xs text-(--omp-text)">
+											<span className="flex items-center gap-1.5 text-omsk-xs text-(--omsk-text)">
 												<span className="min-w-0 break-words">{option.label}</span>
 												{question.recommended === optionIndex && (
-													<span className="shrink-0 rounded border border-(--omp-border-accent) px-1 py-px text-omp-xxs font-medium text-(--omp-accent)">
+													<span className="shrink-0 rounded border border-(--omsk-border-accent) px-1 py-px text-omsk-xxs font-medium text-(--omsk-accent)">
 														{t("extDialog.ask.recommended")}
 													</span>
 												)}
 											</span>
 											{option.description && (
-												<span className="mt-0.5 block text-omp-xs leading-snug break-words text-(--omp-dim)">
+												<span className="mt-0.5 block text-omsk-xs leading-snug break-words text-(--omsk-dim)">
 													{option.description}
 												</span>
 											)}
@@ -379,7 +379,7 @@ function AskDialog({
 								.filter(option => answer?.selected.has(option.label) && option.preview)
 								.map(option => (
 									<div
-										className="rounded-md border border-(--omp-border-muted) bg-(--omp-code-bg) px-2.5 py-2 text-omp-sm"
+										className="rounded-md border border-(--omsk-border-muted) bg-(--omsk-code-bg) px-2.5 py-2 text-omsk-sm"
 										key={`preview:${option.label}`}
 									>
 										<MarkdownRenderer content={option.preview!} />
@@ -398,11 +398,11 @@ function AskDialog({
 						</div>
 					);
 				})}
-				<div className="flex items-center justify-between gap-2 border-t border-(--omp-border-muted) pt-3">
+				<div className="flex items-center justify-between gap-2 border-t border-(--omsk-border-muted) pt-3">
 					<div className="flex items-center gap-2">
 						<TimeoutFooter remaining={remaining} />
 						{unansweredCount > 0 && (
-							<span className="text-omp-xs text-(--omp-warning)">
+							<span className="text-omsk-xs text-(--omsk-warning)">
 								{t("extDialog.ask.unanswered", { count: unansweredCount })}
 							</span>
 						)}
@@ -455,20 +455,20 @@ function EditorDialog({
 				...(looksLikeJson(request.prefill ?? "") ? [json()] : []),
 				EditorView.theme({
 					"&": {
-						backgroundColor: "var(--omp-code-bg)",
-						color: "var(--omp-text)",
+						backgroundColor: "var(--omsk-code-bg)",
+						color: "var(--omsk-text)",
 						fontSize: "12px",
 						height: "100%",
 					},
 					"&.cm-focused": { outline: "none" },
 					".cm-content": { fontFamily: "var(--font-mono, monospace)", padding: "8px 0" },
 					".cm-line": { padding: "0 10px" },
-					".cm-cursor": { borderLeftColor: "var(--omp-accent)" },
-					".cm-selectionBackground": { backgroundColor: "var(--omp-selected-bg) !important" },
+					".cm-cursor": { borderLeftColor: "var(--omsk-accent)" },
+					".cm-selectionBackground": { backgroundColor: "var(--omsk-selected-bg) !important" },
 					".cm-gutters": {
 						backgroundColor: "transparent",
-						borderRight: "1px solid var(--omp-border-muted)",
-						color: "var(--omp-dim)",
+						borderRight: "1px solid var(--omsk-border-muted)",
+						color: "var(--omsk-dim)",
 					},
 				}),
 				EditorView.updateListener.of(update => {
@@ -484,7 +484,7 @@ function EditorDialog({
 	return (
 		<Modal bodyClassName="p-0" onClose={onCancel} open size="lg" title={request.title}>
 			<div className="flex h-[55vh] flex-col">
-				<div className="min-h-0 flex-1 overflow-hidden border-b border-(--omp-border-muted)" ref={hostRef} />
+				<div className="min-h-0 flex-1 overflow-hidden border-b border-(--omsk-border-muted)" ref={hostRef} />
 				<div className="flex items-center justify-end gap-2 p-3">
 					<Button onClick={onCancel} size="sm" variant="ghost">
 						{t("common.cancel")}
@@ -558,15 +558,15 @@ function OpenUrlDialog({
 		>
 			<div className="space-y-3">
 				{request.instructions && (
-					<p className="text-omp-xs leading-relaxed break-words whitespace-pre-wrap text-(--omp-muted)">
+					<p className="text-omsk-xs leading-relaxed break-words whitespace-pre-wrap text-(--omsk-muted)">
 						{request.instructions}
 					</p>
 				)}
-				<div className="rounded-md border border-(--omp-border-muted) bg-(--omp-code-bg) px-2.5 py-2 font-mono text-omp-xs break-all text-(--omp-md-link)">
+				<div className="rounded-md border border-(--omsk-border-muted) bg-(--omsk-code-bg) px-2.5 py-2 font-mono text-omsk-xs break-all text-(--omsk-md-link)">
 					{target}
 				</div>
 				{opened && !loginPrompt && (
-					<div className="flex items-center gap-2 text-omp-xs text-(--omp-muted)" role="status">
+					<div className="flex items-center gap-2 text-omsk-xs text-(--omsk-muted)" role="status">
 						<Spinner size="sm" />
 						<span>{t("extDialog.openUrl.waiting")}</span>
 					</div>
@@ -586,7 +586,7 @@ function OpenUrlDialog({
 							}}
 						>
 							{loginPrompt && (
-								<p className="text-omp-md font-medium text-(--omp-text-secondary)">{loginPrompt.title}</p>
+								<p className="text-omsk-md font-medium text-(--omsk-text-secondary)">{loginPrompt.title}</p>
 							)}
 							<div className="flex items-center gap-2">
 								<div className="relative min-w-0 flex-1">
@@ -607,7 +607,7 @@ function OpenUrlDialog({
 									{loginPrompt && (
 										<button
 											aria-label={revealed ? t("common.hideValue") : t("common.revealValue")}
-											className="absolute right-2 top-1/2 -translate-y-1/2 text-(--omp-dim) transition-colors hover:text-(--omp-text)"
+											className="absolute right-2 top-1/2 -translate-y-1/2 text-(--omsk-dim) transition-colors hover:text-(--omsk-text)"
 											onClick={() => setRevealed(prev => !prev)}
 											type="button"
 										>
@@ -624,11 +624,11 @@ function OpenUrlDialog({
 									{checking ? t("extDialog.openUrl.pasteChecking") : submitLabel}
 								</Button>
 							</div>
-							{retry && <p className="text-omp-xs text-(--omp-error)">{t("extDialog.openUrl.pasteRetry")}</p>}
+							{retry && <p className="text-omsk-xs text-(--omsk-error)">{t("extDialog.openUrl.pasteRetry")}</p>}
 						</form>
 					) : (
 						<button
-							className="text-omp-xs text-(--omp-md-link) hover:underline"
+							className="text-omsk-xs text-(--omsk-md-link) hover:underline"
 							onClick={() => setPasting(true)}
 							type="button"
 						>
@@ -653,7 +653,7 @@ function OpenUrlDialog({
 					</Button>
 				</div>
 				{!opened && !loginPrompt && (
-					<p className="text-right text-omp-xs text-(--omp-dim)">{t("extDialog.openUrl.hint")}</p>
+					<p className="text-right text-omsk-xs text-(--omsk-dim)">{t("extDialog.openUrl.hint")}</p>
 				)}
 			</div>
 		</Modal>

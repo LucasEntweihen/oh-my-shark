@@ -72,12 +72,12 @@ export function AddMarketplaceForm({ onAdded, ready = true }: { onAdded: () => P
 	};
 
 	return (
-		<div className="flex flex-col gap-2 rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-2.5">
-			<span className="text-omp-md font-medium text-(--omp-text)">{t("marketplace.addTitle")}</span>
+		<div className="flex flex-col gap-2 rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-2.5">
+			<span className="text-omsk-md font-medium text-(--omsk-text)">{t("marketplace.addTitle")}</span>
 			<div className="flex items-start gap-2">
 				<input
 					aria-label={t("marketplace.addTitle")}
-					className="min-w-0 flex-1 rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2.5 py-1.5 font-mono text-omp-sm text-(--omp-text) placeholder:text-(--omp-dim) focus:border-(--omp-input-focus-border) focus:outline-none disabled:opacity-50"
+					className="min-w-0 flex-1 rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2.5 py-1.5 font-mono text-omsk-sm text-(--omsk-text) placeholder:text-(--omsk-dim) focus:border-(--omsk-input-focus-border) focus:outline-none disabled:opacity-50"
 					disabled={busy || !ready}
 					onChange={event => {
 						setSource(event.target.value);
@@ -103,7 +103,7 @@ export function AddMarketplaceForm({ onAdded, ready = true }: { onAdded: () => P
 					{t("marketplace.add")}
 				</Button>
 			</div>
-			<span className="text-omp-xs leading-snug text-(--omp-dim)">{t("marketplace.sourceHint")}</span>
+			<span className="text-omsk-xs leading-snug text-(--omsk-dim)">{t("marketplace.sourceHint")}</span>
 			{error && <CopyableError copyLabel={t("marketplace.copyError")} message={error} />}
 		</div>
 	);
@@ -137,18 +137,20 @@ function AvailablePluginRow({
 	const repository = plugin.repository;
 	const homepage = plugin.homepage;
 	return (
-		<div className="flex items-center gap-3 rounded-md border border-(--omp-border-muted) bg-transparent px-2.5 py-2">
+		<div className="flex items-center gap-3 rounded-md border border-(--omsk-border-muted) bg-transparent px-2.5 py-2">
 			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<div className="flex flex-wrap items-center gap-1.5">
-					<span className="text-omp-md font-medium text-(--omp-text)">{plugin.name}</span>
-					{plugin.version && <span className="text-omp-xs tabular-nums text-(--omp-dim)">v{plugin.version}</span>}
+					<span className="text-omsk-md font-medium text-(--omsk-text)">{plugin.name}</span>
+					{plugin.version && (
+						<span className="text-omsk-xs tabular-nums text-(--omsk-dim)">v{plugin.version}</span>
+					)}
 					{plugin.installed && <Badge variant="success">{t("marketplace.installed")}</Badge>}
 				</div>
 				{plugin.description && (
-					<span className="text-omp-sm leading-snug text-(--omp-dim)">{plugin.description}</span>
+					<span className="text-omsk-sm leading-snug text-(--omsk-dim)">{plugin.description}</span>
 				)}
 				{confirmingInstall && (
-					<span className="text-omp-xs text-(--omp-muted)">{t("marketplace.installConfirmHint")}</span>
+					<span className="text-omsk-xs text-(--omsk-muted)">{t("marketplace.installConfirmHint")}</span>
 				)}
 				{(plugin.author ||
 					plugin.license ||
@@ -156,7 +158,7 @@ function AvailablePluginRow({
 					repository ||
 					homepage ||
 					(plugin.tags?.length ?? 0) > 0) && (
-					<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-omp-xs text-(--omp-dim)">
+					<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-omsk-xs text-(--omsk-dim)">
 						{plugin.author && <span>{plugin.author}</span>}
 						{plugin.license && <span>{plugin.license}</span>}
 						{plugin.category && <span>{plugin.category}</span>}
@@ -165,7 +167,7 @@ function AvailablePluginRow({
 						))}
 						{repository && (
 							<button
-								className="underline decoration-(--omp-border-muted) underline-offset-2 hover:text-(--omp-text)"
+								className="underline decoration-(--omsk-border-muted) underline-offset-2 hover:text-(--omsk-text)"
 								onClick={() => void window.omp.system.openExternal(repository)}
 								title={repository}
 								type="button"
@@ -175,7 +177,7 @@ function AvailablePluginRow({
 						)}
 						{homepage && (
 							<button
-								className="underline decoration-(--omp-border-muted) underline-offset-2 hover:text-(--omp-text)"
+								className="underline decoration-(--omsk-border-muted) underline-offset-2 hover:text-(--omsk-text)"
 								onClick={() => void window.omp.system.openExternal(homepage)}
 								title={homepage}
 								type="button"
@@ -191,7 +193,7 @@ function AvailablePluginRow({
 					<span className="flex shrink-0 items-center gap-0.5">
 						<button
 							aria-label={t("marketplace.installConfirm")}
-							className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent text-(--omp-error) disabled:opacity-40"
+							className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent text-(--omsk-error) disabled:opacity-40"
 							disabled={anyBusy}
 							onClick={() => onConfirmInstall(plugin.name)}
 							title={t("marketplace.installConfirm")}
@@ -201,7 +203,7 @@ function AvailablePluginRow({
 						</button>
 						<button
 							aria-label={t("common.cancel")}
-							className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-bg-tertiary) disabled:opacity-40"
+							className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-bg-tertiary) disabled:opacity-40"
 							disabled={anyBusy}
 							onClick={onCancelInstall}
 							title={t("common.cancel")}
@@ -213,7 +215,7 @@ function AvailablePluginRow({
 				) : (
 					availablePluginActions(plugin.installed).map(action => (
 						<Button
-							className={action === "uninstall" ? "text-(--omp-error)" : undefined}
+							className={action === "uninstall" ? "text-(--omsk-error)" : undefined}
 							disabled={anyBusy}
 							key={action}
 							loading={busyAction === action}
@@ -399,12 +401,12 @@ export function MarketplaceCard({
 			: t("marketplace.cacheNote");
 
 	return (
-		<div className="overflow-hidden rounded-lg border border-(--omp-border-muted) bg-transparent">
+		<div className="overflow-hidden rounded-lg border border-(--omsk-border-muted) bg-transparent">
 			<div className="flex items-center gap-2 px-3 py-2.5">
 				<button
 					aria-expanded={expanded}
 					aria-label={t("marketplace.browse")}
-					className="omp-pressable shrink-0 rounded p-0.5 text-(--omp-dim) hover:text-(--omp-text)"
+					className="omsk-pressable shrink-0 rounded p-0.5 text-(--omsk-dim) hover:text-(--omsk-text)"
 					disabled={!ready}
 					onClick={toggleExpanded}
 					title={!ready ? t("invPanel.notConnected") : t("marketplace.browse")}
@@ -414,7 +416,7 @@ export function MarketplaceCard({
 				</button>
 				<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 					<div className="flex flex-wrap items-center gap-1.5">
-						<span className="text-omp-lg font-medium text-(--omp-text)">
+						<span className="text-omsk-lg font-medium text-(--omsk-text)">
 							{marketplace.name === OPENAI_MARKETPLACE ? t("plugins.openAiMarketplace") : marketplace.name}
 						</span>
 						{marketplace.pluginCount !== undefined ? (
@@ -426,9 +428,9 @@ export function MarketplaceCard({
 						)}
 						{/* Catalogs are cache-backed — the note is always visible; the
 						    timestamp rides along when the wire carries one. */}
-						<span className="text-omp-xs text-(--omp-dim)">{cacheNote}</span>
+						<span className="text-omsk-xs text-(--omsk-dim)">{cacheNote}</span>
 					</div>
-					<div className="flex items-center gap-3 text-omp-sm text-(--omp-dim)">
+					<div className="flex items-center gap-3 text-omsk-sm text-(--omsk-dim)">
 						<span className="truncate font-mono" title={marketplace.source}>
 							{shortenSource(marketplace.source)}
 						</span>
@@ -436,7 +438,7 @@ export function MarketplaceCard({
 				</div>
 				<button
 					aria-label={t("marketplace.refresh")}
-					className="omp-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-accent) disabled:opacity-40"
+					className="omsk-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-accent) disabled:opacity-40"
 					disabled={busyAction !== null || !ready}
 					onClick={() => void refreshCatalog()}
 					title={!ready ? t("invPanel.notConnected") : t("marketplace.refresh")}
@@ -448,7 +450,7 @@ export function MarketplaceCard({
 					<span className="flex shrink-0 items-center gap-0.5">
 						<button
 							aria-label={t("marketplace.removeConfirm")}
-							className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent text-(--omp-error) disabled:opacity-40"
+							className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent text-(--omsk-error) disabled:opacity-40"
 							disabled={busyAction !== null || !ready}
 							onClick={() => void removeMarketplace()}
 							title={!ready ? t("invPanel.notConnected") : t("marketplace.removeConfirm")}
@@ -458,7 +460,7 @@ export function MarketplaceCard({
 						</button>
 						<button
 							aria-label={t("common.cancel")}
-							className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg) disabled:opacity-40"
+							className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) disabled:opacity-40"
 							disabled={busyAction !== null || !ready}
 							onClick={() => setConfirmingRemove(false)}
 							title={t("common.cancel")}
@@ -470,7 +472,7 @@ export function MarketplaceCard({
 				) : (
 					<button
 						aria-label={t("marketplace.remove")}
-						className="omp-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-tool-error-bg) hover:text-(--omp-error) disabled:opacity-40"
+						className="omsk-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-tool-error-bg) hover:text-(--omsk-error) disabled:opacity-40"
 						disabled={busyAction !== null || !ready}
 						onClick={() => setConfirmingRemove(true)}
 						title={!ready ? t("invPanel.notConnected") : t("marketplace.remove")}
@@ -484,7 +486,7 @@ export function MarketplaceCard({
 				<CopyableError className="mx-3 mb-2" copyLabel={t("marketplace.copyError")} message={cardError} />
 			)}
 			{expanded && (
-				<div className="flex flex-col gap-2 border-t border-(--omp-border-muted) px-3 py-2.5">
+				<div className="flex flex-col gap-2 border-t border-(--omsk-border-muted) px-3 py-2.5">
 					{available === null && listLoading ? (
 						<div className="flex items-center justify-center py-4">
 							<Spinner label={t("common.loading")} />
@@ -506,7 +508,9 @@ export function MarketplaceCard({
 							</div>
 						</>
 					) : available !== null && available.length === 0 ? (
-						<div className="py-2 text-center text-omp-sm text-(--omp-dim)">{t("marketplace.availableEmpty")}</div>
+						<div className="py-2 text-center text-omsk-sm text-(--omsk-dim)">
+							{t("marketplace.availableEmpty")}
+						</div>
 					) : (
 						<>
 							{(available ?? []).map(plugin => (
@@ -529,7 +533,7 @@ export function MarketplaceCard({
 								</div>
 							))}
 							{listLoading && (
-								<div className="flex items-center gap-2 text-omp-xs text-(--omp-dim)">
+								<div className="flex items-center gap-2 text-omsk-xs text-(--omsk-dim)">
 									<Spinner size="sm" />
 									{t("common.loading")}
 								</div>

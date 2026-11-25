@@ -55,7 +55,7 @@ function usePluginPreview(plugin: CatalogPlugin, location: PluginRepoLocation | 
 function Section({ title, children }: { title: string; children: ReactNode }) {
 	return (
 		<section className="flex flex-col gap-2">
-			<h3 className="text-omp-md font-medium text-(--omp-text)">{title}</h3>
+			<h3 className="text-omsk-md font-medium text-(--omsk-text)">{title}</h3>
 			{children}
 		</section>
 	);
@@ -65,13 +65,13 @@ function NameList({ label, names }: { label: string; names: readonly string[] })
 	if (names.length === 0) return null;
 	return (
 		<div className="flex flex-col gap-1">
-			<span className="text-omp-xs text-(--omp-dim)">
+			<span className="text-omsk-xs text-(--omsk-dim)">
 				{label} · {names.length}
 			</span>
 			<div className="flex flex-wrap gap-1">
 				{names.map(name => (
 					<code
-						className="rounded bg-(--omp-code-bg) px-1.5 py-0.5 font-mono text-omp-xs text-(--omp-muted)"
+						className="rounded bg-(--omsk-code-bg) px-1.5 py-0.5 font-mono text-omsk-xs text-(--omsk-muted)"
 						key={name}
 					>
 						{name}
@@ -86,12 +86,12 @@ function DetailRows({ label, rows }: { label: string; rows: ReadonlyArray<{ name
 	if (rows.length === 0) return null;
 	return (
 		<div className="flex flex-col gap-1">
-			<span className="text-omp-xs text-(--omp-dim)">{label}</span>
+			<span className="text-omsk-xs text-(--omsk-dim)">{label}</span>
 			<ul className="flex flex-col gap-1">
 				{rows.map(row => (
-					<li className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-omp-sm" key={row.name}>
-						<span className="text-(--omp-text)">{row.name}</span>
-						<code className="min-w-0 break-all font-mono text-omp-xs text-(--omp-muted)">{row.detail}</code>
+					<li className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-omsk-sm" key={row.name}>
+						<span className="text-(--omsk-text)">{row.name}</span>
+						<code className="min-w-0 break-all font-mono text-omsk-xs text-(--omsk-muted)">{row.detail}</code>
 					</li>
 				))}
 			</ul>
@@ -115,12 +115,12 @@ function EffectsList({ effects }: { effects: PluginEffects }) {
 			<NameList label={t("plugins.effects.rules")} names={effects.rules} />
 			<DetailRows label={t("plugins.effects.connections")} rows={connections} />
 			{runsLocalCode(effects) && (
-				<div className="flex flex-col gap-3 rounded-lg border border-[color-mix(in_srgb,var(--omp-warning)_35%,transparent)] p-3">
-					<div className="flex items-start gap-2 text-omp-sm text-(--omp-text)">
-						<ShieldAlert className="mt-0.5 shrink-0 text-(--omp-warning)" size={14} />
+				<div className="flex flex-col gap-3 rounded-lg border border-[color-mix(in_srgb,var(--omsk-warning)_35%,transparent)] p-3">
+					<div className="flex items-start gap-2 text-omsk-sm text-(--omsk-text)">
+						<ShieldAlert className="mt-0.5 shrink-0 text-(--omsk-warning)" size={14} />
 						<div className="flex flex-col gap-0.5">
 							<span className="font-medium">{t("plugins.effects.localTitle")}</span>
-							<span className="text-omp-xs text-(--omp-muted)">{t("plugins.effects.localHint")}</span>
+							<span className="text-omsk-xs text-(--omsk-muted)">{t("plugins.effects.localHint")}</span>
 						</div>
 					</div>
 					<DetailRows label={t("plugins.effects.localServers")} rows={localServers} />
@@ -130,7 +130,9 @@ function EffectsList({ effects }: { effects: PluginEffects }) {
 					/>
 					<NameList label={t("plugins.effects.hooks")} names={effects.hooks} />
 					<NameList label={t("plugins.effects.tools")} names={effects.tools} />
-					{effects.extension && <p className="text-omp-sm text-(--omp-muted)">{t("plugins.effects.extension")}</p>}
+					{effects.extension && (
+						<p className="text-omsk-sm text-(--omsk-muted)">{t("plugins.effects.extension")}</p>
+					)}
 				</div>
 			)}
 		</div>
@@ -139,8 +141,8 @@ function EffectsList({ effects }: { effects: PluginEffects }) {
 
 function Note({ children }: { children: ReactNode }) {
 	return (
-		<p className="flex items-start gap-1.5 text-omp-sm leading-snug text-(--omp-muted)">
-			<Info className="mt-0.5 shrink-0 text-(--omp-dim)" size={13} />
+		<p className="flex items-start gap-1.5 text-omsk-sm leading-snug text-(--omsk-muted)">
+			<Info className="mt-0.5 shrink-0 text-(--omsk-dim)" size={13} />
 			<span>{children}</span>
 		</p>
 	);
@@ -157,7 +159,7 @@ function PluginEffectsSection({ plugin, preview }: { plugin: CatalogPlugin; prev
 	const t = useT();
 	if (preview.status === "loading") {
 		return (
-			<div className="flex items-center gap-2 text-omp-sm text-(--omp-dim)">
+			<div className="flex items-center gap-2 text-omsk-sm text-(--omsk-dim)">
 				<Spinner size="sm" />
 				{t("plugins.preview.loading")}
 			</div>
@@ -229,7 +231,7 @@ export function PluginDetail({
 
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
-			<div className="flex shrink-0 items-center border-b border-(--omp-border-muted) px-4 py-2">
+			<div className="flex shrink-0 items-center border-b border-(--omsk-border-muted) px-4 py-2">
 				<Button icon={<ArrowLeft size={12} />} onClick={onBack} size="sm" variant="ghost">
 					{t("plugins.back")}
 				</Button>
@@ -239,14 +241,14 @@ export function PluginDetail({
 					<header className="flex flex-wrap items-start gap-4">
 						<PluginLogo owner={plugin.logoOwner} size={64} title={plugin.title} />
 						<div className="flex min-w-[12rem] flex-1 flex-col gap-1">
-							<h2 className="text-omp-xl font-semibold text-(--omp-text)">{plugin.title}</h2>
-							<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-omp-sm text-(--omp-dim)">
+							<h2 className="text-omsk-xl font-semibold text-(--omsk-text)">{plugin.title}</h2>
+							<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-omsk-sm text-(--omsk-dim)">
 								{byline && <span>{byline}</span>}
 								{info.version && <span className="tabular-nums">v{info.version}</span>}
 								{info.category && <PluginCategoryLabel category={info.category} />}
 								{info.license && <span>{info.license}</span>}
 							</div>
-							<span className="text-omp-xs text-(--omp-dim)">
+							<span className="text-omsk-xs text-(--omsk-dim)">
 								{t("plugins.fromCatalog", { catalog: plugin.marketplace })}
 							</span>
 						</div>
@@ -264,7 +266,7 @@ export function PluginDetail({
 										{t("marketplace.upgrade")}
 									</Button>
 									<Button
-										className="text-(--omp-error)"
+										className="text-(--omsk-error)"
 										disabled={disabled}
 										loading={busyAction === "uninstall"}
 										onClick={() => onAction("uninstall")}
@@ -290,7 +292,7 @@ export function PluginDetail({
 					{error && <PluginErrorNote error={error} />}
 
 					<Section title={t("plugins.whatItDoes")}>
-						<p className="text-omp-md leading-relaxed text-(--omp-muted)">
+						<p className="text-omsk-md leading-relaxed text-(--omsk-muted)">
 							{info.description ?? t("plugins.noDescription")}
 						</p>
 					</Section>
@@ -311,7 +313,7 @@ export function PluginDetail({
 						<div className="flex flex-wrap gap-3">
 							{links.map(link => (
 								<button
-									className="flex items-center gap-1 text-omp-sm text-(--omp-accent) hover:underline"
+									className="flex items-center gap-1 text-omsk-sm text-(--omsk-accent) hover:underline"
 									key={link.label}
 									onClick={() => void window.omp.system.openExternal(link.url)}
 									title={link.url}
@@ -326,7 +328,7 @@ export function PluginDetail({
 
 					{readme && (
 						<Section title={t("plugins.readme")}>
-							<div className="rounded-lg border border-(--omp-border-muted) px-4 py-3 text-omp-sm">
+							<div className="rounded-lg border border-(--omsk-border-muted) px-4 py-3 text-omsk-sm">
 								<MarkdownRenderer content={readme} />
 							</div>
 						</Section>

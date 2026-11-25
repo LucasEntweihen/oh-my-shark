@@ -68,10 +68,10 @@ export function ProjectSettingsDialog({ cwd, name, onClose }: { cwd: string; nam
 					void save();
 				}}
 			>
-				<div className="rounded-lg border border-(--omp-border-muted) px-3 py-2.5">
-					<div className="mb-1 text-omp-sm font-medium text-(--omp-muted)">{t("overview.workspace.folder")}</div>
+				<div className="rounded-lg border border-(--omsk-border-muted) px-3 py-2.5">
+					<div className="mb-1 text-omsk-sm font-medium text-(--omsk-muted)">{t("overview.workspace.folder")}</div>
 					<div className="flex items-center gap-1.5">
-						<code className="min-w-0 flex-1 select-text wrap-anywhere text-omp-sm" dir="ltr">
+						<code className="min-w-0 flex-1 select-text wrap-anywhere text-omsk-sm" dir="ltr">
 							{cwd}
 						</code>
 						<Button

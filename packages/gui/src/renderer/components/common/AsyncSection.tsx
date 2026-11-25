@@ -68,18 +68,18 @@ export function AsyncSection({
 		return (
 			<div className={cx(PLAIN_STATE_CLASS, "gap-2.5", box)}>
 				<Spinner size="md" />
-				{loadingLabel && <span className="text-omp-xs text-(--omp-dim)">{loadingLabel}</span>}
+				{loadingLabel && <span className="text-omsk-xs text-(--omsk-dim)">{loadingLabel}</span>}
 			</div>
 		);
 	}
 	if (error && !hasData) {
 		return (
 			<div className={cx(PLAIN_STATE_CLASS, "gap-3", box)}>
-				<AlertTriangle className="text-(--omp-warning)" size={20} />
-				<div className="max-w-sm text-omp-xs leading-relaxed text-(--omp-muted)">
+				<AlertTriangle className="text-(--omsk-warning)" size={20} />
+				<div className="max-w-sm text-omsk-xs leading-relaxed text-(--omsk-muted)">
 					{errorTitle && (
 						<>
-							<span className="font-semibold text-(--omp-text)">{errorTitle}</span>
+							<span className="font-semibold text-(--omsk-text)">{errorTitle}</span>
 							<br />
 						</>
 					)}
@@ -92,8 +92,8 @@ export function AsyncSection({
 	if (empty && !error) {
 		return (
 			<div className={cx(PLAIN_STATE_CLASS, box)}>
-				<Inbox className="text-(--omp-dim)" size={20} />
-				{emptyLabel && <span className="text-omp-xs text-(--omp-dim)">{emptyLabel}</span>}
+				<Inbox className="text-(--omsk-dim)" size={20} />
+				{emptyLabel && <span className="text-omsk-xs text-(--omsk-dim)">{emptyLabel}</span>}
 			</div>
 		);
 	}
@@ -102,7 +102,7 @@ export function AsyncSection({
 			{error && (
 				<div
 					role="alert"
-					className="m-3 flex items-center gap-3 rounded border border-(--omp-border-muted) p-3 text-omp-sm text-[var(--omp-warning)]"
+					className="m-3 flex items-center gap-3 rounded border border-(--omsk-border-muted) p-3 text-omsk-sm text-[var(--omsk-warning)]"
 				>
 					<span className="flex-1">{staleLabel ? `${staleLabel}: ${error}` : error}</span>
 					{retryButton}

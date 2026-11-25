@@ -171,11 +171,11 @@ function SearchBox({
 	placeholder: string;
 }) {
 	return (
-		<div className="flex min-w-[160px] flex-1 items-center gap-2 rounded-md border border-(--omp-border-muted) bg-(--omp-input-bg) px-2.5 py-1.5">
-			<Search className="shrink-0 text-(--omp-dim)" size={13} />
+		<div className="flex min-w-[160px] flex-1 items-center gap-2 rounded-md border border-(--omsk-border-muted) bg-(--omsk-input-bg) px-2.5 py-1.5">
+			<Search className="shrink-0 text-(--omsk-dim)" size={13} />
 			<input
 				aria-label={placeholder}
-				className="min-w-0 flex-1 bg-transparent text-omp-xs text-(--omp-text) placeholder:text-(--omp-dim) focus:outline-none"
+				className="min-w-0 flex-1 bg-transparent text-omsk-xs text-(--omsk-text) placeholder:text-(--omsk-dim) focus:outline-none"
 				onChange={event => onChange(event.target.value)}
 				placeholder={placeholder}
 				value={value}
@@ -244,7 +244,7 @@ function ListToolbar({
 			) : (
 				<div className="flex-1" />
 			)}
-			<span className="text-omp-xs whitespace-nowrap tabular-nums text-(--omp-dim)">
+			<span className="text-omsk-xs whitespace-nowrap tabular-nums text-(--omsk-dim)">
 				{t("invPanel.count", { shown, total })}
 			</span>
 			<RefreshButton
@@ -260,7 +260,7 @@ function ListToolbar({
 
 function Row({ children }: { children: ReactNode }) {
 	return (
-		<div className="flex items-center gap-3 rounded-lg border border-[var(--omp-border-muted)] px-3 py-2.5">
+		<div className="flex items-center gap-3 rounded-lg border border-[var(--omsk-border-muted)] px-3 py-2.5">
 			{children}
 		</div>
 	);
@@ -278,13 +278,13 @@ function EmptyNote({
 	icon?: typeof PackageOpen;
 }) {
 	return (
-		<div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-(--omp-border-muted) px-6 py-8 text-center">
-			<div className="mb-3 flex size-9 items-center justify-center rounded-lg border border-(--omp-border-muted) text-(--omp-dim)">
+		<div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-(--omsk-border-muted) px-6 py-8 text-center">
+			<div className="mb-3 flex size-9 items-center justify-center rounded-lg border border-(--omsk-border-muted) text-(--omsk-dim)">
 				<Icon aria-hidden="true" size={16} strokeWidth={1.7} />
 			</div>
-			<div className="text-omp-md font-medium text-(--omp-text)">{children}</div>
+			<div className="text-omsk-md font-medium text-(--omsk-text)">{children}</div>
 			{description && (
-				<div className="mt-1 max-w-sm text-omp-sm leading-relaxed text-(--omp-dim)">{description}</div>
+				<div className="mt-1 max-w-sm text-omsk-sm leading-relaxed text-(--omsk-dim)">{description}</div>
 			)}
 			{action && <div className="mt-4">{action}</div>}
 		</div>
@@ -305,7 +305,7 @@ function ResourceGate<T>({ resource, children }: { resource: RpcResource<T>; chi
 		if (resource.error) {
 			return (
 				<div className="flex flex-col items-center gap-2.5 py-8">
-					<div className="max-w-full rounded-md bg-[var(--omp-tool-error-bg)] px-3 py-2 text-omp-md break-words text-[var(--omp-error)]">
+					<div className="max-w-full rounded-md bg-[var(--omsk-tool-error-bg)] px-3 py-2 text-omsk-md break-words text-[var(--omsk-error)]">
 						{resource.error}
 					</div>
 					<Button
@@ -326,7 +326,7 @@ function ResourceGate<T>({ resource, children }: { resource: RpcResource<T>; chi
 	return (
 		<>
 			{resource.error && (
-				<div className="rounded-md bg-[var(--omp-tool-error-bg)] px-3 py-2 text-omp-md break-words text-[var(--omp-error)]">
+				<div className="rounded-md bg-[var(--omsk-tool-error-bg)] px-3 py-2 text-omsk-md break-words text-[var(--omsk-error)]">
 					{resource.error}
 				</div>
 			)}
@@ -366,7 +366,7 @@ function PluginToggle({
 		<button
 			aria-checked={enabled}
 			aria-label={label}
-			className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omp-accent) disabled:cursor-not-allowed disabled:opacity-50"
+			className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omsk-accent) disabled:cursor-not-allowed disabled:opacity-50"
 			disabled={disabled}
 			onClick={onToggle}
 			role="switch"
@@ -399,7 +399,7 @@ function PluginRow({
 }) {
 	return (
 		<div
-			className="flex cursor-pointer items-center gap-3 rounded-lg border border-[var(--omp-border-muted)] px-3 py-2.5 transition-colors hover:border-(--omp-border-strong) hover:bg-[var(--omp-bg-tertiary)]"
+			className="flex cursor-pointer items-center gap-3 rounded-lg border border-[var(--omsk-border-muted)] px-3 py-2.5 transition-colors hover:border-(--omsk-border-strong) hover:bg-[var(--omsk-bg-tertiary)]"
 			onClick={onOpenDetail}
 			onKeyDown={event => {
 				// Only the row itself — keydown bubbling from the toggle button must
@@ -416,7 +416,7 @@ function PluginRow({
 		>
 			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<div className="flex flex-wrap items-center gap-1.5">
-					<span className="text-omp-lg font-medium text-[var(--omp-text)]">{plugin.name}</span>
+					<span className="text-omsk-lg font-medium text-[var(--omsk-text)]">{plugin.name}</span>
 					{plugin.marketplace === "npm" ? (
 						<Badge variant="info">npm</Badge>
 					) : (
@@ -429,7 +429,7 @@ function PluginRow({
 						</Badge>
 					)}
 				</div>
-				<div className="flex items-center gap-3 text-omp-sm text-[var(--omp-dim)]">
+				<div className="flex items-center gap-3 text-omsk-sm text-[var(--omsk-dim)]">
 					{plugin.version && <span className="tabular-nums">v{plugin.version}</span>}
 					{plugin.id && plugin.id !== plugin.name && <span className="truncate font-mono">{plugin.id}</span>}
 				</div>
@@ -438,7 +438,7 @@ function PluginRow({
 			<span onClick={event => event.stopPropagation()}>
 				<PluginToggle busy={busy} disabled={disabled} enabled={enabled} onToggle={onToggle} />
 			</span>
-			<ChevronRight className="shrink-0 text-(--omp-dim)" size={13} />
+			<ChevronRight className="shrink-0 text-(--omsk-dim)" size={13} />
 		</div>
 	);
 }
@@ -646,16 +646,16 @@ function TemplateRow({ template }: { template: RpcPromptTemplateInfo }) {
 		<Row>
 			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<div className="flex flex-wrap items-center gap-1.5">
-					<span className="text-omp-lg font-medium text-[var(--omp-text)]">{template.name}</span>
+					<span className="text-omsk-lg font-medium text-[var(--omsk-text)]">{template.name}</span>
 					<Badge variant="default">{template.source}</Badge>
 					{template.argumentHint && (
-						<code className="rounded bg-[var(--omp-code-bg)] px-1.5 py-px font-mono text-omp-xs text-[var(--omp-muted)]">
+						<code className="rounded bg-[var(--omsk-code-bg)] px-1.5 py-px font-mono text-omsk-xs text-[var(--omsk-muted)]">
 							{template.argumentHint}
 						</code>
 					)}
 				</div>
 				{template.description && (
-					<div className="text-omp-sm leading-[1.45] text-[var(--omp-dim)]">{template.description}</div>
+					<div className="text-omsk-sm leading-[1.45] text-[var(--omsk-dim)]">{template.description}</div>
 				)}
 			</div>
 		</Row>
@@ -740,7 +740,7 @@ function MemoryStatusCard({ report, t }: { report: RpcMemoryReport; t: TFn }) {
 		]);
 	if (status.message) details.push([t("invPanel.memory.message"), status.message]);
 	return (
-		<div className="flex flex-col gap-2 rounded-lg border border-[var(--omp-border-muted)] px-3 py-2.5">
+		<div className="flex flex-col gap-2 rounded-lg border border-[var(--omsk-border-muted)] px-3 py-2.5">
 			<div className="flex flex-wrap items-center gap-1.5">
 				<Badge variant={status.active ? "success" : "error"} dot>
 					{status.active ? t("invPanel.memory.active") : t("invPanel.memory.inactive")}
@@ -753,26 +753,26 @@ function MemoryStatusCard({ report, t }: { report: RpcMemoryReport; t: TFn }) {
 				</Badge>
 			</div>
 			{counts.length > 0 && (
-				<div className="flex flex-wrap gap-x-4 gap-y-1 text-omp-sm text-[var(--omp-dim)]">
+				<div className="flex flex-wrap gap-x-4 gap-y-1 text-omsk-sm text-[var(--omsk-dim)]">
 					{counts.map(([label, value]) => (
 						<span key={label}>
-							{label}: <span className="tabular-nums text-[var(--omp-text)]">{value}</span>
+							{label}: <span className="tabular-nums text-[var(--omsk-text)]">{value}</span>
 						</span>
 					))}
 				</div>
 			)}
 			{details.length > 0 && (
-				<div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-omp-sm">
+				<div className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-omsk-sm">
 					{details.map(([label, value]) => (
 						<Fragment key={label}>
-							<span className="text-[var(--omp-dim)]">{label}</span>
-							<span className="break-words text-[var(--omp-text)]">{value}</span>
+							<span className="text-[var(--omsk-dim)]">{label}</span>
+							<span className="break-words text-[var(--omsk-text)]">{value}</span>
 						</Fragment>
 					))}
 				</div>
 			)}
 			{status.error && (
-				<div className="text-omp-sm break-words text-[var(--omp-error)]">{describeError(status.error)}</div>
+				<div className="text-omsk-sm break-words text-[var(--omsk-error)]">{describeError(status.error)}</div>
 			)}
 		</div>
 	);
@@ -786,10 +786,10 @@ function MemoryTab({ resource, visible }: { resource: RpcResource<RpcMemoryRepor
 	return (
 		<TabPanel visible={visible}>
 			<div className="flex items-center gap-2">
-				<span className="min-w-0 flex-1 truncate text-omp-md font-medium text-[var(--omp-text)]">
+				<span className="min-w-0 flex-1 truncate text-omsk-md font-medium text-[var(--omsk-text)]">
 					{report?.backend ?? t("invPanel.tabs.memory")}
 					{report?.entryCount !== undefined && (
-						<span className="ml-2 text-omp-xs font-normal tabular-nums text-[var(--omp-dim)]">
+						<span className="ml-2 text-omsk-xs font-normal tabular-nums text-[var(--omsk-dim)]">
 							{t("invPanel.memory.entries", { count: report.entryCount })}
 						</span>
 					)}
@@ -807,9 +807,9 @@ function MemoryTab({ resource, visible }: { resource: RpcResource<RpcMemoryRepor
 					<>
 						<MemoryStatusCard report={data} t={t} />
 						{data.stats && (
-							<div className="overflow-hidden rounded-lg border border-[var(--omp-border-muted)]">
+							<div className="overflow-hidden rounded-lg border border-[var(--omsk-border-muted)]">
 								<button
-									className="flex w-full items-center gap-1.5 px-3 py-2 text-left text-omp-sm font-semibold text-[var(--omp-text)] transition-colors hover:bg-[var(--omp-bg-tertiary)]"
+									className="flex w-full items-center gap-1.5 px-3 py-2 text-left text-omsk-sm font-semibold text-[var(--omsk-text)] transition-colors hover:bg-[var(--omsk-bg-tertiary)]"
 									onClick={() => setStatsOpen(open => !open)}
 									type="button"
 								>
@@ -817,18 +817,18 @@ function MemoryTab({ resource, visible }: { resource: RpcResource<RpcMemoryRepor
 									{t("invPanel.memory.stats")}
 								</button>
 								{statsOpen && (
-									<pre className="max-h-64 overflow-auto border-t border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] px-3 py-2 font-mono text-omp-xs leading-relaxed break-words whitespace-pre-wrap text-[var(--omp-muted)]">
+									<pre className="max-h-64 overflow-auto border-t border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] px-3 py-2 font-mono text-omsk-xs leading-relaxed break-words whitespace-pre-wrap text-[var(--omsk-muted)]">
 										{data.stats}
 									</pre>
 								)}
 							</div>
 						)}
 						{data.diagnosis && (
-							<div className="rounded-lg border border-[var(--omp-border-muted)] px-3 py-2.5">
-								<div className="mb-1.5 text-omp-sm font-semibold text-[var(--omp-text)]">
+							<div className="rounded-lg border border-[var(--omsk-border-muted)] px-3 py-2.5">
+								<div className="mb-1.5 text-omsk-sm font-semibold text-[var(--omsk-text)]">
 									{t("invPanel.memory.diagnosis")}
 								</div>
-								<div className="text-omp-md text-[var(--omp-muted)]">
+								<div className="text-omsk-md text-[var(--omsk-muted)]">
 									<MarkdownRenderer content={data.diagnosis} />
 								</div>
 							</div>
@@ -901,7 +901,7 @@ function InventoryContent({
 		<div
 			className={cx(
 				"relative flex flex-col overflow-hidden",
-				embedded ? "settings-embedded-panel" : "omp-docked-fill h-[72vh]",
+				embedded ? "settings-embedded-panel" : "omsk-docked-fill h-[72vh]",
 				detailPlugin && "settings-plugin-detail-open",
 			)}
 		>
@@ -924,7 +924,7 @@ function InventoryContent({
 				<TemplatesTab externalQuery={query} resource={templates} visible={active && tab === "templates"} />
 				<MemoryTab resource={memory} visible={active && tab === "memory"} />
 			</div>
-			<div className="shrink-0 border-t border-(--omp-border-muted) px-4 py-2 text-omp-xs leading-relaxed text-(--omp-dim)">
+			<div className="shrink-0 border-t border-(--omsk-border-muted) px-4 py-2 text-omsk-xs leading-relaxed text-(--omsk-dim)">
 				{footer}
 			</div>
 			{/* Drill-in detail drawer — covers the window body until dismissed. */}

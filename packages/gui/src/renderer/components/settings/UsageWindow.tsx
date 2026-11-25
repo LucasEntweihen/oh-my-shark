@@ -114,7 +114,7 @@ function LimitRow({
 	return (
 		<div className="flex flex-col gap-1 py-1.5">
 			<div className="flex items-center justify-between gap-2">
-				<span className="text-omp-md font-medium text-[var(--omp-text)]">{limit.label}</span>
+				<span className="text-omsk-md font-medium text-[var(--omsk-text)]">{limit.label}</span>
 				<div className="flex items-center gap-2">
 					{limit.status && limit.status !== "ok" && (
 						<Badge variant={limit.status === "exhausted" ? "error" : "warning"}>
@@ -122,7 +122,7 @@ function LimitRow({
 						</Badge>
 					)}
 					{limitHasDetail(limit) && (
-						<span className="font-mono text-omp-sm tabular-nums text-[var(--omp-muted)]">
+						<span className="font-mono text-omsk-sm tabular-nums text-[var(--omsk-muted)]">
 							{limitValueText(limit, t)}
 						</span>
 					)}
@@ -136,11 +136,11 @@ function LimitRow({
 					color={remainingQuotaColor(remaining)}
 				/>
 			)}
-			{countdown && <span className="text-omp-xs text-[var(--omp-dim)]">{countdown}</span>}
+			{countdown && <span className="text-omsk-xs text-[var(--omsk-dim)]">{countdown}</span>}
 			{limit.notes && limit.notes.length > 0 && (
 				<div className="flex flex-col gap-0.5">
 					{limit.notes.map(note => (
-						<span key={note} className="text-omp-xs text-[var(--omp-dim)]">
+						<span key={note} className="text-omsk-xs text-[var(--omsk-dim)]">
 							{note}
 						</span>
 					))}
@@ -164,12 +164,12 @@ function ProviderReportCard({
 	const plan = report.metadata?.subscriptionPlan;
 	const subscriptionPlan = typeof plan === "string" ? plan.trim() : "";
 	return (
-		<div className="rounded-lg border border-[var(--omp-border-muted)] p-3">
+		<div className="rounded-lg border border-[var(--omsk-border-muted)] p-3">
 			<div className="mb-2 flex items-center justify-between">
 				<div className="flex min-w-0 flex-wrap items-center gap-2">
-					<span className="text-omp-lg font-semibold text-[var(--omp-text)]">{providerName}</span>
+					<span className="text-omsk-lg font-semibold text-[var(--omsk-text)]">{providerName}</span>
 					{subscriptionPlan && <Badge variant="muted">{subscriptionPlan}</Badge>}
-					{report.account && <span className="text-omp-sm text-[var(--omp-muted)]">{report.account}</span>}
+					{report.account && <span className="text-omsk-sm text-[var(--omsk-muted)]">{report.account}</span>}
 				</div>
 				{report.resetCreditsAvailable !== undefined && report.resetCreditsAvailable > 0 && (
 					<Badge variant="info">
@@ -183,13 +183,13 @@ function ProviderReportCard({
 			{report.notes && report.notes.length > 0 && (
 				<div className="mb-2 flex flex-col gap-0.5">
 					{report.notes.map(note => (
-						<span key={note} className="text-omp-xs text-[var(--omp-dim)]">
+						<span key={note} className="text-omsk-xs text-[var(--omsk-dim)]">
 							{note}
 						</span>
 					))}
 				</div>
 			)}
-			<div className="divide-y divide-[var(--omp-border-muted)]">
+			<div className="divide-y divide-[var(--omsk-border-muted)]">
 				{(Array.isArray(report.limits) ? report.limits : []).map(limit => (
 					<LimitRow key={limit.id} limit={limit} t={t} now={now} />
 				))}
@@ -218,11 +218,11 @@ function ResetCreditRow({
 	return (
 		<div className="flex items-center justify-between gap-2 py-1.5">
 			<div className="flex min-w-0 flex-col">
-				<span className="truncate text-omp-md font-medium text-[var(--omp-text)]">
+				<span className="truncate text-omsk-md font-medium text-[var(--omsk-text)]">
 					{account.providerLabel} · {account.label}
 					{account.active && <Badge variant="muted">{t("usage.resetActive")}</Badge>}
 				</span>
-				<span className="text-omp-xs text-[var(--omp-dim)]">
+				<span className="text-omsk-xs text-[var(--omsk-dim)]">
 					{account.unavailableReason ??
 						account.error ??
 						t("usage.resetCounts", { redeemable: account.redeemableCount, available: account.availableCount })}
@@ -466,10 +466,10 @@ export function UsageWindow() {
 			<Modal dockable open={open} onClose={close} title={t("usage.title")} size="lg">
 				<div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
 					<div className="flex items-center justify-between">
-						<span className="text-omp-sm font-semibold text-[var(--omp-muted)]">
+						<span className="text-omsk-sm font-semibold text-[var(--omsk-muted)]">
 							{t("usage.providerQuotas")}
 							{fetchedAt > 0 && (
-								<span className="ml-2 font-normal text-[var(--omp-dim)]">
+								<span className="ml-2 font-normal text-[var(--omsk-dim)]">
 									{t("usage.asOf", { time: formatClock(fetchedAt) })}
 								</span>
 							)}
@@ -505,17 +505,17 @@ export function UsageWindow() {
 					</div>
 
 					{resetsOpen && resetsAvailable && (
-						<div className="rounded-lg border border-[var(--omp-border-muted)] px-3 py-1.5">
+						<div className="rounded-lg border border-[var(--omsk-border-muted)] px-3 py-1.5">
 							{resetsLoading && resets === null ? (
 								<div className="flex items-center justify-center py-3">
 									<Spinner />
 								</div>
 							) : (resets ?? []).length === 0 ? (
-								<span className="block py-2 text-center text-omp-md text-[var(--omp-dim)]">
+								<span className="block py-2 text-center text-omsk-md text-[var(--omsk-dim)]">
 									{t("usage.noResets")}
 								</span>
 							) : (
-								<div className="divide-y divide-[var(--omp-border-muted)]">
+								<div className="divide-y divide-[var(--omsk-border-muted)]">
 									{(resets ?? []).map(account => {
 										const key = `${account.provider}:${account.target.credentialId}`;
 										return (
@@ -535,7 +535,7 @@ export function UsageWindow() {
 					)}
 
 					{error && (
-						<div className="rounded-md bg-[var(--omp-tool-error-bg)] px-3 py-2 text-omp-md text-[var(--omp-error)]">
+						<div className="rounded-md bg-[var(--omsk-tool-error-bg)] px-3 py-2 text-omsk-md text-[var(--omsk-error)]">
 							{error}
 						</div>
 					)}
@@ -546,7 +546,7 @@ export function UsageWindow() {
 					)}
 
 					{reports && reports.length === 0 && !loading && (
-						<div className="rounded-md border border-[var(--omp-border-muted)] px-3 py-4 text-center text-omp-md text-[var(--omp-dim)]">
+						<div className="rounded-md border border-[var(--omsk-border-muted)] px-3 py-4 text-center text-omsk-md text-[var(--omsk-dim)]">
 							{t("usage.noApi")}
 						</div>
 					)}
@@ -567,18 +567,18 @@ export function UsageWindow() {
 
 					{session && (
 						<>
-							<span className="text-omp-sm font-semibold text-[var(--omp-muted)]">
+							<span className="text-omsk-sm font-semibold text-[var(--omsk-muted)]">
 								{t("usage.sessionTallies")}
 							</span>
 							<div className="grid grid-cols-2 gap-2">
 								{sessionRows.map(({ icon: Icon, label, value }) => (
 									<div
 										key={label}
-										className="flex items-center gap-2 rounded-md border border-[var(--omp-border-muted)] px-3 py-2"
+										className="flex items-center gap-2 rounded-md border border-[var(--omsk-border-muted)] px-3 py-2"
 									>
-										<Icon size={13} className="text-[var(--omp-dim)]" />
-										<span className="flex-1 text-omp-md text-[var(--omp-muted)]">{label}</span>
-										<span className="font-mono text-omp-md font-medium tabular-nums text-[var(--omp-text)]">
+										<Icon size={13} className="text-[var(--omsk-dim)]" />
+										<span className="flex-1 text-omsk-md text-[var(--omsk-muted)]">{label}</span>
+										<span className="font-mono text-omsk-md font-medium tabular-nums text-[var(--omsk-text)]">
 											{value}
 										</span>
 									</div>

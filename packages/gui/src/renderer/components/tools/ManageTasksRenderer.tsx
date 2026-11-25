@@ -35,22 +35,22 @@ export function ManageTasksRenderer({ result, isError, isPartial }: ToolRenderer
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex min-w-0 items-center gap-1.5 text-omp-sm">
+			<div className="flex min-w-0 items-center gap-1.5 text-omsk-sm">
 				<CalendarClock
 					size={12}
 					className={
 						isError
-							? "shrink-0 text-(--omp-error)"
+							? "shrink-0 text-(--omsk-error)"
 							: title && action !== "delete"
-								? "shrink-0 text-(--omp-success)"
-								: "shrink-0 text-(--omp-muted)"
+								? "shrink-0 text-(--omsk-success)"
+								: "shrink-0 text-(--omsk-muted)"
 					}
 				/>
-				<span className="min-w-0 truncate font-semibold text-(--omp-text)">
+				<span className="min-w-0 truncate font-semibold text-(--omsk-text)">
 					{title || t("tools.manageTasks.title")}
 				</span>
 			</div>
-			<p className={isPartial ? "omp-shimmer-text text-omp-sm" : "text-omp-sm text-(--omp-dim)"}>
+			<p className={isPartial ? "omsk-shimmer-text text-omsk-sm" : "text-omsk-sm text-(--omsk-dim)"}>
 				{status}
 				{nextRun !== null &&
 					action !== "pause" &&
@@ -58,13 +58,13 @@ export function ManageTasksRenderer({ result, isError, isPartial }: ToolRenderer
 					` ${t("tools.manageTasks.nextRun", { time: formatClock(nextRun) })}`}
 			</p>
 			{isError && (
-				<p className="text-omp-sm break-words whitespace-pre-wrap text-(--omp-muted)">
+				<p className="text-omsk-sm break-words whitespace-pre-wrap text-(--omsk-muted)">
 					{resultBodyText(result).trim()}
 				</p>
 			)}
 			{!isPartial && !isError && action !== "delete" && (
 				<button
-					className="self-start text-omp-sm text-(--omp-link) hover:underline"
+					className="self-start text-omsk-sm text-(--omsk-link) hover:underline"
 					onClick={() => useSchedulerStore.getState().openTasks({ view: "tasks", taskId })}
 					type="button"
 				>

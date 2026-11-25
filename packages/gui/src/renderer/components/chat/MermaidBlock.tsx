@@ -160,13 +160,13 @@ function readDiagramPalette(): DiagramPalette {
 	};
 	const dark = readResolvedTheme() === "dark";
 	const canvas = read(
-		"--omp-bg-primary",
+		"--omsk-bg-primary",
 		dark ? [24, 24, 24] : [255, 255, 255],
 		dark ? [24, 24, 24] : [255, 255, 255],
 	);
-	const text = read("--omp-text", canvas, dark ? [235, 235, 235] : [20, 20, 20]);
-	const line = read("--omp-muted", canvas, mix(canvas, text, 0.55));
-	const accent = read("--omp-accent", canvas, text);
+	const text = read("--omsk-text", canvas, dark ? [235, 235, 235] : [20, 20, 20]);
+	const line = read("--omsk-muted", canvas, mix(canvas, text, 0.55));
+	const accent = read("--omsk-accent", canvas, text);
 	const fontFamily = getComputedStyle(document.body).fontFamily;
 	probe.remove();
 	const colors = [canvas, text, line, accent].map(toHex);
@@ -233,7 +233,7 @@ async function renderDiagram(source: string, palette: DiagramPalette): Promise<s
 		mermaid.initialize(diagramConfig(palette));
 		initializedPalette = palette.signature;
 	}
-	const id = `omp-mermaid-${renderSeq++}`;
+	const id = `omsk-mermaid-${renderSeq++}`;
 	let svg: string;
 	try {
 		svg = (await mermaid.render(id, source)).svg;
@@ -346,7 +346,7 @@ export const MermaidBlock = memo(function MermaidBlock({ code, className }: Merm
 		return (
 			<div
 				className={cx(
-					"my-1 flex items-center justify-center rounded-lg border border-[var(--omp-border)] bg-[var(--omp-code-bg)] px-3 py-6",
+					"my-1 flex items-center justify-center rounded-lg border border-[var(--omsk-border)] bg-[var(--omsk-code-bg)] px-3 py-6",
 					className,
 				)}
 			>
@@ -357,7 +357,7 @@ export const MermaidBlock = memo(function MermaidBlock({ code, className }: Merm
 	return (
 		<div
 			className={cx(
-				"my-1 overflow-x-auto rounded-lg border border-[var(--omp-border)] bg-[var(--omp-code-bg)] p-3",
+				"my-1 overflow-x-auto rounded-lg border border-[var(--omsk-border)] bg-[var(--omsk-code-bg)] p-3",
 				className,
 			)}
 		>

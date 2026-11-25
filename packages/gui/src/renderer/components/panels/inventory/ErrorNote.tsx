@@ -26,16 +26,16 @@ export function CopyableError({
 	return (
 		<div
 			className={cx(
-				"flex items-start gap-2 rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent px-2.5 py-1.5",
+				"flex items-start gap-2 rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent px-2.5 py-1.5",
 				className,
 			)}
 		>
-			<span className="min-w-0 flex-1 text-omp-sm break-words whitespace-pre-wrap text-(--omp-error)">
+			<span className="min-w-0 flex-1 text-omsk-sm break-words whitespace-pre-wrap text-(--omsk-error)">
 				{message}
 			</span>
 			<button
 				aria-label={copyLabel}
-				className="omp-pressable mt-px shrink-0 rounded p-0.5 text-(--omp-error) hover:brightness-110"
+				className="omsk-pressable mt-px shrink-0 rounded p-0.5 text-(--omsk-error) hover:brightness-110"
 				onClick={() => {
 					void copyText(message).then(ok => {
 						if (ok) setCopied(true);
@@ -44,7 +44,7 @@ export function CopyableError({
 				title={copyLabel}
 				type="button"
 			>
-				{copied ? <Check size={11} className="text-(--omp-success)" /> : <Copy size={11} />}
+				{copied ? <Check size={11} className="text-(--omsk-success)" /> : <Copy size={11} />}
 			</button>
 		</div>
 	);

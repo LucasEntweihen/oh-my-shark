@@ -103,9 +103,9 @@ export function HandoffDialog() {
 	return (
 		<Modal open={open} onClose={close} title={t("handoff.title")} size="md">
 			<div className="flex flex-col gap-3">
-				<div className="flex items-start gap-2.5 rounded-md border border-(--omp-border-muted) bg-transparent px-3 py-2.5">
-					<Handshake className="mt-0.5 shrink-0 text-(--omp-accent)" size={14} />
-					<p className="text-omp-sm leading-relaxed text-(--omp-muted)">{t("handoff.desc")}</p>
+				<div className="flex items-start gap-2.5 rounded-md border border-(--omsk-border-muted) bg-transparent px-3 py-2.5">
+					<Handshake className="mt-0.5 shrink-0 text-(--omsk-accent)" size={14} />
+					<p className="text-omsk-sm leading-relaxed text-(--omsk-muted)">{t("handoff.desc")}</p>
 				</div>
 				<TextArea
 					autoGrow
@@ -120,12 +120,12 @@ export function HandoffDialog() {
 					value={instructions}
 				/>
 				{blockedReason !== null && (
-					<div className="rounded-md border border-[color-mix(in_srgb,var(--omp-warning)_35%,transparent)] bg-transparent px-3 py-2 text-omp-sm text-(--omp-warning)">
+					<div className="rounded-md border border-[color-mix(in_srgb,var(--omsk-warning)_35%,transparent)] bg-transparent px-3 py-2 text-omsk-sm text-(--omsk-warning)">
 						{blockedReason}
 					</div>
 				)}
 				{error !== null && (
-					<div className="rounded-md border border-[var(--omp-error)] bg-transparent px-3 py-2 text-omp-sm text-[var(--omp-error)]">
+					<div className="rounded-md border border-[var(--omsk-error)] bg-transparent px-3 py-2 text-omsk-sm text-[var(--omsk-error)]">
 						{error}
 					</div>
 				)}

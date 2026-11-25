@@ -24,13 +24,13 @@ export function ConversationNavigator({ activeIndex, anchors, onNavigate }: Conv
 	};
 
 	return (
-		<nav className="omp-conversation-nav" aria-label={t("chat.navigator.label")}>
-			<div className={cx("omp-conversation-nav-stack", density)}>
+		<nav className="omsk-conversation-nav" aria-label={t("chat.navigator.label")}>
+			<div className={cx("omsk-conversation-nav-stack", density)}>
 				{anchors.map((anchor, index) => {
 					const preview = anchor.preview || t("chat.navigator.imagePrompt");
 					const clock = previewIndex === index ? formatShortClock(anchor.timestamp) : "";
 					return (
-						<div key={anchor.key} className="omp-conversation-nav-slot">
+						<div key={anchor.key} className="omsk-conversation-nav-slot">
 							<button
 								ref={element => {
 									buttonsRef.current[index] = element;
@@ -43,7 +43,7 @@ export function ConversationNavigator({ activeIndex, anchors, onNavigate }: Conv
 									preview,
 								})}
 								tabIndex={index === activeIndex ? 0 : -1}
-								className={cx("omp-conversation-nav-marker", index === activeIndex && "is-active")}
+								className={cx("omsk-conversation-nav-marker", index === activeIndex && "is-active")}
 								onBlur={() => setPreviewIndex(current => (current === index ? null : current))}
 								onClick={() => onNavigate(anchor.rowIndex)}
 								onFocus={() => setPreviewIndex(index)}
@@ -66,13 +66,13 @@ export function ConversationNavigator({ activeIndex, anchors, onNavigate }: Conv
 								}}
 							/>
 							{previewIndex === index ? (
-								<div role="tooltip" className="omp-conversation-nav-preview">
-									<div className="omp-conversation-nav-preview-kicker">
+								<div role="tooltip" className="omsk-conversation-nav-preview">
+									<div className="omsk-conversation-nav-preview-kicker">
 										<span>{t("chat.navigator.turn", { current: index + 1, total: anchors.length })}</span>
 										{clock ? <time>{clock}</time> : null}
 									</div>
 									<p>{preview}</p>
-									<span className="omp-conversation-nav-preview-hint">{t("chat.navigator.hint")}</span>
+									<span className="omsk-conversation-nav-preview-hint">{t("chat.navigator.hint")}</span>
 								</div>
 							) : null}
 						</div>

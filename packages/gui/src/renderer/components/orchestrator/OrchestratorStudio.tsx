@@ -156,7 +156,7 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 			ariaLabel="Orchestrator Studio"
 			title={
 				<span className="flex items-center gap-2">
-					<Workflow size={16} className="text-[var(--omp-accent)]" />
+					<Workflow size={16} className="text-[var(--omsk-accent)]" />
 					<span>OMSK Orchestrator Studio</span>
 					{activeRun && <Badge variant="info">{activeRun.id}</Badge>}
 				</span>
@@ -172,7 +172,7 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 								onChange={e => {
 									if (e.target.value) void refresh(e.target.value);
 								}}
-								className="h-8 rounded-lg border border-[var(--omp-input-border)] bg-[var(--omp-input-bg)] px-2.5 text-omp-sm text-[var(--omp-text)] outline-none focus:border-[var(--omp-input-focus-border)]"
+								className="h-8 rounded-lg border border-[var(--omsk-input-border)] bg-[var(--omsk-input-bg)] px-2.5 text-omsk-sm text-[var(--omsk-text)] outline-none focus:border-[var(--omsk-input-focus-border)]"
 							>
 								{runs.map(item => (
 									<option key={item.id} value={item.id}>
@@ -212,10 +212,10 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 				{error && (
 					<div
 						role="alert"
-						className="flex items-center justify-between gap-3 rounded-lg border border-[var(--omp-error)] bg-[var(--omp-error-dim)] px-3 py-2 text-omp-sm text-[var(--omp-error)]"
+						className="flex items-center justify-between gap-3 rounded-lg border border-[var(--omsk-error)] bg-[var(--omsk-error-dim)] px-3 py-2 text-omsk-sm text-[var(--omsk-error)]"
 					>
 						<span>{error}</span>
-						<button type="button" onClick={clearError} className="text-omp-xs underline">
+						<button type="button" onClick={clearError} className="text-omsk-xs underline">
 							Dismiss
 						</button>
 					</div>
@@ -224,10 +224,10 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 				<OrchestratorPhaseStepper run={activeRun} />
 
 				{(showBuilder || !activeRun) && (
-					<section className="space-y-3 rounded-xl border border-[var(--omp-border-muted)] p-4">
+					<section className="space-y-3 rounded-xl border border-[var(--omsk-border-muted)] p-4">
 						<div className="flex items-center justify-between gap-2">
-							<h3 className="flex items-center gap-2 text-omp-md font-semibold text-[var(--omp-text)]">
-								<Rocket size={15} className="text-[var(--omp-accent)]" />
+							<h3 className="flex items-center gap-2 text-omsk-md font-semibold text-[var(--omsk-text)]">
+								<Rocket size={15} className="text-[var(--omsk-accent)]" />
 								Plan Creation & DAG Partitioning
 							</h3>
 							<Button
@@ -263,13 +263,13 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 
 						<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 							<label className="block">
-								<span className="mb-1.5 block text-omp-md font-medium text-[var(--omp-text-secondary)]">
+								<span className="mb-1.5 block text-omsk-md font-medium text-[var(--omsk-text-secondary)]">
 									Approval Policy
 								</span>
 								<select
 									value={approvalPolicy}
 									onChange={e => setApprovalPolicy(e.target.value as OrchestratorApprovalPolicy)}
-									className="w-full rounded-lg border border-[var(--omp-input-border)] bg-[var(--omp-input-bg)] px-2.5 py-1.5 text-omp-md text-[var(--omp-text)] outline-none focus:border-[var(--omp-input-focus-border)]"
+									className="w-full rounded-lg border border-[var(--omsk-input-border)] bg-[var(--omsk-input-bg)] px-2.5 py-1.5 text-omsk-md text-[var(--omsk-text)] outline-none focus:border-[var(--omsk-input-focus-border)]"
 								>
 									{POLICIES.map(policy => (
 										<option key={policy.id} value={policy.id}>
@@ -294,7 +294,7 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 								{customTasks.map((task, idx) => (
 									<div
 										key={idx}
-										className="grid grid-cols-1 gap-2 rounded-lg border border-[var(--omp-border-muted)] p-2.5 md:grid-cols-6"
+										className="grid grid-cols-1 gap-2 rounded-lg border border-[var(--omsk-border-muted)] p-2.5 md:grid-cols-6"
 									>
 										<Input
 											compact
@@ -325,7 +325,7 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 													),
 												)
 											}
-											className="rounded-lg border border-[var(--omp-input-border)] bg-[var(--omp-input-bg)] px-2 py-1.5 text-omp-sm text-[var(--omp-text)]"
+											className="rounded-lg border border-[var(--omsk-input-border)] bg-[var(--omsk-input-bg)] px-2 py-1.5 text-omsk-sm text-[var(--omsk-text)]"
 										>
 											{ROLES.map(role => (
 												<option key={role} value={role}>
@@ -370,7 +370,7 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 												type="button"
 												aria-label="Remove task"
 												onClick={() => setCustomTasks(prev => prev.filter((_, i) => i !== idx))}
-												className="rounded p-1.5 text-[var(--omp-dim)] hover:text-[var(--omp-error)]"
+												className="rounded p-1.5 text-[var(--omsk-dim)] hover:text-[var(--omsk-error)]"
 											>
 												<Trash2 size={13} />
 											</button>
@@ -396,20 +396,20 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 
 				{activeRun && (
 					<>
-						<section className="space-y-3 rounded-xl border border-[var(--omp-border-muted)] p-4">
+						<section className="space-y-3 rounded-xl border border-[var(--omsk-border-muted)] p-4">
 							<div className="flex flex-wrap items-start justify-between gap-2">
 								<div>
-									<div className="text-omp-xs font-semibold uppercase tracking-wide text-[var(--omp-dim)]">
+									<div className="text-omsk-xs font-semibold uppercase tracking-wide text-[var(--omsk-dim)]">
 										Active Mission
 									</div>
-									<h2 className="text-omp-lg font-semibold text-[var(--omp-text)]">{activeRun.goal}</h2>
-									<div className="mt-1 flex flex-wrap gap-2 text-omp-xs text-[var(--omp-muted)]">
+									<h2 className="text-omsk-lg font-semibold text-[var(--omsk-text)]">{activeRun.goal}</h2>
+									<div className="mt-1 flex flex-wrap gap-2 text-omsk-xs text-[var(--omsk-muted)]">
 										<span>Policy: {activeRun.approvalPolicy}</span>
 										<span>•</span>
 										<span>Approved: {activeRun.planApproved ? "Yes" : "Pending"}</span>
 										{activeRun.approvalNotes && <span>• Notes: {activeRun.approvalNotes}</span>}
 										{activeRun.rejectionReason && (
-											<span className="text-[var(--omp-error)]">
+											<span className="text-[var(--omsk-error)]">
 												• Rejected: {activeRun.rejectionReason}
 											</span>
 										)}
@@ -465,7 +465,7 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 							</div>
 
 							{canApprove && (
-								<div className="grid grid-cols-1 gap-2 border-t border-[var(--omp-border-muted)] pt-3 lg:grid-cols-2">
+								<div className="grid grid-cols-1 gap-2 border-t border-[var(--omsk-border-muted)] pt-3 lg:grid-cols-2">
 									<div className="flex items-center gap-2">
 										<div className="min-w-0 flex-1">
 											<Input
@@ -508,7 +508,7 @@ export function OrchestratorStudio({ open = true, onClose }: OrchestratorStudioP
 							)}
 
 							{!isTerminal && !canApprove && (
-								<div className="flex items-center gap-2 border-t border-[var(--omp-border-muted)] pt-2">
+								<div className="flex items-center gap-2 border-t border-[var(--omsk-border-muted)] pt-2">
 									<div className="max-w-sm flex-1">
 										<Input
 											compact

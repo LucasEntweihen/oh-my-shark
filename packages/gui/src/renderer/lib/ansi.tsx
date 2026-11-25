@@ -51,11 +51,11 @@ interface AnsiStyle {
 const COLOR_NAMES = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"] as const;
 
 function baseColor(index: number): string {
-	return `var(--omp-ansi-${COLOR_NAMES[index]})`;
+	return `var(--omsk-ansi-${COLOR_NAMES[index]})`;
 }
 
 function brightColor(index: number): string {
-	return `var(--omp-ansi-bright-${COLOR_NAMES[index]})`;
+	return `var(--omsk-ansi-bright-${COLOR_NAMES[index]})`;
 }
 
 const CUBE_LEVELS = [0, 95, 135, 175, 215, 255];

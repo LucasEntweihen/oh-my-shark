@@ -4,12 +4,12 @@ import { insertQuote, quotableContainer, toBlockquote } from "./quote-selection"
 
 const { document } = parseHTML(`<html><body>
 	<div id="transcript">
-		<div class="omp-user-bubble-content"><div class="markdown-body"><p id="user">Question</p></div></div>
-		<div class="omp-assistant-turn"><div class="markdown-body"><p id="a1">First</p><p id="a2">Second</p></div>
-			<div class="omp-tool-card"><div class="markdown-body"><p id="tool">Tool output</p></div></div>
+		<div class="omsk-user-bubble-content"><div class="markdown-body"><p id="user">Question</p></div></div>
+		<div class="omsk-assistant-turn"><div class="markdown-body"><p id="a1">First</p><p id="a2">Second</p></div>
+			<div class="omsk-tool-card"><div class="markdown-body"><p id="tool">Tool output</p></div></div>
 		</div>
-		<div class="omp-streaming-turn">
-			<div class="omp-thinking-block"><div class="markdown-body"><p id="thinking">Live thought</p></div></div>
+		<div class="omsk-streaming-turn">
+			<div class="omsk-thinking-block"><div class="markdown-body"><p id="thinking">Live thought</p></div></div>
 		</div>
 	</div>
 	<div class="markdown-body"><p id="outside">Elsewhere</p></div>

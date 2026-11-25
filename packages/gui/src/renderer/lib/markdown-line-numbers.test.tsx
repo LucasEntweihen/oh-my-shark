@@ -25,7 +25,7 @@ const FENCE = "```ts\nalpha\nbeta\ngamma\n```";
 /** The gutter renders as one preformatted text node, one number per line. */
 const GUTTER_ROWS = ">1\n2\n3</div>";
 /** Metrics class combo of the shared CodeBlock gutter. */
-const SHARED_GUTTER = "px-2.5 py-3 text-omp-md leading-[1.5]";
+const SHARED_GUTTER = "px-2.5 py-3 text-omsk-md leading-[1.5]";
 
 describe("markdown code line numbers", () => {
 	it("renders the gutter beside block code when the pref is on", () => {
@@ -82,7 +82,7 @@ describe("markdown code line numbers", () => {
 	it("an unlabeled fence keeps its copy button but claims no language", () => {
 		const html = render("```\nconst value = 1;\n```", false);
 		expect(html).not.toContain(">plaintext<");
-		expect(html).not.toContain("omp-code-block-header");
+		expect(html).not.toContain("omsk-code-block-header");
 		expect(html).toContain("<button");
 	});
 });

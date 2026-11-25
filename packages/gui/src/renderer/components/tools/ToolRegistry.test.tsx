@@ -200,7 +200,7 @@ describe("tool registry coverage", () => {
 		// The header belongs to the card: a transcript layer that has to pass it
 		// in leaves live cards from ChatStream and ReadGroupCard blank.
 		const headers = containers.flatMap(container =>
-			[...container.querySelectorAll(".omp-tool-summary")].map(node => node.textContent),
+			[...container.querySelectorAll(".omsk-tool-summary")].map(node => node.textContent),
 		);
 		expect(headers).toEqual(["where retries are counted"]);
 	});

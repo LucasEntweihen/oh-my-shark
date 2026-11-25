@@ -73,10 +73,10 @@ describe("StreamingText presentation", () => {
 		useUiStore.setState({ transcriptDetail: "full" });
 		await mount("Live answer", <StreamingRows expanded={false} onExpandedChange={() => {}} />);
 
-		const turn = container.querySelector(".omp-streaming-turn");
-		expect(turn?.getAttribute("class")).toContain("omp-assistant-turn");
-		expect(turn?.querySelector(".omp-transcript-content")).not.toBeNull();
-		expect(turn?.querySelector(".omp-streaming-tail")?.textContent).toContain("Live answer");
+		const turn = container.querySelector(".omsk-streaming-turn");
+		expect(turn?.getAttribute("class")).toContain("omsk-assistant-turn");
+		expect(turn?.querySelector(".omsk-transcript-content")).not.toBeNull();
+		expect(turn?.querySelector(".omsk-streaming-tail")?.textContent).toContain("Live answer");
 	});
 
 	it("coalesces multiple incoming prefixes into one visible animation frame", async () => {
@@ -86,10 +86,10 @@ describe("StreamingText presentation", () => {
 			useMessagesStore.setState({ streamingText: "AB" });
 			useMessagesStore.setState({ streamingText: "ABC" });
 		});
-		expect(container.querySelector(".omp-streaming-tail")?.textContent).toBe("A");
+		expect(container.querySelector(".omsk-streaming-tail")?.textContent).toBe("A");
 
 		await flushFrame();
-		expect(container.querySelector(".omp-streaming-tail")?.textContent).toBe("ABC");
+		expect(container.querySelector(".omsk-streaming-tail")?.textContent).toBe("ABC");
 	});
 
 	/**
@@ -100,7 +100,7 @@ describe("StreamingText presentation", () => {
 	it("renders the unfinished block formatted instead of as raw Markdown", async () => {
 		await mount("- **Structure**: a demo with `README.md` and **unfinished `co");
 
-		const tail = container.querySelector(".omp-streaming-tail");
+		const tail = container.querySelector(".omsk-streaming-tail");
 		expect(tail?.querySelector("li")).not.toBeNull();
 		expect(tail?.querySelectorAll("strong").map(node => node.textContent)).toEqual(["Structure", "unfinished co"]);
 		expect(tail?.querySelectorAll("code").map(node => node.textContent)).toEqual(["README.md", "co"]);
@@ -110,13 +110,13 @@ describe("StreamingText presentation", () => {
 
 	it("holds a table back until its delimiter row is complete", async () => {
 		await mount("| File | Status |\n| --- | --");
-		expect(container.querySelector(".omp-streaming-tail")?.textContent).not.toContain("|");
+		expect(container.querySelector(".omsk-streaming-tail")?.textContent).not.toContain("|");
 
 		await act(async () => {
 			useMessagesStore.setState({ streamingText: "| File | Status |\n| --- | --- |\n| README.md | modi" });
 		});
 		await flushFrame();
-		const tail = container.querySelector(".omp-streaming-tail");
+		const tail = container.querySelector(".omsk-streaming-tail");
 		expect(tail?.querySelectorAll("th").map(node => node.textContent)).toEqual(["File", "Status"]);
 		expect(tail?.querySelectorAll("td").map(node => node.textContent)).toEqual(["README.md", "modi"]);
 	});
@@ -124,7 +124,7 @@ describe("StreamingText presentation", () => {
 	it("keeps the caret on the last rendered line", async () => {
 		await mount("Intro paragraph.\n\n- first\n- second ite");
 
-		const marked = container.querySelectorAll("[data-omp-caret]");
+		const marked = container.querySelectorAll("[data-omsk-caret]");
 		expect(marked).toHaveLength(1);
 		expect(marked[0]?.textContent).toBe("second ite");
 	});
@@ -138,30 +138,30 @@ describe("StreamingText presentation", () => {
 		});
 		await flushFrame();
 
-		expect(container.querySelectorAll(".omp-streaming-block")).toHaveLength(1);
+		expect(container.querySelectorAll(".omsk-streaming-block")).toHaveLength(1);
 		expect(container.querySelector("strong")?.textContent).toBe("complete");
-		expect(container.querySelector(".omp-streaming-tail")?.textContent).toBe("Tail still growing");
+		expect(container.querySelector(".omsk-streaming-tail")?.textContent).toBe("Tail still growing");
 	});
 
 	it("grows an unfinished fence inside the final code chrome and highlights it once closed", async () => {
 		const unfinished = "```ts\nconst answer = 42;\n";
 		const completed = `${unfinished}\`\`\`\n`;
 		await mount(unfinished);
-		const live = container.querySelector(".omp-streaming-tail code.language-typescript");
+		const live = container.querySelector(".omsk-streaming-tail code.language-typescript");
 		expect(live?.textContent).toContain("const answer = 42;");
 		// Tokenizing every frame is what the plain live render avoids.
 		expect(live?.querySelector("[class^='hljs-']")).toBeNull();
-		expect(container.querySelector(".omp-streaming-tail")?.textContent).not.toContain("```");
+		expect(container.querySelector(".omsk-streaming-tail")?.textContent).not.toContain("```");
 
 		await act(async () => {
 			useMessagesStore.setState({ streamingText: completed });
 		});
 		await flushFrame();
 
-		expect(container.querySelector(".omp-streaming-block code.language-typescript")?.textContent).toContain(
+		expect(container.querySelector(".omsk-streaming-block code.language-typescript")?.textContent).toContain(
 			"const answer = 42;",
 		);
-		expect(container.querySelector(".omp-streaming-tail")?.textContent).toBe("");
+		expect(container.querySelector(".omsk-streaming-tail")?.textContent).toBe("");
 	});
 
 	it("keeps an unfinished bracket equation together and typesets it when it closes", async () => {
@@ -174,8 +174,8 @@ TPS_{\text{decode}}
 49.9
 `;
 		await mount(unfinished);
-		expect(container.querySelector(".omp-streaming-block")).toBeNull();
-		expect(container.querySelector(".omp-streaming-tail")?.textContent).toBe(unfinished);
+		expect(container.querySelector(".omsk-streaming-block")).toBeNull();
+		expect(container.querySelector(".omsk-streaming-tail")?.textContent).toBe(unfinished);
 
 		await act(async () => {
 			useMessagesStore.setState({ streamingText: `${unfinished}\\]\nExplanation` });
@@ -184,6 +184,6 @@ TPS_{\text{decode}}
 
 		expect(container.querySelectorAll(".katex-display")).toHaveLength(1);
 		expect(container.querySelector("h1, h2, .katex-error")).toBeNull();
-		expect(container.querySelector(".omp-streaming-tail")?.textContent).toBe("Explanation");
+		expect(container.querySelector(".omsk-streaming-tail")?.textContent).toBe("Explanation");
 	});
 });

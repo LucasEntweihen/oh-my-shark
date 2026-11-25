@@ -41,22 +41,22 @@ function RootErrorFallback({ error }: { error: Error }) {
 	}, []);
 
 	return (
-		<main className="drag-region flex h-full w-full items-center justify-center px-6 text-[var(--omp-text)]">
-			<section className="no-drag w-full max-w-xl rounded-2xl border border-[var(--omp-border)] p-6 shadow-2xl">
-				<div className="mb-4 h-1 w-12 rounded-full bg-[var(--omp-error)]" />
-				<h1 className="font-display text-omp-xl font-semibold">{translate("appError.title")}</h1>
-				<p className="mt-2 text-omp-md leading-relaxed text-[var(--omp-muted)]">
+		<main className="drag-region flex h-full w-full items-center justify-center px-6 text-[var(--omsk-text)]">
+			<section className="no-drag w-full max-w-xl rounded-2xl border border-[var(--omsk-border)] p-6 shadow-2xl">
+				<div className="mb-4 h-1 w-12 rounded-full bg-[var(--omsk-error)]" />
+				<h1 className="font-display text-omsk-xl font-semibold">{translate("appError.title")}</h1>
+				<p className="mt-2 text-omsk-md leading-relaxed text-[var(--omsk-muted)]">
 					{translate("appError.description")}
 				</p>
 				<details className="mt-4">
-					<summary className="cursor-pointer text-omp-sm text-[var(--omp-dim)]">
+					<summary className="cursor-pointer text-omsk-sm text-[var(--omsk-dim)]">
 						{translate("errors.technicalDetails")}
 					</summary>
-					<pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-xl border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] p-3 font-mono text-omp-sm leading-relaxed text-[var(--omp-error)]">
+					<pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-xl border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] p-3 font-mono text-omsk-sm leading-relaxed text-[var(--omsk-error)]">
 						{error.message}
 					</pre>
 					{logPath ? (
-						<p className="mt-2 break-all font-mono text-omp-xs leading-relaxed text-[var(--omp-dim)]">
+						<p className="mt-2 break-all font-mono text-omsk-xs leading-relaxed text-[var(--omsk-dim)]">
 							{translate("appError.logPath", { path: logPath })}
 						</p>
 					) : null}
@@ -65,14 +65,14 @@ function RootErrorFallback({ error }: { error: Error }) {
 					<button
 						type="button"
 						onClick={() => window.location.reload()}
-						className="omp-pressable rounded-lg bg-(--omp-btn-primary-bg) px-4 py-2 text-omp-xs font-semibold text-(--omp-btn-primary-text) hover:brightness-110"
+						className="omsk-pressable rounded-lg bg-(--omsk-btn-primary-bg) px-4 py-2 text-omsk-xs font-semibold text-(--omsk-btn-primary-text) hover:brightness-110"
 					>
 						{translate("appError.reload")}
 					</button>
 					<button
 						type="button"
 						onClick={() => reportOnGithub(error)}
-						className="omp-pressable rounded-lg border border-(--omp-border-muted) px-4 py-2 text-omp-xs font-semibold text-(--omp-muted) hover:text-(--omp-text)"
+						className="omsk-pressable rounded-lg border border-(--omsk-border-muted) px-4 py-2 text-omsk-xs font-semibold text-(--omsk-muted) hover:text-(--omsk-text)"
 					>
 						{translate("appError.report")}
 					</button>

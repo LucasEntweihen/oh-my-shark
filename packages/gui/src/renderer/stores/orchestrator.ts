@@ -313,9 +313,9 @@ export function createOrchestratorStore(command?: TabCommand, tabId?: string) {
 					set(state => ({
 						...(run
 							? {
-								activeRun: run,
-								runs: upsertRunSummary(state.runs, run),
-							}
+									activeRun: run,
+									runs: upsertRunSummary(state.runs, run),
+								}
 							: {}),
 						selectedWaveIndex: waveIndex,
 						loading: false,
@@ -370,12 +370,12 @@ export function createOrchestratorStore(command?: TabCommand, tabId?: string) {
 							runs: upsertRunSummary(state.runs, frameRun),
 							...(isTargetActive
 								? {
-									activeRun: frameRun,
-									selectedWaveIndex:
-										state.activeRun?.id !== frameRun.id
-											? frameRun.currentWaveIndex
-											: Math.min(state.selectedWaveIndex, Math.max(0, frameRun.waves.length - 1)),
-								}
+										activeRun: frameRun,
+										selectedWaveIndex:
+											state.activeRun?.id !== frameRun.id
+												? frameRun.currentWaveIndex
+												: Math.min(state.selectedWaveIndex, Math.max(0, frameRun.waves.length - 1)),
+									}
 								: {}),
 						};
 					}

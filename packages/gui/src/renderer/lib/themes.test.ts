@@ -39,7 +39,12 @@ describe("theme registry", () => {
 
 	it("keeps the TUI overlay off chrome tokens", () => {
 		const overlay = new Set(Object.values(TRANSCRIPT_OVERLAY_VARS));
-		for (const chrome of ["--omp-accent", "--omp-sidebar-bg", "--omp-titlebar-bg", "--omp-btn-primary-bg"] as const) {
+		for (const chrome of [
+			"--omsk-accent",
+			"--omsk-sidebar-bg",
+			"--omsk-titlebar-bg",
+			"--omsk-btn-primary-bg",
+		] as const) {
 			expect(overlay.has(chrome), chrome).toBe(false);
 		}
 	});
@@ -52,39 +57,39 @@ describe("theme registry", () => {
 				expect(ratio, `${name}: ${foreground} on ${background}`).toBeGreaterThanOrEqual(4.5);
 			};
 			for (const background of [
-				"--omp-bg-primary",
-				"--omp-sidebar-bg",
-				"--omp-bg-elevated",
-				"--omp-bg-tertiary",
+				"--omsk-bg-primary",
+				"--omsk-sidebar-bg",
+				"--omsk-bg-elevated",
+				"--omsk-bg-tertiary",
 			] as const) {
 				for (const foreground of [
-					"--omp-text",
-					"--omp-text-secondary",
-					"--omp-muted",
-					"--omp-dim",
-					"--omp-accent",
+					"--omsk-text",
+					"--omsk-text-secondary",
+					"--omsk-muted",
+					"--omsk-dim",
+					"--omsk-accent",
 				] as const) {
 					assertReadable(foreground, background);
 				}
 			}
-			for (const key of THEME_TOKEN_KEYS.filter(key => key.startsWith("--omp-syntax-"))) {
-				assertReadable(key, "--omp-code-bg");
+			for (const key of THEME_TOKEN_KEYS.filter(key => key.startsWith("--omsk-syntax-"))) {
+				assertReadable(key, "--omsk-code-bg");
 			}
-			assertReadable("--omp-diff-added", "--omp-diff-added-bg", color("--omp-code-bg"));
-			assertReadable("--omp-diff-removed", "--omp-diff-removed-bg", color("--omp-code-bg"));
-			assertReadable("--omp-btn-primary-text", "--omp-btn-primary-bg");
-			assertReadable("--omp-btn-danger-text", "--omp-btn-danger-bg");
+			assertReadable("--omsk-diff-added", "--omsk-diff-added-bg", color("--omsk-code-bg"));
+			assertReadable("--omsk-diff-removed", "--omsk-diff-removed-bg", color("--omsk-code-bg"));
+			assertReadable("--omsk-btn-primary-text", "--omsk-btn-primary-bg");
+			assertReadable("--omsk-btn-danger-text", "--omsk-btn-danger-bg");
 		}
 	});
 
 	it("keeps dark and light accents in the same hue family", () => {
-		const delta = hueDelta(hexHue(THEMES.dark.tokens["--omp-accent"]), hexHue(THEMES.light.tokens["--omp-accent"]));
+		const delta = hueDelta(hexHue(THEMES.dark.tokens["--omsk-accent"]), hexHue(THEMES.light.tokens["--omsk-accent"]));
 		expect(delta).toBeLessThan(30);
 	});
 
 	it("does not use purple for keyword, model, or custom-label roles", () => {
 		for (const [name, theme] of Object.entries(THEMES)) {
-			for (const key of ["--omp-syntax-keyword", "--omp-status-model", "--omp-custom-msg-label"] as const) {
+			for (const key of ["--omsk-syntax-keyword", "--omsk-status-model", "--omsk-custom-msg-label"] as const) {
 				const hue = hexHue(theme.tokens[key]);
 				expect(hue < 260 || hue > 320, `${name} ${key} hue ${hue}`).toBe(true);
 			}

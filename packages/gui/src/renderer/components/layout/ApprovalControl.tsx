@@ -94,13 +94,13 @@ export function ApprovalControl() {
 				onClick={() => setOpen(value => !value)}
 				title={t("input.approval.title", { mode: t(`input.approval.${mode}`) })}
 				className={cx(
-					"omp-pressable flex h-8 items-center gap-1.5 rounded-full px-2.5 text-omp-md font-medium hover:bg-[var(--omp-selected-bg)]",
-					mode === "yolo" ? "text-[var(--omp-warning)]" : "text-[var(--omp-muted)]",
+					"omsk-pressable flex h-8 items-center gap-1.5 rounded-full px-2.5 text-omsk-md font-medium hover:bg-[var(--omsk-selected-bg)]",
+					mode === "yolo" ? "text-[var(--omsk-warning)]" : "text-[var(--omsk-muted)]",
 				)}
 			>
 				<ShieldCheck size={14} />
-				<span className="omp-composer-control-label hidden sm:inline">{t(`input.approval.${mode}`)}</span>
-				<ChevronDown size={12} className="shrink-0 text-[var(--omp-dim)]" />
+				<span className="omsk-composer-control-label hidden sm:inline">{t(`input.approval.${mode}`)}</span>
+				<ChevronDown size={12} className="shrink-0 text-[var(--omsk-dim)]" />
 			</button>
 
 			<ConfirmDialog
@@ -126,8 +126,8 @@ export function ApprovalControl() {
 							onKeyDown={moveMenuFocus}
 							inert={closing}
 							className={cx(
-								"fixed z-[100] w-56 overflow-hidden rounded-xl border border-[var(--omp-border)] bg-[var(--omp-panel-bg)] p-1 shadow-[var(--omp-shadow-md)]",
-								closing ? "omp-scale-out pointer-events-none" : "omp-pop-in",
+								"fixed z-[100] w-56 overflow-hidden rounded-xl border border-[var(--omsk-border)] bg-[var(--omsk-panel-bg)] p-1 shadow-[var(--omsk-shadow-md)]",
+								closing ? "omsk-scale-out pointer-events-none" : "omsk-pop-in",
 							)}
 						>
 							{MODES.map(option => {
@@ -146,21 +146,21 @@ export function ApprovalControl() {
 											if (option === "yolo" && mode !== "yolo") setPendingYolo(true);
 											else void setApprovalMode(option);
 										}}
-										className="omp-pressable flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left hover:bg-[var(--omp-selected-bg)]"
+										className="omsk-pressable flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left hover:bg-[var(--omsk-selected-bg)]"
 									>
-										<span className="mt-0.5 w-4 shrink-0 text-[var(--omp-accent)]">
+										<span className="mt-0.5 w-4 shrink-0 text-[var(--omsk-accent)]">
 											{active ? <Check size={14} /> : null}
 										</span>
 										<span className="min-w-0 flex-1">
 											<span
 												className={cx(
-													"block text-omp-md font-medium",
-													active ? "text-[var(--omp-text)]" : "text-[var(--omp-muted)]",
+													"block text-omsk-md font-medium",
+													active ? "text-[var(--omsk-text)]" : "text-[var(--omsk-muted)]",
 												)}
 											>
 												{t(`input.approval.${option}`)}
 											</span>
-											<span className="block text-omp-sm leading-snug text-[var(--omp-dim)]">
+											<span className="block text-omsk-sm leading-snug text-[var(--omsk-dim)]">
 												{t(`input.approval.${option}.desc`)}
 											</span>
 										</span>

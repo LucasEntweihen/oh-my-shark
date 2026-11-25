@@ -17,11 +17,11 @@ import { SettingsPageIntro } from "./SettingsPageIntro";
 const ACTIVE_PHASES = new Set(["queued", "preparing", "reviewing", "publishing"]);
 const SEVERITIES = ["critical", "high", "medium", "low", "informational"] as const;
 const SEVERITY_CLASSES: Record<(typeof SEVERITIES)[number], string> = {
-	critical: "text-(--omp-error) bg-(--omp-error)",
-	high: "text-(--omp-error) bg-(--omp-error)",
-	medium: "text-(--omp-warning) bg-(--omp-warning)",
-	low: "text-(--omp-success) bg-(--omp-success)",
-	informational: "text-(--omp-accent) bg-(--omp-accent)",
+	critical: "text-(--omsk-error) bg-(--omsk-error)",
+	high: "text-(--omsk-error) bg-(--omsk-error)",
+	medium: "text-(--omsk-warning) bg-(--omsk-warning)",
+	low: "text-(--omsk-success) bg-(--omsk-success)",
+	informational: "text-(--omsk-accent) bg-(--omsk-accent)",
 };
 
 function formatWhen(value?: string): string {
@@ -299,8 +299,8 @@ export function SecuritySettingsPage() {
 	if (!dashboard) {
 		return (
 			<div role="alert" className="flex flex-col items-start gap-3 py-8">
-				<h2 className="text-omp-lg font-semibold text-(--omp-text)">{t("security.empty.unavailable")}</h2>
-				<p className="text-omp-sm text-(--omp-muted)">{error}</p>
+				<h2 className="text-omsk-lg font-semibold text-(--omsk-text)">{t("security.empty.unavailable")}</h2>
+				<p className="text-omsk-sm text-(--omsk-muted)">{error}</p>
 				<Button
 					disabled={!sidecarReady}
 					onClick={() => void load()}
@@ -316,34 +316,34 @@ export function SecuritySettingsPage() {
 		<div>
 			<SettingsPageIntro className="mb-5" description={t("security.subtitle")} />
 
-			<div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-(--omp-border-muted) px-3 py-2.5 text-omp-xs">
-				<span className="flex items-center gap-1.5 text-(--omp-muted)">
+			<div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-(--omsk-border-muted) px-3 py-2.5 text-omsk-xs">
+				<span className="flex items-center gap-1.5 text-(--omsk-muted)">
 					{dashboard?.enabled ? (
-						<CheckCircle2 className="text-(--omp-success)" size={12} />
+						<CheckCircle2 className="text-(--omsk-success)" size={12} />
 					) : (
-						<CircleAlert className="text-(--omp-warning)" size={12} />
+						<CircleAlert className="text-(--omsk-warning)" size={12} />
 					)}
 					{dashboard?.enabled ? t("security.ready.enabled") : t("security.ready.disabled")}
 				</span>
-				<span className="flex items-center gap-1.5 text-(--omp-muted)">
+				<span className="flex items-center gap-1.5 text-(--omsk-muted)">
 					{dashboard?.modelReady ? (
-						<CheckCircle2 className="text-(--omp-success)" size={12} />
+						<CheckCircle2 className="text-(--omsk-success)" size={12} />
 					) : (
-						<CircleAlert className="text-(--omp-warning)" size={12} />
+						<CircleAlert className="text-(--omsk-warning)" size={12} />
 					)}
 					{dashboard?.modelReady
 						? t("security.ready.model", { model: dashboard.modelLabel ?? "—" })
 						: t("security.ready.noModel")}
 				</span>
-				<span className="flex items-center gap-1.5 text-(--omp-muted)">
+				<span className="flex items-center gap-1.5 text-(--omsk-muted)">
 					{dashboard?.repositoryRoot ? (
-						<CheckCircle2 className="text-(--omp-success)" size={12} />
+						<CheckCircle2 className="text-(--omsk-success)" size={12} />
 					) : (
-						<CircleAlert className="text-(--omp-warning)" size={12} />
+						<CircleAlert className="text-(--omsk-warning)" size={12} />
 					)}
 					{dashboard?.repositoryRoot ? t("security.ready.repository") : t("security.ready.noRepository")}
 				</span>
-				<span className="ml-auto text-(--omp-dim)">
+				<span className="ml-auto text-(--omsk-dim)">
 					{t("security.lastScan", {
 						time: formatWhen(dashboard?.scans[0]?.completedAt ?? dashboard?.scans[0]?.createdAt),
 					})}
@@ -361,18 +361,18 @@ export function SecuritySettingsPage() {
 						{t(`security.scan.${targetLabel(target)}`)}
 					</Button>
 					{scanDisabledReason && (
-						<span className="max-w-52 text-omp-xs text-(--omp-dim)" role="status">
+						<span className="max-w-52 text-omsk-xs text-(--omsk-dim)" role="status">
 							{scanDisabledReason}
 						</span>
 					)}
 					<div className="relative ml-1">
 						<ChevronDown
-							className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-(--omp-muted)"
+							className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 text-(--omsk-muted)"
 							size={12}
 						/>
 						<select
 							aria-label={t("security.scan.scope")}
-							className="h-7 appearance-none rounded-lg border border-(--omp-border) bg-(--omp-input-bg) pr-7 pl-2 text-omp-sm text-(--omp-text) outline-none"
+							className="h-7 appearance-none rounded-lg border border-(--omsk-border) bg-(--omsk-input-bg) pr-7 pl-2 text-omsk-sm text-(--omsk-text) outline-none"
 							onChange={event => {
 								const kind = event.target.value;
 								if (kind === "ref_diff") setTarget({ kind: "ref_diff", baseRevision, headRevision });
@@ -390,7 +390,7 @@ export function SecuritySettingsPage() {
 			</div>
 
 			{target.kind === "ref_diff" && (
-				<div className="security-revision-grid mb-3 grid gap-2 rounded-lg border border-(--omp-border-muted) p-3">
+				<div className="security-revision-grid mb-3 grid gap-2 rounded-lg border border-(--omsk-border-muted) p-3">
 					<Input
 						label={t("security.target.base")}
 						onChange={event => setBaseRevision(event.target.value)}
@@ -404,32 +404,32 @@ export function SecuritySettingsPage() {
 				</div>
 			)}
 
-			<div className="mb-3 flex items-center gap-5 rounded-lg border border-(--omp-border-muted) px-3 py-2 text-omp-xs">
-				<span className="font-medium text-(--omp-text)">{t("security.repository")}</span>
-				<span className="min-w-0 flex-1 truncate font-mono text-(--omp-muted)">
+			<div className="mb-3 flex items-center gap-5 rounded-lg border border-(--omsk-border-muted) px-3 py-2 text-omsk-xs">
+				<span className="font-medium text-(--omsk-text)">{t("security.repository")}</span>
+				<span className="min-w-0 flex-1 truncate font-mono text-(--omsk-muted)">
 					{dashboard?.repositoryRoot ?? "—"}
 				</span>
-				<span className="text-(--omp-dim)">{dashboard?.revision ?? "—"}</span>
+				<span className="text-(--omsk-dim)">{dashboard?.revision ?? "—"}</span>
 			</div>
 
 			{error && (
-				<div className="mb-3 rounded-lg border border-(--omp-error) bg-transparent px-3 py-2 text-omp-sm text-(--omp-error)">
+				<div className="mb-3 rounded-lg border border-(--omsk-error) bg-transparent px-3 py-2 text-omsk-sm text-(--omsk-error)">
 					{error}
 				</div>
 			)}
 
-			<div className="security-master-detail overflow-hidden rounded-lg border border-(--omp-border-muted)">
+			<div className="security-master-detail overflow-hidden rounded-lg border border-(--omsk-border-muted)">
 				<section className="security-findings-pane min-w-0">
-					<div className="border-b border-(--omp-border-muted) px-3 py-3">
+					<div className="border-b border-(--omsk-border-muted) px-3 py-3">
 						<div className="mb-2 flex items-center justify-between gap-3">
-							<h3 className="text-omp-md font-semibold text-(--omp-text)">{t("security.currentRisk")}</h3>
+							<h3 className="text-omsk-md font-semibold text-(--omsk-text)">{t("security.currentRisk")}</h3>
 							{selectedScan && (
-								<span className="text-omp-xs text-(--omp-dim)">{selectedScan.scan.producer}</span>
+								<span className="text-omsk-xs text-(--omsk-dim)">{selectedScan.scan.producer}</span>
 							)}
 						</div>
 						<div
 							className={
-								"flex h-1.5 overflow-hidden rounded-full bg-(--omp-bg-tertiary)" /* surface-ok: severity progress bar track */
+								"flex h-1.5 overflow-hidden rounded-full bg-(--omsk-bg-tertiary)" /* surface-ok: severity progress bar track */
 							}
 						>
 							{SEVERITIES.map(severity => {
@@ -444,7 +444,7 @@ export function SecuritySettingsPage() {
 								);
 							})}
 						</div>
-						<div className="mt-2 flex flex-wrap gap-3 text-omp-xxs text-(--omp-dim)">
+						<div className="mt-2 flex flex-wrap gap-3 text-omsk-xxs text-(--omsk-dim)">
 							{SEVERITIES.filter(severity => counts[severity] > 0).map(severity => (
 								<span key={severity}>
 									{t(`security.severity.${severity}`)} {counts[severity]}
@@ -457,7 +457,7 @@ export function SecuritySettingsPage() {
 							role="status"
 							className="flex min-h-56 flex-col items-center justify-center gap-2 px-4 text-center"
 						>
-							<span className="omp-empty-icon" data-tone={emptyState === "clear" ? "success" : undefined}>
+							<span className="omsk-empty-icon" data-tone={emptyState === "clear" ? "success" : undefined}>
 								{emptyState === "clear" ? (
 									<ShieldCheck size={24} />
 								) : emptyState === "running" ? (
@@ -466,10 +466,10 @@ export function SecuritySettingsPage() {
 									<ScanSearch size={24} />
 								)}
 							</span>
-							<div className="text-omp-md font-medium text-(--omp-text)">
+							<div className="text-omsk-md font-medium text-(--omsk-text)">
 								{t(emptyState === "clear" ? "security.empty.title" : `security.empty.${emptyState}`)}
 							</div>
-							<div className="max-w-xs text-omp-xs text-(--omp-dim)">
+							<div className="max-w-xs text-omsk-xs text-(--omsk-dim)">
 								{t(emptyState === "clear" ? "security.empty.description" : "security.empty.notVerified")}
 							</div>
 						</div>
@@ -481,13 +481,13 @@ export function SecuritySettingsPage() {
 								return (
 									<div className="mb-3" key={severity}>
 										<div
-											className={`mb-1 px-1 text-omp-xs font-semibold ${SEVERITY_CLASSES[severity].split(" ")[0]}`}
+											className={`mb-1 px-1 text-omsk-xs font-semibold ${SEVERITY_CLASSES[severity].split(" ")[0]}`}
 										>
 											{t(`security.severity.${severity}`)} ({group.length})
 										</div>
 										{group.map(finding => (
 											<button
-												className={`grid w-full grid-cols-[8px_minmax(0,1fr)_46px_64px_68px] items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-(--omp-bg-tertiary) ${selectedFindingId === finding.id ? "bg-(--omp-selected-bg) shadow-[inset_3px_0_0_var(--omp-accent)]" : ""}`}
+												className={`grid w-full grid-cols-[8px_minmax(0,1fr)_46px_64px_68px] items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-(--omsk-bg-tertiary) ${selectedFindingId === finding.id ? "bg-(--omsk-selected-bg) shadow-[inset_3px_0_0_var(--omsk-accent)]" : ""}`}
 												key={finding.id}
 												onClick={() => setSelectedFindingId(finding.id)}
 												type="button"
@@ -496,16 +496,16 @@ export function SecuritySettingsPage() {
 													className={`size-1.5 rounded-full ${SEVERITY_CLASSES[severity].split(" ")[1]}`}
 												/>
 												<span className="min-w-0">
-													<span className="block truncate text-omp-sm font-medium text-(--omp-text)">
+													<span className="block truncate text-omsk-sm font-medium text-(--omsk-text)">
 														{finding.title}
 													</span>
-													<span className="block truncate font-mono text-omp-xxs text-(--omp-dim)">
+													<span className="block truncate font-mono text-omsk-xxs text-(--omsk-dim)">
 														{findingPath(finding)}
 													</span>
 												</span>
-												<span className="text-omp-xxs text-(--omp-muted)">{finding.confidence}</span>
-												<span className="text-omp-xxs text-(--omp-muted)">{finding.validation}</span>
-												<span className="truncate text-omp-xxs text-(--omp-muted)">
+												<span className="text-omsk-xxs text-(--omsk-muted)">{finding.confidence}</span>
+												<span className="text-omsk-xxs text-(--omsk-muted)">{finding.validation}</span>
+												<span className="truncate text-omsk-xxs text-(--omsk-muted)">
 													{finding.disposition}
 												</span>
 											</button>
@@ -518,23 +518,23 @@ export function SecuritySettingsPage() {
 				</section>
 
 				<aside className="security-insights-pane min-w-0 p-3">
-					<h3 className="text-omp-sm font-semibold text-(--omp-text)">{t("security.why")}</h3>
-					<p className="mt-1.5 text-omp-xs leading-relaxed text-(--omp-muted)">
+					<h3 className="text-omsk-sm font-semibold text-(--omsk-text)">{t("security.why")}</h3>
+					<p className="mt-1.5 text-omsk-xs leading-relaxed text-(--omsk-muted)">
 						{selectedFinding?.summary ?? t("security.whyDefault")}
 					</p>
-					<h3 className="mt-5 text-omp-sm font-semibold text-(--omp-text)">{t("security.suggestion")}</h3>
-					<p className="mt-1.5 text-omp-xs leading-relaxed text-(--omp-muted)">
+					<h3 className="mt-5 text-omsk-sm font-semibold text-(--omsk-text)">{t("security.suggestion")}</h3>
+					<p className="mt-1.5 text-omsk-xs leading-relaxed text-(--omsk-muted)">
 						{selectedFinding?.remediation ?? t("security.suggestionDefault")}
 					</p>
-					<div className="mt-5 border-t border-(--omp-border-muted) pt-3">
+					<div className="mt-5 border-t border-(--omsk-border-muted) pt-3">
 						<div className="mb-2 flex items-center justify-between">
-							<h3 className="text-omp-sm font-semibold text-(--omp-text)">{t("security.recentScans")}</h3>
-							<ScanSearch size={13} className="text-(--omp-dim)" />
+							<h3 className="text-omsk-sm font-semibold text-(--omsk-text)">{t("security.recentScans")}</h3>
+							<ScanSearch size={13} className="text-(--omsk-dim)" />
 						</div>
 						<div className="space-y-1">
 							{dashboard?.scans.slice(0, 5).map(scan => (
 								<button
-									className="flex w-full items-center gap-2 rounded-md px-1.5 py-1.5 text-left hover:bg-(--omp-bg-tertiary)"
+									className="flex w-full items-center gap-2 rounded-md px-1.5 py-1.5 text-left hover:bg-(--omsk-bg-tertiary)"
 									disabled={!sidecarReady}
 									key={scan.id}
 									onClick={() => void pickScan(scan.id)}
@@ -542,26 +542,26 @@ export function SecuritySettingsPage() {
 									type="button"
 								>
 									<span
-										className={`size-1.5 rounded-full ${scan.status === "completed" ? "bg-(--omp-success)" : scan.status === "failed" ? "bg-(--omp-error)" : "bg-(--omp-warning)"}`}
+										className={`size-1.5 rounded-full ${scan.status === "completed" ? "bg-(--omsk-success)" : scan.status === "failed" ? "bg-(--omsk-error)" : "bg-(--omsk-warning)"}`}
 									/>
-									<span className="min-w-0 flex-1 truncate text-omp-xs text-(--omp-text)">
+									<span className="min-w-0 flex-1 truncate text-omsk-xs text-(--omsk-text)">
 										{t(
 											`security.target.${scan.target.kind === "working_tree" ? "workingTree" : scan.target.kind === "ref_diff" ? "diff" : "repository"}`,
 										)}
 									</span>
-									<span className="text-omp-xxs text-(--omp-dim)">
+									<span className="text-omsk-xxs text-(--omsk-dim)">
 										{scan.findingCount} · {formatWhen(scan.completedAt ?? scan.createdAt)}
 									</span>
 								</button>
 							))}
 							{(dashboard?.scans.length ?? 0) === 0 && (
-								<p className="py-2 text-omp-xs text-(--omp-dim)">{t("security.noScans")}</p>
+								<p className="py-2 text-omsk-xs text-(--omsk-dim)">{t("security.noScans")}</p>
 							)}
 						</div>
 					</div>
 					{activeOperation && (
-						<div className="mt-4 rounded-lg border border-(--omp-warning) px-2.5 py-2">
-							<div className="flex items-center gap-2 text-omp-xs text-(--omp-warning)">
+						<div className="mt-4 rounded-lg border border-(--omsk-warning) px-2.5 py-2">
+							<div className="flex items-center gap-2 text-omsk-xs text-(--omsk-warning)">
 								<Spinner size="sm" /> {t(`security.phase.${activeOperation.phase}`)}
 							</div>
 							<Button
@@ -580,10 +580,10 @@ export function SecuritySettingsPage() {
 			</div>
 
 			{selectedFinding && (
-				<section className="security-finding-detail relative -mt-px grid gap-4 rounded-b-lg border border-(--omp-border-muted) p-3 shadow-[0_-8px_24px_color-mix(in_srgb,var(--omp-shadow-md)_8%,transparent)]">
+				<section className="security-finding-detail relative -mt-px grid gap-4 rounded-b-lg border border-(--omsk-border-muted) p-3 shadow-[0_-8px_24px_color-mix(in_srgb,var(--omsk-shadow-md)_8%,transparent)]">
 					<button
 						aria-label={t("common.close")}
-						className="absolute top-2 right-2 text-(--omp-dim) hover:text-(--omp-text)"
+						className="absolute top-2 right-2 text-(--omsk-dim) hover:text-(--omsk-text)"
 						onClick={() => setSelectedFindingId(undefined)}
 						type="button"
 					>
@@ -591,24 +591,24 @@ export function SecuritySettingsPage() {
 					</button>
 					<div className="min-w-0">
 						<div className="mb-2 flex items-center gap-2">
-							<FileCode2 size={13} className="text-(--omp-accent)" />
-							<h3 className="truncate text-omp-sm font-semibold text-(--omp-text)">{selectedFinding.title}</h3>
-							<span className="text-omp-xxs text-(--omp-error)">
+							<FileCode2 size={13} className="text-(--omsk-accent)" />
+							<h3 className="truncate text-omsk-sm font-semibold text-(--omsk-text)">{selectedFinding.title}</h3>
+							<span className="text-omsk-xxs text-(--omsk-error)">
 								{t(`security.severity.${selectedFinding.severity}`)}
 							</span>
 						</div>
-						<div className="mb-1 font-mono text-omp-xxs text-(--omp-dim)">{findingPath(selectedFinding)}</div>
-						<pre className="max-h-32 overflow-auto rounded-md bg-(--omp-code-bg) p-2 font-mono text-omp-xxs leading-relaxed whitespace-pre-wrap text-(--omp-muted)">
+						<div className="mb-1 font-mono text-omsk-xxs text-(--omsk-dim)">{findingPath(selectedFinding)}</div>
+						<pre className="max-h-32 overflow-auto rounded-md bg-(--omsk-code-bg) p-2 font-mono text-omsk-xxs leading-relaxed whitespace-pre-wrap text-(--omsk-muted)">
 							{selectedFinding.evidence[0]?.excerpt ??
 								selectedFinding.evidence[0]?.explanation ??
 								selectedFinding.summary}
 						</pre>
 					</div>
 					<div className="pr-5">
-						<label className="block text-omp-xs font-medium text-(--omp-text)">
+						<label className="block text-omsk-xs font-medium text-(--omsk-text)">
 							{t("security.disposition")}
 							<select
-								className="mt-1 h-8 w-full rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-2 text-omp-sm text-(--omp-text)"
+								className="mt-1 h-8 w-full rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2 text-omsk-sm text-(--omsk-text)"
 								onChange={event => setDisposition(event.target.value as RpcSecurityDispositionStatus)}
 								value={disposition}
 							>

@@ -162,9 +162,9 @@ export function CollabDialog() {
 		>
 			{state.role ? (
 				<div className="space-y-4">
-					<div className="flex items-center justify-between rounded-lg border border-(--omp-border-muted) bg-transparent p-3">
-						<div className="flex items-center gap-2 text-omp-md text-(--omp-text)">
-							<Radio className="text-(--omp-success)" size={15} />
+					<div className="flex items-center justify-between rounded-lg border border-(--omsk-border-muted) bg-transparent p-3">
+						<div className="flex items-center gap-2 text-omsk-md text-(--omsk-text)">
+							<Radio className="text-(--omsk-success)" size={15} />
 							{state.role === "host"
 								? t("collab.hosting")
 								: state.readOnly
@@ -196,17 +196,17 @@ export function CollabDialog() {
 						</div>
 					) : null}
 					<div>
-						<div className="mb-2 flex items-center gap-2 text-omp-xs font-semibold text-(--omp-text)">
+						<div className="mb-2 flex items-center gap-2 text-omsk-xs font-semibold text-(--omsk-text)">
 							<Users size={14} /> {t("collab.participants")} ({state.participants.length})
 						</div>
-						<div className="divide-y divide-(--omp-border-muted) rounded-lg border border-(--omp-border-muted)">
+						<div className="divide-y divide-(--omsk-border-muted) rounded-lg border border-(--omsk-border-muted)">
 							{state.participants.map((participant, index) => (
 								<div
-									className="flex items-center justify-between px-3 py-2 text-omp-md"
+									className="flex items-center justify-between px-3 py-2 text-omsk-md"
 									key={`${participant.name}-${index}`}
 								>
-									<span className="text-(--omp-text)">{participant.name}</span>
-									<span className="text-omp-xs text-(--omp-dim)">
+									<span className="text-(--omsk-text)">{participant.name}</span>
+									<span className="text-omsk-xs text-(--omsk-dim)">
 										{participant.role === "host"
 											? t("collab.host")
 											: participant.readOnly
@@ -217,13 +217,13 @@ export function CollabDialog() {
 							))}
 						</div>
 					</div>
-					{error ? <div className="text-omp-md text-(--omp-error)">{error}</div> : null}
+					{error ? <div className="text-omsk-md text-(--omsk-error)">{error}</div> : null}
 				</div>
 			) : (
 				<div className="grid gap-5 md:grid-cols-2">
-					<section className="space-y-3 rounded-lg border border-(--omp-border-muted) p-4">
-						<h3 className="text-omp-md font-semibold text-(--omp-text)">{t("collab.hostTitle")}</h3>
-						<p className="text-omp-xs text-(--omp-dim)">{t("collab.hostDesc")}</p>
+					<section className="space-y-3 rounded-lg border border-(--omsk-border-muted) p-4">
+						<h3 className="text-omsk-md font-semibold text-(--omsk-text)">{t("collab.hostTitle")}</h3>
+						<p className="text-omsk-xs text-(--omsk-dim)">{t("collab.hostDesc")}</p>
 						<Input
 							onChange={event => setRelay(event.target.value)}
 							placeholder={t("collab.relayPlaceholder")}
@@ -237,9 +237,9 @@ export function CollabDialog() {
 							{busy ? <Spinner size="sm" /> : <Radio size={14} />} {t("collab.start")}
 						</Button>
 					</section>
-					<section className="space-y-3 rounded-lg border border-(--omp-border-muted) p-4">
-						<h3 className="text-omp-md font-semibold text-(--omp-text)">{t("collab.joinTitle")}</h3>
-						<p className="text-omp-xs text-(--omp-dim)">{t("collab.joinDesc")}</p>
+					<section className="space-y-3 rounded-lg border border-(--omsk-border-muted) p-4">
+						<h3 className="text-omsk-md font-semibold text-(--omsk-text)">{t("collab.joinTitle")}</h3>
+						<p className="text-omsk-xs text-(--omsk-dim)">{t("collab.joinDesc")}</p>
 						<Input
 							onChange={event => setJoinLink(event.target.value)}
 							placeholder={t("collab.joinPlaceholder")}
@@ -253,7 +253,7 @@ export function CollabDialog() {
 							{busy ? <Spinner size="sm" /> : <Users size={14} />} {t("collab.join")}
 						</Button>
 					</section>
-					{error ? <div className="text-omp-md text-(--omp-error) md:col-span-2">{error}</div> : null}
+					{error ? <div className="text-omsk-md text-(--omsk-error) md:col-span-2">{error}</div> : null}
 				</div>
 			)}
 		</Modal>
@@ -263,9 +263,9 @@ export function CollabDialog() {
 function LinkRow({ label, value, onCopy }: { label: string; value: string; onCopy(value: string): Promise<void> }) {
 	return (
 		<div>
-			<div className="mb-1 text-omp-xs font-medium text-(--omp-dim)">{label}</div>
+			<div className="mb-1 text-omsk-xs font-medium text-(--omsk-dim)">{label}</div>
 			<div className="flex gap-2">
-				<code className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap rounded bg-(--omp-code-bg) px-3 py-2 text-omp-xs text-(--omp-text)">
+				<code className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap rounded bg-(--omsk-code-bg) px-3 py-2 text-omsk-xs text-(--omsk-text)">
 					{value}
 				</code>
 				<Button aria-label={label} onClick={() => void onCopy(value)} size="sm" variant="secondary">

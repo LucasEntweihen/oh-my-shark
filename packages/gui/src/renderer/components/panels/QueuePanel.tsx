@@ -139,13 +139,13 @@ const SortableQueuedRow = memo(function SortableQueuedRow({
 				transition,
 				opacity: isDragging ? 0.6 : undefined,
 			}}
-			className="group flex items-start gap-2 rounded-lg border border-(--omp-border-muted) bg-transparent px-2.5 py-2"
+			className="group flex items-start gap-2 rounded-lg border border-(--omsk-border-muted) bg-transparent px-2.5 py-2"
 		>
 			<button
 				{...attributes}
 				{...listeners}
 				aria-label={t("queuePanel.drag")}
-				className="omp-pressable mt-0.5 flex size-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text) active:cursor-grabbing"
+				className="omsk-pressable mt-0.5 flex size-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text) active:cursor-grabbing"
 				type="button"
 				disabled={!ready}
 				title={!ready ? t("common.notConnected") : undefined}
@@ -157,7 +157,7 @@ const SortableQueuedRow = memo(function SortableQueuedRow({
 					<textarea
 						aria-label={t("queuePanel.editInput")}
 						autoFocus
-						className="w-full resize-y rounded-md border border-(--omp-input-focus-border) bg-(--omp-input-bg) px-2 py-1 text-omp-md leading-snug text-(--omp-text) outline-none"
+						className="w-full resize-y rounded-md border border-(--omsk-input-focus-border) bg-(--omsk-input-bg) px-2 py-1 text-omsk-md leading-snug text-(--omsk-text) outline-none"
 						onInput={event => setDraft(event.currentTarget.value)}
 						onKeyDown={event => {
 							if (isImeKeyEvent(event)) return;
@@ -176,7 +176,7 @@ const SortableQueuedRow = memo(function SortableQueuedRow({
 					<div className="mt-1 flex justify-end gap-1">
 						<button
 							aria-label={t("queuePanel.cancelEdit")}
-							className="omp-pressable rounded-sm p-1 text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+							className="omsk-pressable rounded-sm p-1 text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 							onClick={() => {
 								setDraft(item.text);
 								setEditing(false);
@@ -188,7 +188,7 @@ const SortableQueuedRow = memo(function SortableQueuedRow({
 						</button>
 						<button
 							aria-label={t("queuePanel.saveEdit")}
-							className="omp-pressable rounded-sm p-1 text-(--omp-accent) hover:bg-(--omp-bg-tertiary) disabled:cursor-not-allowed disabled:opacity-40"
+							className="omsk-pressable rounded-sm p-1 text-(--omsk-accent) hover:bg-(--omsk-bg-tertiary) disabled:cursor-not-allowed disabled:opacity-40"
 							disabled={!ready || draft.trim().length === 0}
 							onClick={saveEdit}
 							title={t("queuePanel.saveEditHint")}
@@ -200,12 +200,12 @@ const SortableQueuedRow = memo(function SortableQueuedRow({
 				</div>
 			) : (
 				<>
-					<span className="min-w-0 flex-1 whitespace-pre-wrap break-words py-1 text-omp-md leading-snug text-(--omp-text)">
+					<span className="min-w-0 flex-1 whitespace-pre-wrap break-words py-1 text-omsk-md leading-snug text-(--omsk-text)">
 						{item.text || "…"}
 					</span>
 					<button
 						aria-label={t("queuePanel.moveUp")}
-						className="omp-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--omp-dim)"
+						className="omsk-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--omsk-dim)"
 						disabled={!ready || index === 0}
 						title={!ready ? t("common.notConnected") : undefined}
 						onClick={() => onMove(lane, item.id, index - 1)}
@@ -215,7 +215,7 @@ const SortableQueuedRow = memo(function SortableQueuedRow({
 					</button>
 					<button
 						aria-label={t("queuePanel.moveDown")}
-						className="omp-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--omp-dim)"
+						className="omsk-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text) disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-(--omsk-dim)"
 						disabled={!ready || index === count - 1}
 						title={!ready ? t("common.notConnected") : undefined}
 						onClick={() => onMove(lane, item.id, index + 1)}
@@ -226,7 +226,7 @@ const SortableQueuedRow = memo(function SortableQueuedRow({
 					{item.editable && (
 						<button
 							aria-label={t("queuePanel.edit")}
-							className="omp-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+							className="omsk-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 							disabled={!ready}
 							onClick={() => setEditing(true)}
 							title={t("queuePanel.edit")}
@@ -237,7 +237,7 @@ const SortableQueuedRow = memo(function SortableQueuedRow({
 					)}
 					<button
 						aria-label={t("queuePanel.moveToLane", { lane: t(`queuePanel.lane.${targetLane}`) })}
-						className="omp-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+						className="omsk-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 						disabled={!ready}
 						onClick={() => onMoveToLane(lane, item.id)}
 						title={
@@ -251,7 +251,7 @@ const SortableQueuedRow = memo(function SortableQueuedRow({
 					</button>
 					<button
 						aria-label={removeLabel}
-						className="omp-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-error)"
+						className="omsk-pressable mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-error)"
 						disabled={!ready}
 						onClick={() => onRemove(lane, item.id)}
 						title={!ready ? t("common.notConnected") : removeLabel}
@@ -305,14 +305,14 @@ function LaneSection({
 	return (
 		<section className="mb-3">
 			<div className="flex items-center gap-1.5 px-2 py-1.5">
-				<span className="min-w-0 flex-1 truncate text-omp-sm font-semibold text-(--omp-accent)">
+				<span className="min-w-0 flex-1 truncate text-omsk-sm font-semibold text-(--omsk-accent)">
 					{t(lane === "steering" ? "queuePanel.lane.steering" : "queuePanel.lane.followUp")}
 				</span>
 				<Badge variant="muted">{items.length}</Badge>
 				{items.length > 0 && (
 					<button
 						aria-label={t("queuePanel.clearLane")}
-						className="omp-pressable flex items-center gap-1 rounded-md px-2 py-1 text-omp-xs text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-error) disabled:opacity-40"
+						className="omsk-pressable flex items-center gap-1 rounded-md px-2 py-1 text-omsk-xs text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-error) disabled:opacity-40"
 						disabled={!ready}
 						onClick={() => onClear(lane)}
 						title={!ready ? t("common.notConnected") : undefined}
@@ -342,7 +342,7 @@ function LaneSection({
 							/>
 						))}
 						{items.length === 0 && (
-							<div className="py-1 text-omp-sm text-(--omp-dim) italic">{t("queuePanel.laneEmpty")}</div>
+							<div className="py-1 text-omsk-sm text-(--omsk-dim) italic">{t("queuePanel.laneEmpty")}</div>
 						)}
 					</div>
 				</SortableContext>
@@ -451,7 +451,7 @@ export function QueuePanel() {
 		<div className="flex h-full flex-col">
 			{!sidecarReady && (
 				<div
-					className="mx-2 mt-2 rounded-md border border-(--omp-border-muted) px-2.5 py-2 text-omp-xs text-(--omp-muted)"
+					className="mx-2 mt-2 rounded-md border border-(--omsk-border-muted) px-2.5 py-2 text-omsk-xs text-(--omsk-muted)"
 					role="status"
 				>
 					{t("common.notConnected")}
@@ -459,7 +459,7 @@ export function QueuePanel() {
 			)}
 			<div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
 				{total === 0 ? (
-					<div className="px-3 py-8 text-center text-omp-sm leading-relaxed text-(--omp-dim)">
+					<div className="px-3 py-8 text-center text-omsk-sm leading-relaxed text-(--omsk-dim)">
 						{t("queuePanel.empty")}
 						<br />
 						{t("queuePanel.emptyHint")}

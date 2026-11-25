@@ -15,8 +15,8 @@ export interface FindMatch {
 }
 
 /** Highlight registry names; their colors live in components.css. */
-export const FIND_HIGHLIGHT = "omp-find";
-export const FIND_HIGHLIGHT_CURRENT = "omp-find-current";
+export const FIND_HIGHLIGHT = "omsk-find";
+export const FIND_HIGHLIGHT_CURRENT = "omsk-find-current";
 
 /** Only what the transcript shows as prose: user and assistant text, not tool output. */
 function searchableText(message: AgentMessage): string {

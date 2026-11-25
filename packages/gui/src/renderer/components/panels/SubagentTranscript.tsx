@@ -111,7 +111,7 @@ export const SubagentTranscript = memo(function SubagentTranscript({ agent }: { 
 		return (
 			<div className="flex items-center gap-2 px-2 py-3">
 				<Spinner size="sm" />
-				<span className="text-omp-sm text-(--omp-dim)">{t("subagent.loadingTranscript")}</span>
+				<span className="text-omsk-sm text-(--omsk-dim)">{t("subagent.loadingTranscript")}</span>
 			</div>
 		);
 	}
@@ -121,7 +121,7 @@ export const SubagentTranscript = memo(function SubagentTranscript({ agent }: { 
 			{error &&
 				(state.messages.length === 0 ? (
 					<div className="flex flex-col items-start gap-2">
-						<p role="alert" className="text-omp-sm text-(--omp-error)">
+						<p role="alert" className="text-omsk-sm text-(--omsk-error)">
 							{error}
 						</p>
 						<Button icon={<RefreshCw size={12} />} onClick={() => void load(0)} size="sm" variant="secondary">
@@ -130,20 +130,20 @@ export const SubagentTranscript = memo(function SubagentTranscript({ agent }: { 
 					</div>
 				) : (
 					/* Rows from the last good page stay on screen under the failure. */
-					<p role="alert" className="text-omp-sm text-(--omp-error)">
+					<p role="alert" className="text-omsk-sm text-(--omsk-error)">
 						{error}
 					</p>
 				))}
 			{!error && state.messages.length === 0 && (
-				<div className="text-omp-sm text-(--omp-dim) italic">{t("subagent.noEntries")}</div>
+				<div className="text-omsk-sm text-(--omsk-dim) italic">{t("subagent.noEntries")}</div>
 			)}
 			{state.messages.map((message, index) => {
 				const text = messageText(message);
 				if (!text) return null;
 				return (
-					<div className="rounded-sm border-l-2 border-(--omp-border-muted) px-2 py-1" key={index}>
-						<div className="mb-0.5 text-omp-xxs font-semibold text-(--omp-dim)">{message.role}</div>
-						<div className="text-omp-sm leading-snug break-words whitespace-pre-wrap text-(--omp-muted)">
+					<div className="rounded-sm border-l-2 border-(--omsk-border-muted) px-2 py-1" key={index}>
+						<div className="mb-0.5 text-omsk-xxs font-semibold text-(--omsk-dim)">{message.role}</div>
+						<div className="text-omsk-sm leading-snug break-words whitespace-pre-wrap text-(--omsk-muted)">
 							{text.length > 1200 ? `${text.slice(0, 1200)}…` : text}
 						</div>
 					</div>
@@ -151,7 +151,7 @@ export const SubagentTranscript = memo(function SubagentTranscript({ agent }: { 
 			})}
 			{state.hasMore && (
 				<button
-					className="flex items-center gap-1.5 text-omp-sm text-(--omp-link) transition-colors hover:brightness-125 disabled:opacity-50"
+					className="flex items-center gap-1.5 text-omsk-sm text-(--omsk-link) transition-colors hover:brightness-125 disabled:opacity-50"
 					disabled={state.loading}
 					onClick={() => void load(state.nextByte)}
 					type="button"

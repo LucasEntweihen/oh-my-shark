@@ -119,32 +119,32 @@ function CapabilityCard({
 		<section
 			className={`rounded-xl border bg-transparent p-4 ${featured || wide ? "settings-capability-featured" : ""} ${
 				featured
-					? "border-[color-mix(in_srgb,var(--omp-accent)_45%,var(--omp-border-muted))]"
-					: "border-(--omp-border-muted)"
+					? "border-[color-mix(in_srgb,var(--omsk-accent)_45%,var(--omsk-border-muted))]"
+					: "border-(--omsk-border-muted)"
 			}`}
 		>
 			<div className="flex items-start gap-3">
 				<div
-					className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center ${featured ? "text-(--omp-accent)" : "text-(--omp-muted)"}`}
+					className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center ${featured ? "text-(--omsk-accent)" : "text-(--omsk-muted)"}`}
 				>
 					{icon}
 				</div>
 				<div className="min-w-0 flex-1">
 					<div className="flex flex-wrap items-center gap-2">
-						<h3 className="text-omp-lg font-semibold text-(--omp-text)">{title}</h3>
+						<h3 className="text-omsk-lg font-semibold text-(--omsk-text)">{title}</h3>
 						{status && (
 							<span
-								className={`rounded-full border px-1.5 py-0.5 text-omp-xxs font-medium ${
+								className={`rounded-full border px-1.5 py-0.5 text-omsk-xxs font-medium ${
 									statusActive
-										? "border-[color-mix(in_srgb,var(--omp-success)_35%,transparent)] bg-transparent text-(--omp-success)"
-										: "border-(--omp-border-muted) text-(--omp-dim)"
+										? "border-[color-mix(in_srgb,var(--omsk-success)_35%,transparent)] bg-transparent text-(--omsk-success)"
+										: "border-(--omsk-border-muted) text-(--omsk-dim)"
 								}`}
 							>
 								{status}
 							</span>
 						)}
 					</div>
-					<p className="mt-1 text-omp-sm leading-relaxed text-(--omp-muted)">{description}</p>
+					<p className="mt-1 text-omsk-sm leading-relaxed text-(--omsk-muted)">{description}</p>
 				</div>
 			</div>
 			<div className="mt-3 flex flex-wrap items-center gap-2">{children}</div>
@@ -195,14 +195,14 @@ export function CapabilitiesHome({
 	return (
 		<div>
 			<header className="mb-6 max-w-2xl">
-				<div className="mb-2 flex items-center gap-1.5 text-omp-xs font-semibold text-(--omp-accent)">
+				<div className="mb-2 flex items-center gap-1.5 text-omsk-xs font-semibold text-(--omsk-accent)">
 					<Sparkles size={12} />
 					{t("settings.capabilities.eyebrow")}
 				</div>
-				<h2 className="text-omp-2xl font-semibold tracking-tight text-(--omp-text)">
+				<h2 className="text-omsk-2xl font-semibold tracking-tight text-(--omsk-text)">
 					{t("settings.capabilities.title")}
 				</h2>
-				<p className="mt-2 text-omp-md leading-relaxed text-(--omp-muted)">
+				<p className="mt-2 text-omsk-md leading-relaxed text-(--omsk-muted)">
 					{t("settings.capabilities.description")}
 				</p>
 			</header>

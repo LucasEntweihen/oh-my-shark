@@ -1,5 +1,5 @@
 /**
- * Review state for skills omp learned on its own (the omp-managed provider).
+ * Review state for skills omp learned on its own (the omsk-managed provider).
  *
  * Learned skills are active the moment they are written; the person reviews
  * them afterwards. The GUI remembers what each skill looked like when it was

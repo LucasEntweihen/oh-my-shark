@@ -2,7 +2,7 @@
  * Theme picker: searchable overlay of the GUI's named themes, "system", and
  * the custom themes in ~/.omp/gui/themes (gui#38). Each card shows a live
  * swatch preview from the theme's token set. Selecting a theme applies it
- * live (inline `--omp-*` tokens), persists the choice, and keeps the legacy
+ * live (inline `--omsk-*` tokens), persists the choice, and keeps the legacy
  * dark/light/system store coherent so the App effect and the settings window
  * stay in sync. A custom theme file that cannot be used is listed with why.
  * "New theme" and a custom row's pencil open the theme editor.
@@ -36,7 +36,12 @@ import { toast } from "../../stores/toast";
 import { useUiStore } from "../../stores/ui";
 import { Button, Modal } from "../common";
 
-const SWATCH_KEYS = ["--omp-accent", "--omp-syntax-string", "--omp-syntax-function", "--omp-syntax-number"] as const;
+const SWATCH_KEYS = [
+	"--omsk-accent",
+	"--omsk-syntax-string",
+	"--omsk-syntax-function",
+	"--omsk-syntax-number",
+] as const;
 
 interface ThemeEntry {
 	selection: ThemeSelection;
@@ -197,8 +202,8 @@ export function ThemePickerDialog() {
 			bodyClassName="p-0"
 		>
 			<div onKeyDown={onKey}>
-				<div className="flex items-center gap-2 border-b border-[var(--omp-border-muted)] px-4 py-3">
-					<Search size={15} className="shrink-0 text-[var(--omp-dim)]" />
+				<div className="flex items-center gap-2 border-b border-[var(--omsk-border-muted)] px-4 py-3">
+					<Search size={15} className="shrink-0 text-[var(--omsk-dim)]" />
 					<input
 						ref={inputRef}
 						value={query}
@@ -208,7 +213,7 @@ export function ThemePickerDialog() {
 							setActive(0);
 						}}
 						placeholder={t("themePicker.search")}
-						className="w-full bg-transparent text-omp-lg text-[var(--omp-text)] outline-none placeholder:text-[var(--omp-dim)]"
+						className="w-full bg-transparent text-omsk-lg text-[var(--omsk-text)] outline-none placeholder:text-[var(--omsk-dim)]"
 					/>
 					<Button
 						size="sm"
@@ -221,7 +226,7 @@ export function ThemePickerDialog() {
 					</Button>
 				</div>
 				{customizerOpen && (
-					<div className="border-b border-[var(--omp-border-muted)] px-4 py-3">
+					<div className="border-b border-[var(--omsk-border-muted)] px-4 py-3">
 						<div className="grid grid-cols-3 gap-2.5 max-sm:grid-cols-2">
 							{(
 								[
@@ -237,7 +242,7 @@ export function ThemePickerDialog() {
 								return (
 									<label
 										key={field.key}
-										className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-[var(--omp-border-muted)] px-2.5 py-1.5 text-omp-xs text-[var(--omp-muted)] hover:border-[var(--omp-border)]"
+										className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-[var(--omsk-border-muted)] px-2.5 py-1.5 text-omsk-xs text-[var(--omsk-muted)] hover:border-[var(--omsk-border)]"
 									>
 										<span className="truncate">{field.label}</span>
 										<input
@@ -255,7 +260,7 @@ export function ThemePickerDialog() {
 							})}
 						</div>
 						<div className="mt-2.5 flex flex-wrap items-center gap-4">
-							<label className="flex flex-1 items-center gap-2 text-omp-xs text-[var(--omp-muted)]">
+							<label className="flex flex-1 items-center gap-2 text-omsk-xs text-[var(--omsk-muted)]">
 								<span className="shrink-0">{t("themePicker.customizer.glassBlur")}</span>
 								<input
 									type="range"
@@ -267,10 +272,10 @@ export function ThemePickerDialog() {
 										setOverrides(next);
 										saveColorOverrides(next);
 									}}
-									className="w-full accent-[var(--omp-accent)]"
+									className="w-full accent-[var(--omsk-accent)]"
 								/>
 							</label>
-							<label className="flex flex-1 items-center gap-2 text-omp-xs text-[var(--omp-muted)]">
+							<label className="flex flex-1 items-center gap-2 text-omsk-xs text-[var(--omsk-muted)]">
 								<span className="shrink-0">{t("themePicker.customizer.glassOpacity")}</span>
 								<input
 									type="range"
@@ -282,7 +287,7 @@ export function ThemePickerDialog() {
 										setOverrides(next);
 										saveColorOverrides(next);
 									}}
-									className="w-full accent-[var(--omp-accent)]"
+									className="w-full accent-[var(--omsk-accent)]"
 								/>
 							</label>
 							<Button
@@ -299,9 +304,9 @@ export function ThemePickerDialog() {
 						</div>
 					</div>
 				)}
-				<div ref={listRef} className="omp-command-list overflow-y-auto p-2">
+				<div ref={listRef} className="omsk-command-list overflow-y-auto p-2">
 					{filtered.length === 0 && (
-						<div className="px-3 py-8 text-center text-omp-lg text-[var(--omp-dim)]">
+						<div className="px-3 py-8 text-center text-omsk-lg text-[var(--omsk-dim)]">
 							{t("themePicker.empty")}
 						</div>
 					)}
@@ -320,25 +325,27 @@ export function ThemePickerDialog() {
 								className={cx(
 									"flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
 									entry.custom && "pr-11",
-									i === active ? "bg-[var(--omp-selected-bg)]" : "hover:bg-[var(--omp-bg-tertiary)]",
+									i === active ? "bg-[var(--omsk-selected-bg)]" : "hover:bg-[var(--omsk-bg-tertiary)]",
 								)}
 							>
 								<span
 									aria-hidden="true"
 									className="flex h-14 w-24 shrink-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border"
 									style={{
-										background: theme ? resolveTokenColor(theme, "--omp-bg-primary") : "var(--omp-input-bg)",
-										borderColor: theme ? resolveTokenColor(theme, "--omp-border") : "var(--omp-border)",
-										color: theme ? resolveTokenColor(theme, "--omp-text") : "var(--omp-text)",
+										background: theme
+											? resolveTokenColor(theme, "--omsk-bg-primary")
+											: "var(--omsk-input-bg)",
+										borderColor: theme ? resolveTokenColor(theme, "--omsk-border") : "var(--omsk-border)",
+										color: theme ? resolveTokenColor(theme, "--omsk-text") : "var(--omsk-text)",
 									}}
 								>
 									{isSystem ? (
-										<span className="flex h-full w-full items-center justify-center text-[var(--omp-dim)]">
+										<span className="flex h-full w-full items-center justify-center text-[var(--omsk-dim)]">
 											<Monitor size={15} />
 										</span>
 									) : (
 										<>
-											<span className="font-display text-omp-xl font-medium">Aa</span>
+											<span className="font-display text-omsk-xl font-medium">Aa</span>
 											<span className="flex gap-1">
 												{SWATCH_KEYS.map(key => (
 													<span
@@ -352,15 +359,15 @@ export function ThemePickerDialog() {
 									)}
 								</span>
 								<span className="min-w-0 flex-1">
-									<span className="flex items-center gap-2 text-omp-lg font-medium text-[var(--omp-text)]">
+									<span className="flex items-center gap-2 text-omsk-lg font-medium text-[var(--omsk-text)]">
 										{entry.label}
-										{isCurrent && <Check size={14} className="text-[var(--omp-accent)]" />}
+										{isCurrent && <Check size={14} className="text-[var(--omsk-accent)]" />}
 									</span>
-									<span className="block text-omp-md leading-relaxed text-[var(--omp-muted)]">
+									<span className="block text-omsk-md leading-relaxed text-[var(--omsk-muted)]">
 										{entry.description}
 									</span>
 									{entry.skipped && entry.skipped.length > 0 && (
-										<span className="block truncate text-omp-sm text-[var(--omp-warning)]">
+										<span className="block truncate text-omsk-sm text-[var(--omsk-warning)]">
 											{t("themePicker.custom.skipped", {
 												count: entry.skipped.length,
 												plural: entry.skipped.length === 1 ? "y" : "ies",
@@ -383,7 +390,7 @@ export function ThemePickerDialog() {
 										aria-label={t("themePicker.custom.edit", { name: entry.label })}
 										title={t("themePicker.custom.edit", { name: entry.label })}
 										className={cx(
-											"absolute top-1/2 right-3 -translate-y-1/2 rounded-lg p-1.5 text-[var(--omp-muted)] transition-opacity hover:bg-[var(--omp-bg-tertiary)] hover:text-[var(--omp-text)] focus-visible:opacity-100",
+											"absolute top-1/2 right-3 -translate-y-1/2 rounded-lg p-1.5 text-[var(--omsk-muted)] transition-opacity hover:bg-[var(--omsk-bg-tertiary)] hover:text-[var(--omsk-text)] focus-visible:opacity-100",
 											i === active ? "opacity-100" : "opacity-0 group-hover:opacity-100",
 										)}
 									>
@@ -397,7 +404,7 @@ export function ThemePickerDialog() {
 						return [
 							<div
 								key="custom-heading"
-								className="px-3 pt-3 pb-1 text-omp-xs font-medium tracking-wide text-[var(--omp-dim)] uppercase"
+								className="px-3 pt-3 pb-1 text-omsk-xs font-medium tracking-wide text-[var(--omsk-dim)] uppercase"
 							>
 								{t("themePicker.custom.heading")}
 							</div>,
@@ -410,16 +417,16 @@ export function ThemePickerDialog() {
 								key={entry.selection}
 								data-custom-theme-problem={entry.problem}
 								data-chosen-theme={entry.selection === current || undefined}
-								className="flex items-start gap-3 px-3 py-2 text-omp-md text-[var(--omp-muted)]"
+								className="flex items-start gap-3 px-3 py-2 text-omsk-md text-[var(--omsk-muted)]"
 							>
-								<AlertTriangle size={14} className="mt-0.5 shrink-0 text-[var(--omp-warning)]" />
+								<AlertTriangle size={14} className="mt-0.5 shrink-0 text-[var(--omsk-warning)]" />
 								<span className="min-w-0 break-words">
 									{t(`themePicker.custom.problem.${entry.problem}`, {
 										file: entry.fileName,
 										detail: entry.detail ?? "",
 									})}
 									{entry.selection === current && (
-										<span className="block text-[var(--omp-text-secondary)]">{chosenNote}</span>
+										<span className="block text-[var(--omsk-text-secondary)]">{chosenNote}</span>
 									)}
 								</span>
 							</div>
@@ -428,17 +435,17 @@ export function ThemePickerDialog() {
 						<div
 							data-custom-theme-problem="missing"
 							data-chosen-theme
-							className="flex items-start gap-3 px-3 py-2 text-omp-md text-[var(--omp-muted)]"
+							className="flex items-start gap-3 px-3 py-2 text-omsk-md text-[var(--omsk-muted)]"
 						>
-							<AlertTriangle size={14} className="mt-0.5 shrink-0 text-[var(--omp-warning)]" />
+							<AlertTriangle size={14} className="mt-0.5 shrink-0 text-[var(--omsk-warning)]" />
 							<span className="min-w-0 break-words">
 								{t("themePicker.custom.missing", { file: chosenFile ?? "" })}
 							</span>
 						</div>
 					)}
 				</div>
-				<div className="flex items-center gap-3 border-t border-[var(--omp-border-muted)] px-4 py-2.5">
-					<span className="min-w-0 flex-1 text-omp-sm text-[var(--omp-dim)]">
+				<div className="flex items-center gap-3 border-t border-[var(--omsk-border-muted)] px-4 py-2.5">
+					<span className="min-w-0 flex-1 text-omsk-sm text-[var(--omsk-dim)]">
 						{t("themePicker.custom.hint", { dir: customDir ? shortenPath(customDir) : "~/.omsk/gui/themes" })}
 					</span>
 					<Button size="sm" variant="secondary" onClick={() => openThemeEditor()}>

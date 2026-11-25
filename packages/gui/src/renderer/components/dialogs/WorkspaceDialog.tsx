@@ -137,7 +137,7 @@ export function WorkspaceDialog({
 				<button
 					type="button"
 					onClick={() => void addWorkspace()}
-					className="omp-pressable flex items-center gap-2.5 rounded-xl border border-dashed border-[var(--omp-border)] px-3 py-2.5 text-omp-lg font-medium text-[var(--omp-accent)] transition-colors hover:border-[var(--omp-accent)] hover:bg-[var(--omp-selected-bg)]"
+					className="omsk-pressable flex items-center gap-2.5 rounded-xl border border-dashed border-[var(--omsk-border)] px-3 py-2.5 text-omsk-lg font-medium text-[var(--omsk-accent)] transition-colors hover:border-[var(--omsk-accent)] hover:bg-[var(--omsk-selected-bg)]"
 				>
 					<FolderPlus size={16} />
 					{t("workspaces.add")}
@@ -145,7 +145,7 @@ export function WorkspaceDialog({
 
 				<div className="max-h-[46vh] overflow-y-auto">
 					{workspaces.length === 0 ? (
-						<div className="px-2 py-8 text-center text-omp-md text-[var(--omp-muted)]">
+						<div className="px-2 py-8 text-center text-omsk-md text-[var(--omsk-muted)]">
 							{t("workspaces.empty")}
 						</div>
 					) : (
@@ -157,37 +157,37 @@ export function WorkspaceDialog({
 									type="button"
 									onClick={() => void pick(ws.cwd)}
 									className={cx(
-										"omp-pressable group flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors",
-										isCurrent ? "bg-[var(--omp-selected-bg)]" : "hover:bg-[var(--omp-selected-bg)]",
+										"omsk-pressable group flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors",
+										isCurrent ? "bg-[var(--omsk-selected-bg)]" : "hover:bg-[var(--omsk-selected-bg)]",
 									)}
 								>
 									<Folder
 										size={16}
 										className={cx(
 											"shrink-0",
-											isCurrent ? "text-[var(--omp-accent)]" : "text-[var(--omp-dim)]",
+											isCurrent ? "text-[var(--omsk-accent)]" : "text-[var(--omsk-dim)]",
 										)}
 									/>
 									<span className="min-w-0 flex-1">
 										<span className="flex items-baseline gap-2">
 											<span
 												className={cx(
-													"truncate text-omp-lg font-medium",
-													isCurrent ? "text-[var(--omp-text)]" : "text-[var(--omp-muted)]",
+													"truncate text-omsk-lg font-medium",
+													isCurrent ? "text-[var(--omsk-text)]" : "text-[var(--omsk-muted)]",
 												)}
 											>
 												{ws.name}
 											</span>
 											{ws.sessionCount > 0 && (
-												<span className="shrink-0 text-omp-sm text-[var(--omp-dim)]">
+												<span className="shrink-0 text-omsk-sm text-[var(--omsk-dim)]">
 													{t("workspaces.sessionCount", { count: ws.sessionCount })}
 												</span>
 											)}
 										</span>
-										<span className="block truncate text-omp-sm text-[var(--omp-dim)]">{ws.cwd}</span>
+										<span className="block truncate text-omsk-sm text-[var(--omsk-dim)]">{ws.cwd}</span>
 									</span>
 									{isCurrent ? (
-										<span className="flex shrink-0 items-center gap-1 text-omp-sm font-medium text-[var(--omp-accent)]">
+										<span className="flex shrink-0 items-center gap-1 text-omsk-sm font-medium text-[var(--omsk-accent)]">
 											<Check size={13} />
 											{t("workspaces.current")}
 										</span>

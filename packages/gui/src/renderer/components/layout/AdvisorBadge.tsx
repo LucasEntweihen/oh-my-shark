@@ -17,10 +17,10 @@ type AdvisorEntryStatus = RpcAdvisorStatus["advisors"][number]["status"];
 
 /** The badge color for a roster: any error, then quota exhaustion, then a running advisor. */
 export function advisorBadgeColor(statuses: AdvisorEntryStatus[]): string {
-	if (statuses.includes("error")) return "var(--omp-error)";
-	if (statuses.includes("quota_exhausted")) return "var(--omp-warning)";
-	if (statuses.includes("running")) return "var(--omp-success)";
-	return "var(--omp-dim)";
+	if (statuses.includes("error")) return "var(--omsk-error)";
+	if (statuses.includes("quota_exhausted")) return "var(--omsk-warning)";
+	if (statuses.includes("running")) return "var(--omsk-success)";
+	return "var(--omsk-dim)";
 }
 
 export function AdvisorBadge() {
@@ -57,13 +57,13 @@ export function AdvisorBadge() {
 			title={title}
 			aria-label={title}
 			className={cx(
-				"omp-pressable flex h-8 shrink-0 items-center gap-1 rounded-full px-2 text-omp-sm hover:bg-[var(--omp-selected-bg)]",
+				"omsk-pressable flex h-8 shrink-0 items-center gap-1 rounded-full px-2 text-omsk-sm hover:bg-[var(--omsk-selected-bg)]",
 			)}
 			style={{ color: advisorBadgeColor(statuses) }}
 		>
 			<Icon aria-hidden="true" size={14} />
 			{advisor.cost > 0 && (
-				<span className="tabular-nums text-[var(--omp-muted)]">{formatCost(advisor.cost, 2)}</span>
+				<span className="tabular-nums text-[var(--omsk-muted)]">{formatCost(advisor.cost, 2)}</span>
 			)}
 		</button>
 	);

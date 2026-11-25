@@ -15,18 +15,18 @@
 	--font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter Variable", "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
 	--font-mono: ui-monospace, "SF Mono", SFMono-Regular, "JetBrains Mono", "Cascadia Code", Menlo, monospace;
 
-	/* Unified type scale — UI text uses these steps (text-omp-*), never raw
+	/* Unified type scale — UI text uses these steps (text-omsk-*), never raw
 	   pixel classes; lint-surfaces.mjs enforces it. Weight conventions: 400
 	   body, 500 labels/rows, 600 section/page titles. */
-	--text-omp-xxs: calc(var(--gui-font-size, 15px) * 11 / 15);
-	--text-omp-xs: calc(var(--gui-font-size, 15px) * 12 / 15);
-	--text-omp-sm: calc(var(--gui-font-size, 15px) * 13 / 15);
-	--text-omp-md: calc(var(--gui-font-size, 15px) * 14 / 15);
-	--text-omp-lg: calc(var(--gui-font-size, 15px) * 15 / 15);
-	--text-omp-xl: calc(var(--gui-font-size, 15px) * 17 / 15);
-	--text-omp-2xl: calc(var(--gui-font-size, 15px) * 20 / 15);
+	--text-omsk-xxs: calc(var(--gui-font-size, 15px) * 11 / 15);
+	--text-omsk-xs: calc(var(--gui-font-size, 15px) * 12 / 15);
+	--text-omsk-sm: calc(var(--gui-font-size, 15px) * 13 / 15);
+	--text-omsk-md: calc(var(--gui-font-size, 15px) * 14 / 15);
+	--text-omsk-lg: calc(var(--gui-font-size, 15px) * 15 / 15);
+	--text-omsk-xl: calc(var(--gui-font-size, 15px) * 17 / 15);
+	--text-omsk-2xl: calc(var(--gui-font-size, 15px) * 20 / 15);
 	/* One hero headline per screen (the new-session greeting), never body copy. */
-	--text-omp-display: calc(var(--gui-font-size, 15px) * 30 / 15);
+	--text-omsk-display: calc(var(--gui-font-size, 15px) * 30 / 15);
 
 	/* Modern geometry — one step rounder than the Tailwind defaults, so every
 	   rounded-* call site picks up the softer language from a single place. */
@@ -41,34 +41,34 @@
 /* Shared semantic aliases follow every named theme and system mode. Keeping
    literal colors here would leak the default palette into custom transcripts. */
 :root {
-	--omp-transcript-rail: var(--omp-border);
+	--omsk-transcript-rail: var(--omsk-border);
 	/* Switch "on" track: dark themes use pale accents, which a white knob
 	   disappears against, so the track is the accent deepened toward black. */
-	--omp-switch-on: color-mix(in srgb, var(--omp-accent) 78%, #000000);
-	--omp-switch-off: var(--omp-border-strong);
-	--omp-transcript-rule: var(--omp-border-muted);
-	--omp-transcript-event: var(--omp-dim);
-	--omp-transcript-event-live: var(--omp-accent);
-	--omp-transcript-launch: var(--omp-accent);
-	--omp-transcript-user-bg: var(--omp-user-msg-bg);
-	--omp-transcript-user-border: var(--omp-user-msg-border);
-	--omp-transcript-code-bg: var(--omp-code-bg);
-	--omp-ansi-black: var(--omp-dim);
-	--omp-ansi-red: var(--omp-error);
-	--omp-ansi-green: var(--omp-success);
-	--omp-ansi-yellow: var(--omp-warning);
-	--omp-ansi-blue: var(--omp-syntax-keyword);
-	--omp-ansi-magenta: var(--omp-syntax-number);
-	--omp-ansi-cyan: var(--omp-syntax-function);
-	--omp-ansi-white: var(--omp-text-secondary);
-	--omp-ansi-bright-black: var(--omp-muted);
-	--omp-ansi-bright-red: var(--omp-error);
-	--omp-ansi-bright-green: var(--omp-success);
-	--omp-ansi-bright-yellow: var(--omp-warning);
-	--omp-ansi-bright-blue: var(--omp-syntax-keyword);
-	--omp-ansi-bright-magenta: var(--omp-syntax-number);
-	--omp-ansi-bright-cyan: var(--omp-syntax-function);
-	--omp-ansi-bright-white: var(--omp-text);
+	--omsk-switch-on: color-mix(in srgb, var(--omsk-accent) 78%, #000000);
+	--omsk-switch-off: var(--omsk-border-strong);
+	--omsk-transcript-rule: var(--omsk-border-muted);
+	--omsk-transcript-event: var(--omsk-dim);
+	--omsk-transcript-event-live: var(--omsk-accent);
+	--omsk-transcript-launch: var(--omsk-accent);
+	--omsk-transcript-user-bg: var(--omsk-user-msg-bg);
+	--omsk-transcript-user-border: var(--omsk-user-msg-border);
+	--omsk-transcript-code-bg: var(--omsk-code-bg);
+	--omsk-ansi-black: var(--omsk-dim);
+	--omsk-ansi-red: var(--omsk-error);
+	--omsk-ansi-green: var(--omsk-success);
+	--omsk-ansi-yellow: var(--omsk-warning);
+	--omsk-ansi-blue: var(--omsk-syntax-keyword);
+	--omsk-ansi-magenta: var(--omsk-syntax-number);
+	--omsk-ansi-cyan: var(--omsk-syntax-function);
+	--omsk-ansi-white: var(--omsk-text-secondary);
+	--omsk-ansi-bright-black: var(--omsk-muted);
+	--omsk-ansi-bright-red: var(--omsk-error);
+	--omsk-ansi-bright-green: var(--omsk-success);
+	--omsk-ansi-bright-yellow: var(--omsk-warning);
+	--omsk-ansi-bright-blue: var(--omsk-syntax-keyword);
+	--omsk-ansi-bright-magenta: var(--omsk-syntax-number);
+	--omsk-ansi-bright-cyan: var(--omsk-syntax-function);
+	--omsk-ansi-bright-white: var(--omsk-text);
 }
 
 *,
@@ -87,10 +87,10 @@ body,
 body {
 	font-family: var(--font-body);
 	/* Unclassed text follows the GUI font-size preference like the scale does. */
-	font-size: var(--text-omp-md);
+	font-size: var(--text-omsk-md);
 	line-height: 1.55;
-	color: var(--omp-text);
-	background: var(--omp-bg-primary);
+	color: var(--omsk-text);
+	background: var(--omsk-bg-primary);
 	-webkit-font-smoothing: antialiased;
 	text-rendering: optimizeLegibility;
 }
@@ -113,22 +113,22 @@ kbd,
 
    SURFACE POLICY (enforced by scripts/lint-surfaces.mjs):
    1. Canvas      — this section only: body, workspace main, settings canvas.
-   2. Chrome      — navigation frame tokens (--omp-sidebar-bg, --omp-titlebar-bg).
-   3. Floating    — real overlays: --omp-modal-bg / --omp-overlay-bg /
-                    --omp-toast-bg, dropdown menus (--omp-bg-elevated).
+   2. Chrome      — navigation frame tokens (--omsk-sidebar-bg, --omsk-titlebar-bg).
+   3. Floating    — real overlays: --omsk-modal-bg / --omsk-overlay-bg /
+                    --omsk-toast-bg, dropdown menus (--omsk-bg-elevated).
    4. States      — hover/focus/selected washes and semantic fills (error,
                     success, warning, info, diff, tool, user/custom message,
-                    badges, buttons), code blocks (--omp-code-bg), and form
-                    fields (--omp-input-bg) keep their paint.
+                    badges, buttons), code blocks (--omsk-code-bg), and form
+                    fields (--omsk-input-bg) keep their paint.
    5. Content     — COLORLESS. Cards, rows, chips, panels, and page sections
                     render transparent over the canvas and separate with
-                    hairline borders (.omp-card). Static bg-primary/secondary/
+                    hairline borders (.omsk-card). Static bg-primary/secondary/
                     tertiary fills on content surfaces are lint errors.
    ============================================================================ */
 
-.omp-workspace-main,
+.omsk-workspace-main,
 .settings-main-canvas {
-	background: var(--omp-bg-primary);
+	background: var(--omsk-bg-primary);
 }
 
 
@@ -140,12 +140,12 @@ kbd,
 /* One size for every bar, named so a column that reserves a gutter can
    compensate for exactly this width. */
 :root {
-	--omp-scrollbar-size: 9px;
+	--omsk-scrollbar-size: 9px;
 }
 
 ::-webkit-scrollbar {
-	width: var(--omp-scrollbar-size);
-	height: var(--omp-scrollbar-size);
+	width: var(--omsk-scrollbar-size);
+	height: var(--omsk-scrollbar-size);
 }
 
 ::-webkit-scrollbar-track {
@@ -153,15 +153,15 @@ kbd,
 }
 
 ::-webkit-scrollbar-thumb {
-	background-color: var(--omp-scrollbar-thumb);
+	background-color: var(--omsk-scrollbar-thumb);
 	border-radius: 99px;
 	border: 2px solid transparent;
 	background-clip: content-box;
-	transition: background-color var(--omp-motion-fast) var(--omp-ease);
+	transition: background-color var(--omsk-motion-fast) var(--omsk-ease);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background-color: var(--omp-muted);
+	background-color: var(--omsk-muted);
 }
 
 ::-webkit-scrollbar-corner {
@@ -173,8 +173,8 @@ kbd,
    ============================================================================ */
 
 ::selection {
-	background: var(--omp-selection-bg);
-	color: var(--omp-selection-text);
+	background: var(--omsk-selection-bg);
+	color: var(--omsk-selection-text);
 }
 
 /* Base layer: Tailwind v4 puts utilities in `@layer utilities`, and unlayered
@@ -183,7 +183,7 @@ kbd,
    container's focus border. */
 @layer base {
 	:focus-visible {
-		outline: 2px solid color-mix(in srgb, var(--omp-accent) 75%, transparent);
+		outline: 2px solid color-mix(in srgb, var(--omsk-accent) 75%, transparent);
 		outline-offset: 1px;
 	}
 }
@@ -201,7 +201,7 @@ kbd,
 }
 
 /* Drag regions ignore stacking, so whatever floats over the header has to opt out. */
-.omp-dialog-overlay,
+.omsk-dialog-overlay,
 [role="dialog"],
 [role="menu"],
 [role="listbox"] {
@@ -213,115 +213,115 @@ kbd,
    ============================================================================ */
 
 :root {
-	--omp-caption-left: 0px;
-	--omp-caption-right: 0px;
+	--omsk-caption-left: 0px;
+	--omsk-caption-right: 0px;
 }
 
 :root[data-platform="darwin"]:not([data-fullscreen]) {
-	--omp-caption-left: 78px;
+	--omsk-caption-left: 78px;
 }
 
 :root:is([data-platform="win32"], [data-platform="linux"]):not([data-fullscreen]) {
-	--omp-caption-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, calc(100vw - 138px)));
+	--omsk-caption-right: calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, calc(100vw - 138px)));
 }
 
 /* The row the macOS controls have to themselves, where a column reaches the top left. */
-.omp-window-caption {
+.omsk-window-caption {
 	display: none;
 	flex-shrink: 0;
 	height: 46px; /* The rows under it line up with the header's second row. */
 }
 
-:root[data-platform="darwin"]:not([data-fullscreen]) .omp-window-caption {
+:root[data-platform="darwin"]:not([data-fullscreen]) .omsk-window-caption {
 	display: block;
 }
 
 /* Whichever pane reaches a top corner leaves room for the controls there. */
-[data-sidebar="closed"] .omp-titlebar {
-	padding-left: calc(var(--omp-caption-left) + 0.625rem);
+[data-sidebar="closed"] .omsk-titlebar {
+	padding-left: calc(var(--omsk-caption-left) + 0.625rem);
 }
 
-[data-inspector="closed"] .omp-titlebar {
-	padding-right: calc(var(--omp-caption-right) + 0.625rem);
+[data-inspector="closed"] .omsk-titlebar {
+	padding-right: calc(var(--omsk-caption-right) + 0.625rem);
 }
 
-.omp-inspector-header {
-	padding-right: calc(var(--omp-caption-right) + 0.5rem);
+.omsk-inspector-header {
+	padding-right: calc(var(--omsk-caption-right) + 0.5rem);
 }
 
-[data-inspector-left-edge] .omp-inspector-header {
-	padding-left: calc(var(--omp-caption-left) + 0.75rem);
+[data-inspector-left-edge] .omsk-inspector-header {
+	padding-left: calc(var(--omsk-caption-left) + 0.75rem);
 }
 
-.omp-docked-page-content > :first-child {
+.omsk-docked-page-content > :first-child {
 	max-height: none;
 }
 
-.omp-docked-page-content > .omp-docked-fill {
+.omsk-docked-page-content > .omsk-docked-fill {
 	height: 100%;
 	min-height: 0;
 }
 
-.omp-docked-page-content .omp-docked-master-detail > aside {
+.omsk-docked-page-content .omsk-docked-master-detail > aside {
 	width: min(42%, 20rem);
 }
 
-.omp-workspace-page {
-	container: omp-workspace-page / inline-size;
+.omsk-workspace-page {
+	container: omsk-workspace-page / inline-size;
 }
 
-.omp-workspace-page-header {
-	padding-right: max(1rem, var(--omp-caption-right));
+.omsk-workspace-page-header {
+	padding-right: max(1rem, var(--omsk-caption-right));
 }
 
-[data-sidebar="closed"] .omp-workspace-page-header {
-	padding-left: calc(var(--omp-caption-left) + 0.75rem);
+[data-sidebar="closed"] .omsk-workspace-page-header {
+	padding-left: calc(var(--omsk-caption-left) + 0.75rem);
 }
 
-@container omp-workspace-page (max-width: 570px) {
-	.omp-docked-master-detail {
+@container omsk-workspace-page (max-width: 570px) {
+	.omsk-docked-master-detail {
 		flex-direction: column;
 	}
 
-	.omp-docked-page-content .omp-docked-master-detail > aside {
+	.omsk-docked-page-content .omsk-docked-master-detail > aside {
 		width: 100%;
 		max-height: 36%;
 		border-right: 0;
-		border-bottom: 1px solid var(--omp-border-muted);
+		border-bottom: 1px solid var(--omsk-border-muted);
 	}
 }
 
 .settings-main-canvas > header {
-	padding-right: max(var(--omp-column-pad), var(--omp-caption-right));
+	padding-right: max(var(--omsk-column-pad), var(--omsk-caption-right));
 }
 
-.omp-image-viewer-tools {
-	right: calc(var(--omp-caption-right) + 0.75rem);
+.omsk-image-viewer-tools {
+	right: calc(var(--omsk-caption-right) + 0.75rem);
 }
 
-.omp-file-preview {
-	container: omp-file-preview / inline-size;
+.omsk-file-preview {
+	container: omsk-file-preview / inline-size;
 }
 
-.omp-file-preview-toolbar {
+.omsk-file-preview-toolbar {
 	height: auto;
 	min-height: 2.75rem;
 	flex-wrap: wrap;
 	padding-block: 0.25rem;
 }
 
-@container omp-file-preview (max-width: 20rem) {
-	.omp-file-preview-label {
+@container omsk-file-preview (max-width: 20rem) {
+	.omsk-file-preview-label {
 		display: none; /* The file name remains in the tab above the toolbar. */
 	}
 }
 
 /* A centered dialog tall or wide enough to reach the controls stays below them. */
-:root[data-platform]:not([data-fullscreen]) .omp-dialog-overlay.items-center {
+:root[data-platform]:not([data-fullscreen]) .omsk-dialog-overlay.items-center {
 	padding-top: 3rem;
 }
 
-:root[data-platform]:not([data-fullscreen]) .omp-dialog-size-full {
+:root[data-platform]:not([data-fullscreen]) .omsk-dialog-size-full {
 	height: calc(100dvh - 4rem);
 }
 
@@ -330,37 +330,37 @@ kbd,
 
    Two entrance curves. Overlays that should feel physical (dialogs, popovers,
    toasts, drawers, the starter grid, a chevron turning) ride the damped
-   spring (--omp-ease-spring at --omp-motion-spring): they settle in from a
+   spring (--omsk-ease-spring at --omsk-motion-spring): they settle in from a
    few pixels and a hair of scale with a small overshoot. Everything else that
    enters, such as a turn arriving at the transcript tail rising a few pixels
-   as it fades in, uses the long, gentle --omp-ease-enter deceleration with no
+   as it fades in, uses the long, gentle --omsk-ease-enter deceleration with no
    overshoot. Exits are shorter than entrances and never travel. Content
    already on screen never moves — hover, press and selection change color
    only, and streamed text grows in place.
    ============================================================================ */
 
 :root {
-	--omp-motion-instant: 80ms; /* motion-ok: token definition */
-	--omp-motion-fast: 140ms;
-	--omp-motion-med: 220ms;
-	--omp-motion-slow: 320ms; /* motion-ok: token definition */
-	--omp-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
-	--omp-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
-	--omp-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+	--omsk-motion-instant: 80ms; /* motion-ok: token definition */
+	--omsk-motion-fast: 140ms;
+	--omsk-motion-med: 220ms;
+	--omsk-motion-slow: 320ms; /* motion-ok: token definition */
+	--omsk-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+	--omsk-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+	--omsk-ease-exit: cubic-bezier(0.4, 0, 1, 1);
 	/* Damped spring with a ~16% overshoot, sampled into linear(). Entrances that
 	   should feel physical (dialogs, popovers, toasts, chevrons) ride this curve
-	   at --omp-motion-spring; it needs a longer duration than the CSS beziers
+	   at --omsk-motion-spring; it needs a longer duration than the CSS beziers
 	   because the settle is part of the curve. */
-	--omp-ease-spring: linear(
+	--omsk-ease-spring: linear(
 		0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%, 1.017, 1.077, 1.121,
 		1.149 24.3%, 1.159, 1.163 27%, 1.154, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991,
 		0.977 51%, 0.974 53.8%, 0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1
 	);
-	--omp-motion-spring: 460ms; /* motion-ok: token definition */
-	--omp-stagger: 32ms; /* motion-ok: token definition */
+	--omsk-motion-spring: 460ms; /* motion-ok: token definition */
+	--omsk-stagger: 32ms; /* motion-ok: token definition */
 }
 
-@keyframes omp-fade-up {
+@keyframes omsk-fade-up {
 	from {
 		opacity: 0;
 		transform: translateY(12px);
@@ -371,7 +371,7 @@ kbd,
 	}
 }
 
-@keyframes omp-fade-in {
+@keyframes omsk-fade-in {
 	from {
 		opacity: 0;
 	}
@@ -380,7 +380,7 @@ kbd,
 	}
 }
 
-@keyframes omp-scale-in {
+@keyframes omsk-scale-in {
 	from {
 		opacity: 0;
 		transform: translateY(14px) scale(0.94);
@@ -391,7 +391,7 @@ kbd,
 	}
 }
 
-@keyframes omp-toast-in {
+@keyframes omsk-toast-in {
 	from {
 		opacity: 0;
 		transform: translateY(18px) scale(0.94);
@@ -402,7 +402,7 @@ kbd,
 	}
 }
 
-@keyframes omp-pop-in {
+@keyframes omsk-pop-in {
 	from {
 		opacity: 0;
 		transform: translateY(6px) scale(0.92);
@@ -413,7 +413,7 @@ kbd,
 	}
 }
 
-@keyframes omp-slide-in-right {
+@keyframes omsk-slide-in-right {
 	from {
 		opacity: 0;
 		transform: translateX(28px);
@@ -424,7 +424,7 @@ kbd,
 	}
 }
 
-@keyframes omp-shimmer {
+@keyframes omsk-shimmer {
 	from {
 		background-position: 200% 0;
 	}
@@ -433,7 +433,7 @@ kbd,
 	}
 }
 
-@keyframes omp-indeterminate-progress {
+@keyframes omsk-indeterminate-progress {
 	from {
 		transform: translateX(-100%);
 	}
@@ -442,25 +442,25 @@ kbd,
 	}
 }
 
-.omp-fade-up {
-	animation: omp-fade-up var(--omp-motion-med) var(--omp-ease-enter) both;
+.omsk-fade-up {
+	animation: omsk-fade-up var(--omsk-motion-med) var(--omsk-ease-enter) both;
 }
 
-.omp-fade-in {
-	animation: omp-fade-in var(--omp-motion-fast) var(--omp-ease) both;
+.omsk-fade-in {
+	animation: omsk-fade-in var(--omsk-motion-fast) var(--omsk-ease) both;
 }
 
 /* No forward fill: a filled end state keeps an identity transform on the dialog
    panel, which makes it the containing block of every `position: fixed`
    popover inside, so those open in the wrong place, clipped by the panel. */
-.omp-scale-in {
-	animation: omp-scale-in var(--omp-motion-spring) var(--omp-ease-spring) backwards;
+.omsk-scale-in {
+	animation: omsk-scale-in var(--omsk-motion-spring) var(--omsk-ease-spring) backwards;
 }
 
-.omp-toast-in {
-	animation: omp-toast-in var(--omp-motion-spring) var(--omp-ease-spring) both;
+.omsk-toast-in {
+	animation: omsk-toast-in var(--omsk-motion-spring) var(--omsk-ease-spring) both;
 }
-@keyframes omp-toast-out {
+@keyframes omsk-toast-out {
 	from {
 		opacity: 1;
 	}
@@ -469,30 +469,30 @@ kbd,
 	}
 }
 
-.omp-toast-out {
-	animation: omp-toast-out var(--omp-motion-fast) var(--omp-ease-exit) both;
+.omsk-toast-out {
+	animation: omsk-toast-out var(--omsk-motion-fast) var(--omsk-ease-exit) both;
 }
 
-.omp-pop-in {
-	animation: omp-pop-in var(--omp-motion-spring) var(--omp-ease-spring) both;
+.omsk-pop-in {
+	animation: omsk-pop-in var(--omsk-motion-spring) var(--omsk-ease-spring) both;
 }
 
-.omp-slide-in-right {
-	animation: omp-slide-in-right var(--omp-motion-spring) var(--omp-ease-spring) both;
+.omsk-slide-in-right {
+	animation: omsk-slide-in-right var(--omsk-motion-spring) var(--omsk-ease-spring) both;
 }
 
 /* The exit half of the enter utilities above. Keyframes alone are not a class:
- * an overlay that swaps to `omp-scale-out` gets `animation: none` unless the
+ * an overlay that swaps to `omsk-scale-out` gets `animation: none` unless the
  * utility exists. Exits are shorter than entrances and do not travel. */
-.omp-fade-out {
-	animation: omp-fade-out var(--omp-motion-fast) var(--omp-ease-exit) both;
+.omsk-fade-out {
+	animation: omsk-fade-out var(--omsk-motion-fast) var(--omsk-ease-exit) both;
 }
 
-.omp-scale-out {
-	animation: omp-scale-out var(--omp-motion-fast) var(--omp-ease-exit) both;
+.omsk-scale-out {
+	animation: omsk-scale-out var(--omsk-motion-fast) var(--omsk-ease-exit) both;
 }
 
-@keyframes omp-scale-out {
+@keyframes omsk-scale-out {
 	from {
 		opacity: 1;
 	}
@@ -502,7 +502,7 @@ kbd,
 	}
 }
 
-@keyframes omp-fade-out {
+@keyframes omsk-fade-out {
 	from {
 		opacity: 1;
 	}
@@ -511,21 +511,21 @@ kbd,
 	}
 }
 
-.omp-skeleton {
+.omsk-skeleton {
 	border-radius: var(--radius-md);
 	background: linear-gradient(
 		100deg,
-		var(--omp-bg-tertiary) 40%,
-		var(--omp-bg-elevated) 50%,
-		var(--omp-bg-tertiary) 60%
+		var(--omsk-bg-tertiary) 40%,
+		var(--omsk-bg-elevated) 50%,
+		var(--omsk-bg-tertiary) 60%
 	);
 	background-size: 200% 100%;
-	animation: omp-shimmer 1.4s linear infinite; /* motion-ok: loading placeholder sweep */
+	animation: omsk-shimmer 1.4s linear infinite; /* motion-ok: loading placeholder sweep */
 }
 
 /* Status reads as a small dot, never as a bar: a bar beside a row reads as
    selection or quotation. Idle rows show nothing at all. */
-.omp-signal-light {
+.omsk-signal-light {
 	display: inline-block;
 	width: 6px;
 	height: 6px;
@@ -534,35 +534,35 @@ kbd,
 	background: currentColor;
 }
 
-.omp-signal-light[data-idle] {
+.omsk-signal-light[data-idle] {
 	opacity: 0;
 }
 
-/* Live work is the same mark everywhere (see .omp-working-dot): the dot
+/* Live work is the same mark everywhere (see .omsk-working-dot): the dot
    breathes as the core and an arc in its color orbits just outside it. The
    dot's own color (currentColor) carries the semantics. */
-.omp-signal-light--active {
+.omsk-signal-light--active {
 	position: relative;
 	background: transparent;
 }
 
-.omp-signal-light--active::before {
+.omsk-signal-light--active::before {
 	content: "";
 	position: absolute;
 	inset: 0;
 	border-radius: inherit;
 	background: currentColor;
-	animation: omp-beacon-core 1.6s ease-in-out infinite; /* motion-ok: slow semantic status signal */
+	animation: omsk-beacon-core 1.6s ease-in-out infinite; /* motion-ok: slow semantic status signal */
 }
 
-.omp-signal-light--active::after {
+.omsk-signal-light--active::after {
 	content: "";
 	position: absolute;
 	inset: -3px;
 	padding: 1.25px;
 	border-radius: 9999px;
 	background: conic-gradient(
-		from var(--omp-loading-angle),
+		from var(--omsk-loading-angle),
 		transparent 0 45%,
 		color-mix(in srgb, currentColor 60%, transparent) 80%,
 		currentColor
@@ -573,97 +573,97 @@ kbd,
 	-webkit-mask-composite: xor;
 	mask-composite: exclude;
 	pointer-events: none;
-	animation: omp-loading-orbit 1.1s linear infinite; /* motion-ok: agent working */
+	animation: omsk-loading-orbit 1.1s linear infinite; /* motion-ok: agent working */
 }
 
-.omp-indeterminate-progress {
+.omsk-indeterminate-progress {
 	width: 30%;
-	animation: omp-indeterminate-progress 1.1s cubic-bezier(0.65, 0, 0.35, 1) infinite; /* motion-ok: switching progress */
+	animation: omsk-indeterminate-progress 1.1s cubic-bezier(0.65, 0, 0.35, 1) infinite; /* motion-ok: switching progress */
 }
 
 /* Live work labels ("Thinking", "Running 2 commands") carry a slow light
    sweep across the glyphs instead of a spinner or a colored label. */
-.omp-shimmer-text {
-	color: var(--omp-muted);
+.omsk-shimmer-text {
+	color: var(--omsk-muted);
 	background: linear-gradient(
 		90deg,
-		var(--omp-muted) 0%,
-		var(--omp-muted) 40%,
-		var(--omp-text) 50%,
-		var(--omp-muted) 60%,
-		var(--omp-muted) 100%
+		var(--omsk-muted) 0%,
+		var(--omsk-muted) 40%,
+		var(--omsk-text) 50%,
+		var(--omsk-muted) 60%,
+		var(--omsk-muted) 100%
 	);
 	background-size: 250% 100%;
 	-webkit-background-clip: text;
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
-	animation: omp-shimmer 2.2s linear infinite; /* motion-ok: live work label sweep */
+	animation: omsk-shimmer 2.2s linear infinite; /* motion-ok: live work label sweep */
 }
 
-.omp-progress-width {
-	transition: width var(--omp-motion-med) var(--omp-ease);
+.omsk-progress-width {
+	transition: width var(--omsk-motion-med) var(--omsk-ease);
 }
 
-.omp-disclosure-chevron {
-	transition: transform var(--omp-motion-spring) var(--omp-ease-spring);
+.omsk-disclosure-chevron {
+	transition: transform var(--omsk-motion-spring) var(--omsk-ease-spring);
 }
 
 /* Disclosure body: rows animate 0fr <-> 1fr so the height is never measured.
    Closing is the quicker half (it must finish inside OVERLAY_EXIT_MS). */
-.omp-collapse {
+.omsk-collapse {
 	display: grid;
 	/* The one column is the parent's width, never the content's: once settled the
 	   inner box is overflow-visible, and an auto column then grows to its widest
 	   unbreakable line (a one-line command) and pushes the body out of the column. */
 	grid-template-columns: minmax(0, 1fr);
 	grid-template-rows: 0fr;
-	transition: grid-template-rows var(--omp-motion-fast) var(--omp-ease-exit);
+	transition: grid-template-rows var(--omsk-motion-fast) var(--omsk-ease-exit);
 }
 
-.omp-collapse[data-open="true"] {
+.omsk-collapse[data-open="true"] {
 	grid-template-rows: 1fr;
 	/* Not the spring: an overshooting row count dips below the content height
 	   and visibly squeezes the body. */
-	transition: grid-template-rows var(--omp-motion-slow) var(--omp-ease-enter);
+	transition: grid-template-rows var(--omsk-motion-slow) var(--omsk-ease-enter);
 }
 
-.omp-collapse-inner {
+.omsk-collapse-inner {
 	min-width: 0;
 	min-height: 0;
 	overflow: hidden;
 	opacity: 0;
-	transition: opacity var(--omp-motion-fast) var(--omp-ease);
+	transition: opacity var(--omsk-motion-fast) var(--omsk-ease);
 }
 
-.omp-collapse[data-open="true"] > .omp-collapse-inner {
+.omsk-collapse[data-open="true"] > .omsk-collapse-inner {
 	opacity: 1;
 }
 
-.omp-collapse[data-settled="true"] > .omp-collapse-inner {
+.omsk-collapse[data-settled="true"] > .omsk-collapse-inner {
 	overflow: visible;
 }
 
 /* Siblings that enter together fan in instead of landing as one block. Give
-   each child --omp-i (0, 1, 2…); capped so long lists never feel slow. */
-.omp-stagger > * {
-	animation: omp-fade-up var(--omp-motion-spring) var(--omp-ease-spring) both;
-	animation-delay: calc(min(var(--omp-i, 0), 8) * var(--omp-stagger));
+   each child --omsk-i (0, 1, 2…); capped so long lists never feel slow. */
+.omsk-stagger > * {
+	animation: omsk-fade-up var(--omsk-motion-spring) var(--omsk-ease-spring) both;
+	animation-delay: calc(min(var(--omsk-i, 0), 8) * var(--omsk-stagger));
 }
 
 /* ============================================================================
    Interactive micro-interactions
    ============================================================================ */
 
-.omp-pressable {
+.omsk-pressable {
 	transition:
-		transform var(--omp-motion-instant) var(--omp-ease),
-		background-color var(--omp-motion-instant) var(--omp-ease),
-		border-color var(--omp-motion-instant) var(--omp-ease),
-		color var(--omp-motion-instant) var(--omp-ease),
-		box-shadow var(--omp-motion-instant) var(--omp-ease);
+		transform var(--omsk-motion-instant) var(--omsk-ease),
+		background-color var(--omsk-motion-instant) var(--omsk-ease),
+		border-color var(--omsk-motion-instant) var(--omsk-ease),
+		color var(--omsk-motion-instant) var(--omsk-ease),
+		box-shadow var(--omsk-motion-instant) var(--omsk-ease);
 }
 
-.omp-pressable:active:not(:disabled) {
+.omsk-pressable:active:not(:disabled) {
 	transform: scale(0.97);
 }
 
@@ -682,51 +682,51 @@ kbd,
 	[role="option"],
 	[role="tab"] {
 		transition:
-			background-color var(--omp-motion-fast) var(--omp-ease),
-			border-color var(--omp-motion-fast) var(--omp-ease),
-			color var(--omp-motion-fast) var(--omp-ease);
+			background-color var(--omsk-motion-fast) var(--omsk-ease),
+			border-color var(--omsk-motion-fast) var(--omsk-ease),
+			color var(--omsk-motion-fast) var(--omsk-ease);
 	}
 }
 
-.omp-color-fade {
+.omsk-color-fade {
 	transition:
-		background-color var(--omp-motion-fast) var(--omp-ease),
-		border-color var(--omp-motion-fast) var(--omp-ease),
-		color var(--omp-motion-fast) var(--omp-ease);
+		background-color var(--omsk-motion-fast) var(--omsk-ease),
+		border-color var(--omsk-motion-fast) var(--omsk-ease),
+		color var(--omsk-motion-fast) var(--omsk-ease);
 }
 
 /* Hover actions overlay the row. Title width never changes. */
-.omp-sidebar-action {
+.omsk-sidebar-action {
 	opacity: 1;
 }
 
-.omp-sidebar-session-row,
-.omp-sidebar-workspace-row {
+.omsk-sidebar-session-row,
+.omsk-sidebar-workspace-row {
 	position: relative;
 }
 
-.omp-sidebar-session-row[data-switch-pending="true"] {
-	background: var(--omp-sidebar-item-hover);
+.omsk-sidebar-session-row[data-switch-pending="true"] {
+	background: var(--omsk-sidebar-item-hover);
 }
 
 /* A split pair's sessions (gui#30): one frame around both rows, like the
    pair's merged tab chip, brighter while the pair is on screen. An outline
    keeps the rows' own geometry lined up with every other row. */
-.omp-sidebar-pair {
+.omsk-sidebar-pair {
 	border-radius: 0.5rem;
-	outline: 1px solid var(--omp-border-muted);
+	outline: 1px solid var(--omsk-border-muted);
 	outline-offset: -1px;
 }
-.omp-sidebar-pair[data-on-screen] {
-	outline-color: var(--omp-border);
+.omsk-sidebar-pair[data-on-screen] {
+	outline-color: var(--omsk-border);
 }
 
 /* A pair split across sections: hovering one row lights its partner. */
-.omp-sidebar-session-row[data-pair-hover] {
-	background: var(--omp-sidebar-item-hover);
+.omsk-sidebar-session-row[data-pair-hover] {
+	background: var(--omsk-sidebar-item-hover);
 }
 
-.omp-sidebar-session-actions {
+.omsk-sidebar-session-actions {
 	position: absolute;
 	top: 50%;
 	right: 4px;
@@ -740,121 +740,121 @@ kbd,
 	/* Two layers: the opaque rail colour fades in under the row's own tint,
 	   so a long title disappears cleanly behind the actions. */
 	background:
-		linear-gradient(to right, transparent, var(--omp-sidebar-item-hover) 14px),
-		linear-gradient(to right, transparent, var(--omp-sidebar-bg) 14px);
+		linear-gradient(to right, transparent, var(--omsk-sidebar-item-hover) 14px),
+		linear-gradient(to right, transparent, var(--omsk-sidebar-bg) 14px);
 	transition:
-		opacity var(--omp-motion-fast) var(--omp-ease),
-		visibility 0s linear var(--omp-motion-fast);
+		opacity var(--omsk-motion-fast) var(--omsk-ease),
+		visibility 0s linear var(--omsk-motion-fast);
 }
 
-.omp-sidebar-session-row[data-has-actions="true"]:hover .omp-sidebar-session-actions,
-.omp-sidebar-session-row[data-has-actions="true"]:is(:focus-visible, :has(:focus-visible)) .omp-sidebar-session-actions,
-.omp-sidebar-session-row[data-actions-open="true"] .omp-sidebar-session-actions {
+.omsk-sidebar-session-row[data-has-actions="true"]:hover .omsk-sidebar-session-actions,
+.omsk-sidebar-session-row[data-has-actions="true"]:is(:focus-visible, :has(:focus-visible)) .omsk-sidebar-session-actions,
+.omsk-sidebar-session-row[data-actions-open="true"] .omsk-sidebar-session-actions {
 	visibility: visible;
 	pointer-events: auto;
 	opacity: 1;
 	transition-delay: 0s;
 }
 
-.omp-sidebar-session-row[data-active="true"] .omp-sidebar-session-actions {
+.omsk-sidebar-session-row[data-active="true"] .omsk-sidebar-session-actions {
 	background:
-		linear-gradient(to right, transparent, var(--omp-selected-bg) 14px),
-		linear-gradient(to right, transparent, var(--omp-sidebar-bg) 14px);
+		linear-gradient(to right, transparent, var(--omsk-selected-bg) 14px),
+		linear-gradient(to right, transparent, var(--omsk-sidebar-bg) 14px);
 }
 
 /* Recency and family counts step aside for session actions. */
-.omp-sidebar-time,
-.omp-sidebar-session-row .omp-sidebar-agent-pill {
-	transition: opacity var(--omp-motion-fast) var(--omp-ease);
+.omsk-sidebar-time,
+.omsk-sidebar-session-row .omsk-sidebar-agent-pill {
+	transition: opacity var(--omsk-motion-fast) var(--omsk-ease);
 }
 
-.omp-sidebar-session-row[data-has-actions="true"]:hover .omp-sidebar-time,
-.omp-sidebar-session-row[data-has-actions="true"]:is(:focus-visible, :has(:focus-visible)) .omp-sidebar-time,
-.omp-sidebar-session-row[data-actions-open="true"] .omp-sidebar-time,
-.omp-sidebar-session-row[data-has-actions="true"]:hover .omp-sidebar-agent-pill,
-.omp-sidebar-session-row[data-has-actions="true"]:is(:focus-visible, :has(:focus-visible)) .omp-sidebar-agent-pill {
+.omsk-sidebar-session-row[data-has-actions="true"]:hover .omsk-sidebar-time,
+.omsk-sidebar-session-row[data-has-actions="true"]:is(:focus-visible, :has(:focus-visible)) .omsk-sidebar-time,
+.omsk-sidebar-session-row[data-actions-open="true"] .omsk-sidebar-time,
+.omsk-sidebar-session-row[data-has-actions="true"]:hover .omsk-sidebar-agent-pill,
+.omsk-sidebar-session-row[data-has-actions="true"]:is(:focus-visible, :has(:focus-visible)) .omsk-sidebar-agent-pill {
 	opacity: 0;
 }
 
-.omp-sidebar-session-row[data-has-actions="true"]:hover .omp-sidebar-agent-pill {
+.omsk-sidebar-session-row[data-has-actions="true"]:hover .omsk-sidebar-agent-pill {
 	pointer-events: none;
 }
 
 /* Group headers show their icon at rest and the disclosure chevron on hover. */
-.omp-sidebar-group-icon > svg {
+.omsk-sidebar-group-icon > svg {
 	transition:
-		opacity var(--omp-motion-fast) var(--omp-ease),
-		transform var(--omp-motion-fast) var(--omp-ease);
+		opacity var(--omsk-motion-fast) var(--omsk-ease),
+		transform var(--omsk-motion-fast) var(--omsk-ease);
 }
 
-.omp-sidebar-group-icon > .omp-disclosure-chevron,
-.omp-sidebar-workspace-row:hover .omp-sidebar-group-icon > svg:first-child,
-.omp-sidebar-workspace-row:has(:focus-visible) .omp-sidebar-group-icon > svg:first-child {
+.omsk-sidebar-group-icon > .omsk-disclosure-chevron,
+.omsk-sidebar-workspace-row:hover .omsk-sidebar-group-icon > svg:first-child,
+.omsk-sidebar-workspace-row:has(:focus-visible) .omsk-sidebar-group-icon > svg:first-child {
 	opacity: 0;
 }
 
-.omp-sidebar-workspace-row:hover .omp-sidebar-group-icon > .omp-disclosure-chevron,
-.omp-sidebar-workspace-row:has(:focus-visible) .omp-sidebar-group-icon > .omp-disclosure-chevron {
+.omsk-sidebar-workspace-row:hover .omsk-sidebar-group-icon > .omsk-disclosure-chevron,
+.omsk-sidebar-workspace-row:has(:focus-visible) .omsk-sidebar-group-icon > .omsk-disclosure-chevron {
 	opacity: 1;
 }
 
 /* A freshly opened group eases its rows in instead of snapping. */
-.omp-sidebar-group[data-state="expanded"] > .omp-sidebar-group-content {
-	animation: omp-fade-in var(--omp-motion-med) var(--omp-ease-enter) both;
+.omsk-sidebar-group[data-state="expanded"] > .omsk-sidebar-group-content {
+	animation: omsk-fade-in var(--omsk-motion-med) var(--omsk-ease-enter) both;
 }
 
-.omp-sidebar-group {
+.omsk-sidebar-group {
 	display: grid;
 	grid-template-rows: 1fr;
 	opacity: 1;
 	transition:
-		grid-template-rows var(--omp-motion-med) var(--omp-ease-enter),
-		opacity var(--omp-motion-fast) var(--omp-ease);
+		grid-template-rows var(--omsk-motion-med) var(--omsk-ease-enter),
+		opacity var(--omsk-motion-fast) var(--omsk-ease);
 }
 
-.omp-sidebar-group[data-state="collapsed"] {
+.omsk-sidebar-group[data-state="collapsed"] {
 	grid-template-rows: 0fr;
 	opacity: 0;
 	pointer-events: none;
 }
 
-.omp-sidebar-group-content {
+.omsk-sidebar-group-content {
 	min-height: 0;
 	overflow: hidden;
 	contain: paint;
 }
 
-.omp-lift {
+.omsk-lift {
 	transition:
-		border-color var(--omp-motion-instant) var(--omp-ease),
-		background-color var(--omp-motion-instant) var(--omp-ease);
+		border-color var(--omsk-motion-instant) var(--omsk-ease),
+		background-color var(--omsk-motion-instant) var(--omsk-ease);
 }
 
-.omp-lift:hover {
-	border-color: var(--omp-border-strong);
-	background-color: var(--omp-bg-tertiary);
+.omsk-lift:hover {
+	border-color: var(--omsk-border-strong);
+	background-color: var(--omsk-bg-tertiary);
 }
 
-/* Empty state: the canvas rises in once as a whole; only the starter cards inside it stagger (.omp-starter-grid). */
-.omp-empty-canvas {
-	animation: omp-fade-up var(--omp-motion-slow) var(--omp-ease-enter) both;
+/* Empty state: the canvas rises in once as a whole; only the starter cards inside it stagger (.omsk-starter-grid). */
+.omsk-empty-canvas {
+	animation: omsk-fade-up var(--omsk-motion-slow) var(--omsk-ease-enter) both;
 }
 
 @media (min-width: 1120px) {
-	.omp-session-sidebar {
+	.omsk-session-sidebar {
 		width: 236px;
 	}
 }
 
 @media (min-width: 1520px) {
-	.omp-session-sidebar {
+	.omsk-session-sidebar {
 		width: 256px;
 	}
 }
 
 /* Too short for the placeholder transcript: the mark and its label say enough. */
 @media (max-height: 600px) {
-	.omp-loading-skeleton {
+	.omsk-loading-skeleton {
 		display: none;
 	}
 }
@@ -862,26 +862,26 @@ kbd,
 /* Tab strip + title bar + composer leave ~480px of canvas at 820px tall, so
    the compact layout starts there or the welcome card clips under the strip. */
 @media (max-height: 820px) {
-	.omp-empty-canvas {
+	.omsk-empty-canvas {
 		justify-content: flex-start;
 		padding-top: 1rem;
 		padding-bottom: 1rem;
 	}
 
-	.omp-empty-logo {
+	.omsk-empty-logo {
 		display: none;
 	}
 
-	.omp-starter-grid {
+	.omsk-starter-grid {
 		margin-top: 1rem;
 	}
 
-	.omp-starter-card {
+	.omsk-starter-card {
 		min-height: 0;
 		padding: 0.75rem;
 	}
 
-	.omp-starter-icon {
+	.omsk-starter-icon {
 		width: 2rem;
 		height: 2rem;
 	}
@@ -889,27 +889,27 @@ kbd,
 
 /* Compact windows: keep the conversation wide and present the inspector as
    an explicit overlay when the user opens it. */
-.omp-inspector {
-	container: omp-inspector / inline-size;
+.omsk-inspector {
+	container: omsk-inspector / inline-size;
 	box-shadow: none;
 	/* As an overlay it covers the title bar: opaque, and its controls clickable
 	   instead of dragging the window. */
-	background: var(--omp-bg-primary);
+	background: var(--omsk-bg-primary);
 	-webkit-app-region: no-drag;
 }
 
 /* Seven views share the header: only the selected one prints its name, and
    a narrow drawer keeps icons only. */
-.omp-inspector-tab-label {
+.omsk-inspector-tab-label {
 	display: none;
 }
 
-[aria-pressed="true"] > .omp-inspector-tab-label {
+[aria-pressed="true"] > .omsk-inspector-tab-label {
 	display: inline;
 }
 
-@container omp-inspector (max-width: 400px) {
-	[aria-pressed="true"] > .omp-inspector-tab-label {
+@container omsk-inspector (max-width: 400px) {
+	[aria-pressed="true"] > .omsk-inspector-tab-label {
 		display: none;
 	}
 }
@@ -918,8 +918,8 @@ kbd,
    scroll inside their own track, because the header's padding can't hold back
    anything scrolled within the header itself. */
 :root:is([data-platform="win32"], [data-platform="linux"]):not([data-fullscreen])
-	.omp-inspector-header
-	> .omp-segmented {
+	.omsk-inspector-header
+	> .omsk-segmented {
 	flex-shrink: 1;
 	min-width: 0;
 	overflow-x: auto;
@@ -927,16 +927,16 @@ kbd,
 
 /* Before that track has to scroll, the tabs give up their label and padding,
    so every one of them still fits at the panel's narrowest. */
-@container omp-inspector (max-width: 520px) {
+@container omsk-inspector (max-width: 520px) {
 	:root:is([data-platform="win32"], [data-platform="linux"]):not([data-fullscreen])
-		.omp-inspector-header
-		> .omp-segmented {
+		.omsk-inspector-header
+		> .omsk-segmented {
 		gap: 0;
 	}
 
 	:root:is([data-platform="win32"], [data-platform="linux"]):not([data-fullscreen])
-		.omp-inspector-header
-		> .omp-segmented
+		.omsk-inspector-header
+		> .omsk-segmented
 		> button {
 		flex: 0 1 34px;
 		min-width: 22px;
@@ -944,21 +944,21 @@ kbd,
 	}
 
 	:root:is([data-platform="win32"], [data-platform="linux"]):not([data-fullscreen])
-		.omp-inspector-header
+		.omsk-inspector-header
 		[aria-pressed="true"]
-		> .omp-inspector-tab-label {
+		> .omsk-inspector-tab-label {
 		display: none;
 	}
 }
 
 @media (max-width: 1000px) {
-	.omp-inspector {
+	.omsk-inspector {
 		position: absolute;
 		inset-block: 0;
 		right: 0;
 		z-index: 30;
-		box-shadow: var(--omp-shadow-lg);
-		animation: omp-slide-in-right var(--omp-motion-spring) var(--omp-ease-spring) both;
+		box-shadow: var(--omsk-shadow-lg);
+		animation: omsk-slide-in-right var(--omsk-motion-spring) var(--omsk-ease-spring) both;
 	}
 }
 
@@ -968,7 +968,7 @@ kbd,
 
 .settings-sidebar {
 	width: clamp(11rem, 22vw, 15rem);
-	background: var(--omp-sidebar-bg, var(--omp-bg-secondary));
+	background: var(--omsk-sidebar-bg, var(--omsk-bg-secondary));
 }
 
 .settings-content {
@@ -1056,7 +1056,7 @@ kbd,
 .skills-list-pane,
 .ssh-list-pane,
 .security-findings-pane {
-	border-right: 1px solid var(--omp-border-muted);
+	border-right: 1px solid var(--omsk-border-muted);
 }
 
 .ssh-master-detail {
@@ -1120,14 +1120,14 @@ kbd,
 }
 
 @media (max-width: 600px) {
-	.omp-settings-layout {
+	.omsk-settings-layout {
 		flex-direction: column;
 	}
 
 	.settings-sidebar {
 		width: 100%;
 		border-right: 0;
-		border-bottom: 1px solid var(--omp-border-muted);
+		border-bottom: 1px solid var(--omsk-border-muted);
 	}
 
 	.settings-sidebar > :last-child {
@@ -1156,7 +1156,7 @@ kbd,
 	.ssh-list-pane {
 		min-height: 16rem;
 		border-right: 0;
-		border-bottom: 1px solid var(--omp-border-muted);
+		border-bottom: 1px solid var(--omsk-border-muted);
 	}
 
 	.ssh-detail-pane {
@@ -1174,7 +1174,7 @@ kbd,
 	.skills-list-pane {
 		height: min(17rem, 42dvh);
 		border-right: 0;
-		border-bottom: 1px solid var(--omp-border-muted);
+		border-bottom: 1px solid var(--omsk-border-muted);
 	}
 
 	.skills-detail-pane {
@@ -1183,7 +1183,7 @@ kbd,
 
 	.security-findings-pane {
 		border-right: 0;
-		border-bottom: 1px solid var(--omp-border-muted);
+		border-bottom: 1px solid var(--omsk-border-muted);
 	}
 
 	.security-insights-pane {
@@ -1242,21 +1242,21 @@ kbd,
 		transition-duration: 0.01ms !important;
 	}
 
-	.omp-sidebar-action {
+	.omsk-sidebar-action {
 		transition-delay: 0ms !important;
 	}
 
-	.omp-signal-light--active::after {
+	.omsk-signal-light--active::after {
 		animation: none;
 	}
 
-	.omp-indeterminate-progress {
+	.omsk-indeterminate-progress {
 		width: 100%;
 		transform: none;
 		opacity: 0.55;
 	}
 
-	.omp-shimmer-text {
+	.omsk-shimmer-text {
 		animation: none;
 		background: none;
 		-webkit-text-fill-color: currentColor;
@@ -1264,18 +1264,18 @@ kbd,
 }
 
 :root[data-theme="light"] {
-	--omp-switch-on: var(--omp-accent);
-	--omp-switch-off: color-mix(in srgb, var(--omp-border-strong) 70%, var(--omp-bg-primary));
+	--omsk-switch-on: var(--omsk-accent);
+	--omsk-switch-off: color-mix(in srgb, var(--omsk-border-strong) 70%, var(--omsk-bg-primary));
 }
 
 /* GUI density changes conversation spacing without scaling text or scroll coordinates. */
-[data-density="tight"] .omp-transcript-editorial .omp-user-turn {
+[data-density="tight"] .omsk-transcript-editorial .omsk-user-turn {
 	padding-block: 10px 0 !important;
 }
-[data-density="tight"] .omp-transcript-editorial .omp-user-bubble {
+[data-density="tight"] .omsk-transcript-editorial .omsk-user-bubble {
 	padding: 8px 12px;
 }
-[data-density="tight"] .omp-transcript-editorial .omp-assistant-turn {
+[data-density="tight"] .omsk-transcript-editorial .omsk-assistant-turn {
 	padding-block: 8px !important;
 }
 [data-density="tight"] .settings-field-row {
@@ -1286,19 +1286,19 @@ kbd,
    semantic tokens. !important is required: named themes also set these vars
    inline on <html>, and a stylesheet rule only wins with !important. */
 :root[data-colorblind="true"] {
-	--omp-accent: #0072b2 !important;
-	--omp-success: #009e73 !important;
-	--omp-warning: #e69f00 !important;
-	--omp-error: #d55e00 !important;
-	--omp-accent-dim: color-mix(in srgb, #0072b2 12%, transparent) !important;
-	--omp-success-dim: color-mix(in srgb, #009e73 12%, transparent) !important;
-	--omp-error-dim: color-mix(in srgb, #d55e00 10%, transparent) !important;
+	--omsk-accent: #0072b2 !important;
+	--omsk-success: #009e73 !important;
+	--omsk-warning: #e69f00 !important;
+	--omsk-error: #d55e00 !important;
+	--omsk-accent-dim: color-mix(in srgb, #0072b2 12%, transparent) !important;
+	--omsk-success-dim: color-mix(in srgb, #009e73 12%, transparent) !important;
+	--omsk-error-dim: color-mix(in srgb, #d55e00 10%, transparent) !important;
 }
 
 .settings-embedded-panel.settings-plugin-detail-open {
 	min-height: min(65dvh, 640px);
 }
 
-.omp-progress-ring {
-	transition: stroke-dashoffset var(--omp-motion-med) var(--omp-ease);
+.omsk-progress-ring {
+	transition: stroke-dashoffset var(--omsk-motion-med) var(--omsk-ease);
 }

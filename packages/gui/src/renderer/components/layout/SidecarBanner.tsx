@@ -50,27 +50,27 @@ export function SidecarBanner() {
 			role="status"
 			className={`flex items-center gap-3 border-b px-4 py-2.5 ${
 				restarting
-					? "border-[var(--omp-warning)]/30 bg-[var(--omp-warning-dim)]"
-					: "border-[var(--omp-error)]/30 bg-[var(--omp-error)]/10"
+					? "border-[var(--omsk-warning)]/30 bg-[var(--omsk-warning-dim)]"
+					: "border-[var(--omsk-error)]/30 bg-[var(--omsk-error)]/10"
 			}`}
 		>
 			{restarting ? (
-				<RefreshCw size={16} className="shrink-0 animate-spin text-[var(--omp-warning)]" />
+				<RefreshCw size={16} className="shrink-0 animate-spin text-[var(--omsk-warning)]" />
 			) : (
-				<AlertTriangle size={16} className="shrink-0 text-[var(--omp-error)]" />
+				<AlertTriangle size={16} className="shrink-0 text-[var(--omsk-error)]" />
 			)}
 			<div className="min-w-0 flex-1">
 				<div
-					className={`text-omp-md font-medium ${
-						restarting ? "text-[var(--omp-warning)]" : "text-[var(--omp-error)]"
+					className={`text-omsk-md font-medium ${
+						restarting ? "text-[var(--omsk-warning)]" : "text-[var(--omsk-error)]"
 					}`}
 				>
 					{restarting ? t("sidecar.restartingTitle") : t("sidecar.title")}
 				</div>
-				<div className="truncate text-omp-sm text-[var(--omp-muted)]" title={reason}>
+				<div className="truncate text-omsk-sm text-[var(--omsk-muted)]" title={reason}>
 					{progress ? `${progress} — ${describeError(reason)}` : describeError(reason)}
 				</div>
-				{cwd && <div className="text-omp-xs text-[var(--omp-dim)]">{t("sidecar.project", { cwd })}</div>}
+				{cwd && <div className="text-omsk-xs text-[var(--omsk-dim)]">{t("sidecar.project", { cwd })}</div>}
 			</div>
 			<button
 				type="button"
@@ -78,7 +78,7 @@ export function SidecarBanner() {
 					clearSidecarError();
 					void window.omp.sidecar.restart();
 				}}
-				className="omp-pressable flex shrink-0 items-center gap-1.5 rounded-md border border-[var(--omp-border-muted)] px-2.5 py-1 text-omp-sm font-medium text-[var(--omp-text)] hover:bg-[var(--omp-selected-bg)]"
+				className="omsk-pressable flex shrink-0 items-center gap-1.5 rounded-md border border-[var(--omsk-border-muted)] px-2.5 py-1 text-omsk-sm font-medium text-[var(--omsk-text)] hover:bg-[var(--omsk-selected-bg)]"
 			>
 				<RefreshCw size={11} />
 				{t("sidecar.restart")}
@@ -87,7 +87,7 @@ export function SidecarBanner() {
 				type="button"
 				onClick={dismissSidecarBanner}
 				aria-label={t("common.close")}
-				className="omp-pressable flex shrink-0 items-center justify-center rounded-md p-1 text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+				className="omsk-pressable flex shrink-0 items-center justify-center rounded-md p-1 text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 			>
 				<X size={12} />
 			</button>

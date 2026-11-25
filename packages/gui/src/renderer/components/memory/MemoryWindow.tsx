@@ -51,10 +51,10 @@ function StatusLine({ status }: { status: MemoryStatus }) {
 	const t = useT();
 	switch (status.kind) {
 		case "off":
-			return <span className="text-(--omp-dim)">{t("memory.status.off")}</span>;
+			return <span className="text-(--omsk-dim)">{t("memory.status.off")}</span>;
 		case "reading":
 			return (
-				<span className="flex items-center gap-1.5 text-(--omp-muted)">
+				<span className="flex items-center gap-1.5 text-(--omsk-muted)">
 					<Spinner size="sm" />
 					{status.elsewhere || status.total === 0
 						? t("memory.status.readingElsewhere")
@@ -63,7 +63,7 @@ function StatusLine({ status }: { status: MemoryStatus }) {
 			);
 		case "consolidating":
 			return (
-				<span className="flex items-center gap-1.5 text-(--omp-muted)">
+				<span className="flex items-center gap-1.5 text-(--omsk-muted)">
 					<Spinner size="sm" />
 					{t("memory.status.consolidating")}
 				</span>
@@ -71,7 +71,7 @@ function StatusLine({ status }: { status: MemoryStatus }) {
 		case "failed":
 			return (
 				<span
-					className="flex min-w-0 items-center gap-1.5 text-(--omp-warning)"
+					className="flex min-w-0 items-center gap-1.5 text-(--omsk-warning)"
 					title={status.error ? describeError(status.error) : undefined}
 				>
 					<AlertTriangle aria-hidden="true" className="shrink-0" size={13} />
@@ -80,7 +80,7 @@ function StatusLine({ status }: { status: MemoryStatus }) {
 			);
 		case "empty":
 			return (
-				<span className="text-(--omp-dim)">
+				<span className="text-(--omsk-dim)">
 					{status.ready > 0
 						? t("memory.status.emptyReady", { count: status.ready, plural: status.ready === 1 ? "" : "s" })
 						: t("memory.status.empty")}
@@ -88,8 +88,8 @@ function StatusLine({ status }: { status: MemoryStatus }) {
 			);
 		case "current":
 			return (
-				<span className="flex min-w-0 items-center gap-1.5 text-(--omp-muted)">
-					<CheckCircle2 aria-hidden="true" className="shrink-0 text-(--omp-success)" size={13} />
+				<span className="flex min-w-0 items-center gap-1.5 text-(--omsk-muted)">
+					<CheckCircle2 aria-hidden="true" className="shrink-0 text-(--omsk-success)" size={13} />
 					<span className="truncate">
 						{t("memory.status.current", { count: status.sessions, plural: status.sessions === 1 ? "" : "s" })}
 						{status.updatedAt !== undefined && ` · ${formatTimeAgo(iso(status.updatedAt))}`}
@@ -135,7 +135,7 @@ function ProjectPicker({
 			<button
 				aria-expanded={menu !== null}
 				aria-haspopup="menu"
-				className="no-drag omp-pressable inline-flex h-7 min-w-0 max-w-72 items-center gap-1.5 rounded-lg border border-(--omp-border-muted) px-2 text-omp-sm font-normal tracking-normal text-(--omp-text-secondary) hover:border-(--omp-border-strong) hover:text-(--omp-text)"
+				className="no-drag omsk-pressable inline-flex h-7 min-w-0 max-w-72 items-center gap-1.5 rounded-lg border border-(--omsk-border-muted) px-2 text-omsk-sm font-normal tracking-normal text-(--omsk-text-secondary) hover:border-(--omsk-border-strong) hover:text-(--omsk-text)"
 				onClick={event => {
 					const box = event.currentTarget.getBoundingClientRect();
 					setMenu(current => (current ? null : { x: box.left, y: box.bottom + 4 }));
@@ -143,9 +143,9 @@ function ProjectPicker({
 				title={cwd ?? undefined}
 				type="button"
 			>
-				<ScopeIcon aria-hidden="true" className="shrink-0 text-(--omp-muted)" size={13} />
+				<ScopeIcon aria-hidden="true" className="shrink-0 text-(--omsk-muted)" size={13} />
 				<span className="truncate">{scopeLabel}</span>
-				<ChevronDown aria-hidden="true" className="shrink-0 text-(--omp-dim)" size={12} />
+				<ChevronDown aria-hidden="true" className="shrink-0 text-(--omsk-dim)" size={12} />
 			</button>
 			{menu && (
 				<ContextMenu
@@ -208,7 +208,7 @@ function ProjectActions({ project, onErase }: { project: MemoryProject; onErase:
 			<button
 				aria-haspopup="menu"
 				aria-label={t("memory.menu.label")}
-				className="rounded-lg p-1.5 text-(--omp-muted) transition-colors hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text) disabled:opacity-40"
+				className="rounded-lg p-1.5 text-(--omsk-muted) transition-colors hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text) disabled:opacity-40"
 				disabled={!project.connected}
 				onClick={event => {
 					const box = event.currentTarget.getBoundingClientRect();
@@ -313,7 +313,7 @@ export function MemoryWindow() {
 	const projectBody = () => {
 		if (!project.connected) {
 			return (
-				<div className="flex h-full items-center justify-center gap-2 text-omp-sm text-(--omp-dim)">
+				<div className="flex h-full items-center justify-center gap-2 text-omsk-sm text-(--omsk-dim)">
 					<Spinner size="sm" />
 					{t("memory.connecting")}
 				</div>
@@ -334,8 +334,8 @@ export function MemoryWindow() {
 		if (project.error && !overview) {
 			return (
 				<div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-					<AlertTriangle className="text-(--omp-warning)" size={20} />
-					<p className="max-w-md text-omp-sm text-(--omp-muted)">{project.error}</p>
+					<AlertTriangle className="text-(--omsk-warning)" size={20} />
+					<p className="max-w-md text-omsk-sm text-(--omsk-muted)">{project.error}</p>
 					<Button onClick={() => void project.reload()} size="sm">
 						{t("common.retry")}
 					</Button>
@@ -371,14 +371,14 @@ export function MemoryWindow() {
 			size="lg"
 			title={
 				<span className="flex min-w-0 items-center gap-2.5">
-					<Brain aria-hidden="true" className="shrink-0 text-(--omp-accent)" size={17} strokeWidth={1.75} />
+					<Brain aria-hidden="true" className="shrink-0 text-(--omsk-accent)" size={17} strokeWidth={1.75} />
 					<span className="shrink-0">{t("memory.title")}</span>
 					{tab !== "skills" && <ProjectPicker cwd={cwd} onChange={setCwd} projects={projects} />}
 				</span>
 			}
 		>
-			<div className="omp-docked-fill flex h-[min(78dvh,52rem)] min-h-0 flex-col">
-				<div className="flex shrink-0 items-center gap-3 border-b border-(--omp-border-muted) pr-3 pl-4">
+			<div className="omsk-docked-fill flex h-[min(78dvh,52rem)] min-h-0 flex-col">
+				<div className="flex shrink-0 items-center gap-3 border-b border-(--omsk-border-muted) pr-3 pl-4">
 					<Tabs
 						activeId={tab}
 						ariaLabel={t("memory.title")}
@@ -388,7 +388,7 @@ export function MemoryWindow() {
 					/>
 					<div className="min-w-0 flex-1" />
 					{tab !== "skills" && cwd !== null && status && (
-						<div className="flex min-w-0 items-center gap-2 text-omp-sm">
+						<div className="flex min-w-0 items-center gap-2 text-omsk-sm">
 							<StatusLine status={status} />
 							{overview?.enabled && local && (
 								<Button

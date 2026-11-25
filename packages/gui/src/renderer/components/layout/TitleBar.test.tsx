@@ -114,12 +114,12 @@ describe("TitleBar", () => {
 
 		// One readout of the figures that carry information; the exact cost and
 		// the cache rate are in its tooltip.
-		const metrics = container.querySelectorAll(".omp-session-metrics")[0] as unknown as HTMLElement | undefined;
+		const metrics = container.querySelectorAll(".omsk-session-metrics")[0] as unknown as HTMLElement | undefined;
 		expect(metrics?.textContent).toBe("1.5k tokens·$0.123·5.0s");
 		expect(metrics?.getAttribute("title")).toContain("$0.1234");
 		expect(metrics?.getAttribute("title")).toContain("50%");
-		expect(container.querySelectorAll(".omp-signal-light")).toHaveLength(1);
-		expect(container.querySelectorAll(".omp-signal-light--active")).toHaveLength(0);
+		expect(container.querySelectorAll(".omsk-signal-light")).toHaveLength(1);
+		expect(container.querySelectorAll(".omsk-signal-light--active")).toHaveLength(0);
 		expect(getSessionStats).toHaveBeenCalledTimes(1);
 	});
 
@@ -201,7 +201,7 @@ describe("TitleBar", () => {
 		useSessionStore.setState({ status: "ready", sessionId: "", cwd: "/tmp/project" });
 		await mount();
 
-		expect(container.querySelectorAll(".omp-session-metrics")).toHaveLength(0);
+		expect(container.querySelectorAll(".omsk-session-metrics")).toHaveLength(0);
 		expect(container.textContent).not.toContain("$0.0000");
 	});
 

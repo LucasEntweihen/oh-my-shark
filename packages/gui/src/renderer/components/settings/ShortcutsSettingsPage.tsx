@@ -55,7 +55,7 @@ function Switch({ checked, label, onChange }: { checked: boolean; label: string;
 		<button
 			aria-checked={checked}
 			aria-label={label}
-			className="flex h-6 shrink-0 items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omp-accent)"
+			className="flex h-6 shrink-0 items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omsk-accent)"
 			onClick={() => onChange(!checked)}
 			role="switch"
 			type="button"
@@ -149,9 +149,11 @@ export function ShortcutsSettingsPage() {
 
 	const renderBuiltIn = (row: BuiltInShortcut) => (
 		<div className="flex items-center gap-3 px-3 py-2" key={row.labelKey}>
-			<span className="min-w-0 flex-1 text-omp-md text-(--omp-text)">{t(row.labelKey)}</span>
+			<span className="min-w-0 flex-1 text-omsk-md text-(--omsk-text)">{t(row.labelKey)}</span>
 			<Kbd variant="keycap">{row.keys}</Kbd>
-			<span className="w-[4.75rem] shrink-0 text-right text-omp-xs text-(--omp-dim)">{t("shortcuts.builtIn")}</span>
+			<span className="w-[4.75rem] shrink-0 text-right text-omsk-xs text-(--omsk-dim)">
+				{t("shortcuts.builtIn")}
+			</span>
 		</div>
 	);
 
@@ -180,19 +182,19 @@ export function ShortcutsSettingsPage() {
 			<div className="px-3 py-2" key={entry.id}>
 				<div className="flex items-center gap-3">
 					<div className="min-w-0 flex-1">
-						<div className={cx("text-omp-md", on ? "text-(--omp-text)" : "text-(--omp-muted)")}>
+						<div className={cx("text-omsk-md", on ? "text-(--omsk-text)" : "text-(--omsk-muted)")}>
 							{t(entry.labelKey)}
 						</div>
-						{hint && <div className="text-omp-sm text-(--omp-dim)">{hint}</div>}
+						{hint && <div className="text-omsk-sm text-(--omsk-dim)">{hint}</div>}
 					</div>
 					{active ? (
 						<span className="flex shrink-0 items-center gap-1">
-							<Kbd className="border-(--omp-border-accent) text-(--omp-text)" variant="keycap">
+							<Kbd className="border-(--omsk-border-accent) text-(--omsk-text)" variant="keycap">
 								{active.chord ?? t("hotkeys.remap.pressChord")}
 							</Kbd>
 							<button
 								aria-label={t("common.cancel")}
-								className="flex size-6 items-center justify-center rounded text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+								className="flex size-6 items-center justify-center rounded text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 								onClick={() => setRecording(null)}
 								title={t("common.cancel")}
 								type="button"
@@ -205,7 +207,7 @@ export function ShortcutsSettingsPage() {
 							aria-label={t("shortcuts.change", { action: t(entry.labelKey) })}
 							className={cx(
 								kbdClass("keycap"),
-								"transition-colors enabled:hover:border-(--omp-border-accent) enabled:hover:text-(--omp-text) disabled:cursor-not-allowed disabled:line-through disabled:opacity-60",
+								"transition-colors enabled:hover:border-(--omsk-border-accent) enabled:hover:text-(--omsk-text) disabled:cursor-not-allowed disabled:line-through disabled:opacity-60",
 							)}
 							disabled={!on}
 							onClick={() => setRecording({ id: entry.id, chord: null, conflict: null })}
@@ -219,7 +221,7 @@ export function ShortcutsSettingsPage() {
 						{customized && !active && (
 							<button
 								aria-label={t("hotkeys.remap.reset")}
-								className="flex size-6 items-center justify-center rounded text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+								className="flex size-6 items-center justify-center rounded text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 								onClick={() => {
 									setKeymapOverride(entry.id, []);
 									toast({
@@ -244,13 +246,13 @@ export function ShortcutsSettingsPage() {
 					/>
 				</div>
 				{active && (
-					<div className="mt-1.5 flex items-center gap-2 text-omp-sm">
+					<div className="mt-1.5 flex items-center gap-2 text-omsk-sm">
 						{active.conflict ? (
 							<>
 								<span
 									className={cx(
 										"min-w-0 flex-1",
-										active.conflict.kind === "error" ? "text-(--omp-error)" : "text-(--omp-warning)",
+										active.conflict.kind === "error" ? "text-(--omsk-error)" : "text-(--omsk-warning)",
 									)}
 								>
 									{conflictText(active.conflict)}
@@ -266,12 +268,12 @@ export function ShortcutsSettingsPage() {
 								)}
 							</>
 						) : (
-							<span className="text-(--omp-dim)">{t("hotkeys.remap.captureHint")}</span>
+							<span className="text-(--omsk-dim)">{t("hotkeys.remap.captureHint")}</span>
 						)}
 					</div>
 				)}
 				{globalTaken && !active && (
-					<div className="mt-1 text-omp-sm text-(--omp-warning)">{t("shortcuts.globalTaken")}</div>
+					<div className="mt-1 text-omsk-sm text-(--omsk-warning)">{t("shortcuts.globalTaken")}</div>
 				)}
 			</div>
 		);
@@ -292,10 +294,10 @@ export function ShortcutsSettingsPage() {
 				</div>
 				{confirmingReset ? (
 					<span className="flex shrink-0 items-center gap-1">
-						<span className="text-omp-sm text-(--omp-muted)">{t("shortcuts.resetAllConfirm")}</span>
+						<span className="text-omsk-sm text-(--omsk-muted)">{t("shortcuts.resetAllConfirm")}</span>
 						<button
 							aria-label={t("common.confirm")}
-							className="flex size-6 items-center justify-center rounded bg-(--omp-tool-error-bg) text-(--omp-error) hover:brightness-110"
+							className="flex size-6 items-center justify-center rounded bg-(--omsk-tool-error-bg) text-(--omsk-error) hover:brightness-110"
 							onClick={() => {
 								resetKeymapOverrides();
 								setConfirmingReset(false);
@@ -309,7 +311,7 @@ export function ShortcutsSettingsPage() {
 						</button>
 						<button
 							aria-label={t("common.cancel")}
-							className="flex size-6 items-center justify-center rounded text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+							className="flex size-6 items-center justify-center rounded text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 							onClick={() => setConfirmingReset(false)}
 							title={t("common.cancel")}
 							type="button"
@@ -329,11 +331,11 @@ export function ShortcutsSettingsPage() {
 				)}
 			</div>
 			{sections.length === 0 && (
-				<div className="py-6 text-center text-omp-md text-(--omp-dim)">{t("hotkeys.empty")}</div>
+				<div className="py-6 text-center text-omsk-md text-(--omsk-dim)">{t("hotkeys.empty")}</div>
 			)}
 			{sections.map(({ section, rows }) => (
 				<Section key={section} title={t(`hotkeys.group.${section}`)}>
-					<div className="divide-y divide-(--omp-border-muted) overflow-hidden rounded-lg border border-(--omp-border-muted)">
+					<div className="divide-y divide-(--omsk-border-muted) overflow-hidden rounded-lg border border-(--omsk-border-muted)">
 						{rows.map(row => (row.kind === "entry" ? renderEntry(row.entry) : renderBuiltIn(row.row)))}
 					</div>
 				</Section>

@@ -227,7 +227,7 @@ describe("RepositoryChanges", () => {
 describe("RepositoryChanges right-click", () => {
 	/** A right-click on a row's header, as the user makes it. */
 	async function rightClick(path: string): Promise<void> {
-		const header = queryAll(`[data-change-path="${path}"] .omp-diff-card-header`)[0];
+		const header = queryAll(`[data-change-path="${path}"] .omsk-diff-card-header`)[0];
 		if (!header) throw new Error(`no row for ${path}`);
 		const event = new Event("contextmenu", { bubbles: true, cancelable: true });
 		Object.defineProperties(event, { clientX: { value: 40 }, clientY: { value: 60 } });

@@ -50,19 +50,19 @@ export function setFileDraft(id: string, draft: FileDraft | null): void {
 }
 
 const editorTheme = EditorView.theme({
-	"&": { height: "100%", color: "var(--omp-text)", backgroundColor: "var(--omp-code-bg)" },
+	"&": { height: "100%", color: "var(--omsk-text)", backgroundColor: "var(--omsk-code-bg)" },
 	"&.cm-focused": { outline: "none" },
-	".cm-scroller": { fontFamily: "var(--font-mono, monospace)", fontSize: "var(--text-omp-sm)", lineHeight: "1.6" },
+	".cm-scroller": { fontFamily: "var(--font-mono, monospace)", fontSize: "var(--text-omsk-sm)", lineHeight: "1.6" },
 	".cm-content": { padding: "8px 0" },
 	".cm-line": { padding: "0 10px" },
-	".cm-cursor": { borderLeftColor: "var(--omp-accent)" },
+	".cm-cursor": { borderLeftColor: "var(--omsk-accent)" },
 	".cm-gutters": {
-		backgroundColor: "var(--omp-code-bg)",
-		borderRight: "1px solid var(--omp-border-muted)",
-		color: "var(--omp-dim)",
+		backgroundColor: "var(--omsk-code-bg)",
+		borderRight: "1px solid var(--omsk-border-muted)",
+		color: "var(--omsk-dim)",
 	},
-	".cm-activeLineGutter": { backgroundColor: "var(--omp-selected-bg)" },
-	".cm-selectionBackground": { backgroundColor: "var(--omp-selected-bg) !important" },
+	".cm-activeLineGutter": { backgroundColor: "var(--omsk-selected-bg)" },
+	".cm-selectionBackground": { backgroundColor: "var(--omsk-selected-bg) !important" },
 });
 
 export function WorkspaceFileEditor({
@@ -174,10 +174,10 @@ export function WorkspaceFileEditor({
 
 	if (!draft) return null;
 	return (
-		<div className="flex min-h-0 flex-1 flex-col bg-(--omp-code-bg)" data-file-preview="">
+		<div className="flex min-h-0 flex-1 flex-col bg-(--omsk-code-bg)" data-file-preview="">
 			{draft.failure && (
 				<p
-					className="shrink-0 border-b border-(--omp-border-muted) px-3 py-2 text-omp-sm text-(--omp-error)"
+					className="shrink-0 border-b border-(--omsk-border-muted) px-3 py-2 text-omsk-sm text-(--omsk-error)"
 					role="alert"
 					title={draft.failure.detail}
 				>
@@ -186,7 +186,7 @@ export function WorkspaceFileEditor({
 			)}
 			<div className="min-h-0 flex-1 overflow-hidden" ref={host} />
 			{(dirty || draft.saving) && (
-				<div className="flex shrink-0 justify-end border-t border-(--omp-border-muted) px-3 py-1.5">
+				<div className="flex shrink-0 justify-end border-t border-(--omsk-border-muted) px-3 py-1.5">
 					<Button variant="primary" size="sm" loading={draft.saving} onClick={() => void save()}>
 						{t("common.save")}
 					</Button>

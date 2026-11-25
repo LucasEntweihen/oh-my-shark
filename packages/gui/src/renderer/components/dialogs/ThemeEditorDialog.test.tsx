@@ -153,7 +153,7 @@ it("saves a new theme as the tokens it changes and puts it on screen", async () 
 	expect(tokens["accent-dim"]).toBe("rgba(224, 108, 117, 0.14)");
 	expect(tokens["bg-primary"]).toBeUndefined();
 
-	expect(customTheme("custom:my-theme")?.tokens["--omp-accent"]).toBe("#e06c75");
+	expect(customTheme("custom:my-theme")?.tokens["--omsk-accent"]).toBe("#e06c75");
 	expect(prefsSet).toHaveBeenCalledWith("themeName", "custom:my-theme");
 	expect(useUiStore.getState().themeEditor).toBeNull();
 });

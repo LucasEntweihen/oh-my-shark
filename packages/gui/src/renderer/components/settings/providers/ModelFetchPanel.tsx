@@ -71,14 +71,14 @@ export function ModelFetchPanel({ models, existingIds, onAdd, onClose }: ModelFe
 	const picked = offered.filter(model => selected.has(model.id));
 
 	return (
-		<div className="mb-2 rounded-lg border border-(--omp-border-muted)" data-model-fetch-panel>
-			<div className="flex items-center gap-2 border-b border-(--omp-border-muted) px-3 py-2">
-				<span className="shrink-0 text-omp-sm text-(--omp-muted)">
+		<div className="mb-2 rounded-lg border border-(--omsk-border-muted)" data-model-fetch-panel>
+			<div className="flex items-center gap-2 border-b border-(--omsk-border-muted) px-3 py-2">
+				<span className="shrink-0 text-omsk-sm text-(--omsk-muted)">
 					{t("providerCfg.fetch.found", { count: models.length })}
 				</span>
 				<input
 					aria-label={t("providerCfg.fetch.filter")}
-					className="h-7 min-w-0 flex-1 rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2 text-omp-sm text-(--omp-text) outline-none transition-colors placeholder:text-(--omp-dim) focus:border-(--omp-input-focus-border)"
+					className="h-7 min-w-0 flex-1 rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2 text-omsk-sm text-(--omsk-text) outline-none transition-colors placeholder:text-(--omsk-dim) focus:border-(--omsk-input-focus-border)"
 					onChange={event => setQuery(event.target.value)}
 					placeholder={t("providerCfg.fetch.filter")}
 					type="text"
@@ -93,27 +93,27 @@ export function ModelFetchPanel({ models, existingIds, onAdd, onClose }: ModelFe
 			</div>
 			<div className="max-h-56 overflow-y-auto p-1">
 				{visible.length === 0 && (
-					<p className="px-2 py-3 text-center text-omp-sm text-(--omp-dim)">{t("providerCfg.fetch.noMatch")}</p>
+					<p className="px-2 py-3 text-center text-omsk-sm text-(--omsk-dim)">{t("providerCfg.fetch.noMatch")}</p>
 				)}
 				{visible.map(model => {
 					const added = existingIds.has(model.id);
 					return (
 						<label
-							className={`flex items-center gap-2 rounded-md px-2 py-1 text-omp-sm ${added ? "text-(--omp-dim)" : "cursor-pointer text-(--omp-text) hover:bg-(--omp-selected-bg)"}`}
+							className={`flex items-center gap-2 rounded-md px-2 py-1 text-omsk-sm ${added ? "text-(--omsk-dim)" : "cursor-pointer text-(--omsk-text) hover:bg-(--omsk-selected-bg)"}`}
 							key={model.id}
 						>
 							<input
 								checked={added || selected.has(model.id)}
-								className="h-3.5 w-3.5 shrink-0 rounded border-(--omp-input-border)"
+								className="h-3.5 w-3.5 shrink-0 rounded border-(--omsk-input-border)"
 								disabled={added}
 								onChange={event => setPicked([model.id], event.target.checked)}
 								type="checkbox"
 							/>
 							<span className="min-w-0 truncate font-mono">{model.id}</span>
 							{model.name && model.name !== model.id && (
-								<span className="min-w-0 truncate text-(--omp-dim)">{model.name}</span>
+								<span className="min-w-0 truncate text-(--omsk-dim)">{model.name}</span>
 							)}
-							<span className="ml-auto shrink-0 text-omp-xs text-(--omp-dim)">
+							<span className="ml-auto shrink-0 text-omsk-xs text-(--omsk-dim)">
 								{added
 									? t("providerCfg.fetch.added")
 									: model.contextWindow
@@ -124,7 +124,7 @@ export function ModelFetchPanel({ models, existingIds, onAdd, onClose }: ModelFe
 					);
 				})}
 			</div>
-			<div className="flex items-center justify-end gap-2 border-t border-(--omp-border-muted) px-3 py-2">
+			<div className="flex items-center justify-end gap-2 border-t border-(--omsk-border-muted) px-3 py-2">
 				<Button onClick={onClose} size="sm" variant="ghost">
 					{t("providerCfg.form.cancel")}
 				</Button>

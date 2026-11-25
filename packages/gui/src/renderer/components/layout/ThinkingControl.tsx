@@ -149,12 +149,12 @@ export function ThinkingControl() {
 				aria-haspopup="menu"
 				onClick={() => setOpen(value => !value)}
 				title={t("input.thinking", { level: t(`input.thinking.name.${current}`) })}
-				className="omp-pressable flex h-8 items-center gap-1.5 rounded-full px-2.5 text-omp-md font-medium hover:bg-[var(--omp-selected-bg)]"
-				style={{ color: `var(--omp-thinking-${thinkingLevel ?? "off"})` }}
+				className="omsk-pressable flex h-8 items-center gap-1.5 rounded-full px-2.5 text-omsk-md font-medium hover:bg-[var(--omsk-selected-bg)]"
+				style={{ color: `var(--omsk-thinking-${thinkingLevel ?? "off"})` }}
 			>
 				<Brain size={14} />
-				<span className="omp-composer-control-label hidden sm:inline">{t(`input.thinking.name.${current}`)}</span>
-				<ChevronDown size={12} className="shrink-0 text-[var(--omp-dim)]" />
+				<span className="omsk-composer-control-label hidden sm:inline">{t(`input.thinking.name.${current}`)}</span>
+				<ChevronDown size={12} className="shrink-0 text-[var(--omsk-dim)]" />
 			</button>
 
 			{mounted && pos
@@ -167,8 +167,8 @@ export function ThinkingControl() {
 							onKeyDown={moveMenuFocus}
 							inert={closing}
 							className={cx(
-								"fixed z-[100] w-64 overflow-hidden rounded-xl border border-[var(--omp-border)] bg-[var(--omp-panel-bg)] p-1 shadow-[var(--omp-shadow-md)]",
-								closing ? "omp-scale-out pointer-events-none" : "omp-pop-in",
+								"fixed z-[100] w-64 overflow-hidden rounded-xl border border-[var(--omsk-border)] bg-[var(--omsk-panel-bg)] p-1 shadow-[var(--omsk-shadow-md)]",
+								closing ? "omsk-scale-out pointer-events-none" : "omsk-pop-in",
 							)}
 						>
 							{supportsThinking ? (
@@ -181,24 +181,24 @@ export function ThinkingControl() {
 											role="menuitemradio"
 											aria-checked={active}
 											onClick={() => select(option)}
-											className="omp-pressable flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left hover:bg-[var(--omp-selected-bg)]"
+											className="omsk-pressable flex w-full items-start gap-2 rounded-lg px-2.5 py-2 text-left hover:bg-[var(--omsk-selected-bg)]"
 										>
-											<span className="mt-0.5 w-4 shrink-0 text-[var(--omp-accent)]">
+											<span className="mt-0.5 w-4 shrink-0 text-[var(--omsk-accent)]">
 												{active ? <Check size={14} /> : null}
 											</span>
 											<span className="min-w-0 flex-1">
 												<span
 													className={cx(
-														"block font-mono text-omp-md font-medium",
-														!active && "text-[var(--omp-muted)]",
+														"block font-mono text-omsk-md font-medium",
+														!active && "text-[var(--omsk-muted)]",
 													)}
 													style={
-														option === "auto" ? undefined : { color: `var(--omp-thinking-${option})` }
+														option === "auto" ? undefined : { color: `var(--omsk-thinking-${option})` }
 													}
 												>
 													{t(`input.thinking.name.${option}`)}
 												</span>
-												<span className="block text-omp-sm leading-snug text-[var(--omp-dim)]">
+												<span className="block text-omsk-sm leading-snug text-[var(--omsk-dim)]">
 													{t(`input.thinking.level.${option}`)}
 												</span>
 											</span>
@@ -206,7 +206,7 @@ export function ThinkingControl() {
 									);
 								})
 							) : (
-								<div className="px-2.5 py-2 text-omp-md text-[var(--omp-muted)]">
+								<div className="px-2.5 py-2 text-omsk-md text-[var(--omsk-muted)]">
 									{t("input.thinking.unsupported")}
 								</div>
 							)}

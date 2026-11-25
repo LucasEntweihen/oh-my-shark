@@ -62,7 +62,7 @@ interface WorkerCardProps {
 function WorkerCard({ worker, selected, busy, onSelect, onSteer }: WorkerCardProps) {
 	const [steerDraft, setSteerDraft] = useState("");
 	const [steering, setSteering] = useState(false);
-	const role = ROLE_META[worker.role] ?? { label: `@${worker.role}`, color: "var(--omp-accent)" };
+	const role = ROLE_META[worker.role] ?? { label: `@${worker.role}`, color: "var(--omsk-accent)" };
 
 	const submitSteer = async () => {
 		const trimmed = steerDraft.trim();
@@ -78,20 +78,20 @@ function WorkerCard({ worker, selected, busy, onSelect, onSteer }: WorkerCardPro
 			className={cx(
 				"flex flex-col gap-2 rounded-lg border p-3 transition-colors",
 				selected
-					? "border-[var(--omp-border-accent)] bg-[var(--omp-selected-bg)]"
-					: "border-[var(--omp-border-muted)] hover:border-[var(--omp-border)]",
+					? "border-[var(--omsk-border-accent)] bg-[var(--omsk-selected-bg)]"
+					: "border-[var(--omsk-border-muted)] hover:border-[var(--omsk-border)]",
 			)}
 		>
 			<div className="flex flex-wrap items-start justify-between gap-2">
 				<button type="button" onClick={onSelect} className="min-w-0 flex-1 text-left focus:outline-none">
 					<div className="flex flex-wrap items-center gap-1.5">
-						<span className="truncate text-omp-md font-semibold text-[var(--omp-text)]">{worker.title}</span>
-						<span className="font-mono text-omp-xxs text-[var(--omp-dim)]">#{worker.id}</span>
+						<span className="truncate text-omsk-md font-semibold text-[var(--omsk-text)]">{worker.title}</span>
+						<span className="font-mono text-omsk-xxs text-[var(--omsk-dim)]">#{worker.id}</span>
 					</div>
 				</button>
 				<div className="flex shrink-0 items-center gap-1.5">
 					<span
-						className="inline-flex items-center gap-1 rounded-full border px-2 py-px font-mono text-omp-xxs font-medium"
+						className="inline-flex items-center gap-1 rounded-full border px-2 py-px font-mono text-omsk-xxs font-medium"
 						style={{
 							borderColor: `color-mix(in srgb, ${role.color} 45%, transparent)`,
 							color: role.color,
@@ -113,13 +113,13 @@ function WorkerCard({ worker, selected, busy, onSelect, onSteer }: WorkerCardPro
 
 			{worker.contract.ownedFiles.length > 0 && (
 				<div className="flex flex-wrap items-center gap-1">
-					<span className="text-omp-xxs font-medium text-[var(--omp-dim)]">Files:</span>
+					<span className="text-omsk-xxs font-medium text-[var(--omsk-dim)]">Files:</span>
 					{worker.contract.ownedFiles.map(file => (
 						<span
 							key={file}
-							className="inline-flex items-center gap-1 rounded border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] px-1.5 py-0.5 font-mono text-omp-xxs text-[var(--omp-text-secondary)]"
+							className="inline-flex items-center gap-1 rounded border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] px-1.5 py-0.5 font-mono text-omsk-xxs text-[var(--omsk-text-secondary)]"
 						>
-							<FileCode2 size={10} className="text-[var(--omp-accent)]" />
+							<FileCode2 size={10} className="text-[var(--omsk-accent)]" />
 							{file}
 						</span>
 					))}
@@ -127,10 +127,10 @@ function WorkerCard({ worker, selected, busy, onSelect, onSteer }: WorkerCardPro
 			)}
 
 			{worker.dependencies.length > 0 && (
-				<div className="flex flex-wrap items-center gap-1 text-omp-xxs text-[var(--omp-dim)]">
+				<div className="flex flex-wrap items-center gap-1 text-omsk-xxs text-[var(--omsk-dim)]">
 					<span>Depends on:</span>
 					{worker.dependencies.map(dep => (
-						<span key={dep} className="rounded border border-[var(--omp-border-muted)] px-1.5 font-mono">
+						<span key={dep} className="rounded border border-[var(--omsk-border-muted)] px-1.5 font-mono">
 							#{dep}
 						</span>
 					))}
@@ -138,16 +138,16 @@ function WorkerCard({ worker, selected, busy, onSelect, onSteer }: WorkerCardPro
 			)}
 
 			{(selected || worker.contract.acceptanceCriteria.length > 0 || worker.contract.replanIf.length > 0) && (
-				<div className="grid grid-cols-1 gap-2 border-t border-[var(--omp-border-muted)] pt-2 text-omp-xs sm:grid-cols-2">
+				<div className="grid grid-cols-1 gap-2 border-t border-[var(--omsk-border-muted)] pt-2 text-omsk-xs sm:grid-cols-2">
 					{worker.contract.acceptanceCriteria.length > 0 && (
 						<div>
-							<div className="mb-1 text-omp-xxs font-semibold uppercase tracking-wide text-[var(--omp-dim)]">
+							<div className="mb-1 text-omsk-xxs font-semibold uppercase tracking-wide text-[var(--omsk-dim)]">
 								Acceptance Criteria
 							</div>
-							<ul className="space-y-0.5 text-[var(--omp-text-secondary)]">
+							<ul className="space-y-0.5 text-[var(--omsk-text-secondary)]">
 								{worker.contract.acceptanceCriteria.map(criterion => (
 									<li key={criterion} className="flex items-start gap-1">
-										<CheckCircle2 size={11} className="mt-0.5 shrink-0 text-[var(--omp-success)]" />
+										<CheckCircle2 size={11} className="mt-0.5 shrink-0 text-[var(--omsk-success)]" />
 										<span>{criterion}</span>
 									</li>
 								))}
@@ -156,10 +156,10 @@ function WorkerCard({ worker, selected, busy, onSelect, onSteer }: WorkerCardPro
 					)}
 					{worker.contract.replanIf.length > 0 && (
 						<div>
-							<div className="mb-1 text-omp-xxs font-semibold uppercase tracking-wide text-[var(--omp-dim)]">
+							<div className="mb-1 text-omsk-xxs font-semibold uppercase tracking-wide text-[var(--omsk-dim)]">
 								Replan If
 							</div>
-							<ul className="space-y-0.5 text-[var(--omp-warning)]">
+							<ul className="space-y-0.5 text-[var(--omsk-warning)]">
 								{worker.contract.replanIf.map(trigger => (
 									<li key={trigger}>• {trigger}</li>
 								))}
@@ -170,18 +170,18 @@ function WorkerCard({ worker, selected, busy, onSelect, onSteer }: WorkerCardPro
 			)}
 
 			{worker.lastSteeringNote && (
-				<div className="rounded border border-[color-mix(in_srgb,var(--omp-accent)_35%,transparent)] bg-[var(--omp-accent-dim)] px-2.5 py-1.5 text-omp-xs text-[var(--omp-text)]">
-					<span className="font-semibold text-[var(--omp-accent)]">Steer note: </span>
+				<div className="rounded border border-[color-mix(in_srgb,var(--omsk-accent)_35%,transparent)] bg-[var(--omsk-accent-dim)] px-2.5 py-1.5 text-omsk-xs text-[var(--omsk-text)]">
+					<span className="font-semibold text-[var(--omsk-accent)]">Steer note: </span>
 					{worker.lastSteeringNote}
 				</div>
 			)}
 			{worker.outputSummary && (
-				<div className="rounded border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] px-2.5 py-1.5 font-mono text-omp-xs text-[var(--omp-text-secondary)]">
+				<div className="rounded border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] px-2.5 py-1.5 font-mono text-omsk-xs text-[var(--omsk-text-secondary)]">
 					{worker.outputSummary}
 				</div>
 			)}
 			{worker.error && (
-				<div className="rounded border border-[color-mix(in_srgb,var(--omp-error)_45%,transparent)] bg-[var(--omp-error-dim)] px-2.5 py-1.5 text-omp-xs text-[var(--omp-error)]">
+				<div className="rounded border border-[color-mix(in_srgb,var(--omsk-error)_45%,transparent)] bg-[var(--omsk-error-dim)] px-2.5 py-1.5 text-omsk-xs text-[var(--omsk-error)]">
 					{worker.error}
 				</div>
 			)}
@@ -245,11 +245,11 @@ export function OrchestratorWaveBoard({
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center justify-between gap-2">
-				<h3 className="flex items-center gap-2 text-omp-md font-semibold text-[var(--omp-text)]">
-					<Layers size={15} className="text-[var(--omp-accent)]" />
+				<h3 className="flex items-center gap-2 text-omsk-md font-semibold text-[var(--omsk-text)]">
+					<Layers size={15} className="text-[var(--omsk-accent)]" />
 					Parallel Wave Lanes ({sortedWaves.length})
 				</h3>
-				<span className="text-omp-xs text-[var(--omp-dim)]">Concurrency cap: {run.maxConcurrency}</span>
+				<span className="text-omsk-xs text-[var(--omsk-dim)]">Concurrency cap: {run.maxConcurrency}</span>
 			</div>
 
 			{sortedWaves.map(wave => {
@@ -268,7 +268,7 @@ export function OrchestratorWaveBoard({
 								onClick={() => onSelectWave(wave.index)}
 								className="flex flex-wrap items-center gap-2 text-left focus:outline-none"
 							>
-								<span className="font-mono text-omp-md font-semibold text-[var(--omp-text)]">
+								<span className="font-mono text-omsk-md font-semibold text-[var(--omsk-text)]">
 									Wave #{wave.index}
 								</span>
 								<Badge
@@ -282,7 +282,7 @@ export function OrchestratorWaveBoard({
 									{wave.parallel ? "Parallel Lane" : "Serialized Lane"}
 								</Badge>
 								{wave.checkpointId && (
-									<span className="inline-flex items-center gap-1 rounded border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] px-2 py-0.5 font-mono text-omp-xxs text-[var(--omp-muted)]">
+									<span className="inline-flex items-center gap-1 rounded border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] px-2 py-0.5 font-mono text-omsk-xxs text-[var(--omsk-muted)]">
 										<GitCommitHorizontal size={11} />
 										{wave.checkpointId}
 									</span>

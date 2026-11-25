@@ -25,9 +25,9 @@ function statusOf(status: string | undefined): "pending" | "success" | "error" |
 
 /** Header dot for a folded read group: live, failed, interrupted, or done. */
 function statusDot(status: "pending" | "success" | "error" | "aborted" | undefined): string {
-	if (status === "error") return "bg-(--omp-error)";
-	if (status === "aborted") return "bg-(--omp-warning)";
-	return "bg-(--omp-accent)";
+	if (status === "error") return "bg-(--omsk-error)";
+	if (status === "aborted") return "bg-(--omsk-warning)";
+	return "bg-(--omsk-accent)";
 }
 
 export function ReadGroupCard({
@@ -46,7 +46,7 @@ export function ReadGroupCard({
 	const [open, setOpen] = useState(false);
 	const rows = mergeReadGroupEntries(entries);
 	const single = entries.length === 1;
-	const pad = inset ? "py-0.5" : "ps-(--omp-editorial-inset) pe-(--omp-editorial-edge) py-0.5";
+	const pad = inset ? "py-0.5" : "ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge) py-0.5";
 
 	// One primitive snapshot for this group's calls: unrelated tool events may
 	// replace the store Map without re-rendering historical read groups.
@@ -66,29 +66,32 @@ export function ReadGroupCard({
 		const entry = entries[0]!;
 		const status = statuses.get(entry.toolKey);
 		return (
-			<div className={cx("omp-read-group", pad)}>
+			<div className={cx("omsk-read-group", pad)}>
 				<button
 					type="button"
 					aria-expanded={open}
 					onClick={() => setOpen(value => !value)}
-					className="omp-read-group-header flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-omp-md text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+					className="omsk-read-group-header flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-omsk-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 				>
 					{status === "pending" && runningIndicator === "spinner" ? (
-						<Loader2 size={11} className="shrink-0 animate-spin text-(--omp-accent)" />
+						<Loader2 size={11} className="shrink-0 animate-spin text-(--omsk-accent)" />
 					) : status === "pending" ? (
-						<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-(--omp-accent)" />
+						<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-(--omsk-accent)" />
 					) : (
 						<span aria-hidden className={cx("h-1.5 w-1.5 shrink-0 rounded-full", statusDot(status))} />
 					)}
 					<span className="font-medium">{t("tools.read.label")}</span>
-					<span className="truncate font-mono text-omp-sm text-(--omp-accent)">
+					<span className="truncate font-mono text-omsk-sm text-(--omsk-accent)">
 						{entry.path}
 						{entry.selector ? `:${entry.selector}` : ""}
 					</span>
-					<ChevronRight size={12} className={cx("omp-disclosure-chevron ml-auto shrink-0", open && "rotate-90")} />
+					<ChevronRight
+						size={12}
+						className={cx("omsk-disclosure-chevron ml-auto shrink-0", open && "rotate-90")}
+					/>
 				</button>
 				<Collapse open={open}>
-					<div className="omp-read-group-body ml-4 mt-1">
+					<div className="omsk-read-group-body ml-4 mt-1">
 						<ToolCard toolCallId={entry.toolKey} toolName="read" args={entry.args} runningIndicator="dot" />
 						<CollapseButton label={t("readGroup.collapse")} onClick={() => setOpen(false)} />
 					</div>
@@ -101,28 +104,28 @@ export function ReadGroupCard({
 	}
 
 	return (
-		<div className={cx("omp-read-group", pad)}>
+		<div className={cx("omsk-read-group", pad)}>
 			<button
 				type="button"
 				aria-expanded={open}
 				onClick={() => setOpen(value => !value)}
-				className="omp-read-group-header flex w-full items-center gap-2 rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-1.5 text-left text-omp-md text-(--omp-muted) hover:border-(--omp-border) hover:text-(--omp-text)"
+				className="omsk-read-group-header flex w-full items-center gap-2 rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-1.5 text-left text-omsk-md text-(--omsk-muted) hover:border-(--omsk-border) hover:text-(--omsk-text)"
 			>
-				<ChevronRight size={13} className={cx("omp-disclosure-chevron shrink-0", open && "rotate-90")} />
+				<ChevronRight size={13} className={cx("omsk-disclosure-chevron shrink-0", open && "rotate-90")} />
 				{anyPending && runningIndicator === "spinner" ? (
-					<Loader2 size={12} className="shrink-0 animate-spin text-(--omp-accent)" />
+					<Loader2 size={12} className="shrink-0 animate-spin text-(--omsk-accent)" />
 				) : anyPending ? (
-					<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-(--omp-accent)" />
+					<span className="h-1.5 w-1.5 shrink-0 rounded-full bg-(--omsk-accent)" />
 				) : (
 					<span aria-hidden className={cx("h-1.5 w-1.5 shrink-0 rounded-full", statusDot(groupStatus))} />
 				)}
-				<span className="font-medium text-(--omp-text)">{readGroupTitle(entries)}</span>
-				<span className="min-w-0 flex-1 truncate font-mono text-omp-xs text-(--omp-dim)">
+				<span className="font-medium text-(--omsk-text)">{readGroupTitle(entries)}</span>
+				<span className="min-w-0 flex-1 truncate font-mono text-omsk-xs text-(--omsk-dim)">
 					{rows.length === 1 ? rows[0]!.path : t("readGroup.files", { count: rows.length })}
 				</span>
 			</button>
 			<Collapse open={open}>
-				<div className="omp-read-group-body ml-6 mt-1 space-y-1.5">
+				<div className="omsk-read-group-body ml-6 mt-1 space-y-1.5">
 					{entries.map(entry => (
 						<ToolCard
 							key={entry.toolKey}

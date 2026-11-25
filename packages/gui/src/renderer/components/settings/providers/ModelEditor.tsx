@@ -51,7 +51,7 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 	};
 
 	const INPUT_CLASS =
-		"w-full rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2.5 py-1.5 text-omp-sm text-(--omp-text) outline-none transition-colors placeholder:text-(--omp-dim) hover:border-(--omp-border-strong) focus:border-(--omp-input-focus-border) disabled:cursor-not-allowed disabled:opacity-60";
+		"w-full rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2.5 py-1.5 text-omsk-sm text-(--omsk-text) outline-none transition-colors placeholder:text-(--omsk-dim) hover:border-(--omsk-border-strong) focus:border-(--omsk-input-focus-border) disabled:cursor-not-allowed disabled:opacity-60";
 
 	const updateCost = (field: CostField, value: string) => {
 		const num = Number.parseFloat(value);
@@ -87,7 +87,7 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 	};
 
 	return (
-		<div className="rounded-lg border border-(--omp-border-muted) bg-transparent">
+		<div className="rounded-lg border border-(--omsk-border-muted) bg-transparent">
 			<div className="flex items-center gap-2 px-3 py-2">
 				<input
 					type="text"
@@ -126,10 +126,12 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 			</div>
 
 			{expanded && (
-				<div className="space-y-3 border-t border-(--omp-border-muted) px-3 py-3">
+				<div className="space-y-3 border-t border-(--omsk-border-muted) px-3 py-3">
 					<div className="grid grid-cols-2 gap-3">
 						<label className="flex flex-col gap-1">
-							<span className="text-omp-sm font-medium text-(--omp-text)">{t("providerCfg.form.modelApi")}</span>
+							<span className="text-omsk-sm font-medium text-(--omsk-text)">
+								{t("providerCfg.form.modelApi")}
+							</span>
 							<select
 								value={model.api ?? ""}
 								onChange={e =>
@@ -147,11 +149,11 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 									</option>
 								))}
 							</select>
-							<span className="text-omp-xs text-(--omp-dim)">{t("providerCfg.form.modelApiHint")}</span>
+							<span className="text-omsk-xs text-(--omsk-dim)">{t("providerCfg.form.modelApiHint")}</span>
 						</label>
 
 						<label className="flex flex-col gap-1">
-							<span className="text-omp-sm font-medium text-(--omp-text)">
+							<span className="text-omsk-sm font-medium text-(--omsk-text)">
 								{t("providerCfg.form.modelBaseUrl")}
 							</span>
 							<input
@@ -162,13 +164,13 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 								className={`${INPUT_CLASS} font-mono`}
 								disabled={readonly || disabled}
 							/>
-							<span className="text-omp-xs text-(--omp-dim)">{t("providerCfg.form.modelBaseUrlHint")}</span>
+							<span className="text-omsk-xs text-(--omsk-dim)">{t("providerCfg.form.modelBaseUrlHint")}</span>
 						</label>
 					</div>
 
 					<div className="grid grid-cols-2 gap-3">
 						<label className="flex flex-col gap-1">
-							<span className="text-omp-sm font-medium text-(--omp-text)">
+							<span className="text-omsk-sm font-medium text-(--omsk-text)">
 								{t("providerCfg.form.contextWindow")}
 							</span>
 							<input
@@ -187,7 +189,7 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 						</label>
 
 						<label className="flex flex-col gap-1">
-							<span className="text-omp-sm font-medium text-(--omp-text)">
+							<span className="text-omsk-sm font-medium text-(--omsk-text)">
 								{t("providerCfg.form.maxTokens")}
 							</span>
 							<input
@@ -213,9 +215,9 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 								checked={model.reasoning === true}
 								onChange={e => onUpdate(model.key, { reasoning: e.target.checked || undefined })}
 								disabled={readonly || disabled}
-								className="h-4 w-4 rounded border-(--omp-input-border)"
+								className="h-4 w-4 rounded border-(--omsk-input-border)"
 							/>
-							<span className="text-omp-sm text-(--omp-text)">{t("providerCfg.form.reasoning")}</span>
+							<span className="text-omsk-sm text-(--omsk-text)">{t("providerCfg.form.reasoning")}</span>
 						</label>
 
 						<label className="flex items-center gap-2">
@@ -224,9 +226,9 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 								checked={model.supportsTools === true}
 								onChange={e => onUpdate(model.key, { supportsTools: e.target.checked || undefined })}
 								disabled={readonly || disabled}
-								className="h-4 w-4 rounded border-(--omp-input-border)"
+								className="h-4 w-4 rounded border-(--omsk-input-border)"
 							/>
-							<span className="text-omp-sm text-(--omp-text)">{t("providerCfg.form.supportsTools")}</span>
+							<span className="text-omsk-sm text-(--omsk-text)">{t("providerCfg.form.supportsTools")}</span>
 						</label>
 
 						<label className="flex items-center gap-2">
@@ -235,14 +237,14 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 								checked={model.omitMaxOutputTokens === true}
 								onChange={e => onUpdate(model.key, { omitMaxOutputTokens: e.target.checked || undefined })}
 								disabled={readonly || disabled}
-								className="h-4 w-4 rounded border-(--omp-input-border)"
+								className="h-4 w-4 rounded border-(--omsk-input-border)"
 							/>
-							<span className="text-omp-sm text-(--omp-text)">{t("providerCfg.form.omitMaxTokens")}</span>
+							<span className="text-omsk-sm text-(--omsk-text)">{t("providerCfg.form.omitMaxTokens")}</span>
 						</label>
 					</div>
 
 					<div className="space-y-2">
-						<span className="text-omp-sm font-medium text-(--omp-text)">
+						<span className="text-omsk-sm font-medium text-(--omsk-text)">
 							{t("providerCfg.form.inputModalities")}
 						</span>
 						<div className="flex gap-3">
@@ -252,9 +254,9 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 									checked={model.input?.includes("text") ?? false}
 									onChange={() => toggleInput("text")}
 									disabled={readonly || disabled}
-									className="h-4 w-4 rounded border-(--omp-input-border)"
+									className="h-4 w-4 rounded border-(--omsk-input-border)"
 								/>
-								<span className="text-omp-sm text-(--omp-text)">{t("providerCfg.form.inputText")}</span>
+								<span className="text-omsk-sm text-(--omsk-text)">{t("providerCfg.form.inputText")}</span>
 							</label>
 							<label className="flex items-center gap-2">
 								<input
@@ -262,15 +264,15 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 									checked={model.input?.includes("image") ?? false}
 									onChange={() => toggleInput("image")}
 									disabled={readonly || disabled}
-									className="h-4 w-4 rounded border-(--omp-input-border)"
+									className="h-4 w-4 rounded border-(--omsk-input-border)"
 								/>
-								<span className="text-omp-sm text-(--omp-text)">{t("providerCfg.form.inputImage")}</span>
+								<span className="text-omsk-sm text-(--omsk-text)">{t("providerCfg.form.inputImage")}</span>
 							</label>
 						</div>
 					</div>
 
 					<div className="space-y-2">
-						<span className="text-omp-sm font-medium text-(--omp-text)">
+						<span className="text-omsk-sm font-medium text-(--omsk-text)">
 							{t("providerCfg.form.thinkingConfig")}
 						</span>
 						<div className="flex items-center gap-2">
@@ -285,14 +287,14 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 									}
 								}}
 								disabled={readonly || disabled}
-								className="h-4 w-4 rounded border-(--omp-input-border)"
+								className="h-4 w-4 rounded border-(--omsk-input-border)"
 							/>
-							<span className="text-omp-sm text-(--omp-text)">{t("providerCfg.form.thinkingEnabled")}</span>
+							<span className="text-omsk-sm text-(--omsk-text)">{t("providerCfg.form.thinkingEnabled")}</span>
 						</div>
 						{model.thinking && (
 							<div className="ml-6 space-y-2">
 								<label className="flex flex-col gap-1">
-									<span className="text-omp-sm text-(--omp-text)">{t("providerCfg.form.thinkingMode")}</span>
+									<span className="text-omsk-sm text-(--omsk-text)">{t("providerCfg.form.thinkingMode")}</span>
 									<select
 										value={model.thinking.mode}
 										onChange={e =>
@@ -319,7 +321,7 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 								</label>
 
 								<div className="space-y-1">
-									<span className="text-omp-sm text-(--omp-text)">
+									<span className="text-omsk-sm text-(--omsk-text)">
 										{t("providerCfg.form.thinkingEfforts")}
 									</span>
 									<div className="flex flex-wrap gap-2">
@@ -330,9 +332,9 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 													checked={model.thinking!.efforts.includes(effort)}
 													onChange={e => updateThinkingEfforts(effort, e.target.checked)}
 													disabled={readonly || disabled}
-													className="h-3.5 w-3.5 rounded border-(--omp-input-border)"
+													className="h-3.5 w-3.5 rounded border-(--omsk-input-border)"
 												/>
-												<span className="text-omp-xs text-(--omp-text)">{effort}</span>
+												<span className="text-omsk-xs text-(--omsk-text)">{effort}</span>
 											</label>
 										))}
 									</div>
@@ -348,9 +350,9 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 											})
 										}
 										disabled={readonly || disabled}
-										className="h-4 w-4 rounded border-(--omp-input-border)"
+										className="h-4 w-4 rounded border-(--omsk-input-border)"
 									/>
-									<span className="text-omp-sm text-(--omp-text)">
+									<span className="text-omsk-sm text-(--omsk-text)">
 										{t("providerCfg.form.thinkingDisplay")}
 									</span>
 								</label>
@@ -359,12 +361,14 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 					</div>
 
 					<div className="space-y-2">
-						<span className="text-omp-sm font-medium text-(--omp-text)">{t("providerCfg.form.costTitle")}</span>
-						<span className="block text-omp-xs text-(--omp-dim)">{t("providerCfg.form.costHint")}</span>
+						<span className="text-omsk-sm font-medium text-(--omsk-text)">{t("providerCfg.form.costTitle")}</span>
+						<span className="block text-omsk-xs text-(--omsk-dim)">{t("providerCfg.form.costHint")}</span>
 						<div className="grid grid-cols-2 gap-2">
 							{COST_FIELDS.map(field => (
 								<label key={field} className="flex flex-col gap-1">
-									<span className="text-omp-xs text-(--omp-text)">{t(`providerCfg.form.cost.${field}`)}</span>
+									<span className="text-omsk-xs text-(--omsk-text)">
+										{t(`providerCfg.form.cost.${field}`)}
+									</span>
 									<input
 										type="number"
 										value={costDrafts[field]}
@@ -384,7 +388,7 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 					</div>
 
 					<div className="space-y-2">
-						<span className="text-omp-sm font-medium text-(--omp-text)">
+						<span className="text-omsk-sm font-medium text-(--omsk-text)">
 							{t("providerCfg.form.modelHeaders")}
 						</span>
 						<div className="flex flex-col gap-1.5">
@@ -421,7 +425,7 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 										aria-label={t("providerCfg.form.headerRemove")}
 										disabled={readonly || disabled}
 										onClick={() => commitHeaders(headerRows.filter((_, i) => i !== index))}
-										className="shrink-0 text-(--omp-dim) transition-colors hover:text-(--omp-error) disabled:opacity-50"
+										className="shrink-0 text-(--omsk-dim) transition-colors hover:text-(--omsk-error) disabled:opacity-50"
 									>
 										<Trash2 size={13} />
 									</button>
@@ -442,7 +446,7 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 					</div>
 
 					<label className="flex flex-col gap-1">
-						<span className="text-omp-sm font-medium text-(--omp-text)">
+						<span className="text-omsk-sm font-medium text-(--omsk-text)">
 							{t("providerCfg.form.premiumMultiplier")}
 						</span>
 						<input
@@ -459,7 +463,7 @@ function ModelEditor({ model, readonly, disabled, onUpdate, onRemove, canRemove 
 							className={INPUT_CLASS}
 							disabled={readonly || disabled}
 						/>
-						<span className="text-omp-xs text-(--omp-dim)">{t("providerCfg.form.premiumMultiplierHint")}</span>
+						<span className="text-omsk-xs text-(--omsk-dim)">{t("providerCfg.form.premiumMultiplierHint")}</span>
 					</label>
 				</div>
 			)}

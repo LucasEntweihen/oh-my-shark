@@ -28,25 +28,25 @@ export function QueueDockChip() {
 					type="button"
 					onClick={() => setOpen(true)}
 					title={t("dock.queue.manage")}
-					className="omp-pressable flex items-center gap-1.5 rounded-full border border-[var(--omp-border)] px-2.5 py-1 text-omp-sm font-medium text-[var(--omp-muted)] hover:border-[var(--omp-border-strong)] hover:text-[var(--omp-text)]"
+					className="omsk-pressable flex items-center gap-1.5 rounded-full border border-[var(--omsk-border)] px-2.5 py-1 text-omsk-sm font-medium text-[var(--omsk-muted)] hover:border-[var(--omsk-border-strong)] hover:text-[var(--omsk-text)]"
 				>
 					<ListOrdered aria-hidden="true" size={12} />
 					{/* Only lanes that hold something: steering delivers first, so it leads. */}
 					{steering.length > 0 && (
 						<span>
 							{t("dock.queue.steering")}{" "}
-							<span className="tabular-nums text-[var(--omp-text)]">{steering.length}</span>
+							<span className="tabular-nums text-[var(--omsk-text)]">{steering.length}</span>
 						</span>
 					)}
 					{steering.length > 0 && followUp.length > 0 && (
-						<span aria-hidden="true" className="text-[var(--omp-dim)]">
+						<span aria-hidden="true" className="text-[var(--omsk-dim)]">
 							·
 						</span>
 					)}
 					{followUp.length > 0 && (
 						<span>
 							{t("dock.queue.label")}{" "}
-							<span className="tabular-nums text-[var(--omp-text)]">{followUp.length}</span>
+							<span className="tabular-nums text-[var(--omsk-text)]">{followUp.length}</span>
 						</span>
 					)}
 				</button>
@@ -59,7 +59,7 @@ export function QueueDockChip() {
 				title={
 					<span className="flex items-center gap-2">
 						{t("queuePanel.title")}
-						<span className="text-omp-md font-normal tabular-nums text-[var(--omp-dim)]">{total}</span>
+						<span className="text-omsk-md font-normal tabular-nums text-[var(--omsk-dim)]">{total}</span>
 					</span>
 				}
 			>

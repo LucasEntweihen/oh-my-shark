@@ -52,16 +52,16 @@ export function SharkCheckpointsTab({
 
 	return (
 		<div className="space-y-4">
-			<div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--omp-border-muted)] p-3.5">
+			<div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--omsk-border-muted)] p-3.5">
 				<div className="flex flex-wrap items-center gap-4">
 					<div className="flex items-center gap-1.5">
-						<FileDiff size={15} className="text-[var(--omp-accent)]" />
-						<span className="text-omp-sm font-semibold text-[var(--omp-text)]">Transactional Edit Engine</span>
+						<FileDiff size={15} className="text-[var(--omsk-accent)]" />
+						<span className="text-omsk-sm font-semibold text-[var(--omsk-text)]">Transactional Edit Engine</span>
 					</div>
-					<div className="flex items-center gap-2 font-mono text-omp-sm">
-						<span className="text-[var(--omp-diff-added)]">+{changesSummary?.totalAdded ?? 0}</span>
-						<span className="text-[var(--omp-diff-removed)]">-{changesSummary?.totalRemoved ?? 0}</span>
-						<span className="text-[var(--omp-muted)]">
+					<div className="flex items-center gap-2 font-mono text-omsk-sm">
+						<span className="text-[var(--omsk-diff-added)]">+{changesSummary?.totalAdded ?? 0}</span>
+						<span className="text-[var(--omsk-diff-removed)]">-{changesSummary?.totalRemoved ?? 0}</span>
+						<span className="text-[var(--omsk-muted)]">
 							· {changesSummary?.modifiedCount ?? 0} modified ·{" "}
 							{changesSummary?.checkpointsCount ?? checkpoints.length} checkpoints
 						</span>
@@ -79,7 +79,7 @@ export function SharkCheckpointsTab({
 			</div>
 
 			{lastResult && lastResult.result.conflicts.length > 0 && (
-				<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--omp-warning)] bg-[var(--omp-warning-dim)] p-3 text-omp-xs text-[var(--omp-warning)]">
+				<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--omsk-warning)] bg-[var(--omsk-warning-dim)] p-3 text-omsk-xs text-[var(--omsk-warning)]">
 					<div>
 						<strong>Rollback conflicts on {lastResult.id}:</strong> {lastResult.result.conflicts.join(", ")}
 					</div>
@@ -95,7 +95,7 @@ export function SharkCheckpointsTab({
 			)}
 
 			{checkpoints.length === 0 ? (
-				<div className="rounded-xl border border-dashed border-[var(--omp-border-muted)] p-8 text-center text-omp-sm text-[var(--omp-dim)]">
+				<div className="rounded-xl border border-dashed border-[var(--omsk-border-muted)] p-8 text-center text-omsk-sm text-[var(--omsk-dim)]">
 					No transactional checkpoints recorded in this workspace yet.
 				</div>
 			) : (
@@ -105,24 +105,24 @@ export function SharkCheckpointsTab({
 						.map(ckpt => (
 							<div
 								key={ckpt.id}
-								className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-[var(--omp-border-muted)] p-3.5"
+								className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-[var(--omsk-border-muted)] p-3.5"
 							>
 								<div className="min-w-0 flex-1 space-y-1.5">
 									<div className="flex flex-wrap items-center gap-2">
-										<GitCommitHorizontal size={14} className="text-[var(--omp-accent)]" />
-										<span className="text-omp-md font-semibold text-[var(--omp-text)]">{ckpt.label}</span>
+										<GitCommitHorizontal size={14} className="text-[var(--omsk-accent)]" />
+										<span className="text-omsk-md font-semibold text-[var(--omsk-text)]">{ckpt.label}</span>
 										<Badge variant={checkpointVariant(ckpt.status)}>{ckpt.status}</Badge>
-										<span className="font-mono text-omp-xxs text-[var(--omp-dim)]">{ckpt.id}</span>
-										<span className="text-omp-xs text-[var(--omp-muted)]">
+										<span className="font-mono text-omsk-xxs text-[var(--omsk-dim)]">{ckpt.id}</span>
+										<span className="text-omsk-xs text-[var(--omsk-muted)]">
 											{formatTimeAgo(new Date(ckpt.timestamp).toISOString(), { compact: true })}
 										</span>
 									</div>
 									<div className="flex flex-wrap items-center gap-1.5">
-										<span className="text-omp-xs text-[var(--omp-dim)]">{ckpt.fileCount} file(s):</span>
+										<span className="text-omsk-xs text-[var(--omsk-dim)]">{ckpt.fileCount} file(s):</span>
 										{ckpt.files.map(file => (
 											<span
 												key={file}
-												className="rounded border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] px-1.5 py-0.5 font-mono text-omp-xxs text-[var(--omp-text-secondary)]"
+												className="rounded border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] px-1.5 py-0.5 font-mono text-omsk-xxs text-[var(--omsk-text-secondary)]"
 											>
 												{file}
 											</span>

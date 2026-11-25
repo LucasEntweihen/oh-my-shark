@@ -85,10 +85,10 @@ export function BenchmarkDialog({ open, onClose }: { open: boolean; onClose: () 
 	return (
 		<Modal onClose={close} open={open} size="lg" title={t("benchmark.title")}>
 			<div className="space-y-4">
-				<p className="text-omp-md text-(--omp-muted)">{t("benchmark.description")}</p>
+				<p className="text-omsk-md text-(--omsk-muted)">{t("benchmark.description")}</p>
 				<div className="grid grid-cols-[minmax(0,1fr)_150px_90px_90px] gap-3 max-md:grid-cols-2">
 					<div className="space-y-2">
-						<span className="text-omp-md">{t("benchmark.models")}</span>
+						<span className="text-omsk-md">{t("benchmark.models")}</span>
 						<ModelValueSelect
 							kind="model"
 							value=""
@@ -103,7 +103,7 @@ export function BenchmarkDialog({ open, onClose }: { open: boolean; onClose: () 
 								<button
 									type="button"
 									disabled={running}
-									className="flex max-w-full items-center gap-1 rounded border border-(--omp-border-muted) px-2 py-1 text-omp-xs"
+									className="flex max-w-full items-center gap-1 rounded border border-(--omsk-border-muted) px-2 py-1 text-omsk-xs"
 									key={selector}
 									onClick={() => setModels(selectors.filter(value => value !== selector).join(", "))}
 									aria-label={t("benchmark.removeModel", { model: selector })}
@@ -115,11 +115,11 @@ export function BenchmarkDialog({ open, onClose }: { open: boolean; onClose: () 
 						</div>
 					</div>
 					<label className="block">
-						<span className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)">
+						<span className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)">
 							{t("benchmark.profile")}
 						</span>
 						<select
-							className="h-10 w-full rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-3 text-omp-md"
+							className="h-10 w-full rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-3 text-omsk-md"
 							disabled={running}
 							onChange={event => setProfile(event.target.value as IpcBenchmarkProfile)}
 							value={profile}
@@ -150,7 +150,7 @@ export function BenchmarkDialog({ open, onClose }: { open: boolean; onClose: () 
 						value={parallel}
 					/>
 				</div>
-				<p className="text-omp-sm text-(--omp-muted)">
+				<p className="text-omsk-sm text-(--omsk-muted)">
 					{t("benchmark.requestScale", {
 						count: selectors.length * (Number.isInteger(runs) && runs > 0 ? runs : 0),
 					})}
@@ -169,17 +169,17 @@ export function BenchmarkDialog({ open, onClose }: { open: boolean; onClose: () 
 				{(error ?? stderr) && (
 					<div
 						className={cx(
-							"rounded-lg border p-3 text-omp-md",
+							"rounded-lg border p-3 text-omsk-md",
 							error
-								? "border-(--omp-error)/40 bg-(--omp-error-dim) text-(--omp-error)"
-								: "border-(--omp-border-muted) text-(--omp-muted)",
+								? "border-(--omsk-error)/40 bg-(--omsk-error-dim) text-(--omsk-error)"
+								: "border-(--omsk-border-muted) text-(--omsk-muted)",
 						)}
 					>
 						{error && <div>{error}</div>}
 						{stderr && (
 							<pre
 								className={cx(
-									"max-h-40 overflow-y-auto whitespace-pre-wrap break-words font-mono text-omp-xs",
+									"max-h-40 overflow-y-auto whitespace-pre-wrap break-words font-mono text-omsk-xs",
 									error && "mt-2",
 								)}
 							>
@@ -189,10 +189,10 @@ export function BenchmarkDialog({ open, onClose }: { open: boolean; onClose: () 
 					</div>
 				)}
 				{result?.success && (
-					<div className="overflow-x-auto rounded-lg border border-(--omp-border-muted)">
-						<table className="w-full text-left text-omp-xs">
-							<thead className="text-(--omp-muted)">
-								<tr className="border-b border-(--omp-border-muted)">
+					<div className="overflow-x-auto rounded-lg border border-(--omsk-border-muted)">
+						<table className="w-full text-left text-omsk-xs">
+							<thead className="text-(--omsk-muted)">
+								<tr className="border-b border-(--omsk-border-muted)">
 									{["model", "success", "ttft", "prefill", "decode", "throughput", "cost"].map(key => (
 										<th className="px-3 py-2 font-medium" key={key}>
 											{t(`benchmark.col.${key}`)}
@@ -200,15 +200,15 @@ export function BenchmarkDialog({ open, onClose }: { open: boolean; onClose: () 
 									))}
 								</tr>
 							</thead>
-							<tbody className="divide-y divide-(--omp-border-muted)">
+							<tbody className="divide-y divide-(--omsk-border-muted)">
 								{result.summary.models.map(report => {
 									const succeeded = report.results.filter(item => item.ok).length;
 									return (
 										<tr key={report.selector} title={report.stats ? undefined : resultError(report)}>
-											<td className="px-3 py-2 font-mono text-(--omp-text)">
+											<td className="px-3 py-2 font-mono text-(--omsk-text)">
 												{report.model}
 												{report.results.some(item => !item.ok) && (
-													<p className="mt-1 max-w-64 whitespace-pre-wrap break-words text-(--omp-error)">
+													<p className="mt-1 max-w-64 whitespace-pre-wrap break-words text-(--omsk-error)">
 														{resultError(report)}
 													</p>
 												)}

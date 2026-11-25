@@ -93,7 +93,7 @@ export function ChatContextBar() {
 	};
 
 	return (
-		<div className="omp-context-bar flex h-6 min-w-0 items-center justify-between gap-2 px-1">
+		<div className="omsk-context-bar flex h-6 min-w-0 items-center justify-between gap-2 px-1">
 			<button
 				ref={triggerRef}
 				type="button"
@@ -102,12 +102,12 @@ export function ChatContextBar() {
 				aria-label={t("chatContext.title")}
 				onClick={() => setOpen(value => !value)}
 				title={t("chatContext.title")}
-				className="omp-pressable flex h-6 min-w-0 max-w-full items-center gap-1.5 rounded-md px-1.5 text-omp-xs text-(--omp-dim) hover:bg-(--omp-selected-bg) hover:text-(--omp-muted)"
+				className="omsk-pressable flex h-6 min-w-0 max-w-full items-center gap-1.5 rounded-md px-1.5 text-omsk-xs text-(--omsk-dim) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-muted)"
 			>
 				<MessagesSquare aria-hidden size={12} className="shrink-0" />
-				<span className="shrink-0 font-medium text-(--omp-muted)">{historyText(config, t)}</span>
+				<span className="shrink-0 font-medium text-(--omsk-muted)">{historyText(config, t)}</span>
 				{customPrompt && (
-					<span className="omp-context-bar-detail flex min-w-0 items-center gap-1.5">
+					<span className="omsk-context-bar-detail flex min-w-0 items-center gap-1.5">
 						<span aria-hidden>·</span>
 						<span className="truncate">{t("chatContext.customPrompt")}</span>
 					</span>
@@ -126,8 +126,8 @@ export function ChatContextBar() {
 						inert={closing}
 						style={{ left: pos.left, bottom: pos.bottom, width: pos.width }}
 						className={cx(
-							"fixed z-[100] rounded-xl border border-(--omp-border) bg-(--omp-panel-bg) p-3 shadow-(--omp-shadow-md)",
-							closing ? "omp-scale-out pointer-events-none" : "omp-pop-in",
+							"fixed z-[100] rounded-xl border border-(--omsk-border) bg-(--omsk-panel-bg) p-3 shadow-(--omsk-shadow-md)",
+							closing ? "omsk-scale-out pointer-events-none" : "omsk-pop-in",
 						)}
 					>
 						<div role="radiogroup" aria-label={t("chatContext.historyLabel")} className="space-y-1">
@@ -157,10 +157,10 @@ export function ChatContextBar() {
 							/>
 						</div>
 						{limited && (
-							<p className="mt-2 px-1 text-omp-xs text-(--omp-dim)">{t("chatContext.transcriptNote")}</p>
+							<p className="mt-2 px-1 text-omsk-xs text-(--omsk-dim)">{t("chatContext.transcriptNote")}</p>
 						)}
 
-						<div className="mt-3 border-t border-(--omp-border-muted) pt-3">
+						<div className="mt-3 border-t border-(--omsk-border-muted) pt-3">
 							<TextArea
 								autoGrow
 								className="max-h-48 overflow-y-auto"
@@ -209,7 +209,7 @@ export function ChatContextBar() {
 							</div>
 						</div>
 
-						<div className="mt-3 flex items-center justify-between gap-3 border-t border-(--omp-border-muted) pt-2.5 text-omp-xs text-(--omp-dim)">
+						<div className="mt-3 flex items-center justify-between gap-3 border-t border-(--omsk-border-muted) pt-2.5 text-omsk-xs text-(--omsk-dim)">
 							<span>{t("chatContext.scope")}</span>
 							<button
 								type="button"
@@ -217,7 +217,7 @@ export function ChatContextBar() {
 									setOpen(false);
 									openSettings("context");
 								}}
-								className="omp-pressable flex shrink-0 items-center gap-0.5 rounded-md px-1.5 py-1 text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+								className="omsk-pressable flex shrink-0 items-center gap-0.5 rounded-md px-1.5 py-1 text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 							>
 								{t("chatContext.allSettings")}
 								<ChevronRight size={12} />
@@ -251,22 +251,22 @@ function HistoryRow({
 			disabled={disabled}
 			onClick={() => !selected && onSelect()}
 			className={cx(
-				"omp-pressable flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left disabled:opacity-60",
-				selected ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)",
+				"omsk-pressable flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left disabled:opacity-60",
+				selected ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)",
 			)}
 		>
 			<span
 				aria-hidden
 				className={cx(
 					"mt-1 flex size-3.5 shrink-0 items-center justify-center rounded-full border",
-					selected ? "border-(--omp-accent)" : "border-(--omp-border-strong)",
+					selected ? "border-(--omsk-accent)" : "border-(--omsk-border-strong)",
 				)}
 			>
-				{selected && <span className="size-1.5 rounded-full bg-(--omp-accent)" />}
+				{selected && <span className="size-1.5 rounded-full bg-(--omsk-accent)" />}
 			</span>
 			<span className="min-w-0 flex-1">
-				<span className="block text-omp-sm font-medium text-(--omp-text)">{title}</span>
-				<span className="block text-omp-xs leading-snug text-(--omp-dim)">{description}</span>
+				<span className="block text-omsk-sm font-medium text-(--omsk-text)">{title}</span>
+				<span className="block text-omsk-xs leading-snug text-(--omsk-dim)">{description}</span>
 			</span>
 		</button>
 	);

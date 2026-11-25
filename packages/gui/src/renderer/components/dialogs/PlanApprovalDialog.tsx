@@ -188,27 +188,27 @@ export function PlanApprovalDialog() {
 			size="lg"
 			title={
 				<span className="flex items-center gap-2">
-					<ClipboardList className="shrink-0 text-(--omp-accent)" size={14} />
+					<ClipboardList className="shrink-0 text-(--omsk-accent)" size={14} />
 					{pending.title ?? t("planApproval.reviewFallback")}
 				</span>
 			}
 		>
 			<div className="flex flex-col gap-3 p-4">
-				<div className="flex items-center gap-2 text-omp-xs text-(--omp-dim)">
+				<div className="flex items-center gap-2 text-omsk-xs text-(--omsk-dim)">
 					<span className="shrink-0">{t("planApproval.planFile")}</span>
 					<span className="truncate font-mono" title={pending.planFilePath}>
 						{basename(pending.planFilePath)}
 					</span>
 				</div>
-				<div className="max-h-[52vh] overflow-y-auto rounded-md border border-(--omp-border-muted) px-4 py-3">
+				<div className="max-h-[52vh] overflow-y-auto rounded-md border border-(--omsk-border-muted) px-4 py-3">
 					{pending.planContent.trim().length > 0 ? (
 						<MarkdownRenderer content={pending.planContent} />
 					) : (
-						<p className="text-omp-xs text-(--omp-dim)">{t("planApproval.emptyPlan")}</p>
+						<p className="text-omsk-xs text-(--omsk-dim)">{t("planApproval.emptyPlan")}</p>
 					)}
 				</div>
 				{notice !== null && (
-					<div className="rounded-md border border-[color-mix(in_srgb,var(--omp-warning)_35%,transparent)] bg-transparent px-3 py-2 text-omp-sm text-(--omp-warning)">
+					<div className="rounded-md border border-[color-mix(in_srgb,var(--omsk-warning)_35%,transparent)] bg-transparent px-3 py-2 text-omsk-sm text-(--omsk-warning)">
 						{notice}
 					</div>
 				)}

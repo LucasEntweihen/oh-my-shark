@@ -45,8 +45,8 @@ function TerminalChip({
 		<div
 			ref={ref}
 			className={cx(
-				"group flex h-7 max-w-44 shrink-0 items-center gap-1 rounded-md pr-0.5 pl-2 text-omp-sm",
-				active ? "bg-(--omp-selected-bg) text-(--omp-text)" : "text-(--omp-muted) hover:text-(--omp-text)",
+				"group flex h-7 max-w-44 shrink-0 items-center gap-1 rounded-md pr-0.5 pl-2 text-omsk-sm",
+				active ? "bg-(--omsk-selected-bg) text-(--omsk-text)" : "text-(--omsk-muted) hover:text-(--omsk-text)",
 			)}
 		>
 			<button
@@ -56,12 +56,12 @@ function TerminalChip({
 				title={terminal.kind === "command" ? terminal.title : where}
 				className="flex min-w-0 items-center gap-1.5"
 			>
-				<Icon aria-hidden="true" size={13} className={cx("shrink-0", agent && "text-(--omp-accent)")} />
-				<span className={cx("truncate", !terminal.running && "text-(--omp-dim) line-through")}>
+				<Icon aria-hidden="true" size={13} className={cx("shrink-0", agent && "text-(--omsk-accent)")} />
+				<span className={cx("truncate", !terminal.running && "text-(--omsk-dim) line-through")}>
 					{terminal.title}
 				</span>
 				{terminal.root && terminal.running && (
-					<span className="shrink-0 rounded px-1 text-omp-xxs font-medium text-(--omp-error) ring-1 ring-(--omp-error)/40">
+					<span className="shrink-0 rounded px-1 text-omsk-xxs font-medium text-(--omsk-error) ring-1 ring-(--omsk-error)/40">
 						root
 					</span>
 				)}
@@ -74,8 +74,8 @@ function TerminalChip({
 						className={cx(
 							"shrink-0",
 							asking
-								? "size-1.5 rounded-full bg-(--omp-warning)"
-								: "omp-signal-light omp-signal-light--active text-(--omp-accent)",
+								? "size-1.5 rounded-full bg-(--omsk-warning)"
+								: "omsk-signal-light omsk-signal-light--active text-(--omsk-accent)",
 						)}
 					/>
 				)}
@@ -85,7 +85,7 @@ function TerminalChip({
 				aria-label={t("terminal.close")}
 				title={t("terminal.close")}
 				onClick={onClose}
-				className="flex size-5 shrink-0 items-center justify-center rounded text-(--omp-dim) opacity-0 hover:bg-(--omp-selected-bg) hover:text-(--omp-text) group-hover:opacity-100 focus-visible:opacity-100"
+				className="flex size-5 shrink-0 items-center justify-center rounded text-(--omsk-dim) opacity-0 hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text) group-hover:opacity-100 focus-visible:opacity-100"
 			>
 				<X size={12} />
 			</button>
@@ -100,16 +100,16 @@ function SessionNotice({ terminal }: { terminal: RpcTerminalInfo }) {
 		return (
 			<p
 				data-session-notice="input"
-				className="shrink-0 border-b border-(--omp-border-muted) bg-(--omp-warning-dim) px-3 py-1.5 text-omp-xs text-(--omp-text)"
+				className="shrink-0 border-b border-(--omsk-border-muted) bg-(--omsk-warning-dim) px-3 py-1.5 text-omsk-xs text-(--omsk-text)"
 			>
 				{t("terminal.sessionInput")}
 			</p>
 		);
 	}
 	return (
-		<p className="shrink-0 border-b border-(--omp-border-muted) bg-(--omp-accent-dim) px-3 py-1.5 text-omp-xs text-(--omp-text)">
+		<p className="shrink-0 border-b border-(--omsk-border-muted) bg-(--omsk-accent-dim) px-3 py-1.5 text-omsk-xs text-(--omsk-text)">
 			{terminal.host ? t("terminal.sessionRemote", { host: terminal.host }) : t("terminal.session")}
-			{terminal.root && <span className="text-(--omp-error)"> {t("terminal.sessionRoot")}</span>}
+			{terminal.root && <span className="text-(--omsk-error)"> {t("terminal.sessionRoot")}</span>}
 		</p>
 	);
 }
@@ -197,7 +197,7 @@ export function TerminalPanel() {
 			<span className="sr-only">{t("panel.tabs.terminal")}</span>
 			<div
 				onWheel={scrollStripOnWheel}
-				className="omp-tab-scroller flex h-11 shrink-0 items-center gap-1 overflow-x-auto border-b border-(--omp-border-muted) px-2"
+				className="omsk-tab-scroller flex h-11 shrink-0 items-center gap-1 overflow-x-auto border-b border-(--omsk-border-muted) px-2"
 			>
 				{tabId &&
 					terminals.map(terminal => (
@@ -215,7 +215,7 @@ export function TerminalPanel() {
 					title={t("terminal.new")}
 					disabled={!sidecarUp || opening}
 					onClick={() => void startShell()}
-					className="omp-pressable ml-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text) disabled:pointer-events-none disabled:opacity-40"
+					className="omsk-pressable ml-0.5 flex size-7 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text) disabled:pointer-events-none disabled:opacity-40"
 				>
 					<Plus size={15} />
 				</button>
@@ -225,18 +225,18 @@ export function TerminalPanel() {
 			) : (
 				active?.kind !== "shell" &&
 				active?.running && (
-					<p className="shrink-0 border-b border-(--omp-border-muted) bg-(--omp-accent-dim) px-3 py-1.5 text-omp-xs text-(--omp-text)">
+					<p className="shrink-0 border-b border-(--omsk-border-muted) bg-(--omsk-accent-dim) px-3 py-1.5 text-omsk-xs text-(--omsk-text)">
 						{t(active.kind === "command" ? "terminal.agentWaiting" : "terminal.agentBackground")}
 					</p>
 				)
 			)}
 			{error && (
-				<p className="shrink-0 border-b border-(--omp-border-muted) bg-(--omp-error-dim) px-3 py-1.5 text-omp-xs text-(--omp-error)">
+				<p className="shrink-0 border-b border-(--omsk-border-muted) bg-(--omsk-error-dim) px-3 py-1.5 text-omsk-xs text-(--omsk-error)">
 					{t("terminal.openFailed", { error })}
 				</p>
 			)}
 			{active ? (
-				<div className="omp-terminal-viewport min-h-0 flex-1 bg-(--omp-code-bg) py-1.5 pl-2" ref={containerRef} />
+				<div className="omsk-terminal-viewport min-h-0 flex-1 bg-(--omsk-code-bg) py-1.5 pl-2" ref={containerRef} />
 			) : (
 				<div className="min-h-0 flex-1 overflow-auto">
 					<PanelEmpty

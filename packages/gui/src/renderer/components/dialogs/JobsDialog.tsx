@@ -87,39 +87,39 @@ export function JobsDialog() {
 
 	const indent = (depth: number) => (depth > 0 ? { paddingLeft: `${0.75 + (depth - 1) * 1.25}rem` } : undefined);
 	const nestMark = (depth: number) =>
-		depth > 0 ? <CornerDownRight aria-hidden className="shrink-0 text-(--omp-dim)" size={12} /> : null;
+		depth > 0 ? <CornerDownRight aria-hidden className="shrink-0 text-(--omsk-dim)" size={12} /> : null;
 
 	const renderJob = (job: RpcAsyncJobItem, depth = 0, agentId?: string) => (
 		<div className="px-3 py-2" key={job.id} style={indent(depth)}>
 			<div className="flex items-center gap-2">
 				{nestMark(depth)}
-				<span className="font-mono text-omp-xs text-(--omp-dim)">[{job.id}]</span>
-				<span className="text-omp-xs font-medium text-(--omp-text)">{t(`jobs.type.${job.type}`)}</span>
+				<span className="font-mono text-omsk-xs text-(--omsk-dim)">[{job.id}]</span>
+				<span className="text-omsk-xs font-medium text-(--omsk-text)">{t(`jobs.type.${job.type}`)}</span>
 				<Badge dot pulse={job.status === "running"} variant={STATUS_VARIANT[job.status]}>
 					{t(job.cancellationPending ? "jobs.cancelling" : `jobs.status.${job.status}`)}
 				</Badge>
 				{agentId && agentId !== job.id ? (
-					<span className="truncate font-mono text-omp-xs text-(--omp-dim)">{agentId}</span>
+					<span className="truncate font-mono text-omsk-xs text-(--omsk-dim)">{agentId}</span>
 				) : null}
-				<span className="ml-auto shrink-0 text-omp-xs tabular-nums text-(--omp-dim)">
+				<span className="ml-auto shrink-0 text-omsk-xs tabular-nums text-(--omsk-dim)">
 					{job.status === "running" || job.cancellationPending || job.endedAt !== undefined
 						? formatDuration(Math.max(0, (job.endedAt ?? now) - job.startTime))
 						: t("jobs.durationUnavailable")}
 				</span>
 			</div>
 			{job.intent ? (
-				<div data-job-intent="" className="mt-0.5 break-words text-omp-sm text-(--omp-text)">
+				<div data-job-intent="" className="mt-0.5 break-words text-omsk-sm text-(--omsk-text)">
 					{job.intent}
 				</div>
 			) : null}
 			{job.caption ? (
-				<div data-job-caption="" className="mt-0.5 break-words text-omp-xs text-(--omp-text-secondary) italic">
+				<div data-job-caption="" className="mt-0.5 break-words text-omsk-xs text-(--omsk-text-secondary) italic">
 					{job.caption}
 				</div>
 			) : null}
 			<div
 				className={cx(
-					"mt-0.5 break-words whitespace-pre-wrap text-omp-xs text-(--omp-dim)",
+					"mt-0.5 break-words whitespace-pre-wrap text-omsk-xs text-(--omsk-dim)",
 					job.intent && "font-mono",
 				)}
 				title={job.command && job.command !== job.label ? job.command : undefined}
@@ -128,7 +128,7 @@ export function JobsDialog() {
 			</div>
 			{job.widget ? <JobWidgetCard widget={job.widget} /> : null}
 			{(job.resultPreview || job.errorPreview) && (
-				<details className="mt-2 text-omp-sm">
+				<details className="mt-2 text-omsk-sm">
 					<summary className="cursor-pointer">{t("jobs.result")}</summary>
 					<pre className={`${PREVIEW_SCROLL_LG} whitespace-pre-wrap break-words`}>
 						<AnsiText text={job.errorPreview ?? job.resultPreview ?? ""} />
@@ -142,29 +142,29 @@ export function JobsDialog() {
 	return (
 		<Modal dockable onClose={close} open={open} size="lg" title={t("jobs.title")}>
 			{updatedAt && (
-				<p className="mb-2 text-omp-xs text-(--omp-dim)">{t("jobs.updated", { time: formatClock(updatedAt) })}</p>
+				<p className="mb-2 text-omsk-xs text-(--omsk-dim)">{t("jobs.updated", { time: formatClock(updatedAt) })}</p>
 			)}
 			{error && (
-				<p role="alert" className="text-omp-sm text-(--omp-error)">
+				<p role="alert" className="text-omsk-sm text-(--omsk-error)">
 					{t("jobs.error")}: {error}
 				</p>
 			)}
 			{loading ? (
-				<div className="flex items-center justify-center gap-2 py-8 text-omp-md text-(--omp-dim)">
+				<div className="flex items-center justify-center gap-2 py-8 text-omsk-md text-(--omsk-dim)">
 					<Spinner size="sm" /> {t("jobs.loading")}
 				</div>
 			) : total === 0 && !error ? (
 				<div className="space-y-2 py-4">
-					<div className="text-omp-md text-(--omp-text)">{t("jobs.empty")}</div>
-					<div className="text-omp-xs text-(--omp-dim)">{t("jobs.emptyHint")}</div>
+					<div className="text-omsk-md text-(--omsk-text)">{t("jobs.empty")}</div>
+					<div className="text-omsk-xs text-(--omsk-dim)">{t("jobs.emptyHint")}</div>
 				</div>
 			) : tree ? (
 				<section>
 					<div className="mb-1.5 flex items-center gap-2">
-						<span className="text-omp-xs font-semibold text-(--omp-text)">{t("jobs.tree")}</span>
+						<span className="text-omsk-xs font-semibold text-(--omsk-text)">{t("jobs.tree")}</span>
 						<Badge variant="muted">{t("jobs.runningCount", { count: treeJobs.filter(isRunning).length })}</Badge>
 					</div>
-					<div className="divide-y divide-(--omp-border-muted) rounded-lg border border-(--omp-border-muted)">
+					<div className="divide-y divide-(--omsk-border-muted) rounded-lg border border-(--omsk-border-muted)">
 						{tree.map(row =>
 							row.job ? (
 								renderJob(row.job, row.depth, row.agentId)
@@ -176,7 +176,7 @@ export function JobsDialog() {
 								>
 									{nestMark(row.depth)}
 									<Badge variant="muted">{t("jobs.subagent")}</Badge>
-									<span className="truncate font-mono text-omp-xs text-(--omp-text)">{row.agentId}</span>
+									<span className="truncate font-mono text-omsk-xs text-(--omsk-text)">{row.agentId}</span>
 								</div>
 							),
 						)}
@@ -187,10 +187,10 @@ export function JobsDialog() {
 					{running.length > 0 ? (
 						<section>
 							<div className="mb-1.5 flex items-center gap-2">
-								<span className="text-omp-xs font-semibold text-(--omp-text)">{t("jobs.running")}</span>
+								<span className="text-omsk-xs font-semibold text-(--omsk-text)">{t("jobs.running")}</span>
 								<Badge variant="muted">{running.length}</Badge>
 							</div>
-							<div className="divide-y divide-(--omp-border-muted) rounded-lg border border-(--omp-border-muted)">
+							<div className="divide-y divide-(--omsk-border-muted) rounded-lg border border-(--omsk-border-muted)">
 								{running.map(job => renderJob(job))}
 							</div>
 						</section>
@@ -198,10 +198,10 @@ export function JobsDialog() {
 					{recent.length > 0 ? (
 						<section>
 							<div className="mb-1.5 flex items-center gap-2">
-								<span className="text-omp-xs font-semibold text-(--omp-text)">{t("jobs.recentLimited")}</span>
+								<span className="text-omsk-xs font-semibold text-(--omsk-text)">{t("jobs.recentLimited")}</span>
 								<Badge variant="muted">{recent.length}</Badge>
 							</div>
-							<div className="divide-y divide-(--omp-border-muted) rounded-lg border border-(--omp-border-muted)">
+							<div className="divide-y divide-(--omsk-border-muted) rounded-lg border border-(--omsk-border-muted)">
 								{recent.map(job => renderJob(job))}
 							</div>
 						</section>

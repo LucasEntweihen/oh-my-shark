@@ -338,7 +338,7 @@ describe("Modal", () => {
 		);
 		// Fullscreen windows (z-50) and composer menus (z-[100]) must never paint
 		// over a pending prompt — the overlay carries the shared DIALOG_OVERLAY_Z.
-		expect(document.querySelector(".omp-dialog-overlay")?.className).toContain(DIALOG_OVERLAY_Z);
+		expect(document.querySelector(".omsk-dialog-overlay")?.className).toContain(DIALOG_OVERLAY_Z);
 	});
 
 	it("fades out with the content it had while open, then unmounts", async () => {
@@ -355,13 +355,13 @@ describe("Modal", () => {
 				{null}
 			</Modal>,
 		);
-		const panel = document.querySelector<HTMLElement>(".omp-dialog-panel");
+		const panel = document.querySelector<HTMLElement>(".omsk-dialog-panel");
 		expect(panel?.textContent).toContain("3 sessions");
 		expect(panel?.getAttribute("role")).toBe("presentation");
 
 		await act(async () => {
 			await new Promise(resolve => setTimeout(resolve, OVERLAY_EXIT_MS + 20));
 		});
-		expect(document.querySelector(".omp-dialog-panel")).toBeNull();
+		expect(document.querySelector(".omsk-dialog-panel")).toBeNull();
 	});
 });

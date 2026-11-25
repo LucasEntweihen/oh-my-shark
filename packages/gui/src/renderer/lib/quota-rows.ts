@@ -113,7 +113,7 @@ export function limitRemainingFraction(limit: UsageLimit): number | undefined {
 	return used === undefined || !Number.isFinite(used) ? undefined : remainingQuotaFraction(used);
 }
 
-const QUOTA_COLORS = { ok: "var(--omp-success)", warning: "var(--omp-warning)", critical: "var(--omp-error)" };
+const QUOTA_COLORS = { ok: "var(--omsk-success)", warning: "var(--omsk-warning)", critical: "var(--omsk-error)" };
 
 export function remainingQuotaColor(remaining: number): string {
 	return QUOTA_COLORS[quotaLevel({ fraction: 1 - remaining, exhausted: remaining === 0 })];

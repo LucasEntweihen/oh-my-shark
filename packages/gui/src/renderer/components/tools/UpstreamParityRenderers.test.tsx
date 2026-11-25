@@ -116,7 +116,7 @@ describe("omp 18.2.8 renderer parity", () => {
 						provider: "openai",
 						model: "gpt-image-1",
 						imageCount: 2,
-						imagePaths: ["/tmp/omp-image-one.png", "/tmp/omp-image-two.jpg"],
+						imagePaths: ["/tmp/omsk-image-one.png", "/tmp/omsk-image-two.jpg"],
 						images: [
 							{ data: "first", mimeType: "image/png" },
 							{ data: "second", mimeType: "image/jpeg" },
@@ -131,7 +131,7 @@ describe("omp 18.2.8 renderer parity", () => {
 			"data:image/jpeg;base64,second",
 		]);
 		// Header names the saved file and counts the set; the base64 never shows.
-		expect(container.textContent).toContain("/tmp/omp-image-one.png");
+		expect(container.textContent).toContain("/tmp/omsk-image-one.png");
 		expect(container.textContent).toContain("×2");
 		expect(container.textContent).not.toContain("first");
 	});

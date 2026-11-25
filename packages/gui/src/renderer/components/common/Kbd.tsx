@@ -9,9 +9,9 @@ import type { ReactNode } from "react";
 import { cx } from "../../lib/format";
 
 const KBD_CLASS = {
-	hint: "shrink-0 rounded border border-(--omp-border-muted) px-1.5 py-0.5 font-sans text-omp-xxs text-(--omp-dim)",
+	hint: "shrink-0 rounded border border-(--omsk-border-muted) px-1.5 py-0.5 font-sans text-omsk-xxs text-(--omsk-dim)",
 	keycap:
-		"shrink-0 rounded-md border border-(--omp-border) bg-(--omp-bg-elevated) px-2 py-0.5 font-mono text-omp-sm text-(--omp-muted)",
+		"shrink-0 rounded-md border border-(--omsk-border) bg-(--omsk-bg-elevated) px-2 py-0.5 font-mono text-omsk-sm text-(--omsk-muted)",
 } as const;
 
 /** The chip's classes, for a control that must look like a key (a remappable keycap button). */

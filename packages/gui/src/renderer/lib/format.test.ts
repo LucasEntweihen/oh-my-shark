@@ -132,7 +132,7 @@ describe("image result extraction", () => {
 			details: {
 				provider: "openai",
 				imageCount: 2,
-				imagePaths: ["/tmp/omp-image-1.png", "/tmp/omp-image-2.jpg"],
+				imagePaths: ["/tmp/omsk-image-1.png", "/tmp/omsk-image-2.jpg"],
 				images: [
 					{ data: "first", mimeType: "image/png" },
 					{ data: "second", mimeType: "image/jpeg" },

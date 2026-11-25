@@ -198,10 +198,10 @@ export function ImportForeignDialog() {
 							setSelected(new Set());
 						}}
 						className={cx(
-							"rounded-lg px-3 py-1.5 text-omp-md font-medium capitalize",
+							"rounded-lg px-3 py-1.5 text-omsk-md font-medium capitalize",
 							source === candidate
-								? "bg-(--omp-btn-primary-bg) text-(--omp-btn-primary-text)"
-								: "border border-(--omp-border) text-(--omp-muted) hover:bg-(--omp-selected-bg)",
+								? "bg-(--omsk-btn-primary-bg) text-(--omsk-btn-primary-text)"
+								: "border border-(--omsk-border) text-(--omsk-muted) hover:bg-(--omsk-selected-bg)",
 						)}
 					>
 						{candidate === "claude" ? "Claude" : "Codex"}
@@ -218,7 +218,7 @@ export function ImportForeignDialog() {
 			</div>
 
 			{importError && (
-				<p role="alert" className="mb-2 text-omp-sm text-(--omp-error)">
+				<p role="alert" className="mb-2 text-omsk-sm text-(--omsk-error)">
 					{importError}
 				</p>
 			)}
@@ -230,27 +230,27 @@ export function ImportForeignDialog() {
 			>
 				{t("common.refresh")}
 			</Button>
-			<div className="max-h-[46vh] min-h-[200px] overflow-y-auto rounded-lg border border-(--omp-border-muted)">
+			<div className="max-h-[46vh] min-h-[200px] overflow-y-auto rounded-lg border border-(--omsk-border-muted)">
 				{state?.loading && (
-					<div className="flex h-32 items-center justify-center text-(--omp-dim)">
+					<div className="flex h-32 items-center justify-center text-(--omsk-dim)">
 						<Loader2 size={16} className="animate-spin" />
 					</div>
 				)}
 				{state?.error && (
-					<div className="px-4 py-6 text-center text-omp-md text-(--omp-muted)">
+					<div className="px-4 py-6 text-center text-omsk-md text-(--omsk-muted)">
 						{t("import.sourceUnavailable", { source })}
-						<div className="mt-1 text-omp-sm text-(--omp-dim)">{state.error}</div>
+						<div className="mt-1 text-omsk-sm text-(--omsk-dim)">{state.error}</div>
 					</div>
 				)}
 				{!state?.loading && !state?.error && filtered.length === 0 && (
-					<div className="px-4 py-6 text-center text-omp-md text-(--omp-dim)">{t("import.empty")}</div>
+					<div className="px-4 py-6 text-center text-omsk-md text-(--omsk-dim)">{t("import.empty")}</div>
 				)}
 				{!state?.loading &&
 					!state?.error &&
 					filtered.map(session => (
 						<label
 							key={session.id}
-							className="flex cursor-pointer items-start gap-3 border-b border-(--omp-border-muted) px-3 py-2.5 last:border-0 hover:bg-(--omp-selected-bg)"
+							className="flex cursor-pointer items-start gap-3 border-b border-(--omsk-border-muted) px-3 py-2.5 last:border-0 hover:bg-(--omsk-selected-bg)"
 						>
 							<input
 								type="checkbox"
@@ -261,20 +261,20 @@ export function ImportForeignDialog() {
 								className="mt-1"
 							/>
 							<span className="min-w-0 flex-1">
-								<span className="block truncate text-omp-md font-medium text-(--omp-text)">
+								<span className="block truncate text-omsk-md font-medium text-(--omsk-text)">
 									{session.title ?? session.firstMessage ?? t("import.untitled")}
 									{completed.has(`${source}:${session.id}`) && (
-										<span className="ml-2 text-(--omp-success)">{t("import.done")}</span>
+										<span className="ml-2 text-(--omsk-success)">{t("import.done")}</span>
 									)}
 								</span>
-								<span className="mt-0.5 block whitespace-pre-wrap text-omp-sm text-(--omp-muted)">
+								<span className="mt-0.5 block whitespace-pre-wrap text-omsk-sm text-(--omsk-muted)">
 									{session.firstMessage}
 								</span>
-								<span className="mt-0.5 block truncate font-mono text-omp-xs text-(--omp-dim)">
+								<span className="mt-0.5 block truncate font-mono text-omsk-xs text-(--omsk-dim)">
 									{session.cwd}
 								</span>
 							</span>
-							<span className="shrink-0 text-right text-omp-xs text-(--omp-dim)">
+							<span className="shrink-0 text-right text-omsk-xs text-(--omsk-dim)">
 								{formatTimeAgo(session.modified)}
 								{session.messageCount !== undefined && (
 									<span className="block">{t("import.messages", { count: session.messageCount })}</span>
@@ -285,7 +285,7 @@ export function ImportForeignDialog() {
 			</div>
 
 			<div className="mt-3 flex items-center gap-3">
-				<span className="text-omp-sm text-(--omp-dim)">{t("import.copyNote")}</span>
+				<span className="text-omsk-sm text-(--omsk-dim)">{t("import.copyNote")}</span>
 				<span className="ml-auto">
 					<Button
 						disabled={!sidecarReady || selected.size === 0 || importing}

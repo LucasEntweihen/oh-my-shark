@@ -93,16 +93,19 @@ export function UpdatesSettingsPage() {
 		<div>
 			<SettingsPageIntro className="mb-5" description={t("updates.subtitle")} />
 
-			<div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-(--omp-border-muted) px-3 py-2.5">
+			<div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-(--omsk-border-muted) px-3 py-2.5">
 				{overview === "checking" ? (
 					<Spinner size="sm" />
 				) : overview === "healthy" ? (
-					<CheckCircle2 className="text-(--omp-success)" size={15} />
+					<CheckCircle2 className="text-(--omsk-success)" size={15} />
 				) : (
-					<ServerCog className={overview === "error" ? "text-(--omp-error)" : "text-(--omp-warning)"} size={15} />
+					<ServerCog
+						className={overview === "error" ? "text-(--omsk-error)" : "text-(--omsk-warning)"}
+						size={15}
+					/>
 				)}
 				<div className="min-w-0 flex-1">
-					<div className="text-omp-md font-medium text-(--omp-text)">
+					<div className="text-omsk-md font-medium text-(--omsk-text)">
 						{overview === "healthy"
 							? t("updates.systemHealthy")
 							: overview === "attention"
@@ -111,7 +114,7 @@ export function UpdatesSettingsPage() {
 									? t("updates.systemError")
 									: t("updates.systemChecking")}
 					</div>
-					<div className="mt-0.5 text-omp-xs text-(--omp-dim)">{t("updates.deliveryNote")}</div>
+					<div className="mt-0.5 text-omsk-xs text-(--omsk-dim)">{t("updates.deliveryNote")}</div>
 				</div>
 				<Button
 					icon={checking ? <Spinner size="sm" /> : <RefreshCw size={13} />}
@@ -123,25 +126,25 @@ export function UpdatesSettingsPage() {
 				</Button>
 			</div>
 
-			<div className="divide-y divide-(--omp-border-muted) overflow-hidden rounded-lg border border-(--omp-border-muted)">
+			<div className="divide-y divide-(--omsk-border-muted) overflow-hidden rounded-lg border border-(--omsk-border-muted)">
 				<section className="updates-row items-center gap-3 px-4 py-3">
-					<div className="updates-icon flex size-8 items-center justify-center text-(--omp-muted)">
+					<div className="updates-icon flex size-8 items-center justify-center text-(--omsk-muted)">
 						<Download size={15} />
 					</div>
 					<div className="updates-copy min-w-0">
-						<h3 className="text-omp-md font-semibold text-(--omp-text)">{t("updates.gui.name")}</h3>
-						<p className="mt-0.5 text-omp-xs text-(--omp-dim)">{t("updates.gui.description")}</p>
+						<h3 className="text-omsk-md font-semibold text-(--omsk-text)">{t("updates.gui.name")}</h3>
+						<p className="mt-0.5 text-omsk-xs text-(--omsk-dim)">{t("updates.gui.description")}</p>
 						{status.state === "downloaded" && status.mode === "manual" && (
-							<p className="mt-1 text-omp-xs text-(--omp-muted)">{t("updater.manualInstructions")}</p>
+							<p className="mt-1 text-omsk-xs text-(--omsk-muted)">{t("updater.manualInstructions")}</p>
 						)}
 					</div>
 					<div className="updates-current">
-						<div className="text-omp-xxs text-(--omp-dim)">{t("updates.current")}</div>
-						<div className="mt-1 font-mono text-omp-sm text-(--omp-text)">{guiVersion ?? "—"}</div>
+						<div className="text-omsk-xxs text-(--omsk-dim)">{t("updates.current")}</div>
+						<div className="mt-1 font-mono text-omsk-sm text-(--omsk-text)">{guiVersion ?? "—"}</div>
 					</div>
 					<div className="updates-latest">
-						<div className="text-omp-xxs text-(--omp-dim)">{t("updates.latest")}</div>
-						<div className="mt-1 font-mono text-omp-sm text-(--omp-text)">
+						<div className="text-omsk-xxs text-(--omsk-dim)">{t("updates.latest")}</div>
+						<div className="mt-1 font-mono text-omsk-sm text-(--omsk-text)">
 							{guiVersion ? appLatest(status) : "—"}
 						</div>
 					</div>
@@ -157,7 +160,7 @@ export function UpdatesSettingsPage() {
 							</Button>
 						)}
 						{status.state === "downloading" && (
-							<span className="text-omp-sm text-(--omp-muted)">{status.percent}%</span>
+							<span className="text-omsk-sm text-(--omsk-muted)">{status.percent}%</span>
 						)}
 						{status.state === "downloaded" && (
 							<Button
@@ -170,44 +173,44 @@ export function UpdatesSettingsPage() {
 							</Button>
 						)}
 						{(status.state === "idle" || status.state === "checking") && (
-							<span className="flex items-center gap-1.5 text-omp-sm text-(--omp-muted)">
+							<span className="flex items-center gap-1.5 text-omsk-sm text-(--omsk-muted)">
 								<Spinner size="sm" /> {t("updates.checking")}
 							</span>
 						)}
 						{status.state === "error" && (
-							<span className="text-omp-sm text-(--omp-error)">{t("updates.checkFailed")}</span>
+							<span className="text-omsk-sm text-(--omsk-error)">{t("updates.checkFailed")}</span>
 						)}
 						{status.state === "not-available" && (
-							<span className="text-omp-sm text-(--omp-success)">{t("updates.upToDate")}</span>
+							<span className="text-omsk-sm text-(--omsk-success)">{t("updates.upToDate")}</span>
 						)}
 					</div>
 				</section>
 
 				<section className="updates-row items-center gap-3 px-4 py-3">
-					<div className="updates-icon flex size-8 items-center justify-center text-(--omp-muted)">
+					<div className="updates-icon flex size-8 items-center justify-center text-(--omsk-muted)">
 						<ServerCog size={15} />
 					</div>
 					<div className="updates-copy min-w-0">
-						<h3 className="text-omp-md font-semibold text-(--omp-text)">{t("updates.core.name")}</h3>
-						<p className="mt-0.5 text-omp-xs text-(--omp-dim)">{t("updates.core.description")}</p>
+						<h3 className="text-omsk-md font-semibold text-(--omsk-text)">{t("updates.core.name")}</h3>
+						<p className="mt-0.5 text-omsk-xs text-(--omsk-dim)">{t("updates.core.description")}</p>
 					</div>
 					<div className="updates-current">
-						<div className="text-omp-xxs text-(--omp-dim)">{t("updates.current")}</div>
-						<div className="mt-1 font-mono text-omp-sm text-(--omp-text)">{core?.currentVersion ?? "—"}</div>
+						<div className="text-omsk-xxs text-(--omsk-dim)">{t("updates.current")}</div>
+						<div className="mt-1 font-mono text-omsk-sm text-(--omsk-text)">{core?.currentVersion ?? "—"}</div>
 					</div>
 					<div className="updates-latest">
-						<div className="text-omp-xxs text-(--omp-dim)">{t("updates.latest")}</div>
-						<div className="mt-1 font-mono text-omp-sm text-(--omp-text)">{core?.latestVersion ?? "—"}</div>
+						<div className="text-omsk-xxs text-(--omsk-dim)">{t("updates.latest")}</div>
+						<div className="mt-1 font-mono text-omsk-sm text-(--omsk-text)">{core?.latestVersion ?? "—"}</div>
 					</div>
 					<div
-						className={`updates-action justify-self-end text-omp-sm ${
+						className={`updates-action justify-self-end text-omsk-sm ${
 							coreError
-								? "text-(--omp-error)"
+								? "text-(--omsk-error)"
 								: !core || checking
-									? "text-(--omp-muted)"
+									? "text-(--omsk-muted)"
 									: coreUpdateAvailable
-										? "text-(--omp-warning)"
-										: "text-(--omp-success)"
+										? "text-(--omsk-warning)"
+										: "text-(--omsk-success)"
 						}`}
 					>
 						{coreError
@@ -220,7 +223,7 @@ export function UpdatesSettingsPage() {
 					</div>
 				</section>
 			</div>
-			{errorMessage && <p className="mt-3 text-omp-sm text-(--omp-error)">{errorMessage}</p>}
+			{errorMessage && <p className="mt-3 text-omsk-sm text-(--omsk-error)">{errorMessage}</p>}
 		</div>
 	);
 }

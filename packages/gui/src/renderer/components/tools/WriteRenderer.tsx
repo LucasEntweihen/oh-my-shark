@@ -71,39 +71,39 @@ export function WriteRenderer({ args, result, isError, isPartial, partialResult,
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
 				<button
 					type="button"
 					onClick={() => setOpen(v => !v)}
 					aria-expanded={open}
-					className="flex shrink-0 items-center gap-1.5 transition-colors hover:text-[var(--omp-text)]"
+					className="flex shrink-0 items-center gap-1.5 transition-colors hover:text-[var(--omsk-text)]"
 				>
 					{open ? (
-						<ChevronDown size={12} className="shrink-0 text-[var(--omp-dim)]" />
+						<ChevronDown size={12} className="shrink-0 text-[var(--omsk-dim)]" />
 					) : (
-						<ChevronRight size={12} className="shrink-0 text-[var(--omp-dim)]" />
+						<ChevronRight size={12} className="shrink-0 text-[var(--omsk-dim)]" />
 					)}
-					<FilePlus2 size={12} className="shrink-0 text-[var(--omp-dim)]" />
+					<FilePlus2 size={12} className="shrink-0 text-[var(--omsk-dim)]" />
 				</button>
 				<PathLink path={openPath} className="truncate">
-					<span className="text-[var(--omp-text)]">{basename(path)}</span>
-					<span className="text-[var(--omp-dim)]"> {dirname(path)}</span>
+					<span className="text-[var(--omsk-text)]">{basename(path)}</span>
+					<span className="text-[var(--omsk-dim)]"> {dirname(path)}</span>
 				</PathLink>
-				<span className="ml-auto flex shrink-0 items-center gap-1.5 text-omp-xs text-[var(--omp-dim)]">
+				<span className="ml-auto flex shrink-0 items-center gap-1.5 text-omsk-xs text-[var(--omsk-dim)]">
 					{stats && (
 						<span className="tabular-nums">
-							<span className="text-[var(--omp-diff-added)]">+{stats.added}</span>{" "}
-							<span className="text-[var(--omp-diff-removed)]">−{stats.removed}</span>
+							<span className="text-[var(--omsk-diff-added)]">+{stats.added}</span>{" "}
+							<span className="text-[var(--omsk-diff-removed)]">−{stats.removed}</span>
 						</span>
 					)}
 					{overwritten && !diff && (
-						<span className="text-[var(--omp-warning)]">{t("tools.write.overwritten")}</span>
+						<span className="text-[var(--omsk-warning)]">{t("tools.write.overwritten")}</span>
 					)}
 					<span>{t("tools.write.lines", { count: lineCount, plural: lineCount === 1 ? "" : "s" })}</span>
 				</span>
 			</div>
 			{open && isError && errorText?.head && (
-				<div className="max-h-72 overflow-y-auto rounded-lg border border-[var(--omp-error)]/35 bg-[var(--omp-error-dim)] px-3 py-2 font-mono text-omp-sm break-words whitespace-pre-wrap text-[var(--omp-error)]">
+				<div className="max-h-72 overflow-y-auto rounded-lg border border-[var(--omsk-error)]/35 bg-[var(--omsk-error-dim)] px-3 py-2 font-mono text-omsk-sm break-words whitespace-pre-wrap text-[var(--omsk-error)]">
 					{errorText.head}
 				</div>
 			)}
@@ -120,7 +120,7 @@ export function WriteRenderer({ args, result, isError, isPartial, partialResult,
 				/>
 			)}
 			{!isError && open && !diff && previewOmitted > 0 && (
-				<div className="text-omp-xs text-[var(--omp-dim)]">
+				<div className="text-omsk-xs text-[var(--omsk-dim)]">
 					{t("tools.read.more", { count: previewOmitted, plural: previewOmitted === 1 ? "" : "s" })}
 				</div>
 			)}

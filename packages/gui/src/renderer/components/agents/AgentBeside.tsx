@@ -36,7 +36,7 @@ export function AgentBeside({ conversation, page }: { conversation: ReactNode; p
 	};
 	return (
 		<div
-			className="omp-agent-beside grid min-h-0 flex-1"
+			className="omsk-agent-beside grid min-h-0 flex-1"
 			ref={rootRef}
 			style={{
 				gridTemplateColumns: `${ratio}fr ${DIVIDER_SIZE}px ${1 - ratio}fr`,
@@ -51,7 +51,7 @@ export function AgentBeside({ conversation, page }: { conversation: ReactNode; p
 				aria-valuemin={20}
 				aria-valuenow={Math.round(ratio * 100)}
 				className={cx(
-					"omp-split-divider group relative z-20 cursor-col-resize touch-none bg-[var(--omp-border-muted)] focus-visible:bg-[var(--omp-accent)]",
+					"omsk-split-divider group relative z-20 cursor-col-resize touch-none bg-[var(--omsk-border-muted)] focus-visible:bg-[var(--omsk-accent)]",
 				)}
 				onKeyDown={onKeyDown}
 				onPointerCancel={finish}
@@ -66,7 +66,7 @@ export function AgentBeside({ conversation, page }: { conversation: ReactNode; p
 				role="separator"
 				tabIndex={0}
 			>
-				<span className="pointer-events-none absolute inset-0 m-auto flex h-5 w-5 items-center justify-center rounded-full bg-[var(--omp-bg-elevated)] text-[var(--omp-dim)] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+				<span className="pointer-events-none absolute inset-0 m-auto flex h-5 w-5 items-center justify-center rounded-full bg-[var(--omsk-bg-elevated)] text-[var(--omsk-dim)] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
 					<Columns2 size={12} />
 				</span>
 			</div>

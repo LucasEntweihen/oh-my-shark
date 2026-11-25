@@ -9,7 +9,7 @@ import { type MouseEventHandler, type ReactNode, useLayoutEffect, useRef, useSta
 import { useOverlayPresence } from "../../hooks/use-overlay-presence";
 import { cx } from "../../lib/format";
 
-/** Longer than the open transition (--omp-motion-slow), so it only covers a missed transitionend. */
+/** Longer than the open transition (--omsk-motion-slow), so it only covers a missed transitionend. */
 const SETTLE_FALLBACK_MS = 600;
 
 export interface CollapseProps {
@@ -21,7 +21,7 @@ export interface CollapseProps {
 export function CollapseButton({ label, onClick }: { label: string; onClick: MouseEventHandler<HTMLButtonElement> }) {
 	return (
 		<button
-			className="omp-collapse-button omp-pressable mt-1 inline-flex min-h-7 items-center gap-1 rounded-md border border-(--omp-border-muted) px-2 text-omp-sm font-medium text-(--omp-text) hover:bg-(--omp-selected-bg)"
+			className="omsk-collapse-button omsk-pressable mt-1 inline-flex min-h-7 items-center gap-1 rounded-md border border-(--omsk-border-muted) px-2 text-omsk-sm font-medium text-(--omsk-text) hover:bg-(--omsk-selected-bg)"
 			onClick={onClick}
 			type="button"
 		>
@@ -61,7 +61,7 @@ export function Collapse({ open, children, className }: CollapseProps) {
 		<div
 			ref={ref}
 			aria-hidden={closing || undefined}
-			className={cx("omp-collapse", className)}
+			className={cx("omsk-collapse", className)}
 			data-open={shown}
 			data-settled={settled && shown}
 			inert={closing || undefined}
@@ -69,7 +69,7 @@ export function Collapse({ open, children, className }: CollapseProps) {
 				if (event.target === event.currentTarget && open) setSettled(true);
 			}}
 		>
-			<div className="omp-collapse-inner">{children}</div>
+			<div className="omsk-collapse-inner">{children}</div>
 		</div>
 	);
 }

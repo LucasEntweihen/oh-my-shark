@@ -59,28 +59,31 @@ export function ExecutionGroup({
 				: t("chat.process.statusComplete", { total: stepCount, plural });
 
 	return (
-		<section className={cx("omp-execution-group", className)} data-state={state}>
+		<section className={cx("omsk-execution-group", className)} data-state={state}>
 			<button
 				aria-expanded={expanded}
-				className="omp-execution-group-header omp-pressable flex w-full min-w-0 items-center gap-2 text-left"
+				className="omsk-execution-group-header omsk-pressable flex w-full min-w-0 items-center gap-2 text-left"
 				onClick={() => onExpandedChange(!expanded)}
 				type="button"
 				aria-label={`${t("chat.process.title")}: ${summary}`}
 			>
 				{active && (
-					<span aria-hidden="true" className="omp-execution-group-live-dot omp-working-dot omp-working-dot--sm" />
+					<span
+						aria-hidden="true"
+						className="omsk-execution-group-live-dot omsk-working-dot omsk-working-dot--sm"
+					/>
 				)}
-				<span className="omp-execution-group-title shrink-0 text-omp-sm font-medium text-[var(--omp-text)]">
+				<span className="omsk-execution-group-title shrink-0 text-omsk-sm font-medium text-[var(--omsk-text)]">
 					{t("chat.process.title")}
 				</span>
 				<span
 					aria-atomic="true"
 					aria-live="polite"
 					className={cx(
-						"omp-execution-group-summary min-w-0 flex-1 truncate text-omp-xs",
-						state === "running" && "omp-shimmer-text",
-						state === "failed" && "text-[var(--omp-error)]",
-						state === "complete" && "text-[var(--omp-muted)]",
+						"omsk-execution-group-summary min-w-0 flex-1 truncate text-omsk-xs",
+						state === "running" && "omsk-shimmer-text",
+						state === "failed" && "text-[var(--omsk-error)]",
+						state === "complete" && "text-[var(--omsk-muted)]",
 					)}
 					role="status"
 				>
@@ -88,12 +91,12 @@ export function ExecutionGroup({
 				</span>
 				<ChevronRight
 					aria-hidden="true"
-					className={cx("omp-disclosure-chevron shrink-0 text-[var(--omp-dim)]", expanded && "rotate-90")}
+					className={cx("omsk-disclosure-chevron shrink-0 text-[var(--omsk-dim)]", expanded && "rotate-90")}
 					size={14}
 				/>
 			</button>
 			<Collapse open={expanded}>
-				<div className="omp-execution-group-body">
+				<div className="omsk-execution-group-body">
 					{children}
 					<CollapseButton label={t("chat.process.collapse")} onClick={() => onExpandedChange(false)} />
 				</div>

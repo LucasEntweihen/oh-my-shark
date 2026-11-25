@@ -84,14 +84,14 @@ function num(value: unknown): number | undefined {
 	return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
-const HEADER_CLASS = "mb-2 flex items-center gap-1.5 text-omp-xs font-semibold text-[var(--omp-custom-msg-label)]";
-const HEADER_META_CLASS = "font-medium normal-case tracking-normal text-[var(--omp-dim)]";
+const HEADER_CLASS = "mb-2 flex items-center gap-1.5 text-omsk-xs font-semibold text-[var(--omsk-custom-msg-label)]";
+const HEADER_META_CLASS = "font-medium normal-case tracking-normal text-[var(--omsk-dim)]";
 
 /** Card frame matching ContextBubble: rounded custom-message background on the chat gutter. */
 function CardFrame({ children }: { children: ReactNode }) {
 	return (
-		<div className="omp-custom-turn ps-(--omp-editorial-inset) pe-(--omp-editorial-edge) py-3">
-			<div className="omp-transcript-content rounded-[10px] border border-[var(--omp-border-muted)] bg-[var(--omp-custom-msg-bg)] px-3.5 py-3 shadow-[var(--omp-shadow-sm)]">
+		<div className="omsk-custom-turn ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge) py-3">
+			<div className="omsk-transcript-content rounded-[10px] border border-[var(--omsk-border-muted)] bg-[var(--omsk-custom-msg-bg)] px-3.5 py-3 shadow-[var(--omsk-shadow-sm)]">
 				{children}
 			</div>
 		</div>
@@ -107,7 +107,7 @@ function CollapsibleText({ text, lines, className }: { text: string; lines: numb
 		<div>
 			<pre
 				className={cx(
-					"font-mono text-omp-sm leading-[1.55] break-words whitespace-pre-wrap text-[var(--omp-tool-output)]",
+					"font-mono text-omsk-sm leading-[1.55] break-words whitespace-pre-wrap text-[var(--omsk-tool-output)]",
 					!open && "max-h-60 overflow-hidden",
 					open && "max-h-80 overflow-auto",
 					className,
@@ -119,7 +119,7 @@ function CollapsibleText({ text, lines, className }: { text: string; lines: numb
 				<button
 					type="button"
 					onClick={() => setOpen(v => !v)}
-					className="omp-pressable mt-0.5 text-omp-xs font-medium text-[var(--omp-dim)] hover:text-[var(--omp-text)]"
+					className="omsk-pressable mt-0.5 text-omsk-xs font-medium text-[var(--omsk-dim)] hover:text-[var(--omsk-text)]"
 				>
 					{open
 						? t("chat.custom.showLess")
@@ -133,9 +133,11 @@ function CollapsibleText({ text, lines, className }: { text: string; lines: numb
 function CompletionRows({ children, inProcess }: { children: ReactNode; inProcess: boolean }) {
 	return (
 		<div
-			className={inProcess ? "py-0.5" : "omp-custom-turn ps-(--omp-editorial-inset) pe-(--omp-editorial-edge) py-2"}
+			className={
+				inProcess ? "py-0.5" : "omsk-custom-turn ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge) py-2"
+			}
 		>
-			<div className={cx("space-y-0.5", !inProcess && "omp-transcript-content")}>{children}</div>
+			<div className={cx("space-y-0.5", !inProcess && "omsk-transcript-content")}>{children}</div>
 		</div>
 	);
 }
@@ -159,26 +161,26 @@ function CompletionRow({
 				className={cx(
 					"shrink-0",
 					failed === undefined
-						? "text-[var(--omp-custom-msg-label)]"
+						? "text-[var(--omsk-custom-msg-label)]"
 						: failed
-							? "text-[var(--omp-error)]"
-							: "text-[var(--omp-success)]",
+							? "text-[var(--omsk-error)]"
+							: "text-[var(--omsk-success)]",
 				)}
 				size={13}
 			/>
-			<span className="min-w-0 truncate text-omp-md font-medium text-[var(--omp-text)]">{label}</span>
-			{meta && <span className="min-w-0 truncate font-mono text-omp-xs text-[var(--omp-dim)]">{meta}</span>}
+			<span className="min-w-0 truncate text-omsk-md font-medium text-[var(--omsk-text)]">{label}</span>
+			{meta && <span className="min-w-0 truncate font-mono text-omsk-xs text-[var(--omsk-dim)]">{meta}</span>}
 		</>
 	);
 	const rowClass = "flex min-h-8 w-full items-center gap-2 rounded-md px-1.5 py-1 text-left";
 	if (!output) return <div className={rowClass}>{content}</div>;
 	return (
 		<details className="group">
-			<summary className={cx("omp-pressable cursor-pointer list-none", rowClass)}>
+			<summary className={cx("omsk-pressable cursor-pointer list-none", rowClass)}>
 				{content}
 				<ChevronRight
 					aria-hidden="true"
-					className="omp-disclosure-chevron ml-auto shrink-0 text-[var(--omp-dim)] group-open:rotate-90"
+					className="omsk-disclosure-chevron ml-auto shrink-0 text-[var(--omsk-dim)] group-open:rotate-90"
 					size={13}
 				/>
 			</summary>
@@ -215,11 +217,11 @@ function advisorVariant(severity: string | undefined): BadgeVariant {
 function advisorRailColor(severity: string | undefined): string {
 	switch (severity) {
 		case "blocker":
-			return "var(--omp-error)";
+			return "var(--omsk-error)";
 		case "concern":
-			return "var(--omp-warning)";
+			return "var(--omsk-warning)";
 		default:
-			return "var(--omp-dim)";
+			return "var(--omsk-dim)";
 	}
 }
 
@@ -245,7 +247,7 @@ function AdvisorCard({ message }: { message: AgentMessage }) {
 				<span className={HEADER_META_CLASS}>
 					{t("chat.custom.advisorNotes", { count: notes.length, plural: notes.length === 1 ? "" : "s" })}
 					{blockers > 0 && (
-						<span className="text-[var(--omp-error)]">
+						<span className="text-[var(--omsk-error)]">
 							{" "}
 							· {t("chat.custom.blockers", { count: blockers, plural: blockers === 1 ? "" : "s" })}
 						</span>
@@ -264,9 +266,9 @@ function AdvisorCard({ message }: { message: AgentMessage }) {
 								{note.severity}
 							</Badge>
 						)}
-						<div className="min-w-0 flex-1 text-omp-md leading-[1.55] text-[var(--omp-text)]">
+						<div className="min-w-0 flex-1 text-omsk-md leading-[1.55] text-[var(--omsk-text)]">
 							{note.advisor && note.advisor !== "default" && (
-								<span className="mr-1.5 font-mono text-omp-xs text-[var(--omp-dim)]">[{note.advisor}]</span>
+								<span className="mr-1.5 font-mono text-omsk-xs text-[var(--omsk-dim)]">[{note.advisor}]</span>
 							)}
 							<span className="whitespace-pre-wrap">{note.note}</span>
 						</div>
@@ -276,7 +278,7 @@ function AdvisorCard({ message }: { message: AgentMessage }) {
 					<button
 						type="button"
 						onClick={() => setExpanded(true)}
-						className="omp-pressable border-l-2 border-[var(--omp-border-muted)] pl-2.5 text-omp-sm font-medium text-[var(--omp-dim)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable border-l-2 border-[var(--omsk-border-muted)] pl-2.5 text-omsk-sm font-medium text-[var(--omsk-dim)] hover:text-[var(--omsk-text)]"
 					>
 						{t("chat.custom.moreNotes", { count: hidden, plural: hidden === 1 ? "" : "s" })}
 					</button>
@@ -454,13 +456,13 @@ function severityRank(severity: string): number {
 function severityColor(severity: string): string {
 	switch (severity) {
 		case "error":
-			return "var(--omp-error)";
+			return "var(--omsk-error)";
 		case "warning":
-			return "var(--omp-warning)";
+			return "var(--omsk-warning)";
 		case "info":
-			return "var(--omp-link)";
+			return "var(--omsk-link)";
 		default:
-			return "var(--omp-dim)";
+			return "var(--omsk-dim)";
 	}
 }
 
@@ -540,9 +542,9 @@ function LateDiagnosticsCard({ message }: { message: AgentMessage }) {
 		<CardFrame>
 			<div className={HEADER_CLASS}>
 				{errored ? (
-					<XCircle size={12} className="text-[var(--omp-error)]" />
+					<XCircle size={12} className="text-[var(--omsk-error)]" />
 				) : (
-					<AlertTriangle size={12} className="text-[var(--omp-warning)]" />
+					<AlertTriangle size={12} className="text-[var(--omsk-warning)]" />
 				)}
 				<span>{t("chat.custom.lateDiagnostics")}</span>
 				{summary && <span className={HEADER_META_CLASS}>({summary})</span>}
@@ -551,19 +553,19 @@ function LateDiagnosticsCard({ message }: { message: AgentMessage }) {
 				{rendered.map((group, gi) => (
 					<div key={group.path ?? gi}>
 						{group.path && (
-							<div className="mb-0.5 font-mono text-omp-sm text-[var(--omp-status-path)]">{group.path}</div>
+							<div className="mb-0.5 font-mono text-omsk-sm text-[var(--omsk-status-path)]">{group.path}</div>
 						)}
 						{group.items.map((item, ii) =>
 							item.kind === "raw" ? (
 								<div
 									key={ii}
-									className="font-mono text-omp-sm leading-[1.55] break-words whitespace-pre-wrap text-[var(--omp-muted)]"
+									className="font-mono text-omsk-sm leading-[1.55] break-words whitespace-pre-wrap text-[var(--omsk-muted)]"
 								>
 									{item.text}
 								</div>
 							) : (
-								<div key={ii} className="flex items-baseline gap-1.5 font-mono text-omp-sm leading-[1.55]">
-									<span className="shrink-0 tabular-nums text-[var(--omp-dim)]">
+								<div key={ii} className="flex items-baseline gap-1.5 font-mono text-omsk-sm leading-[1.55]">
+									<span className="shrink-0 tabular-nums text-[var(--omsk-dim)]">
 										{item.diag.line}:{item.diag.col}
 									</span>
 									<span
@@ -572,10 +574,12 @@ function LateDiagnosticsCard({ message }: { message: AgentMessage }) {
 									>
 										{item.diag.severity}
 									</span>
-									<span className="min-w-0 break-words text-[var(--omp-text)]">
+									<span className="min-w-0 break-words text-[var(--omsk-text)]">
 										{item.diag.text}
-										{item.diag.code && <span className="text-[var(--omp-dim)]"> ({item.diag.code})</span>}
-										{item.diag.source && <span className="text-[var(--omp-dim)]"> [{item.diag.source}]</span>}
+										{item.diag.code && <span className="text-[var(--omsk-dim)]"> ({item.diag.code})</span>}
+										{item.diag.source && (
+											<span className="text-[var(--omsk-dim)]"> [{item.diag.source}]</span>
+										)}
 									</span>
 								</div>
 							),
@@ -586,7 +590,7 @@ function LateDiagnosticsCard({ message }: { message: AgentMessage }) {
 					<button
 						type="button"
 						onClick={() => setExpanded(true)}
-						className="omp-pressable text-omp-xs font-medium text-[var(--omp-dim)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable text-omsk-xs font-medium text-[var(--omsk-dim)] hover:text-[var(--omsk-text)]"
 					>
 						{t("chat.custom.moreDiagnostics", { count: hidden, plural: hidden === 1 ? "" : "s" })}
 					</button>
@@ -618,35 +622,35 @@ function SkillCard({ message }: { message: AgentMessage }) {
 				onClick={() => text && setOpen(v => !v)}
 				className={cx("flex w-full items-center gap-1.5 text-left", text && "cursor-pointer")}
 			>
-				<Zap size={12} className="shrink-0 text-[var(--omp-custom-msg-label)]" />
-				<span className="text-omp-xs font-semibold text-[var(--omp-custom-msg-label)]">
+				<Zap size={12} className="shrink-0 text-[var(--omsk-custom-msg-label)]" />
+				<span className="text-omsk-xs font-semibold text-[var(--omsk-custom-msg-label)]">
 					{t("chat.custom.skill")}
 				</span>
-				<span className="shrink-0 text-omp-md font-semibold text-[var(--omp-text)]">{name}</span>
+				<span className="shrink-0 text-omsk-md font-semibold text-[var(--omsk-text)]">{name}</span>
 				{args && (
-					<span className="min-w-0 flex-1 truncate font-mono text-omp-sm text-[var(--omp-dim)]">{args}</span>
+					<span className="min-w-0 flex-1 truncate font-mono text-omsk-sm text-[var(--omsk-dim)]">{args}</span>
 				)}
 				{text &&
 					(open ? (
-						<ChevronDown size={13} className="ml-auto shrink-0 text-[var(--omp-dim)]" />
+						<ChevronDown size={13} className="ml-auto shrink-0 text-[var(--omsk-dim)]" />
 					) : (
-						<ChevronRight size={13} className="ml-auto shrink-0 text-[var(--omp-dim)]" />
+						<ChevronRight size={13} className="ml-auto shrink-0 text-[var(--omsk-dim)]" />
 					))}
 			</button>
 			{(path || lineCount != null) && (
-				<div className="mt-1 flex items-center gap-1.5 font-mono text-omp-xs">
-					{path && <span className="min-w-0 truncate text-[var(--omp-accent)]">{path}</span>}
-					{path && lineCount != null && <span className="text-[var(--omp-dim)]">·</span>}
+				<div className="mt-1 flex items-center gap-1.5 font-mono text-omsk-xs">
+					{path && <span className="min-w-0 truncate text-[var(--omsk-accent)]">{path}</span>}
+					{path && lineCount != null && <span className="text-[var(--omsk-dim)]">·</span>}
 					{lineCount != null && (
-						<span className="shrink-0 text-[var(--omp-muted)]">
+						<span className="shrink-0 text-[var(--omsk-muted)]">
 							{t("chat.custom.skillLines", { count: lineCount, plural: lineCount === 1 ? "" : "s" })}
 						</span>
 					)}
 				</div>
 			)}
 			{open && text && (
-				<div className="mt-2 border-t border-[var(--omp-border-muted)]/70 pt-2">
-					<div className="mb-1 text-omp-xs font-semibold text-[var(--omp-muted)]">{t("chat.custom.prompt")}</div>
+				<div className="mt-2 border-t border-[var(--omsk-border-muted)]/70 pt-2">
+					<div className="mb-1 text-omsk-xs font-semibold text-[var(--omsk-muted)]">{t("chat.custom.prompt")}</div>
 					<MarkdownRenderer content={text} />
 				</div>
 			)}
@@ -662,9 +666,9 @@ function CollabCard({ message }: { message: AgentMessage }) {
 	const from = str(resultDetails(message)?.from) ?? "guest";
 	const text = resultText(message.content).trim();
 	return (
-		<div className="ps-(--omp-editorial-inset) pe-(--omp-editorial-edge) py-3">
-			<div className="omp-transcript-content rounded-xl border border-[var(--omp-user-msg-border)] bg-[var(--omp-user-msg-bg)] px-3.5 py-3 shadow-[var(--omp-shadow-sm)]">
-				<div className="mb-1.5 text-omp-md font-semibold text-[var(--omp-accent)]">«{from}» ›</div>
+		<div className="ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge) py-3">
+			<div className="omsk-transcript-content rounded-xl border border-[var(--omsk-user-msg-border)] bg-[var(--omsk-user-msg-bg)] px-3.5 py-3 shadow-[var(--omsk-shadow-sm)]">
+				<div className="mb-1.5 text-omsk-md font-semibold text-[var(--omsk-accent)]">«{from}» ›</div>
 				{text && <MarkdownRenderer content={text} singleDollarTextMath={false} />}
 			</div>
 		</div>
@@ -698,13 +702,13 @@ function IrcCard({ message }: { message: AgentMessage }) {
 
 	return (
 		<CardFrame>
-			<div className="mb-1.5 flex items-center gap-1.5 text-omp-sm font-semibold text-[var(--omp-custom-msg-label)]">
+			<div className="mb-1.5 flex items-center gap-1.5 text-omsk-sm font-semibold text-[var(--omsk-custom-msg-label)]">
 				<MessagesSquare size={12} className="shrink-0" />
 				<span className="min-w-0 truncate">{title}</span>
 				{kind === "autoreply" && <Badge variant="muted">{t("chat.custom.ircAuto")}</Badge>}
 				{str(details?.replyTo) && <Badge variant="muted">{t("chat.custom.ircReply")}</Badge>}
 				{age && (
-					<span className="ml-auto shrink-0 font-mono text-omp-xs font-normal text-[var(--omp-dim)]">{age}</span>
+					<span className="ml-auto shrink-0 font-mono text-omsk-xs font-normal text-[var(--omsk-dim)]">{age}</span>
 				)}
 			</div>
 			{body && <CollapsibleText text={body} lines={3} />}

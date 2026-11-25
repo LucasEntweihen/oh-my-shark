@@ -24,23 +24,23 @@ function BudgetMeter({ overview }: { overview: RpcMemoryOverview }) {
 	const used = tokens.notes + tokens.summary + tokens.learned;
 	const budget = Math.max(tokens.budget, 1);
 	const segments = [
-		{ id: "notes", tokens: tokens.notes, className: "bg-(--omp-accent)", label: t("memory.meter.notes") },
+		{ id: "notes", tokens: tokens.notes, className: "bg-(--omsk-accent)", label: t("memory.meter.notes") },
 		{
 			id: "summary",
 			tokens: tokens.summary,
-			className: "bg-(--omp-text-secondary)",
+			className: "bg-(--omsk-text-secondary)",
 			label: t("memory.meter.summary"),
 		},
-		{ id: "lessons", tokens: tokens.learned, className: "bg-(--omp-warning)", label: t("memory.meter.lessons") },
+		{ id: "lessons", tokens: tokens.learned, className: "bg-(--omsk-warning)", label: t("memory.meter.lessons") },
 	];
 	return (
 		<div className="flex min-w-44 flex-col items-end gap-1.5">
-			<span className="text-omp-xs tabular-nums text-(--omp-muted)">
+			<span className="text-omsk-xs tabular-nums text-(--omsk-muted)">
 				{t("memory.meter.label", { used: compactTokens(used), budget: compactTokens(tokens.budget) })}
 			</span>
 			<div
 				aria-label={t("memory.meter.label", { used: compactTokens(used), budget: compactTokens(tokens.budget) })}
-				className="flex h-1.5 w-44 gap-px overflow-hidden rounded-full bg-(--omp-border-muted)"
+				className="flex h-1.5 w-44 gap-px overflow-hidden rounded-full bg-(--omsk-border-muted)"
 				role="img"
 			>
 				{segments.map(segment =>
@@ -54,7 +54,7 @@ function BudgetMeter({ overview }: { overview: RpcMemoryOverview }) {
 					) : null,
 				)}
 			</div>
-			<div className="flex gap-2.5 text-omp-xxs text-(--omp-dim)">
+			<div className="flex gap-2.5 text-omsk-xxs text-(--omsk-dim)">
 				{segments.map(segment => (
 					<span className="flex items-center gap-1" key={segment.id}>
 						<span className={cx("size-1.5 rounded-full", segment.className)} />
@@ -82,9 +82,9 @@ function Section({
 	return (
 		<section className="flex flex-col gap-2">
 			<header className="flex items-center gap-2 px-2">
-				<span className="text-(--omp-dim)">{icon}</span>
-				<h3 className="text-omp-sm font-semibold tracking-wide text-(--omp-text-secondary) uppercase">{title}</h3>
-				{count && <span className="text-omp-xs tabular-nums text-(--omp-dim)">{count}</span>}
+				<span className="text-(--omsk-dim)">{icon}</span>
+				<h3 className="text-omsk-sm font-semibold tracking-wide text-(--omsk-text-secondary) uppercase">{title}</h3>
+				{count && <span className="text-omsk-xs tabular-nums text-(--omsk-dim)">{count}</span>}
 				<span className="flex-1" />
 				{aside}
 			</header>
@@ -97,7 +97,7 @@ function OverBudget() {
 	const t = useT();
 	return (
 		<span
-			className="ml-2 inline-flex translate-y-[-1px] items-center rounded-full border border-(--omp-border-muted) px-1.5 align-middle text-omp-xxs font-medium text-(--omp-dim)"
+			className="ml-2 inline-flex translate-y-[-1px] items-center rounded-full border border-(--omsk-border-muted) px-1.5 align-middle text-omsk-xxs font-medium text-(--omsk-dim)"
 			title={t("memory.lessons.overBudgetHint")}
 		>
 			{t("memory.lessons.overBudget")}
@@ -129,11 +129,11 @@ function SummaryEmpty({
 		});
 	else body = t("memory.summary.emptyNone", { hours: overview.limits.idleHours });
 	return (
-		<div className="omp-card flex items-start gap-3 px-4 py-3.5">
-			<Sparkles aria-hidden="true" className="mt-0.5 shrink-0 text-(--omp-dim)" size={15} />
+		<div className="omsk-card flex items-start gap-3 px-4 py-3.5">
+			<Sparkles aria-hidden="true" className="mt-0.5 shrink-0 text-(--omsk-dim)" size={15} />
 			<div className="min-w-0 flex-1">
-				<p className="text-omp-md text-(--omp-text)">{t("memory.summary.emptyTitle")}</p>
-				<p className="mt-0.5 text-omp-sm leading-relaxed text-(--omp-muted)">{body}</p>
+				<p className="text-omsk-md text-(--omsk-text)">{t("memory.summary.emptyTitle")}</p>
+				<p className="mt-0.5 text-omsk-sm leading-relaxed text-(--omsk-muted)">{body}</p>
 			</div>
 			{!updating && (ready > 0 || waiting > 0) && (
 				<Button className="shrink-0" icon={<RefreshCw size={12} />} onClick={onUpdate} size="sm">
@@ -150,13 +150,13 @@ function Disclosure({ title, children }: { title: string; children: ReactNode })
 		<div>
 			<button
 				aria-expanded={open}
-				className="flex items-center gap-1.5 rounded-md px-2 py-1 text-omp-sm text-(--omp-muted) transition-colors hover:text-(--omp-text)"
+				className="flex items-center gap-1.5 rounded-md px-2 py-1 text-omsk-sm text-(--omsk-muted) transition-colors hover:text-(--omsk-text)"
 				onClick={() => setOpen(value => !value)}
 				type="button"
 			>
 				<ChevronRight
 					aria-hidden="true"
-					className={cx("transition-transform duration-(--omp-motion-fast)", open && "rotate-90")}
+					className={cx("transition-transform duration-(--omsk-motion-fast)", open && "rotate-90")}
 					size={13}
 				/>
 				{title}
@@ -196,8 +196,8 @@ export function KnowledgeView({
 		<div className="mx-auto flex w-full max-w-3xl flex-col gap-7 px-6 py-5">
 			<div className="flex items-start justify-between gap-6">
 				<div className="min-w-0">
-					<h2 className="text-omp-lg font-semibold text-(--omp-text)">{t("memory.knowledge.title")}</h2>
-					<p className="mt-1 text-omp-sm leading-relaxed text-(--omp-muted)">{t("memory.knowledge.caption")}</p>
+					<h2 className="text-omsk-lg font-semibold text-(--omsk-text)">{t("memory.knowledge.title")}</h2>
+					<p className="mt-1 text-omsk-sm leading-relaxed text-(--omsk-muted)">{t("memory.knowledge.caption")}</p>
 				</div>
 				<BudgetMeter overview={overview} />
 			</div>
@@ -227,14 +227,14 @@ export function KnowledgeView({
 						))}
 					</ul>
 				) : (
-					<p className="px-2 text-omp-sm text-(--omp-dim)">{t("memory.notes.empty")}</p>
+					<p className="px-2 text-omsk-sm text-(--omsk-dim)">{t("memory.notes.empty")}</p>
 				)}
 			</Section>
 
 			<Section
 				aside={
 					injection.summaryTruncated && overview.summary ? (
-						<span className="text-omp-xs text-(--omp-dim)" title={t("memory.summary.truncatedHint")}>
+						<span className="text-omsk-xs text-(--omsk-dim)" title={t("memory.summary.truncatedHint")}>
 							{t("memory.summary.truncated")}
 						</span>
 					) : undefined
@@ -243,7 +243,7 @@ export function KnowledgeView({
 				title={t("memory.summary.title")}
 			>
 				{overview.summary ? (
-					<div className="omp-card px-4 py-3 text-omp-md">
+					<div className="omsk-card px-4 py-3 text-omsk-md">
 						<MarkdownRenderer content={overview.summary} />
 					</div>
 				) : (
@@ -257,7 +257,7 @@ export function KnowledgeView({
 					icon={<Lightbulb size={13} />}
 					title={t("memory.lessons.title")}
 				>
-					<p className="-mt-1 px-2 text-omp-xs text-(--omp-dim)">{t("memory.lessons.caption")}</p>
+					<p className="-mt-1 px-2 text-omsk-xs text-(--omsk-dim)">{t("memory.lessons.caption")}</p>
 					<ul className="flex flex-col">
 						{overview.lessons.map((lesson, index) => (
 							<MemoryEntryRow
@@ -294,15 +294,15 @@ export function KnowledgeView({
 
 			{(overview.full || overview.playbooks.length > 0) && (
 				<Disclosure title={t("memory.full.title", { count: overview.playbooks.length })}>
-					<p className="text-omp-xs text-(--omp-dim)">{t("memory.full.caption")}</p>
+					<p className="text-omsk-xs text-(--omsk-dim)">{t("memory.full.caption")}</p>
 					{overview.full && (
-						<div className="omp-card max-h-96 overflow-y-auto px-4 py-3 text-omp-sm">
+						<div className="omsk-card max-h-96 overflow-y-auto px-4 py-3 text-omsk-sm">
 							<MarkdownRenderer content={overview.full} />
 						</div>
 					)}
 					{overview.playbooks.map(playbook => (
 						<Disclosure key={playbook.name} title={playbook.description || playbook.name}>
-							<div className="omp-card max-h-80 overflow-y-auto px-4 py-3 text-omp-sm">
+							<div className="omsk-card max-h-80 overflow-y-auto px-4 py-3 text-omsk-sm">
 								<MarkdownRenderer content={playbook.content} />
 							</div>
 						</Disclosure>

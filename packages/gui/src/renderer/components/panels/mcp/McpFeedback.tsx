@@ -44,8 +44,8 @@ export function CopyButton({ text, className }: { text: string; className?: stri
 		<button
 			aria-label={copied ? t("mcp.card.copied") : t("mcp.card.copy")}
 			className={cx(
-				"inline-flex shrink-0 items-center gap-1 rounded px-1 py-0.5 text-omp-xs transition-colors",
-				copied ? "text-(--omp-success)" : "text-(--omp-dim) hover:text-(--omp-text)",
+				"inline-flex shrink-0 items-center gap-1 rounded px-1 py-0.5 text-omsk-xs transition-colors",
+				copied ? "text-(--omsk-success)" : "text-(--omsk-dim) hover:text-(--omsk-text)",
 				className,
 			)}
 			onClick={() => {
@@ -69,14 +69,14 @@ export function CopyableError({ title, text, className }: { title?: string; text
 	return (
 		<div
 			className={cx(
-				"rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent px-2.5 py-1.5",
+				"rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent px-2.5 py-1.5",
 				className,
 			)}
 		>
 			<div className="flex items-start gap-2">
 				<div className="min-w-0 flex-1">
-					{title && <span className="mb-0.5 block text-omp-sm font-medium text-(--omp-error)">{title}</span>}
-					<span className="block whitespace-pre-wrap break-all font-mono text-omp-xs text-(--omp-error)">
+					{title && <span className="mb-0.5 block text-omsk-sm font-medium text-(--omsk-error)">{title}</span>}
+					<span className="block whitespace-pre-wrap break-all font-mono text-omsk-xs text-(--omsk-error)">
 						{text}
 					</span>
 				</div>
@@ -107,12 +107,12 @@ export function McpTestResultView({
 		return (
 			<div
 				className={cx(
-					"flex items-center gap-2 rounded-md border border-(--omp-border-muted) bg-transparent px-2.5 py-1.5",
+					"flex items-center gap-2 rounded-md border border-(--omsk-border-muted) bg-transparent px-2.5 py-1.5",
 					className,
 				)}
 			>
 				<Spinner size="sm" />
-				<span className="text-omp-sm text-(--omp-muted)">{t("mcp.wizard.testing")}</span>
+				<span className="text-omsk-sm text-(--omsk-muted)">{t("mcp.wizard.testing")}</span>
 			</div>
 		);
 	}
@@ -121,23 +121,23 @@ export function McpTestResultView({
 		return (
 			<div
 				className={cx(
-					"rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent px-2.5 py-1.5",
+					"rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent px-2.5 py-1.5",
 					className,
 				)}
 			>
 				<div className="flex items-start gap-2">
 					<div className="min-w-0 flex-1">
-						<span className="mb-0.5 block text-omp-sm font-medium text-(--omp-error)">
+						<span className="mb-0.5 block text-omsk-sm font-medium text-(--omsk-error)">
 							{t("mcp.test.failed")}
 						</span>
-						<span className="block whitespace-pre-wrap break-all font-mono text-omp-xs text-(--omp-error)">
+						<span className="block whitespace-pre-wrap break-all font-mono text-omsk-xs text-(--omsk-error)">
 							{view.error || t("mcp.test.unknownError")}
 						</span>
 					</div>
 					{onDismiss && (
 						<button
 							aria-label={t("mcp.test.dismiss")}
-							className="shrink-0 text-(--omp-dim) transition-colors hover:text-(--omp-text)"
+							className="shrink-0 text-(--omsk-dim) transition-colors hover:text-(--omsk-text)"
 							onClick={onDismiss}
 							title={t("mcp.test.dismiss")}
 							type="button"
@@ -150,15 +150,15 @@ export function McpTestResultView({
 		);
 	}
 	return (
-		<div className={cx("rounded-md bg-(--omp-tool-success-bg) px-2.5 py-1.5", className)}>
+		<div className={cx("rounded-md bg-(--omsk-tool-success-bg) px-2.5 py-1.5", className)}>
 			<div className="flex items-center gap-2">
-				<span className="min-w-0 flex-1 text-omp-sm font-medium text-(--omp-success)">
+				<span className="min-w-0 flex-1 text-omsk-sm font-medium text-(--omsk-success)">
 					{view.toolCount > 0 ? t("mcp.test.ok", { count: view.toolCount }) : t("mcp.test.okNoTools")}
 				</span>
 				{onDismiss && (
 					<button
 						aria-label={t("mcp.test.dismiss")}
-						className="shrink-0 text-(--omp-dim) transition-colors hover:text-(--omp-text)"
+						className="shrink-0 text-(--omsk-dim) transition-colors hover:text-(--omsk-text)"
 						onClick={onDismiss}
 						title={t("mcp.test.dismiss")}
 						type="button"
@@ -171,14 +171,14 @@ export function McpTestResultView({
 				<div className="mt-1 flex flex-wrap items-center gap-1">
 					{view.shown.map(name => (
 						<code
-							className="rounded bg-(--omp-code-bg) px-1.5 py-px font-mono text-omp-xs text-(--omp-muted)"
+							className="rounded bg-(--omsk-code-bg) px-1.5 py-px font-mono text-omsk-xs text-(--omsk-muted)"
 							key={name}
 						>
 							{name}
 						</code>
 					))}
 					{view.extra > 0 && (
-						<span className="text-omp-xs text-(--omp-dim)">{t("mcp.test.more", { count: view.extra })}</span>
+						<span className="text-omsk-xs text-(--omsk-dim)">{t("mcp.test.more", { count: view.extra })}</span>
 					)}
 				</div>
 			)}

@@ -124,10 +124,10 @@ export function AddNote({
 				</Button>
 			</div>
 			{problem ? (
-				<p className="text-omp-xs text-(--omp-warning)">{problem}</p>
+				<p className="text-omsk-xs text-(--omsk-warning)">{problem}</p>
 			) : (
 				text.length > 0 && (
-					<p className="text-omp-xs text-(--omp-dim)">
+					<p className="text-omsk-xs text-(--omsk-dim)">
 						{t("memory.notes.enterHint")}
 						{text.length > 800 && ` · ${text.length}/1000`}
 					</p>
@@ -211,7 +211,7 @@ export function MemoryEntryRow({
 	if (editing) {
 		return (
 			<li className="flex gap-2.5 rounded-lg px-2 py-2" ref={rowRef}>
-				<Icon aria-hidden="true" className="mt-2.5 shrink-0 text-(--omp-dim)" size={13} />
+				<Icon aria-hidden="true" className="mt-2.5 shrink-0 text-(--omsk-dim)" size={13} />
 				<div className="flex min-w-0 flex-1 flex-col gap-1.5">
 					<TextArea
 						aria-label={t(kind === "note" ? "memory.notes.editLabel" : "memory.lessons.editLabel")}
@@ -240,7 +240,9 @@ export function MemoryEntryRow({
 						<Button icon={<X size={12} />} onClick={cancel} size="sm" variant="ghost">
 							{t("common.cancel")}
 						</Button>
-						<span className="ml-auto text-omp-xs text-(--omp-dim)">{problem ?? t("memory.notes.editHint")}</span>
+						<span className="ml-auto text-omsk-xs text-(--omsk-dim)">
+							{problem ?? t("memory.notes.editHint")}
+						</span>
 					</div>
 				</div>
 			</li>
@@ -250,23 +252,23 @@ export function MemoryEntryRow({
 	return (
 		<li
 			className={cx(
-				"group relative flex gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-(--omp-sidebar-item-hover)",
+				"group relative flex gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-(--omsk-sidebar-item-hover)",
 				busy && "opacity-60",
 			)}
 			ref={rowRef}
 		>
 			<Icon
 				aria-hidden="true"
-				className={cx("mt-[0.3rem] shrink-0", kind === "note" ? "text-(--omp-accent)" : "text-(--omp-warning)")}
+				className={cx("mt-[0.3rem] shrink-0", kind === "note" ? "text-(--omsk-accent)" : "text-(--omsk-warning)")}
 				size={13}
 			/>
 			<div className={cx("min-w-0 flex-1", dimmed && "opacity-55")}>
-				<p className="text-omp-md leading-relaxed break-words whitespace-pre-wrap text-(--omp-text)">
+				<p className="text-omsk-md leading-relaxed break-words whitespace-pre-wrap text-(--omsk-text)">
 					{entry.text}
 					{marker}
 				</p>
-				{entry.context && <p className="mt-0.5 text-omp-xs text-(--omp-dim)">{entry.context}</p>}
-				{problem && <p className="mt-0.5 text-omp-xs text-(--omp-warning)">{problem}</p>}
+				{entry.context && <p className="mt-0.5 text-omsk-xs text-(--omsk-dim)">{entry.context}</p>}
+				{problem && <p className="mt-0.5 text-omsk-xs text-(--omsk-warning)">{problem}</p>}
 			</div>
 			<div
 				className={cx(
@@ -280,7 +282,7 @@ export function MemoryEntryRow({
 				<IconAction data-edit icon={<Pencil size={13} />} label={t("common.edit")} onClick={startEdit} />
 				{armed ? (
 					<button
-						className="h-6 rounded-md px-2 text-omp-xs font-medium text-(--omp-error) transition-colors hover:bg-(--omp-error-dim)"
+						className="h-6 rounded-md px-2 text-omsk-xs font-medium text-(--omsk-error) transition-colors hover:bg-(--omsk-error-dim)"
 						onClick={() => void remove()}
 						type="button"
 					>
@@ -308,7 +310,7 @@ function IconAction({
 	return (
 		<button
 			aria-label={label}
-			className="grid size-6 place-items-center rounded-md text-(--omp-muted) transition-colors hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+			className="grid size-6 place-items-center rounded-md text-(--omsk-muted) transition-colors hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 			data-edit={rest["data-edit"] ? "" : undefined}
 			onClick={onClick}
 			title={label}

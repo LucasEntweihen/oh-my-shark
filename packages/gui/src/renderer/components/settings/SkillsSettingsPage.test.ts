@@ -66,7 +66,7 @@ describe("Skills settings filtering", () => {
 		skill({
 			name: "managed-notes",
 			description: "Capture notes",
-			provider: "omp-managed",
+			provider: "omsk-managed",
 			providerName: "Managed Skills",
 			managed: true,
 		}),

@@ -23,10 +23,10 @@ interface LogLine extends ParsedLogLine {
 }
 
 const LEVEL_CLASS: Record<LogLevel, string> = {
-	info: "text-(--omp-text-secondary)",
-	warn: "text-(--omp-warning)",
-	error: "text-(--omp-error)",
-	other: "text-(--omp-muted)",
+	info: "text-(--omsk-text-secondary)",
+	warn: "text-(--omsk-warning)",
+	error: "text-(--omsk-error)",
+	other: "text-(--omsk-muted)",
 };
 
 const LEVEL_LABEL_KEY = {
@@ -93,7 +93,7 @@ export function LogPanel() {
 		);
 		const anchor = document.createElement("a");
 		anchor.href = url;
-		anchor.download = `omp-logs-${new Date().toISOString().replace(/[:.]/g, "-")}.log`;
+		anchor.download = `omsk-logs-${new Date().toISOString().replace(/[:.]/g, "-")}.log`;
 		anchor.click();
 		window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 	};
@@ -142,11 +142,11 @@ export function LogPanel() {
 				</ToolbarIconButton>
 			</PanelToolbar>
 			<div className="flex h-8 shrink-0 items-center gap-2 px-3 pb-1">
-				<div className="omp-segmented" role="group" aria-label={t("logPanel.levelLabel")}>
+				<div className="omsk-segmented" role="group" aria-label={t("logPanel.levelLabel")}>
 					<Glide activeKey={levelFilter} selector='[aria-pressed="true"]' variant="thumb" />
 					{(["all", "info", "warn", "error"] as const).map(level => (
 						<button
-							className="flex h-6 items-center gap-1 px-2 text-omp-xs font-medium"
+							className="flex h-6 items-center gap-1 px-2 text-omsk-xs font-medium"
 							aria-pressed={levelFilter === level}
 							key={level}
 							onClick={() => setLevelFilter(level)}
@@ -158,10 +158,10 @@ export function LogPanel() {
 									className={cx(
 										"tabular-nums",
 										level === "error"
-											? "text-(--omp-error)"
+											? "text-(--omsk-error)"
 											: level === "warn"
-												? "text-(--omp-warning)"
-												: "text-(--omp-dim)",
+												? "text-(--omsk-warning)"
+												: "text-(--omsk-dim)",
 									)}
 								>
 									{counts[level]}
@@ -170,13 +170,13 @@ export function LogPanel() {
 						</button>
 					))}
 				</div>
-				<span className="ml-auto truncate text-omp-xs tabular-nums text-(--omp-dim)" title={t("logPanel.scope")}>
+				<span className="ml-auto truncate text-omsk-xs tabular-nums text-(--omsk-dim)" title={t("logPanel.scope")}>
 					{t("logPanel.lines", { count: filtered.length })}
 				</span>
 			</div>
-			<div className="relative min-h-0 flex-1 border-t border-(--omp-border-muted) bg-(--omp-code-bg)">
+			<div className="relative min-h-0 flex-1 border-t border-(--omsk-border-muted) bg-(--omsk-code-bg)">
 				<div
-					className="h-full overflow-y-auto py-1.5 font-mono text-omp-xs leading-[1.55]"
+					className="h-full overflow-y-auto py-1.5 font-mono text-omsk-xs leading-[1.55]"
 					onScroll={onScroll}
 					ref={scrollRef}
 				>
@@ -201,7 +201,7 @@ export function LogPanel() {
 							const open = openLines.has(line.seq);
 							return (
 								<div
-									className={cx("omp-log-line px-3 py-0.5", line.fields && "cursor-pointer")}
+									className={cx("omsk-log-line px-3 py-0.5", line.fields && "cursor-pointer")}
 									data-level={line.level}
 									data-open={open || undefined}
 									key={line.seq}
@@ -216,7 +216,9 @@ export function LogPanel() {
 									}}
 								>
 									<div className="flex min-w-0 items-baseline gap-2">
-										{line.time && <span className="shrink-0 tabular-nums text-(--omp-dim)">{line.time}</span>}
+										{line.time && (
+											<span className="shrink-0 tabular-nums text-(--omsk-dim)">{line.time}</span>
+										)}
 										{line.levelName && (
 											<span className={cx("w-[5ch] shrink-0 truncate", LEVEL_CLASS[line.level])}>
 												{line.levelName}
@@ -225,7 +227,7 @@ export function LogPanel() {
 										<span
 											className={cx(
 												"min-w-0 flex-1 break-words whitespace-pre-wrap",
-												line.levelName ? "text-(--omp-text)" : LEVEL_CLASS[line.level],
+												line.levelName ? "text-(--omsk-text)" : LEVEL_CLASS[line.level],
 											)}
 										>
 											{line.message}
@@ -234,7 +236,7 @@ export function LogPanel() {
 									{line.fields && (
 										<div
 											className={cx(
-												"omp-log-fields break-all text-(--omp-dim)",
+												"omsk-log-fields break-all text-(--omsk-dim)",
 												line.time && "pl-[calc(8ch+0.5rem)]",
 												!open && "line-clamp-1",
 											)}
@@ -250,7 +252,7 @@ export function LogPanel() {
 				{!pinned && (
 					<button
 						aria-label={t("logPanel.jumpLabel")}
-						className="omp-pressable omp-pop-in absolute right-3 bottom-3 flex items-center gap-1 rounded-full border border-(--omp-border-muted) bg-(--omp-bg-elevated) px-2.5 py-1 text-omp-xs text-(--omp-muted) shadow-(--omp-shadow-sm) hover:text-(--omp-text)"
+						className="omsk-pressable omsk-pop-in absolute right-3 bottom-3 flex items-center gap-1 rounded-full border border-(--omsk-border-muted) bg-(--omsk-bg-elevated) px-2.5 py-1 text-omsk-xs text-(--omsk-muted) shadow-(--omsk-shadow-sm) hover:text-(--omsk-text)"
 						onClick={jumpToBottom}
 						type="button"
 					>

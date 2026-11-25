@@ -32,16 +32,16 @@ export function TranscriptFindBar({
 	const t = useT();
 	const searched = query.trim().length > 0;
 	const stepButton =
-		"omp-pressable flex h-7 w-7 items-center justify-center rounded-md text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)] disabled:pointer-events-none disabled:opacity-40";
+		"omsk-pressable flex h-7 w-7 items-center justify-center rounded-md text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)] disabled:pointer-events-none disabled:opacity-40";
 
 	return (
 		<div
 			role="search"
 			data-transcript-find
 			aria-label={t("chat.find.label")}
-			className="omp-find-bar absolute top-3 z-30 flex h-10 w-[min(380px,calc(100%-2rem))] items-center gap-1 rounded-xl border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] ps-3 pe-1.5 shadow-[var(--omp-shadow-md)]"
+			className="omsk-find-bar absolute top-3 z-30 flex h-10 w-[min(380px,calc(100%-2rem))] items-center gap-1 rounded-xl border border-[var(--omsk-border)] bg-[var(--omsk-bg-elevated)] ps-3 pe-1.5 shadow-[var(--omsk-shadow-md)]"
 		>
-			<Search aria-hidden size={14} className="shrink-0 text-[var(--omp-dim)]" />
+			<Search aria-hidden size={14} className="shrink-0 text-[var(--omsk-dim)]" />
 			<input
 				ref={inputRef}
 				autoFocus
@@ -61,13 +61,13 @@ export function TranscriptFindBar({
 				aria-label={t("chat.find.label")}
 				placeholder={t("chat.find.placeholder")}
 				spellCheck={false}
-				className="min-w-0 flex-1 bg-transparent px-1.5 text-omp-md text-[var(--omp-text)] placeholder:text-[var(--omp-dim)] focus:outline-none"
+				className="min-w-0 flex-1 bg-transparent px-1.5 text-omsk-md text-[var(--omsk-text)] placeholder:text-[var(--omsk-dim)] focus:outline-none"
 			/>
 			<span
 				aria-live="polite"
 				className={cx(
-					"shrink-0 px-1 text-omp-sm tabular-nums",
-					searched && total === 0 ? "text-[var(--omp-error)]" : "text-[var(--omp-dim)]",
+					"shrink-0 px-1 text-omsk-sm tabular-nums",
+					searched && total === 0 ? "text-[var(--omsk-error)]" : "text-[var(--omsk-dim)]",
 				)}
 			>
 				{searched

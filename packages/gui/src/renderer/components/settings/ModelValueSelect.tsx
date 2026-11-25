@@ -70,7 +70,7 @@ const PANEL_WIDTH = 288;
 const PANEL_MAX_HEIGHT = 264;
 
 const ROW_CLASS =
-	"flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-(--omp-bg-tertiary)";
+	"flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-(--omsk-bg-tertiary)";
 
 export interface ModelValueSelectProps {
 	kind: SettingRefKind;
@@ -87,8 +87,8 @@ export interface ModelValueSelectProps {
 
 const TRIGGER_CLASS = {
 	compact:
-		"flex w-full items-center gap-1.5 rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-2.5 py-1.5 text-omp-md leading-[1.45] text-left transition-colors duration-100 hover:border-(--omp-border-strong) focus:border-(--omp-input-focus-border) focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
-	field: "flex w-full items-center gap-2 rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-3 py-[9px] text-left text-omp-lg leading-[1.45] shadow-(--omp-shadow-sm) transition-[border-color,box-shadow] duration-150 hover:border-(--omp-border-strong) focus:border-(--omp-input-focus-border) focus:shadow-[0_0_0_3px_var(--omp-input-glow)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+		"flex w-full items-center gap-1.5 rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2.5 py-1.5 text-omsk-md leading-[1.45] text-left transition-colors duration-100 hover:border-(--omsk-border-strong) focus:border-(--omsk-input-focus-border) focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+	field: "flex w-full items-center gap-2 rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-3 py-[9px] text-left text-omsk-lg leading-[1.45] shadow-(--omsk-shadow-sm) transition-[border-color,box-shadow] duration-150 hover:border-(--omsk-border-strong) focus:border-(--omsk-input-focus-border) focus:shadow-[0_0_0_3px_var(--omsk-input-glow)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
 };
 
 export function ModelValueSelect({
@@ -218,7 +218,7 @@ export function ModelValueSelect({
 		return (
 			<button
 				aria-selected={selected}
-				className={`${ROW_CLASS} ${selected ? "bg-(--omp-selected-bg)" : ""} disabled:cursor-not-allowed disabled:opacity-50`}
+				className={`${ROW_CLASS} ${selected ? "bg-(--omsk-selected-bg)" : ""} disabled:cursor-not-allowed disabled:opacity-50`}
 				disabled={unavailable}
 				key={option.value}
 				onClick={() => choose(option.value)}
@@ -226,18 +226,18 @@ export function ModelValueSelect({
 				type="button"
 			>
 				<span
-					className={`min-w-0 flex-1 truncate font-mono text-omp-xs ${
-						selected ? "font-semibold text-(--omp-accent)" : "text-(--omp-text)"
+					className={`min-w-0 flex-1 truncate font-mono text-omsk-xs ${
+						selected ? "font-semibold text-(--omsk-accent)" : "text-(--omsk-text)"
 					}`}
 				>
 					{option.value}
 				</span>
 				{option.detail !== undefined && kind === "provider" && (
-					<span className="shrink-0 text-omp-xs text-(--omp-dim)">
+					<span className="shrink-0 text-omsk-xs text-(--omsk-dim)">
 						{option.disabled ? t("modelValue.providerDisabled", { name: option.detail }) : option.detail}
 					</span>
 				)}
-				{selected && <Check className="shrink-0 text-(--omp-accent)" size={13} />}
+				{selected && <Check className="shrink-0 text-(--omsk-accent)" size={13} />}
 			</button>
 		);
 	};
@@ -254,24 +254,24 @@ export function ModelValueSelect({
 				type="button"
 			>
 				<span
-					className={`min-w-0 flex-1 truncate ${value === "" ? "text-(--omp-dim)" : "text-(--omp-text)"} ${value === "" && size === "field" ? "" : "font-mono"}`}
+					className={`min-w-0 flex-1 truncate ${value === "" ? "text-(--omsk-dim)" : "text-(--omsk-text)"} ${value === "" && size === "field" ? "" : "font-mono"}`}
 				>
 					{value === "" ? (placeholder ?? t("modelValue.unset")) : value}
 				</span>
-				<ChevronDown className="shrink-0 text-(--omp-dim)" size={12} />
+				<ChevronDown className="shrink-0 text-(--omsk-dim)" size={12} />
 			</button>
 			{open && placement !== null && (
 				// Escape closes this panel, not a dialog it sits in.
 				<div
-					className="fixed z-50 flex flex-col overflow-hidden rounded-md border border-(--omp-border-muted) bg-(--omp-bg-elevated) shadow-xl shadow-black/40"
+					className="fixed z-50 flex flex-col overflow-hidden rounded-md border border-(--omsk-border-muted) bg-(--omsk-bg-elevated) shadow-xl shadow-black/40"
 					data-owns-escape
 					style={{ top: placement.top, left: placement.left, width: PANEL_WIDTH, maxHeight: PANEL_MAX_HEIGHT }}
 				>
-					<div className="flex items-center gap-2 border-b border-(--omp-border-muted) px-2.5 py-2">
-						<Search className="shrink-0 text-(--omp-dim)" size={12} />
+					<div className="flex items-center gap-2 border-b border-(--omsk-border-muted) px-2.5 py-2">
+						<Search className="shrink-0 text-(--omsk-dim)" size={12} />
 						<input
 							aria-label={t("modelValue.searchAria", { noun })}
-							className="min-w-0 flex-1 bg-transparent text-omp-xs text-(--omp-text) placeholder:text-(--omp-dim) focus:outline-none"
+							className="min-w-0 flex-1 bg-transparent text-omsk-xs text-(--omsk-text) placeholder:text-(--omsk-dim) focus:outline-none"
 							onChange={event => setQuery(event.target.value)}
 							onKeyDown={event => {
 								if (isImeKeyEvent(event)) return;
@@ -289,11 +289,11 @@ export function ModelValueSelect({
 					<div className="min-h-0 flex-1 overflow-y-auto p-1" role="listbox">
 						{fetchState === "error" ? (
 							<div className="flex flex-col items-center gap-2 py-6">
-								<span className="px-3 text-center text-omp-xs text-(--omp-error)">
+								<span className="px-3 text-center text-omsk-xs text-(--omsk-error)">
 									{fetchError ?? t("modelValue.loadFailed", { noun })}
 								</span>
 								<button
-									className="rounded-md border border-(--omp-border-muted) px-2.5 py-1 text-omp-sm font-medium text-(--omp-text) hover:bg-(--omp-bg-tertiary)"
+									className="rounded-md border border-(--omsk-border-muted) px-2.5 py-1 text-omsk-sm font-medium text-(--omsk-text) hover:bg-(--omsk-bg-tertiary)"
 									onClick={() => void fetchOptions()}
 									type="button"
 								>
@@ -303,13 +303,13 @@ export function ModelValueSelect({
 						) : fetchState !== "ready" ? (
 							<div className="flex items-center justify-center gap-2 py-6">
 								<Spinner size="sm" />
-								<span className="text-omp-xs text-(--omp-dim)">{t("modelValue.loading", { noun })}</span>
+								<span className="text-omsk-xs text-(--omsk-dim)">{t("modelValue.loading", { noun })}</span>
 							</div>
 						) : (
 							<>
 								{currentIsCustom && (
 									<>
-										<div className="px-2 pt-1 pb-0.5 text-omp-xxs font-semibold text-(--omp-dim)">
+										<div className="px-2 pt-1 pb-0.5 text-omsk-xxs font-semibold text-(--omsk-dim)">
 											{t("modelValue.currentCustom")}
 										</div>
 										{renderOption({ value })}
@@ -317,7 +317,7 @@ export function ModelValueSelect({
 								)}
 								{filtered.map(renderOption)}
 								{filtered.length === 0 && !queryIsCustom && (
-									<div className="px-2 py-6 text-center text-omp-xs text-(--omp-dim)">
+									<div className="px-2 py-6 text-center text-omsk-xs text-(--omsk-dim)">
 										{options.length === 0
 											? t("modelValue.noneAvailable", { noun })
 											: t("modelValue.noMatch", { noun, query: trimmedQuery })}
@@ -325,18 +325,18 @@ export function ModelValueSelect({
 								)}
 								{queryIsCustom && (
 									<button className={ROW_CLASS} onClick={() => choose(trimmedQuery)} type="button">
-										<span className="min-w-0 flex-1 truncate text-omp-xs text-(--omp-text)">
+										<span className="min-w-0 flex-1 truncate text-omsk-xs text-(--omsk-text)">
 											{t("modelValue.useCustom", { query: trimmedQuery })}
 										</span>
 									</button>
 								)}
 								{value !== "" && (
 									<button
-										className={`${ROW_CLASS} mt-0.5 border-t border-(--omp-border-muted) rounded-t-none`}
+										className={`${ROW_CLASS} mt-0.5 border-t border-(--omsk-border-muted) rounded-t-none`}
 										onClick={() => choose("")}
 										type="button"
 									>
-										<span className="min-w-0 flex-1 text-omp-xs text-(--omp-dim)">
+										<span className="min-w-0 flex-1 text-omsk-xs text-(--omsk-dim)">
 											{t("modelValue.clear")}
 										</span>
 									</button>

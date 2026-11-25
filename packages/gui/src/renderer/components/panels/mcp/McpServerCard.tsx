@@ -41,7 +41,7 @@ export const MCP_AUTH_BADGE_VARIANT: Record<NonNullable<RpcMcpServerInfo["authSt
 };
 
 const MENU_ITEM_CLASS =
-	"flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-omp-sm text-(--omp-text) transition-colors hover:bg-(--omp-bg-tertiary) disabled:cursor-not-allowed disabled:opacity-50";
+	"flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-omsk-sm text-(--omsk-text) transition-colors hover:bg-(--omsk-bg-tertiary) disabled:cursor-not-allowed disabled:opacity-50";
 
 /** MCP enabled-state display; mutations go through the card's action menu. */
 function EnabledBadge({ enabled }: { enabled: boolean }) {
@@ -69,7 +69,7 @@ function AuthBadge({ server }: { server: RpcMcpServerInfo }) {
 	}
 	if (server.authed) {
 		return (
-			<span className="inline-flex shrink-0 text-(--omp-dim)" title={t("extPanel.authed")}>
+			<span className="inline-flex shrink-0 text-(--omsk-dim)" title={t("extPanel.authed")}>
 				<Lock aria-hidden="true" size={11} />
 			</span>
 		);
@@ -148,16 +148,16 @@ export function McpServerCard({
 	const target = (server.transport === "stdio" ? server.command : server.url) ?? server.command ?? server.url;
 
 	return (
-		<div className="flex flex-col rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-2.5">
+		<div className="flex flex-col rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-2.5">
 			<div className="flex items-center gap-3">
 				<div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-					<span className="font-mono text-omp-md font-medium text-(--omp-text)">{server.name}</span>
+					<span className="font-mono text-omsk-md font-medium text-(--omsk-text)">{server.name}</span>
 					<Badge variant="default">{server.transport}</Badge>
 					{server.scope && <Badge variant="info">{t(`mcp.card.scope.${server.scope}`)}</Badge>}
 					<EnabledBadge enabled={enabled} />
 					<AuthBadge server={server} />
 				</div>
-				<span className="shrink-0 text-omp-sm tabular-nums text-(--omp-dim)">
+				<span className="shrink-0 text-omsk-sm tabular-nums text-(--omsk-dim)">
 					{t("extPanel.tools", { count: server.toolCount })}
 				</span>
 				<Badge dot pulse={server.status === "connecting"} variant={MCP_STATUS_VARIANT[server.status]}>
@@ -168,7 +168,7 @@ export function McpServerCard({
 						aria-expanded={menuOpen}
 						aria-haspopup="menu"
 						aria-label={t("extPanel.mcp.menu")}
-						className="flex h-6 w-6 items-center justify-center rounded-md text-(--omp-muted) transition-colors hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text) disabled:cursor-not-allowed disabled:opacity-50"
+						className="flex h-6 w-6 items-center justify-center rounded-md text-(--omsk-muted) transition-colors hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text) disabled:cursor-not-allowed disabled:opacity-50"
 						disabled={disabled}
 						onClick={onMenuToggle}
 						title={disabledReason ?? t("extPanel.mcp.menu")}
@@ -178,7 +178,7 @@ export function McpServerCard({
 					</button>
 					{menuOpen && !busy && (
 						<div
-							className="absolute right-0 top-full z-20 mt-1 flex w-40 flex-col rounded-md border border-(--omp-border-muted) bg-(--omp-bg-elevated) py-1 shadow-lg"
+							className="absolute right-0 top-full z-20 mt-1 flex w-40 flex-col rounded-md border border-(--omsk-border-muted) bg-(--omsk-bg-elevated) py-1 shadow-lg"
 							role="menu"
 						>
 							<button
@@ -221,7 +221,7 @@ export function McpServerCard({
 								{t("mcp.action.reauth")}
 							</button>
 							<button
-								className={cx(MENU_ITEM_CLASS, "text-(--omp-error)")}
+								className={cx(MENU_ITEM_CLASS, "text-(--omsk-error)")}
 								disabled={!server.scope}
 								onClick={() => onMenuAction("remove")}
 								role="menuitem"
@@ -236,7 +236,7 @@ export function McpServerCard({
 				</div>
 			</div>
 			{target && (
-				<span className="mt-1 block truncate font-mono text-omp-xs text-(--omp-dim)" title={target}>
+				<span className="mt-1 block truncate font-mono text-omsk-xs text-(--omsk-dim)" title={target}>
 					{target}
 				</span>
 			)}
@@ -244,17 +244,17 @@ export function McpServerCard({
 				<McpTestResultView className="mt-1.5" onDismiss={onDismissTest} testing={testing} view={testView} />
 			)}
 			{reauth !== null && (
-				<div className="mt-1.5 flex items-center gap-2 rounded-md border border-(--omp-border-muted) bg-transparent px-2.5 py-1.5">
+				<div className="mt-1.5 flex items-center gap-2 rounded-md border border-(--omsk-border-muted) bg-transparent px-2.5 py-1.5">
 					<Spinner size="sm" />
-					<span className="min-w-0 flex-1 text-omp-sm text-(--omp-muted)">{t("mcp.reauth.running")}</span>
+					<span className="min-w-0 flex-1 text-omsk-sm text-(--omsk-muted)">{t("mcp.reauth.running")}</span>
 					<Button disabled={reauth === "cancelling"} onClick={onReauthCancel} size="sm" variant="ghost">
 						{reauth === "cancelling" ? t("mcp.reauth.cancelling") : t("mcp.reauth.cancel")}
 					</Button>
 				</div>
 			)}
 			{confirmingRemove && (
-				<div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent px-2.5 py-1.5">
-					<span className="min-w-0 flex-1 text-omp-sm text-(--omp-error)">
+				<div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent px-2.5 py-1.5">
+					<span className="min-w-0 flex-1 text-omsk-sm text-(--omsk-error)">
 						{t("extPanel.mcp.removeConfirm", { name: server.name })}
 					</span>
 					<Button disabled={busy || disabled} onClick={onConfirmRemove} size="sm" variant="danger">

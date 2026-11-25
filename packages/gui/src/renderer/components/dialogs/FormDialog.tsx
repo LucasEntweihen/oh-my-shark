@@ -36,10 +36,10 @@ export function ChoiceRow({
 		<button
 			aria-pressed={checked}
 			className={cx(
-				"flex w-full items-start gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-(--omp-border-accent)",
+				"flex w-full items-start gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-(--omsk-border-accent)",
 				checked
-					? "border-(--omp-border-accent) bg-(--omp-selected-bg)"
-					: "border-(--omp-border-muted) hover:border-(--omp-border-accent) hover:bg-(--omp-selected-bg)",
+					? "border-(--omsk-border-accent) bg-(--omsk-selected-bg)"
+					: "border-(--omsk-border-muted) hover:border-(--omsk-border-accent) hover:bg-(--omsk-selected-bg)",
 				disabled && "cursor-not-allowed opacity-50",
 			)}
 			disabled={disabled}
@@ -50,7 +50,9 @@ export function ChoiceRow({
 				className={cx(
 					"mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center border transition-colors",
 					multi ? "rounded-[3px]" : "rounded-full",
-					checked ? "border-(--omp-accent) text-(--omp-accent)" : "border-(--omp-border-strong) text-transparent",
+					checked
+						? "border-(--omsk-accent) text-(--omsk-accent)"
+						: "border-(--omsk-border-strong) text-transparent",
 				)}
 			>
 				{multi ? <Check size={10} strokeWidth={3} /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
@@ -77,7 +79,7 @@ function Spans({ spans }: { spans: ExtensionFormSpan[] }) {
 				const text = sanitizeToolText(span.text);
 				if (span.style === "code") {
 					return (
-						<code className="rounded bg-(--omp-code-bg) px-1 font-mono" key={index}>
+						<code className="rounded bg-(--omsk-code-bg) px-1 font-mono" key={index}>
 							{text}
 						</code>
 					);
@@ -187,7 +189,7 @@ function ChoiceFieldInput({
 	return (
 		<div className="space-y-1">
 			{field.label.length > 0 && (
-				<p className="text-omp-xs font-medium break-words whitespace-pre-wrap text-(--omp-text)">
+				<p className="text-omsk-xs font-medium break-words whitespace-pre-wrap text-(--omsk-text)">
 					<Spans spans={field.label} />
 				</p>
 			)}
@@ -199,7 +201,7 @@ function ChoiceFieldInput({
 					multi={field.multi}
 					onClick={() => toggle(index)}
 				>
-					<span className="block text-omp-xs break-words whitespace-pre-wrap text-(--omp-text)">
+					<span className="block text-omsk-xs break-words whitespace-pre-wrap text-(--omsk-text)">
 						<Spans spans={option.label} />
 					</span>
 				</ChoiceRow>
@@ -216,7 +218,7 @@ function ChoiceFieldInput({
 					value={draft.other}
 				/>
 			)}
-			{error && <p className="text-omp-xs text-(--omp-error)">{error}</p>}
+			{error && <p className="text-omsk-xs text-(--omsk-error)">{error}</p>}
 		</div>
 	);
 }
@@ -227,7 +229,7 @@ function ContextBlock({ block }: { block: Exclude<ExtensionFormBlock, { kind: "f
 			return (
 				<p
 					className={cx(
-						"text-omp-xs leading-relaxed break-words whitespace-pre-wrap text-(--omp-text)",
+						"text-omsk-xs leading-relaxed break-words whitespace-pre-wrap text-(--omsk-text)",
 						block.heading && "font-medium",
 					)}
 				>
@@ -239,7 +241,7 @@ function ContextBlock({ block }: { block: Exclude<ExtensionFormBlock, { kind: "f
 			return (
 				<List
 					className={cx(
-						"space-y-0.5 pl-5 text-omp-xs text-(--omp-text)",
+						"space-y-0.5 pl-5 text-omsk-xs text-(--omsk-text)",
 						block.ordered ? "list-decimal" : "list-disc",
 					)}
 				>
@@ -253,19 +255,19 @@ function ContextBlock({ block }: { block: Exclude<ExtensionFormBlock, { kind: "f
 		}
 		case "pre":
 			return (
-				<pre className="overflow-x-auto rounded-md bg-(--omp-code-bg) px-2.5 py-2 font-mono text-omp-xs text-(--omp-text)">
+				<pre className="overflow-x-auto rounded-md bg-(--omsk-code-bg) px-2.5 py-2 font-mono text-omsk-xs text-(--omsk-text)">
 					{sanitizeToolText(block.text)}
 				</pre>
 			);
 		case "table":
 			return (
 				<div className="overflow-x-auto">
-					<table className="w-full text-left text-omp-xs text-(--omp-text)">
+					<table className="w-full text-left text-omsk-xs text-(--omsk-text)">
 						<tbody>
 							{block.rows.map((row, rowIndex) => {
 								const Cell = rowIndex < block.headerRows ? "th" : "td";
 								return (
-									<tr className="border-b border-(--omp-border-muted)" key={rowIndex}>
+									<tr className="border-b border-(--omsk-border-muted)" key={rowIndex}>
 										{row.map((cell, cellIndex) => (
 											<Cell className="px-1.5 py-1 align-top" key={cellIndex}>
 												<Spans spans={cell} />
@@ -359,7 +361,7 @@ export function FormDialog({
 				{sections.map((section, sectionIndex) => (
 					<div className="space-y-3" key={sectionIndex}>
 						{section.title.length > 0 && (
-							<h3 className="text-omp-xs font-semibold break-words whitespace-pre-wrap text-(--omp-text)">
+							<h3 className="text-omsk-xs font-semibold break-words whitespace-pre-wrap text-(--omsk-text)">
 								<Spans spans={section.title} />
 							</h3>
 						)}
@@ -370,7 +372,7 @@ export function FormDialog({
 						))}
 					</div>
 				))}
-				<div className="flex items-center justify-between gap-2 border-t border-(--omp-border-muted) pt-3">
+				<div className="flex items-center justify-between gap-2 border-t border-(--omsk-border-muted) pt-3">
 					<div className="flex items-center gap-2">{footer}</div>
 					<div className="flex gap-2">
 						<Button onClick={onCancel} size="sm" type="button" variant="ghost">

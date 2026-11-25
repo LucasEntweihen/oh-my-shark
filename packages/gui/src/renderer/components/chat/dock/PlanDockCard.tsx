@@ -345,7 +345,7 @@ export function PlanDockCard() {
 					<button
 						aria-label={t("planPanel.refresh")}
 						className={cx(
-							"omp-pressable text-(--omp-dim) transition-colors hover:text-(--omp-text)",
+							"omsk-pressable text-(--omsk-dim) transition-colors hover:text-(--omsk-text)",
 							loading && "animate-spin",
 						)}
 						disabled={loading}
@@ -361,8 +361,8 @@ export function PlanDockCard() {
 						className={cx(
 							"relative h-4 w-7 shrink-0 rounded-full border transition-colors duration-150",
 							planModeEnabled
-								? "border-transparent bg-(--omp-accent)"
-								: "border-(--omp-border-muted) bg-(--omp-bg-primary)", // surface-ok: toggle switch track (unchecked state)
+								? "border-transparent bg-(--omsk-accent)"
+								: "border-(--omsk-border-muted) bg-(--omsk-bg-primary)", // surface-ok: toggle switch track (unchecked state)
 							toggling && "opacity-50",
 						)}
 						disabled={toggling}
@@ -374,7 +374,7 @@ export function PlanDockCard() {
 						<span
 							className={cx(
 								"absolute top-1/2 left-0.5 size-3 -translate-y-1/2 rounded-full transition-transform duration-150",
-								planModeEnabled ? "translate-x-3 bg-white" : "translate-x-0 bg-(--omp-muted)",
+								planModeEnabled ? "translate-x-3 bg-white" : "translate-x-0 bg-(--omsk-muted)",
 							)}
 						/>
 					</button>
@@ -383,7 +383,7 @@ export function PlanDockCard() {
 			badge={
 				<span className="flex shrink-0 items-center gap-1.5">
 					{stepCount > 0 && (
-						<span className="text-omp-xs tabular-nums text-[var(--omp-dim)]">
+						<span className="text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 							{hasChecklist ? `${doneCount}/${stepCount}` : stepCount}
 						</span>
 					)}
@@ -403,30 +403,33 @@ export function PlanDockCard() {
 				</div>
 			) : error ? (
 				<div className="flex flex-col items-center justify-center gap-2 px-6 py-4 text-center">
-					<FileWarning className="text-(--omp-warning)" size={20} />
-					<div className="text-omp-sm leading-snug text-(--omp-muted)">{error}</div>
+					<FileWarning className="text-(--omsk-warning)" size={20} />
+					<div className="text-omsk-sm leading-snug text-(--omsk-muted)">{error}</div>
 					<Button onClick={() => void load()} size="sm">
 						{t("planPanel.retry")}
 					</Button>
 				</div>
 			) : content == null ? (
 				<div className="flex flex-col items-center justify-center gap-2 px-6 py-4 text-center">
-					<ClipboardList className="text-(--omp-dim)" size={20} />
-					<div className="text-omp-xs text-(--omp-muted)">{t("planPanel.emptyTitle")}</div>
-					<div className="text-omp-sm leading-snug text-(--omp-dim)">
+					<ClipboardList className="text-(--omsk-dim)" size={20} />
+					<div className="text-omsk-xs text-(--omsk-muted)">{t("planPanel.emptyTitle")}</div>
+					<div className="text-omsk-sm leading-snug text-(--omsk-dim)">
 						{t("planPanel.emptyDescPre")}
 						<span className="font-mono">local://&lt;slug&gt;-plan.md</span>
 						{t("planPanel.emptyDescPost")}
 					</div>
 					{displayPath && (
-						<div className="max-w-full wrap-anywhere font-mono text-omp-xs text-(--omp-dim)" title={displayPath}>
+						<div
+							className="max-w-full wrap-anywhere font-mono text-omsk-xs text-(--omsk-dim)"
+							title={displayPath}
+						>
 							{displayPath}
 						</div>
 					)}
 				</div>
 			) : !full ? (
 				summary && (
-					<div className="wrap-anywhere px-3 py-2 text-omp-md leading-relaxed text-(--omp-text-secondary)">
+					<div className="wrap-anywhere px-3 py-2 text-omsk-md leading-relaxed text-(--omsk-text-secondary)">
 						{summary}
 					</div>
 				)
@@ -446,60 +449,60 @@ export function PlanDockCard() {
 					/>
 					<div className="min-w-0 px-3 py-2.5">
 						{tab === "preview" ? (
-							<div className="min-w-0 wrap-anywhere text-omp-md" data-plan-preview>
+							<div className="min-w-0 wrap-anywhere text-omsk-md" data-plan-preview>
 								<MarkdownRenderer content={content} />
 							</div>
 						) : tab === "raw" ? (
-							<pre className="font-mono text-omp-sm leading-relaxed whitespace-pre-wrap wrap-anywhere text-(--omp-text)">
+							<pre className="font-mono text-omsk-sm leading-relaxed whitespace-pre-wrap wrap-anywhere text-(--omsk-text)">
 								{content}
 							</pre>
 						) : sections.length === 0 ? (
-							<div className="px-2 py-4 text-center text-omp-sm text-(--omp-dim)">
+							<div className="px-2 py-4 text-center text-omsk-sm text-(--omsk-dim)">
 								{content.trim().length === 0 ? t("planPanel.emptySoFar") : t("planPanel.noSteps")}
 							</div>
 						) : (
 							<>
 								{hasChecklist && (
-									<div className="px-1 pb-1 text-omp-xs tabular-nums text-(--omp-dim)">
+									<div className="px-1 pb-1 text-omsk-xs tabular-nums text-(--omsk-dim)">
 										{t("planPanel.checked", { done: doneCount, total: stepCount })}
 									</div>
 								)}
 								{sections.map((section, sectionIndex) => (
 									<section className="mb-1.5" key={sectionIndex}>
 										{section.heading && (
-											<div className="wrap-anywhere px-1 py-1 text-omp-sm font-semibold text-(--omp-text)">
+											<div className="wrap-anywhere px-1 py-1 text-omsk-sm font-semibold text-(--omsk-text)">
 												{section.heading}
 											</div>
 										)}
-										<div className="ml-1 border-l border-(--omp-border-muted) pl-2">
+										<div className="ml-1 border-l border-(--omsk-border-muted) pl-2">
 											{section.steps.map(step => (
 												<div key={step.index}>
-													<div className="group flex items-start gap-1.5 rounded-sm py-1 pr-1 hover:bg-(--omp-bg-tertiary)">
+													<div className="group flex items-start gap-1.5 rounded-sm py-1 pr-1 hover:bg-(--omsk-bg-tertiary)">
 														{step.checkbox ? (
 															step.done ? (
 																<CheckCircle2
-																	className="mt-px shrink-0 text-(--omp-success)"
+																	className="mt-px shrink-0 text-(--omsk-success)"
 																	size={13}
 																/>
 															) : (
-																<Circle className="mt-px shrink-0 text-(--omp-dim)" size={13} />
+																<Circle className="mt-px shrink-0 text-(--omsk-dim)" size={13} />
 															)
 														) : (
-															<span className="w-4 shrink-0 pt-px text-right text-omp-xs tabular-nums text-(--omp-dim)">
+															<span className="w-4 shrink-0 pt-px text-right text-omsk-xs tabular-nums text-(--omsk-dim)">
 																{step.index}
 															</span>
 														)}
 														<span
 															className={cx(
-																"min-w-0 flex-1 whitespace-pre-wrap wrap-anywhere text-omp-md leading-relaxed",
-																step.done ? "text-(--omp-muted) line-through" : "text-(--omp-text)",
+																"min-w-0 flex-1 whitespace-pre-wrap wrap-anywhere text-omsk-md leading-relaxed",
+																step.done ? "text-(--omsk-muted) line-through" : "text-(--omsk-text)",
 															)}
 														>
 															{step.text}
 														</span>
 														<button
 															aria-label={t("planPanel.stepFeedbackAria", { index: step.index })}
-															className="grid size-6 shrink-0 place-items-center rounded text-(--omp-dim) opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-(--omp-text)"
+															className="grid size-6 shrink-0 place-items-center rounded text-(--omsk-dim) opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-(--omsk-text)"
 															onClick={() => setStepFeedback({ step, draft: "", sending: false })}
 															title={t("planPanel.stepFeedbackHint")}
 															type="button"
@@ -508,7 +511,7 @@ export function PlanDockCard() {
 														</button>
 													</div>
 													{stepFeedback?.step.index === step.index && (
-														<div className="mb-1 rounded border border-(--omp-border-muted) bg-transparent p-1.5">
+														<div className="mb-1 rounded border border-(--omsk-border-muted) bg-transparent p-1.5">
 															<TextArea
 																autoFocus
 																onChange={event =>
@@ -547,7 +550,7 @@ export function PlanDockCard() {
 					</div>
 
 					{/* Review footer: approve / request changes, all as chat messages. */}
-					<div className="shrink-0 border-t border-(--omp-border-muted) p-3">
+					<div className="shrink-0 border-t border-(--omsk-border-muted) p-3">
 						<TextArea
 							disabled={!reviewable}
 							onChange={event => setPlanFeedback(event.target.value)}
@@ -575,7 +578,7 @@ export function PlanDockCard() {
 								{t("planPanel.requestChanges")}
 							</Button>
 						</div>
-						<div className="mt-1.5 text-omp-xs leading-snug text-(--omp-dim)">{t("planPanel.footerNote")}</div>
+						<div className="mt-1.5 text-omsk-xs leading-snug text-(--omsk-dim)">{t("planPanel.footerNote")}</div>
 					</div>
 				</>
 			)}

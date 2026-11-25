@@ -142,14 +142,14 @@ export function AgentRoster() {
 			<PausedBanner />
 			{error && (
 				<div
-					className="mx-3 mt-2 flex items-center gap-2 rounded-lg border border-[var(--omp-border-muted)] px-3 py-1.5 text-omp-sm text-[var(--omp-muted)]"
+					className="mx-3 mt-2 flex items-center gap-2 rounded-lg border border-[var(--omsk-border-muted)] px-3 py-1.5 text-omsk-sm text-[var(--omsk-muted)]"
 					role="alert"
 				>
 					<span className="min-w-0 flex-1 truncate" title={error}>
 						{t("agents.roster.refreshFailed")}
 					</span>
 					<button
-						className="omp-pressable shrink-0 font-medium text-[var(--omp-link)] hover:underline"
+						className="omsk-pressable shrink-0 font-medium text-[var(--omsk-link)] hover:underline"
 						onClick={() => void refresh()}
 						type="button"
 					>
@@ -198,12 +198,12 @@ function RosterEmpty({
 }) {
 	return (
 		<div className="flex h-full min-h-40 flex-col items-center justify-center gap-1.5 px-6 text-center">
-			{icon && <Bot aria-hidden className="mb-1 text-[var(--omp-dim)]" size={22} />}
-			<div className="text-omp-md font-medium text-[var(--omp-text)]">{title}</div>
-			<div className="max-w-72 text-omp-sm text-[var(--omp-muted)]">{body}</div>
+			{icon && <Bot aria-hidden className="mb-1 text-[var(--omsk-dim)]" size={22} />}
+			<div className="text-omsk-md font-medium text-[var(--omsk-text)]">{title}</div>
+			<div className="max-w-72 text-omsk-sm text-[var(--omsk-muted)]">{body}</div>
 			{action && (
 				<button
-					className="omp-pressable mt-2 rounded-full border border-[var(--omp-border)] px-3 py-1 text-omp-sm font-medium text-[var(--omp-text)] hover:bg-[var(--omp-selected-bg)]"
+					className="omsk-pressable mt-2 rounded-full border border-[var(--omsk-border)] px-3 py-1 text-omsk-sm font-medium text-[var(--omsk-text)] hover:bg-[var(--omsk-selected-bg)]"
 					onClick={action.onClick}
 					type="button"
 				>
@@ -270,21 +270,21 @@ function RosterToolbar({
 	};
 	const segment = (active: boolean) =>
 		cx(
-			"flex h-6 items-center gap-1 rounded-md px-2 text-omp-sm tabular-nums transition-colors",
+			"flex h-6 items-center gap-1 rounded-md px-2 text-omsk-sm tabular-nums transition-colors",
 			active
-				? "bg-[var(--omp-bg-tertiary)] font-medium text-[var(--omp-text)]" // surface-ok: aria-pressed segment fill
-				: "text-[var(--omp-dim)] hover:text-[var(--omp-text)]",
+				? "bg-[var(--omsk-bg-tertiary)] font-medium text-[var(--omsk-text)]" // surface-ok: aria-pressed segment fill
+				: "text-[var(--omsk-dim)] hover:text-[var(--omsk-text)]",
 		);
 	return (
 		<div
 			className={cx(
 				"flex h-11 shrink-0 items-center gap-2 px-3",
-				scrolled && "border-b border-[var(--omp-border-muted)]",
+				scrolled && "border-b border-[var(--omsk-border-muted)]",
 			)}
 		>
 			<div
 				aria-label={t("agents.roster.filter")}
-				className="flex items-center gap-0.5 rounded-lg border border-[var(--omp-border-muted)] p-0.5"
+				className="flex items-center gap-0.5 rounded-lg border border-[var(--omsk-border-muted)] p-0.5"
 				role="group"
 			>
 				<button
@@ -294,7 +294,7 @@ function RosterToolbar({
 					type="button"
 				>
 					{t("agents.roster.thisTurn")}
-					<span className="text-[var(--omp-dim)]">{turnCount}</span>
+					<span className="text-[var(--omsk-dim)]">{turnCount}</span>
 				</button>
 				<button
 					aria-pressed={scope === "all"}
@@ -303,13 +303,13 @@ function RosterToolbar({
 					type="button"
 				>
 					{t("agents.roster.all")}
-					<span className="text-[var(--omp-dim)]">{allCount}</span>
+					<span className="text-[var(--omsk-dim)]">{allCount}</span>
 				</button>
 			</div>
 			<div className="ml-auto flex items-center gap-1">
 				<div
 					aria-label={t("subagentPanel.viewAria")}
-					className="flex items-center gap-0.5 rounded-lg border border-[var(--omp-border-muted)] p-0.5"
+					className="flex items-center gap-0.5 rounded-lg border border-[var(--omsk-border-muted)] p-0.5"
 					role="group"
 				>
 					<button
@@ -336,7 +336,7 @@ function RosterToolbar({
 				<button
 					aria-haspopup="menu"
 					aria-label={t("agents.page.more")}
-					className="omp-pressable flex h-7 w-7 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+					className="omsk-pressable flex h-7 w-7 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 					onClick={openMenu}
 					title={t("agents.page.more")}
 					type="button"
@@ -378,12 +378,12 @@ function PausedBanner() {
 	if (!paused) return null;
 	return (
 		<div
-			className="mx-3 mt-1 flex items-center gap-2 rounded-lg border border-[color-mix(in_srgb,var(--omp-warning)_35%,transparent)] px-3 py-1.5 text-omp-sm text-[var(--omp-warning)]"
+			className="mx-3 mt-1 flex items-center gap-2 rounded-lg border border-[color-mix(in_srgb,var(--omsk-warning)_35%,transparent)] px-3 py-1.5 text-omsk-sm text-[var(--omsk-warning)]"
 			role="status"
 		>
 			<span className="min-w-0 flex-1">{t("agents.roster.paused")}</span>
 			<button
-				className="omp-pressable shrink-0 font-medium hover:underline"
+				className="omsk-pressable shrink-0 font-medium hover:underline"
 				onClick={() => void togglePaused()}
 				type="button"
 			>
@@ -526,10 +526,10 @@ const RosterRow = memo(function RosterRow({
 					: "";
 	const titleTone =
 		row.context || activity === "done" || activity === "stopped"
-			? "text-[var(--omp-muted)]"
+			? "text-[var(--omsk-muted)]"
 			: activity === "working"
-				? "text-[var(--omp-text)]"
-				: "text-[var(--omp-text-secondary)]";
+				? "text-[var(--omsk-text)]"
+				: "text-[var(--omsk-text-secondary)]";
 	return (
 		<div
 			{...hover}
@@ -540,8 +540,8 @@ const RosterRow = memo(function RosterRow({
 			aria-level={row.depth + 1}
 			aria-selected={selected}
 			className={cx(
-				"omp-roster-row omp-color-fade relative flex cursor-pointer rounded-lg py-1.5 pr-2 outline-none focus-visible:ring-1 focus-visible:ring-[var(--omp-border-strong)]",
-				selected ? "bg-[var(--omp-selected-bg)]" : "hover:bg-[var(--omp-sidebar-item-hover)]",
+				"omsk-roster-row omsk-color-fade relative flex cursor-pointer rounded-lg py-1.5 pr-2 outline-none focus-visible:ring-1 focus-visible:ring-[var(--omsk-border-strong)]",
+				selected ? "bg-[var(--omsk-selected-bg)]" : "hover:bg-[var(--omsk-sidebar-item-hover)]",
 			)}
 			onClick={event => onOpen(event.altKey)}
 			onFocus={event => {
@@ -560,14 +560,14 @@ const RosterRow = memo(function RosterRow({
 			{level > 0 && (
 				<span
 					aria-hidden
-					className="pointer-events-none absolute top-0 h-[15px] w-2 rounded-bl-md border-b border-l border-[var(--omp-border-muted)]"
+					className="pointer-events-none absolute top-0 h-[15px] w-2 rounded-bl-md border-b border-l border-[var(--omsk-border-muted)]"
 					style={{ left: (level - 1) * INDENT + 14 + 7 }}
 				/>
 			)}
 			{level > 0 && hasNextSibling && (
 				<span
 					aria-hidden
-					className="pointer-events-none absolute top-[15px] bottom-0 border-l border-[var(--omp-border-muted)]"
+					className="pointer-events-none absolute top-[15px] bottom-0 border-l border-[var(--omsk-border-muted)]"
 					style={{ left: (level - 1) * INDENT + 14 + 7 }}
 				/>
 			)}
@@ -575,7 +575,7 @@ const RosterRow = memo(function RosterRow({
 				{expandable && (
 					<button
 						aria-label={collapsed ? t("agents.sidebar.expand") : t("agents.sidebar.collapse")}
-						className="flex h-3.5 w-3.5 items-center justify-center text-[var(--omp-dim)] hover:text-[var(--omp-text)]"
+						className="flex h-3.5 w-3.5 items-center justify-center text-[var(--omsk-dim)] hover:text-[var(--omsk-text)]"
 						onClick={event => {
 							event.stopPropagation();
 							onToggle();
@@ -585,7 +585,7 @@ const RosterRow = memo(function RosterRow({
 					>
 						<span
 							aria-hidden
-							className="omp-disclosure-chevron inline-block text-omp-xxs leading-none"
+							className="omsk-disclosure-chevron inline-block text-omsk-xxs leading-none"
 							style={{ transform: collapsed ? undefined : "rotate(90deg)" }}
 						>
 							›
@@ -598,39 +598,39 @@ const RosterRow = memo(function RosterRow({
 			</span>
 			<span className="ml-1.5 min-w-0 flex-1">
 				<span className="flex min-w-0 items-center gap-2">
-					<span className={cx("min-w-0 truncate text-omp-md", titleTone)} title={title}>
+					<span className={cx("min-w-0 truncate text-omsk-md", titleTone)} title={title}>
 						{title}
 					</span>
 					{expandable && collapsed && row.descendants > 0 && (
-						<span className="omp-sidebar-agent-pill shrink-0">
+						<span className="omsk-sidebar-agent-pill shrink-0">
 							{row.workingBelow && (
-								<span aria-hidden className="h-[5px] w-[5px] rounded-full bg-[var(--omp-accent)]" />
+								<span aria-hidden className="h-[5px] w-[5px] rounded-full bg-[var(--omsk-accent)]" />
 							)}
 							{row.descendants}
 						</span>
 					)}
 					<span
 						className={cx(
-							"ml-auto shrink-0 text-omp-xs tabular-nums",
-							activity === "failed" ? "text-[var(--omp-error)]" : "text-[var(--omp-dim)]",
+							"ml-auto shrink-0 text-omsk-xs tabular-nums",
+							activity === "failed" ? "text-[var(--omsk-error)]" : "text-[var(--omsk-dim)]",
 						)}
 					>
 						{row.context ? "" : time}
 					</span>
 				</span>
-				<span className="mt-0.5 block truncate text-omp-xs text-[var(--omp-dim)]" title={factsText}>
+				<span className="mt-0.5 block truncate text-omsk-xs text-[var(--omsk-dim)]" title={factsText}>
 					{factsText}
 				</span>
 				{line && (
 					<span
 						className={cx(
-							"mt-0.5 block truncate text-omp-xs",
-							line.kind === "retry" ? "text-[var(--omp-warning)]" : "text-[var(--omp-dim)]",
+							"mt-0.5 block truncate text-omsk-xs",
+							line.kind === "retry" ? "text-[var(--omsk-warning)]" : "text-[var(--omsk-dim)]",
 						)}
 					>
 						{line.kind === "tool" ? (
 							<>
-								<span className="font-mono text-[var(--omp-text-secondary)]">{line.tool}</span>{" "}
+								<span className="font-mono text-[var(--omsk-text-secondary)]">{line.tool}</span>{" "}
 								<span className="font-mono">{sanitizeToolText(line.args)}</span>
 							</>
 						) : (

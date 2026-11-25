@@ -140,7 +140,7 @@ export function TranscriptQuoteAction({
 			type="button"
 			data-quote-action
 			ref={buttonRef}
-			className="omp-quote-action omp-pop-in fixed z-[90] flex h-7 items-center gap-1.5 rounded-lg border border-(--omp-border) bg-(--omp-bg-elevated) px-2.5 text-omp-xs font-medium text-(--omp-text) shadow-(--omp-shadow-md) hover:bg-(--omp-selected-bg)"
+			className="omsk-quote-action omsk-pop-in fixed z-[90] flex h-7 items-center gap-1.5 rounded-lg border border-(--omsk-border) bg-(--omsk-bg-elevated) px-2.5 text-omsk-xs font-medium text-(--omsk-text) shadow-(--omsk-shadow-md) hover:bg-(--omsk-selected-bg)"
 			onClick={quote}
 			// Keep the selection: a mousedown on a button would otherwise collapse it first.
 			onMouseDown={event => event.preventDefault()}

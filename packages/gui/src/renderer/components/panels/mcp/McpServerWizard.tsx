@@ -170,7 +170,7 @@ const SCOPES: Array<{ id: McpScope; labelKey: string; hintKey: string }> = [
 
 /** Matches Input's FieldShell label styling for non-Input controls. */
 function FieldLabel({ children }: { children: ReactNode }) {
-	return <span className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)">{children}</span>;
+	return <span className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)">{children}</span>;
 }
 
 export function McpServerWizard({ open, onClose, onAdded }: McpServerWizardProps) {
@@ -265,7 +265,7 @@ export function McpServerWizardForm({ onCancel, onAdded, initialValues }: McpSer
 	return (
 		<div className="flex max-h-[70vh] flex-col">
 			{!sidecarReady && (
-				<p className="px-4 pt-3 text-omp-sm text-(--omp-warning)" role="status">
+				<p className="px-4 pt-3 text-omsk-sm text-(--omsk-warning)" role="status">
 					{t("common.notConnected")}
 				</p>
 			)}
@@ -291,8 +291,8 @@ export function McpServerWizardForm({ onCancel, onAdded, initialValues }: McpSer
 								className={cx(
 									"flex flex-col items-start gap-1 rounded-lg border px-2.5 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50",
 									values.transport === transport.id
-										? "border-(--omp-accent) bg-(--omp-selected-bg)"
-										: "border-(--omp-border-muted) bg-transparent hover:border-(--omp-border-strong)",
+										? "border-(--omsk-accent) bg-(--omsk-selected-bg)"
+										: "border-(--omsk-border-muted) bg-transparent hover:border-(--omsk-border-strong)",
 								)}
 								disabled={busy}
 								key={transport.id}
@@ -300,11 +300,11 @@ export function McpServerWizardForm({ onCancel, onAdded, initialValues }: McpSer
 								role="radio"
 								type="button"
 							>
-								<span className="flex items-center gap-1.5 font-mono text-omp-sm font-medium text-(--omp-text)">
+								<span className="flex items-center gap-1.5 font-mono text-omsk-sm font-medium text-(--omsk-text)">
 									{transport.icon}
 									{transport.id}
 								</span>
-								<span className="text-omp-xs leading-snug text-(--omp-dim)">{t(transport.hintKey)}</span>
+								<span className="text-omsk-xs leading-snug text-(--omsk-dim)">{t(transport.hintKey)}</span>
 							</button>
 						))}
 					</div>
@@ -371,8 +371,8 @@ export function McpServerWizardForm({ onCancel, onAdded, initialValues }: McpSer
 								className={cx(
 									"flex flex-col items-start gap-0.5 rounded-lg border px-2.5 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50",
 									values.scope === scope.id
-										? "border-(--omp-accent) bg-(--omp-selected-bg)"
-										: "border-(--omp-border-muted) bg-transparent hover:border-(--omp-border-strong)",
+										? "border-(--omsk-accent) bg-(--omsk-selected-bg)"
+										: "border-(--omsk-border-muted) bg-transparent hover:border-(--omsk-border-strong)",
 								)}
 								disabled={busy}
 								key={scope.id}
@@ -380,8 +380,8 @@ export function McpServerWizardForm({ onCancel, onAdded, initialValues }: McpSer
 								role="radio"
 								type="button"
 							>
-								<span className="text-omp-sm font-medium text-(--omp-text)">{t(scope.labelKey)}</span>
-								<span className="text-omp-xs leading-snug text-(--omp-dim)">{t(scope.hintKey)}</span>
+								<span className="text-omsk-sm font-medium text-(--omsk-text)">{t(scope.labelKey)}</span>
+								<span className="text-omsk-xs leading-snug text-(--omsk-dim)">{t(scope.hintKey)}</span>
 							</button>
 						))}
 					</div>
@@ -391,7 +391,7 @@ export function McpServerWizardForm({ onCancel, onAdded, initialValues }: McpSer
 				{submitError && <CopyableError text={submitError} title={t("mcp.wizard.addFailed")} />}
 			</div>
 
-			<div className="flex shrink-0 items-center gap-2 border-t border-(--omp-border-muted) px-4 py-3">
+			<div className="flex shrink-0 items-center gap-2 border-t border-(--omsk-border-muted) px-4 py-3">
 				<Button
 					disabled={!sidecarReady || submitting}
 					loading={testing}

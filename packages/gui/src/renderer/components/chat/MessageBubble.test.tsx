@@ -39,7 +39,7 @@ const toolResultMessage: AgentMessage = {
 	role: "toolResult",
 	toolCallId,
 	toolName: "read",
-	content: [{ type: "text", text: '{"name":"@oh-my-pi/omp-gui"}' }],
+	content: [{ type: "text", text: '{"name":"@oh-my-pi/omsk-gui"}' }],
 	isError: false,
 	timestamp: "2026-08-02T12:00:01.000Z",
 };
@@ -196,7 +196,7 @@ describe("MessageBubble user content", () => {
 			</I18nProvider>,
 		);
 		const { document } = parseHTML(html);
-		expect(document.querySelectorAll(".omp-thinking-block")).toHaveLength(1);
+		expect(document.querySelectorAll(".omsk-thinking-block")).toHaveLength(1);
 		expect(document.querySelector(".markdown-body")?.textContent).toBe("Ready to ship.");
 	});
 
@@ -223,8 +223,8 @@ describe("MessageBubble user content", () => {
 				);
 			});
 
-			const buttons = Array.from(container.querySelectorAll<HTMLButtonElement>(".omp-collapse-button"));
-			const headers = Array.from(container.querySelectorAll(".omp-thinking-header"));
+			const buttons = Array.from(container.querySelectorAll<HTMLButtonElement>(".omsk-collapse-button"));
+			const headers = Array.from(container.querySelectorAll(".omsk-thinking-header"));
 			expect(buttons).toHaveLength(2);
 			expect(headers).toHaveLength(2);
 			expect(headers.every(header => header.getAttribute("aria-expanded") === "true")).toBe(true);
@@ -357,7 +357,7 @@ describe("MessageBubble completion events", () => {
 		expect(html).toContain("backend-smoke");
 		expect(html).toContain("exit 1");
 		expect(html).not.toContain("launch-completion");
-		expect(html).not.toContain("omp-custom-turn");
+		expect(html).not.toContain("omsk-custom-turn");
 	});
 
 	it("keeps background output behind one native disclosure row", () => {
@@ -490,7 +490,7 @@ describe("MessageBubble noise filtering", () => {
 		expect(html).toContain("read");
 		expect(html).not.toContain("Copy message text");
 		expect(html).toContain("py-1.5");
-		expect(html).toContain("omp-assistant-turn--compact");
+		expect(html).toContain("omsk-assistant-turn--compact");
 	});
 
 	it("uses the full-width transcript content surface for assistant output", () => {
@@ -505,7 +505,7 @@ describe("MessageBubble noise filtering", () => {
 				/>
 			</I18nProvider>,
 		);
-		expect(html).toContain('class="omp-transcript-content min-w-0"');
+		expect(html).toContain('class="omsk-transcript-content min-w-0"');
 		expect(html).not.toContain('class="min-w-0 flex-1"');
 	});
 });

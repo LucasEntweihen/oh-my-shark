@@ -50,39 +50,39 @@ export function ScheduleTaskRenderer({ args, result, isError, isPartial }: ToolR
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex min-w-0 items-center gap-1.5 text-omp-sm">
+			<div className="flex min-w-0 items-center gap-1.5 text-omsk-sm">
 				<CalendarClock
 					size={12}
 					className={
 						isError
-							? "shrink-0 text-(--omp-error)"
+							? "shrink-0 text-(--omsk-error)"
 							: created
-								? "shrink-0 text-(--omp-success)"
-								: "shrink-0 text-(--omp-muted)"
+								? "shrink-0 text-(--omsk-success)"
+								: "shrink-0 text-(--omsk-muted)"
 					}
 				/>
-				<span className="min-w-0 truncate font-semibold text-(--omp-text)">
+				<span className="min-w-0 truncate font-semibold text-(--omsk-text)">
 					{title || t("tools.scheduleTask.title")}
 				</span>
-				{schedule && <span className="shrink-0 text-(--omp-muted)">· {scheduleLabel(t, schedule)}</span>}
+				{schedule && <span className="shrink-0 text-(--omsk-muted)">· {scheduleLabel(t, schedule)}</span>}
 			</div>
-			<p className={isPartial ? "omp-shimmer-text text-omp-sm" : "text-omp-sm text-(--omp-dim)"}>
+			<p className={isPartial ? "omsk-shimmer-text text-omsk-sm" : "text-omsk-sm text-(--omsk-dim)"}>
 				{status}
 				{firstRun !== null && ` ${t("tools.scheduleTask.firstRun", { time: formatClock(firstRun) })}`}
 				{model && ` · ${model}`}
 				{depth?.kind && ` · ${depthLabel(t, depth)}`}
 			</p>
 			{isError && (
-				<p className="text-omp-sm break-words whitespace-pre-wrap text-(--omp-muted)">
+				<p className="text-omsk-sm break-words whitespace-pre-wrap text-(--omsk-muted)">
 					{resultBodyText(result).trim()}
 				</p>
 			)}
 			{reason && (
-				<p className="text-omp-sm break-words text-(--omp-muted)">{t("tools.scheduleTask.reason", { reason })}</p>
+				<p className="text-omsk-sm break-words text-(--omsk-muted)">{t("tools.scheduleTask.reason", { reason })}</p>
 			)}
 			{created && (
 				<button
-					className="self-start text-omp-sm text-(--omp-link) hover:underline"
+					className="self-start text-omsk-sm text-(--omsk-link) hover:underline"
 					onClick={() => useSchedulerStore.getState().openTasks({ view: "tasks", taskId })}
 					type="button"
 				>

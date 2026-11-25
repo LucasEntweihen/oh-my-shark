@@ -11,16 +11,16 @@ export function AstGrepRenderer({ args, result, isPartial, partialResult }: Tool
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<Braces size={12} className="shrink-0 text-[var(--omp-md-code)]" />
-				<span className="truncate text-[var(--omp-text)]">{pattern || t("tools.astgrep.fallback")}</span>
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<Braces size={12} className="shrink-0 text-[var(--omsk-md-code)]" />
+				<span className="truncate text-[var(--omsk-text)]">{pattern || t("tools.astgrep.fallback")}</span>
 			</div>
 			{text ? (
-				<pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.45] text-[var(--omp-tool-output)]">
+				<pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] text-[var(--omsk-tool-output)]">
 					{text}
 				</pre>
 			) : (
-				<div className="text-omp-sm italic text-[var(--omp-dim)]">
+				<div className="text-omsk-sm italic text-[var(--omsk-dim)]">
 					{isPartial ? t("tools.astgrep.matching") : t("tools.astgrep.noMatches")}
 				</div>
 			)}

@@ -86,18 +86,18 @@ export function WorktreeCloseDialog() {
 	return (
 		<Modal open onClose={closePrompt} title={t("worktreeClose.title", { name: worktree.name })} size="sm">
 			{query.phase === "loading" ? (
-				<div className="flex items-center justify-center gap-2 py-6 text-omp-xs text-(--omp-dim)">
+				<div className="flex items-center justify-center gap-2 py-6 text-omsk-xs text-(--omsk-dim)">
 					<Spinner size="sm" />
 					<span>{t("worktreeClose.checking")}</span>
 				</div>
 			) : (
 				<div className="flex flex-col gap-4">
 					{query.phase === "error" ? (
-						<p className="text-omp-lg leading-relaxed text-(--omp-muted)">
+						<p className="text-omsk-lg leading-relaxed text-(--omsk-muted)">
 							{sidecarReady ? t("worktreeClose.statusUnknown") : t("worktreeClose.notConnected")}
 						</p>
 					) : dirty && status ? (
-						<p className="text-omp-lg leading-relaxed text-(--omp-warning)">
+						<p className="text-omsk-lg leading-relaxed text-(--omsk-warning)">
 							{t("worktreeClose.dirtyBody", {
 								staged: String(status.staged),
 								unstaged: String(status.unstaged),
@@ -105,9 +105,9 @@ export function WorktreeCloseDialog() {
 							})}
 						</p>
 					) : (
-						<p className="text-omp-lg leading-relaxed text-(--omp-muted)">{t("worktreeClose.cleanBody")}</p>
+						<p className="text-omsk-lg leading-relaxed text-(--omsk-muted)">{t("worktreeClose.cleanBody")}</p>
 					)}
-					<p className="truncate font-mono text-omp-sm text-(--omp-dim)" title={tab.cwd}>
+					<p className="truncate font-mono text-omsk-sm text-(--omsk-dim)" title={tab.cwd}>
 						{worktree.branch} — {tab.cwd}
 					</p>
 					<div className="flex flex-col gap-2">

@@ -32,7 +32,7 @@ export function OverviewRoute({ range, refreshKey }: { range: StatsRange; refres
 			{
 				key: "type",
 				label: t("stats.overview.col.agentType"),
-				render: row => <span className="font-medium text-(--omp-text)">{row.agentType}</span>,
+				render: row => <span className="font-medium text-(--omsk-text)">{row.agentType}</span>,
 			},
 			{ key: "requests", label: t("stats.col.requests"), align: "right", render: row => compact(row.totalRequests) },
 			{

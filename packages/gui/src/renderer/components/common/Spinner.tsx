@@ -25,7 +25,7 @@ export function Spinner({ size = "md", label, className }: SpinnerProps) {
 	const svg = (
 		<svg
 			aria-hidden="true"
-			className="animate-spin text-(--omp-accent)"
+			className="animate-spin text-(--omsk-accent)"
 			fill="none"
 			height={box}
 			viewBox="0 0 24 24"
@@ -46,7 +46,7 @@ export function Spinner({ size = "md", label, className }: SpinnerProps) {
 
 	return (
 		<span
-			className={`inline-flex items-center gap-2 text-omp-xs text-(--omp-muted) ${className ?? ""}`.trim()}
+			className={`inline-flex items-center gap-2 text-omsk-xs text-(--omsk-muted) ${className ?? ""}`.trim()}
 			role="status"
 		>
 			{svg}

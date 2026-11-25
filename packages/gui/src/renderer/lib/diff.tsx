@@ -361,9 +361,9 @@ const MORE_RENDER_ROWS = 600;
 const MAX_RENDER_ROWS = 3000;
 
 const LINE_STYLES: Record<DiffLine["type"], string> = {
-	add: "text-[var(--omp-diff-added)] bg-[color-mix(in_srgb,var(--omp-diff-added)_10%,transparent)]",
-	remove: "text-[var(--omp-diff-removed)] bg-[color-mix(in_srgb,var(--omp-diff-removed)_10%,transparent)]",
-	context: "text-[var(--omp-diff-context)]",
+	add: "text-[var(--omsk-diff-added)] bg-[color-mix(in_srgb,var(--omsk-diff-added)_10%,transparent)]",
+	remove: "text-[var(--omsk-diff-removed)] bg-[color-mix(in_srgb,var(--omsk-diff-removed)_10%,transparent)]",
+	context: "text-[var(--omsk-diff-context)]",
 };
 
 const LINE_PREFIXES: Record<DiffLine["type"], string> = {
@@ -373,8 +373,8 @@ const LINE_PREFIXES: Record<DiffLine["type"], string> = {
 };
 
 const INTRA_STYLES: Record<"add" | "remove", string> = {
-	add: "rounded-[2px] bg-[color-mix(in_srgb,var(--omp-diff-added)_30%,transparent)]",
-	remove: "rounded-[2px] bg-[color-mix(in_srgb,var(--omp-diff-removed)_30%,transparent)]",
+	add: "rounded-[2px] bg-[color-mix(in_srgb,var(--omsk-diff-added)_30%,transparent)]",
+	remove: "rounded-[2px] bg-[color-mix(in_srgb,var(--omsk-diff-removed)_30%,transparent)]",
 };
 
 interface DiffViewProps {
@@ -496,18 +496,18 @@ export function DiffView({ diff, filePath, className }: DiffViewProps) {
 		<div className="group/diff relative">
 			<button
 				aria-label={t("diff.copy")}
-				className="absolute top-0 right-0 z-10 flex h-5 w-5 items-center justify-center rounded-md text-[var(--omp-dim)] opacity-0 transition-[opacity,background-color,color] duration-150 hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)] focus:opacity-100 group-hover/diff:opacity-100"
+				className="absolute top-0 right-0 z-10 flex h-5 w-5 items-center justify-center rounded-md text-[var(--omsk-dim)] opacity-0 transition-[opacity,background-color,color] duration-150 hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)] focus:opacity-100 group-hover/diff:opacity-100"
 				onClick={handleCopy}
 				title={t(copied ? "diff.copied" : "diff.copy")}
 				type="button"
 			>
-				{copied ? <Check size={12} className="text-[var(--omp-success)]" /> : <Copy size={12} />}
+				{copied ? <Check size={12} className="text-[var(--omsk-success)]" /> : <Copy size={12} />}
 			</button>
-			<div className={cx("font-mono text-omp-xs leading-[1.4] overflow-x-auto [tab-size:4]", className)}>
+			<div className={cx("font-mono text-omsk-xs leading-[1.4] overflow-x-auto [tab-size:4]", className)}>
 				{viewRows.map((row, i) => {
 					if (row.type === "gap") {
 						return (
-							<div key={i} className="whitespace-pre px-2 text-[var(--omp-diff-context)]">
+							<div key={i} className="whitespace-pre px-2 text-[var(--omsk-diff-context)]">
 								{gutterWidth > 0 && (
 									<>
 										<span
@@ -558,14 +558,14 @@ export function DiffView({ diff, filePath, className }: DiffViewProps) {
 				})}
 				{hiddenRows > unreachableRows ? (
 					<button
-						className="w-full px-2 py-1 text-left text-[var(--omp-dim)] underline-offset-2 hover:underline"
+						className="w-full px-2 py-1 text-left text-[var(--omsk-dim)] underline-offset-2 hover:underline"
 						onClick={() => setRowBudget(budget => budget + MORE_RENDER_ROWS)}
 						type="button"
 					>
 						{t("diff.showMore", { count: revealRows })}
 					</button>
 				) : unreachableRows > 0 ? (
-					<div className="whitespace-pre px-2 text-[var(--omp-diff-context)]">
+					<div className="whitespace-pre px-2 text-[var(--omsk-diff-context)]">
 						<span className="opacity-50">{t("diff.moreLines", { count: unreachableRows })}</span>
 					</div>
 				) : null}

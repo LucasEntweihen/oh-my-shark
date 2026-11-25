@@ -132,7 +132,7 @@ export function PluginsWindow() {
 			return (
 				<div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 text-center">
 					<Spinner label={seedingLabel} />
-					<p className="max-w-md text-omp-sm text-(--omp-dim)">{t("plugins.seedingHint")}</p>
+					<p className="max-w-md text-omsk-sm text-(--omsk-dim)">{t("plugins.seedingHint")}</p>
 				</div>
 			);
 		}
@@ -234,15 +234,15 @@ export function PluginsWindow() {
 			<div className="flex h-full min-h-0 flex-col">
 				{/* The list stays mounted behind a plugin's page, so Back returns to the same scroll and filters. */}
 				<div className={cx("flex min-h-0 flex-1 flex-col", selected && "hidden")}>
-					<div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-(--omp-border-muted) px-4 py-2.5">
+					<div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-(--omsk-border-muted) px-4 py-2.5">
 						<div className="relative min-w-[12rem] flex-1">
 							<Search
-								className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-(--omp-dim)"
+								className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-(--omsk-dim)"
 								size={13}
 							/>
 							<input
 								aria-label={t("plugins.search")}
-								className="w-full rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) py-1.5 pr-7 pl-8 text-omp-sm text-(--omp-text) placeholder:text-(--omp-dim) focus:border-(--omp-input-focus-border) focus:outline-none"
+								className="w-full rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) py-1.5 pr-7 pl-8 text-omsk-sm text-(--omsk-text) placeholder:text-(--omsk-dim) focus:border-(--omsk-input-focus-border) focus:outline-none"
 								onChange={event => setQuery(event.target.value)}
 								placeholder={t("plugins.search")}
 								spellCheck={false}
@@ -252,7 +252,7 @@ export function PluginsWindow() {
 							{query && (
 								<button
 									aria-label={t("plugins.clearSearch")}
-									className="absolute top-1/2 right-1.5 flex size-5 -translate-y-1/2 items-center justify-center rounded text-(--omp-dim) hover:text-(--omp-text)"
+									className="absolute top-1/2 right-1.5 flex size-5 -translate-y-1/2 items-center justify-center rounded text-(--omsk-dim) hover:text-(--omsk-text)"
 									onClick={() => setQuery("")}
 									type="button"
 								>
@@ -263,7 +263,7 @@ export function PluginsWindow() {
 						{marketplaces.length > 0 && (
 							<select
 								aria-label={t("plugins.catalogFilter")}
-								className="max-w-[16rem] truncate rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2 py-1.5 text-omp-sm text-(--omp-text) focus:border-(--omp-input-focus-border) focus:outline-none"
+								className="max-w-[16rem] truncate rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2 py-1.5 text-omsk-sm text-(--omsk-text) focus:border-(--omsk-input-focus-border) focus:outline-none"
 								onChange={event => {
 									setCatalogFilter(event.target.value || null);
 									setCategory(null);
@@ -311,28 +311,28 @@ export function PluginsWindow() {
 						</Button>
 					</div>
 					{showFilters && categories.length > 1 && (
-						<div className="flex shrink-0 flex-wrap gap-1 border-b border-(--omp-border-muted) px-4 py-2">
+						<div className="flex shrink-0 flex-wrap gap-1 border-b border-(--omsk-border-muted) px-4 py-2">
 							{[{ id: null, count: inCatalog.length }, ...shownCategories].map(entry => (
 								<button
 									aria-pressed={category === entry.id}
 									className={cx(
-										"omp-pressable rounded-full px-2.5 py-0.5 text-omp-xs transition-colors",
+										"omsk-pressable rounded-full px-2.5 py-0.5 text-omsk-xs transition-colors",
 										category === entry.id
-											? "bg-(--omp-selected-bg) text-(--omp-text)"
-											: "text-(--omp-muted) hover:bg-(--omp-selected-bg)",
+											? "bg-(--omsk-selected-bg) text-(--omsk-text)"
+											: "text-(--omsk-muted) hover:bg-(--omsk-selected-bg)",
 									)}
 									key={entry.id ?? "all"}
 									onClick={() => setCategory(entry.id)}
 									type="button"
 								>
 									{entry.id === null ? t("plugins.category.all") : categoryLabel(entry.id)}
-									<span className="ml-1 tabular-nums text-(--omp-dim)">{entry.count}</span>
+									<span className="ml-1 tabular-nums text-(--omsk-dim)">{entry.count}</span>
 								</button>
 							))}
 							{categories.length > TOP_CATEGORIES && (
 								<button
 									aria-expanded={allCategories}
-									className="omp-pressable rounded-full px-2.5 py-0.5 text-omp-xs text-(--omp-dim) transition-colors hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+									className="omsk-pressable rounded-full px-2.5 py-0.5 text-omsk-xs text-(--omsk-dim) transition-colors hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 									onClick={() => setAllCategories(value => !value)}
 									type="button"
 								>
@@ -344,7 +344,7 @@ export function PluginsWindow() {
 						</div>
 					)}
 					{seeding && marketplaces.length > 0 && (
-						<div className="shrink-0 border-b border-(--omp-border-muted) px-4 py-1.5 text-omp-xs text-(--omp-muted)">
+						<div className="shrink-0 border-b border-(--omsk-border-muted) px-4 py-1.5 text-omsk-xs text-(--omsk-muted)">
 							<Spinner label={seedingLabel} size="sm" />
 						</div>
 					)}
@@ -354,7 +354,7 @@ export function PluginsWindow() {
 						</div>
 					)}
 					{body}
-					<div className="flex shrink-0 items-center gap-1.5 border-t border-(--omp-border-muted) px-4 py-1.5 text-omp-xs text-(--omp-dim)">
+					<div className="flex shrink-0 items-center gap-1.5 border-t border-(--omsk-border-muted) px-4 py-1.5 text-omsk-xs text-(--omsk-dim)">
 						<ShieldAlert className="shrink-0" size={12} />
 						<span>{t("plugins.trustNote")}</span>
 					</div>

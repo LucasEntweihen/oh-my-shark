@@ -79,7 +79,7 @@ describe("SidecarBanner", () => {
 			"Exit code 3 — dyld: Library not loaded",
 		);
 		// Progress is not a failure: amber, and not the "Agent unavailable" error card.
-		expect(bannerDiv().className).toContain("--omp-warning");
+		expect(bannerDiv().className).toContain("--omsk-warning");
 		expect(container.textContent).not.toContain("Agent unavailable");
 	});
 
@@ -96,7 +96,7 @@ describe("SidecarBanner", () => {
 		expect((container as unknown as Element).querySelector("[title]")?.getAttribute("title")).toContain(
 			"omp: command not found",
 		);
-		expect(bannerDiv().className).toContain("--omp-error");
+		expect(bannerDiv().className).toContain("--omsk-error");
 	});
 
 	it("hides the banner on close even while the status itself is the error", async () => {

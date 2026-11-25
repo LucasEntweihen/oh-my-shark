@@ -16,7 +16,7 @@ import { toast } from "../../../stores/toast";
 import { ModelValueSelect } from "../ModelValueSelect";
 
 const INPUT_CLASS =
-	"rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2 py-1 font-mono text-omp-sm text-(--omp-text) outline-none transition-colors focus:border-(--omp-input-focus-border)";
+	"rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2 py-1 font-mono text-omsk-sm text-(--omsk-text) outline-none transition-colors focus:border-(--omsk-input-focus-border)";
 
 export interface ProviderLimitsEditorProps {
 	value: Record<string, unknown>;
@@ -98,14 +98,14 @@ export function ProviderLimitsEditor({ value, onCommit, disabled }: ProviderLimi
 		<div className="flex w-full flex-col gap-1">
 			{entries.map(([provider, limit]) => (
 				<div className="flex items-center gap-1.5" key={provider}>
-					<span className="min-w-0 flex-1 truncate font-mono text-omp-sm text-(--omp-text)" title={provider}>
+					<span className="min-w-0 flex-1 truncate font-mono text-omsk-sm text-(--omsk-text)" title={provider}>
 						{provider}
 					</span>
 					<LimitInput disabled={disabled} limit={limit} onCommit={next => setLimit(provider, next)} />
 					{!disabled && (
 						<button
 							aria-label={t("settings.editors.kvRemove")}
-							className="shrink-0 text-(--omp-dim) hover:text-(--omp-error)"
+							className="shrink-0 text-(--omsk-dim) hover:text-(--omsk-error)"
 							onClick={() => setLimit(provider, null)}
 							type="button"
 						>

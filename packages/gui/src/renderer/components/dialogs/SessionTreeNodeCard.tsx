@@ -12,9 +12,9 @@ import type { SessionTreeEntry } from "./session-tree-layout";
 import { TREE_NODE_HEIGHT, TREE_NODE_WIDTH, TREE_ROOT_HEIGHT } from "./session-tree-layout";
 
 const ROLE_META: Record<SessionTreeEntry["role"], { labelKey: string; className: string }> = {
-	user: { labelKey: "sessionTree.role.user", className: "text-(--omp-link)" },
-	assistant: { labelKey: "sessionTree.role.assistant", className: "text-(--omp-muted)" },
-	system: { labelKey: "sessionTree.role.system", className: "text-(--omp-dim)" },
+	user: { labelKey: "sessionTree.role.user", className: "text-(--omsk-link)" },
+	assistant: { labelKey: "sessionTree.role.assistant", className: "text-(--omsk-muted)" },
+	system: { labelKey: "sessionTree.role.system", className: "text-(--omsk-dim)" },
 };
 
 function roleMeta(role: string): { labelKey: string; className: string } {
@@ -66,19 +66,19 @@ const SessionTreeNodeCard = memo(function SessionTreeNodeCard({
 			className={cx(
 				"group absolute flex cursor-grab flex-col rounded-md border px-2 py-1.5 shadow-sm transition-colors",
 				entry.onActiveBranch
-					? "border-[color-mix(in_srgb,var(--omp-accent)_45%,transparent)]"
-					: "border-(--omp-border-muted) opacity-75",
-				selected && "ring-1 ring-(--omp-link)",
+					? "border-[color-mix(in_srgb,var(--omsk-accent)_45%,transparent)]"
+					: "border-(--omsk-border-muted) opacity-75",
+				selected && "ring-1 ring-(--omsk-link)",
 			)}
 			data-tree-node={entry.entryId}
 			style={{ left: x, top: y, width: TREE_NODE_WIDTH, height: TREE_NODE_HEIGHT }}
 		>
 			<div className="flex items-center gap-1.5">
 				<RoleGlyph role={entry.role} />
-				<span className={cx("shrink-0 text-omp-xxs font-semibold", meta.className)}>{t(meta.labelKey)}</span>
+				<span className={cx("shrink-0 text-omsk-xxs font-semibold", meta.className)}>{t(meta.labelKey)}</span>
 				{entry.timestamp > 0 && (
 					<span
-						className="shrink-0 text-omp-xxs tabular-nums text-(--omp-dim)"
+						className="shrink-0 text-omsk-xxs tabular-nums text-(--omsk-dim)"
 						title={formatClock(entry.timestamp)}
 					>
 						{formatTimeAgo(new Date(entry.timestamp).toISOString())}
@@ -95,7 +95,7 @@ const SessionTreeNodeCard = memo(function SessionTreeNodeCard({
 					</span>
 				)}
 			</div>
-			<p className="mt-0.5 line-clamp-2 min-h-0 flex-1 text-omp-xs leading-snug whitespace-pre-wrap text-(--omp-text)">
+			<p className="mt-0.5 line-clamp-2 min-h-0 flex-1 text-omsk-xs leading-snug whitespace-pre-wrap text-(--omsk-text)">
 				{entry.textPreview}
 			</p>
 			{/* Node actions: switch the active leaf here (any node), branch (user
@@ -103,7 +103,7 @@ const SessionTreeNodeCard = memo(function SessionTreeNodeCard({
 			    in a new window (any node). */}
 			<button
 				aria-label={t("sessionTree.branchAria")}
-				className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full border border-(--omp-border-muted) bg-(--omp-bg-secondary) text-(--omp-muted) opacity-70 shadow-sm transition-opacity group-hover:opacity-100 hover:border-(--omp-accent) hover:text-(--omp-accent) focus-visible:opacity-100 disabled:opacity-40" // surface-ok: tiny corner button straddles the card border; transparent face shows the border through it
+				className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full border border-(--omsk-border-muted) bg-(--omsk-bg-secondary) text-(--omsk-muted) opacity-70 shadow-sm transition-opacity group-hover:opacity-100 hover:border-(--omsk-accent) hover:text-(--omsk-accent) focus-visible:opacity-100 disabled:opacity-40" // surface-ok: tiny corner button straddles the card border; transparent face shows the border through it
 				disabled={branching !== null}
 				onClick={event => {
 					event.stopPropagation();
@@ -117,40 +117,40 @@ const SessionTreeNodeCard = memo(function SessionTreeNodeCard({
 			</button>
 			{menuOpen && (
 				<div
-					className="absolute -top-2 right-3 z-30 w-40 overflow-hidden rounded-lg border border-(--omp-border) bg-(--omp-bg-elevated) py-1 shadow-[var(--omp-shadow-lg)]"
+					className="absolute -top-2 right-3 z-30 w-40 overflow-hidden rounded-lg border border-(--omsk-border) bg-(--omsk-bg-elevated) py-1 shadow-[var(--omsk-shadow-lg)]"
 					onClick={event => event.stopPropagation()}
 					onPointerDown={event => event.stopPropagation()}
 				>
 					<button
 						type="button"
-						className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-omp-sm text-(--omp-text) hover:bg-(--omp-selected-bg)"
+						className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-omsk-sm text-(--omsk-text) hover:bg-(--omsk-selected-bg)"
 						disabled={actionDisabled}
 						title={unavailableTitle}
 						onClick={() => onAction("switch", entry.entryId)}
 					>
-						<CornerDownLeft size={11} className="shrink-0 text-(--omp-dim)" />
+						<CornerDownLeft size={11} className="shrink-0 text-(--omsk-dim)" />
 						{t("sessionTree.switchHere")}
 					</button>
 					<button
 						type="button"
-						className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-omp-sm text-(--omp-text) hover:bg-(--omp-selected-bg) disabled:cursor-not-allowed disabled:opacity-40"
+						className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-omsk-sm text-(--omsk-text) hover:bg-(--omsk-selected-bg) disabled:cursor-not-allowed disabled:opacity-40"
 						disabled={actionDisabled || entry.role !== "user"}
 						title={
 							!ready ? unavailableTitle : entry.role !== "user" ? t("sessionTree.branchUserOnly") : undefined
 						}
 						onClick={() => onAction("branch", entry.entryId)}
 					>
-						<GitBranch size={11} className="shrink-0 text-(--omp-dim)" />
+						<GitBranch size={11} className="shrink-0 text-(--omsk-dim)" />
 						{t("sessionTree.branchFromHere")}
 					</button>
 					<button
 						type="button"
-						className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-omp-sm text-(--omp-text) hover:bg-(--omp-selected-bg)"
+						className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-omsk-sm text-(--omsk-text) hover:bg-(--omsk-selected-bg)"
 						disabled={actionDisabled}
 						title={unavailableTitle}
 						onClick={() => onAction("fork", entry.entryId)}
 					>
-						<ExternalLink size={11} className="shrink-0 text-(--omp-dim)" />
+						<ExternalLink size={11} className="shrink-0 text-(--omsk-dim)" />
 						{t("sessionTree.openInNewWindow")}
 					</button>
 				</div>
@@ -163,11 +163,11 @@ export function SessionRootNode({ x, y }: { x: number; y: number }) {
 	const t = useT();
 	return (
 		<div
-			className="absolute flex items-center gap-1.5 rounded-md border border-dashed border-(--omp-border-muted) bg-transparent px-2"
+			className="absolute flex items-center gap-1.5 rounded-md border border-dashed border-(--omsk-border-muted) bg-transparent px-2"
 			style={{ left: x, top: y, width: TREE_NODE_WIDTH, height: TREE_ROOT_HEIGHT }}
 		>
-			<Play className="shrink-0 text-(--omp-dim)" size={11} />
-			<span className="truncate text-omp-xs font-medium text-(--omp-muted)">{t("sessionTree.root")}</span>
+			<Play className="shrink-0 text-(--omsk-dim)" size={11} />
+			<span className="truncate text-omsk-xs font-medium text-(--omsk-muted)">{t("sessionTree.root")}</span>
 		</div>
 	);
 }
@@ -185,7 +185,7 @@ export function ToolbarButton({
 }) {
 	return (
 		<button
-			className="flex h-6 w-6 items-center justify-center rounded text-(--omp-muted) transition-colors hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text) disabled:opacity-40"
+			className="flex h-6 w-6 items-center justify-center rounded text-(--omsk-muted) transition-colors hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text) disabled:opacity-40"
 			disabled={disabled}
 			onClick={onClick}
 			title={title}

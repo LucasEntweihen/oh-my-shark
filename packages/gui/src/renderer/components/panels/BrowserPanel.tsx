@@ -18,8 +18,8 @@ import { PanelEmpty, ToolbarIconButton } from "./workspace-ui";
  * under it: the page is swapped for a still while any of them overlaps.
  */
 const OVERLAY_SELECTOR = [
-	".omp-dialog-overlay",
-	".omp-toast",
+	".omsk-dialog-overlay",
+	".omsk-toast",
 	'[aria-modal="true"]',
 	'[role="dialog"]',
 	'[role="menu"]',
@@ -103,8 +103,8 @@ function PageChip({
 		<div
 			ref={ref}
 			className={cx(
-				"group flex h-7 max-w-48 shrink-0 items-center gap-1 rounded-md pr-0.5 pl-2 text-omp-sm",
-				active ? "bg-(--omp-selected-bg) text-(--omp-text)" : "text-(--omp-muted) hover:text-(--omp-text)",
+				"group flex h-7 max-w-48 shrink-0 items-center gap-1 rounded-md pr-0.5 pl-2 text-omsk-sm",
+				active ? "bg-(--omsk-selected-bg) text-(--omsk-text)" : "text-(--omsk-muted) hover:text-(--omsk-text)",
 			)}
 		>
 			<button
@@ -119,7 +119,7 @@ function PageChip({
 						role="img"
 						aria-label={t("browser.agentPage")}
 						size={13}
-						className={cx("shrink-0", page.agentDriving ? "text-(--omp-accent)" : "text-(--omp-dim)")}
+						className={cx("shrink-0", page.agentDriving ? "text-(--omsk-accent)" : "text-(--omsk-dim)")}
 					/>
 				) : (
 					<Globe aria-hidden="true" size={13} className="shrink-0" />
@@ -131,7 +131,7 @@ function PageChip({
 				aria-label={t("browser.closePage")}
 				title={t("browser.closePage")}
 				onClick={onClose}
-				className="flex size-5 shrink-0 items-center justify-center rounded text-(--omp-dim) opacity-0 hover:bg-(--omp-selected-bg) hover:text-(--omp-text) group-hover:opacity-100 focus-visible:opacity-100"
+				className="flex size-5 shrink-0 items-center justify-center rounded text-(--omsk-dim) opacity-0 hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text) group-hover:opacity-100 focus-visible:opacity-100"
 			>
 				<X size={12} />
 			</button>
@@ -350,11 +350,11 @@ export function BrowserPanel() {
 	return (
 		<div data-browser-panel className="flex h-full flex-col">
 			<span className="sr-only">{t("panel.tabs.browser")}</span>
-			<div className="relative flex h-11 shrink-0 items-center gap-1 border-b border-(--omp-border-muted) px-2">
+			<div className="relative flex h-11 shrink-0 items-center gap-1 border-b border-(--omsk-border-muted) px-2">
 				{/* The page itself is a native view, so loading shows on the toolbar's edge. */}
 				{activePage?.loading && (
 					<div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden">
-						<div className="omp-indeterminate-progress h-full bg-(--omp-accent)" />
+						<div className="omsk-indeterminate-progress h-full bg-(--omsk-accent)" />
 					</div>
 				)}
 				<ToolbarIconButton
@@ -418,13 +418,13 @@ export function BrowserPanel() {
 								input.blur();
 							});
 						}}
-						className="h-7 w-full rounded-md border border-transparent bg-(--omp-selected-bg) px-2.5 text-omp-sm text-(--omp-text) outline-none placeholder:text-(--omp-dim) focus:border-(--omp-input-focus-border) focus:bg-(--omp-input-bg)"
+						className="h-7 w-full rounded-md border border-transparent bg-(--omsk-selected-bg) px-2.5 text-omsk-sm text-(--omsk-text) outline-none placeholder:text-(--omsk-dim) focus:border-(--omsk-input-focus-border) focus:bg-(--omsk-input-bg)"
 					/>
 				</form>
 				{activePage?.agentDriving && (
 					<span
 						title={t("browser.agentDrivingHint")}
-						className="flex h-6 shrink-0 items-center gap-1 rounded-full bg-(--omp-accent-dim) px-2 text-omp-xs font-medium text-(--omp-accent)"
+						className="flex h-6 shrink-0 items-center gap-1 rounded-full bg-(--omsk-accent-dim) px-2 text-omsk-xs font-medium text-(--omsk-accent)"
 					>
 						<Bot aria-hidden="true" size={12} />
 						{t("browser.agentDriving")}
@@ -448,7 +448,7 @@ export function BrowserPanel() {
 			{pages.length > 0 && (
 				<div
 					onWheel={scrollStripOnWheel}
-					className="omp-tab-scroller flex h-9 shrink-0 items-center gap-1 overflow-x-auto border-b border-(--omp-border-muted) px-2"
+					className="omsk-tab-scroller flex h-9 shrink-0 items-center gap-1 overflow-x-auto border-b border-(--omsk-border-muted) px-2"
 				>
 					{pages.map(page => (
 						<PageChip
@@ -474,14 +474,14 @@ export function BrowserPanel() {
 						aria-label={t("browser.newPage")}
 						title={t("browser.newPage")}
 						onClick={newPage}
-						className="omp-pressable flex size-6 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+						className="omsk-pressable flex size-6 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 					>
 						<Plus size={14} />
 					</button>
 				</div>
 			)}
 			{activePage?.error && (
-				<p className="shrink-0 truncate border-b border-(--omp-border-muted) bg-(--omp-error-dim) px-3 py-1.5 text-omp-xs text-(--omp-error)">
+				<p className="shrink-0 truncate border-b border-(--omsk-border-muted) bg-(--omsk-error-dim) px-3 py-1.5 text-omsk-xs text-(--omsk-error)">
 					{t("browser.loadFailed", { error: describeError(activePage.error) })}
 				</p>
 			)}
@@ -498,7 +498,7 @@ export function BrowserPanel() {
 					onClose={closeFind}
 				/>
 			)}
-			<div ref={viewportRef} className="omp-browser-viewport relative min-h-0 flex-1 overflow-hidden">
+			<div ref={viewportRef} className="omsk-browser-viewport relative min-h-0 flex-1 overflow-hidden">
 				{activePage === null ? (
 					<PanelEmpty
 						icon={Globe}

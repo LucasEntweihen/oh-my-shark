@@ -941,14 +941,14 @@ export function App() {
 		: null;
 	const surface = (
 		<div
-			className="flex h-screen w-screen overflow-hidden text-[var(--omp-text)]"
+			className="flex h-screen w-screen overflow-hidden text-[var(--omsk-text)]"
 			data-inspector={panelVisible && !workspace ? "open" : "closed"}
 			data-sidebar={sidebarVisible ? "open" : "closed"}
 		>
 			{focusedRuntime && <FocusedSessionEffects />}
 			{sidebarVisible && <Sidebar />}
 
-			<main className="omp-workspace-main relative flex min-w-0 flex-1 flex-col">
+			<main className="omsk-workspace-main relative flex min-w-0 flex-1 flex-col">
 				<div className={workspace ? "hidden" : "flex min-h-0 flex-1 flex-col"}>
 					<TitleBar />
 					<TabBar />
@@ -960,7 +960,7 @@ export function App() {
 					<SplitWorkspace />
 				</div>
 				{workspace && (
-					<div className="omp-workspace-page min-h-0 min-w-0 flex-1" data-workspace-page="">
+					<div className="omsk-workspace-page min-h-0 min-w-0 flex-1" data-workspace-page="">
 						<WorkspacePageContext.Provider value>
 							<PanelErrorBoundary key={workspacePage}>
 								<Suspense

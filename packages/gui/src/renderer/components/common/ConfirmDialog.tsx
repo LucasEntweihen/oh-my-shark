@@ -36,8 +36,10 @@ export function ConfirmDialog({
 	const t = useT();
 	return (
 		<Modal bodyClassName="p-4" onClose={onCancel} open={open} size="sm" title={title}>
-			<div className="text-omp-md leading-relaxed break-words whitespace-pre-wrap text-(--omp-muted)">{message}</div>
-			{warning && <div className="mt-2 text-omp-sm leading-snug text-(--omp-warning)">{warning}</div>}
+			<div className="text-omsk-md leading-relaxed break-words whitespace-pre-wrap text-(--omsk-muted)">
+				{message}
+			</div>
+			{warning && <div className="mt-2 text-omsk-sm leading-snug text-(--omsk-warning)">{warning}</div>}
 			<div className="mt-4 flex items-center justify-end gap-2">
 				<Button autoFocus onClick={onCancel} size="sm" variant="ghost">
 					{cancelLabel ?? t("common.cancel")}

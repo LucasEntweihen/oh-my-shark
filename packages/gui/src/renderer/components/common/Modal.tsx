@@ -17,11 +17,11 @@ export type ModalSize = "sm" | "md" | "lg" | "full" | "picker";
 export type ModalPlacement = "center" | "top";
 
 const SIZE_CLASSES: Record<ModalSize, string> = {
-	sm: "omp-dialog-size-sm",
-	md: "omp-dialog-size-md",
-	lg: "omp-dialog-size-lg",
-	full: "omp-dialog-size-full",
-	picker: "omp-dialog-size-picker",
+	sm: "omsk-dialog-size-sm",
+	md: "omsk-dialog-size-md",
+	lg: "omsk-dialog-size-lg",
+	full: "omsk-dialog-size-full",
+	picker: "omsk-dialog-size-picker",
 };
 
 const FOCUSABLE =
@@ -89,21 +89,21 @@ function WorkspacePage({ open, onClose, title, ariaLabel, bodyClassName = "px-4 
 				}
 			}}
 		>
-			<header className="omp-workspace-page-header drag-region flex h-12 shrink-0 items-center gap-3 border-b border-(--omp-border-muted) px-4">
+			<header className="omsk-workspace-page-header drag-region flex h-12 shrink-0 items-center gap-3 border-b border-(--omsk-border-muted) px-4">
 				<button
 					aria-label={t("settings.backToChat")}
 					title={t("settings.backToChat")}
-					className="no-drag flex size-8 shrink-0 items-center justify-center rounded-lg text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+					className="no-drag flex size-8 shrink-0 items-center justify-center rounded-lg text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 					onClick={onClose}
 					type="button"
 				>
 					<ArrowLeft size={16} />
 				</button>
-				<h2 id={titleId} className="min-w-0 truncate text-omp-lg font-semibold">
+				<h2 id={titleId} className="min-w-0 truncate text-omsk-lg font-semibold">
 					{title}
 				</h2>
 			</header>
-			<div className={`omp-docked-page-content min-h-0 min-w-0 flex-1 overflow-auto ${bodyClassName}`}>
+			<div className={`omsk-docked-page-content min-h-0 min-w-0 flex-1 overflow-auto ${bodyClassName}`}>
 				{/* Confirmation and editor modals belonging to this page keep their own overlay. */}
 				<WorkspacePageContext.Provider value={false}>{children}</WorkspacePageContext.Provider>
 			</div>
@@ -213,7 +213,7 @@ function OverlayModal({
 
 	return createPortal(
 		<div
-			className={`omp-dialog-overlay ${closing ? "omp-fade-out" : "omp-fade-in"} fixed inset-0 ${DIALOG_OVERLAY_Z} flex justify-center bg-(--omp-overlay-bg) p-4 ${placement === "top" ? "items-start pt-[12dvh]" : "items-center"}`}
+			className={`omsk-dialog-overlay ${closing ? "omsk-fade-out" : "omsk-fade-in"} fixed inset-0 ${DIALOG_OVERLAY_Z} flex justify-center bg-(--omsk-overlay-bg) p-4 ${placement === "top" ? "items-start pt-[12dvh]" : "items-center"}`}
 			inert={closing}
 			onMouseDown={event => {
 				if (closing) return;
@@ -225,7 +225,7 @@ function OverlayModal({
 				aria-label={shown.ariaLabel ?? (typeof shown.title === "string" ? shown.title : undefined)}
 				aria-labelledby={!chromeless && shown.title ? titleId : undefined}
 				aria-modal={!closing}
-				className={`omp-dialog-panel ${closing ? "omp-scale-out" : "omp-scale-in"} flex flex-col overflow-hidden rounded-2xl border border-(--omp-modal-border) bg-(--omp-modal-bg) shadow-(--omp-shadow-lg) ${SIZE_CLASSES[size]} ${panelClassName ?? ""}`.trim()}
+				className={`omsk-dialog-panel ${closing ? "omsk-scale-out" : "omsk-scale-in"} flex flex-col overflow-hidden rounded-2xl border border-(--omsk-modal-border) bg-(--omsk-modal-bg) shadow-(--omsk-shadow-lg) ${SIZE_CLASSES[size]} ${panelClassName ?? ""}`.trim()}
 				onKeyDown={event => {
 					if (event.key === "Escape") event.stopPropagation();
 				}}
@@ -237,16 +237,16 @@ function OverlayModal({
 				tabIndex={-1}
 			>
 				{!chromeless && (
-					<div className="flex shrink-0 items-center justify-between gap-3 border-b border-(--omp-border-muted) px-5 py-3.5">
+					<div className="flex shrink-0 items-center justify-between gap-3 border-b border-(--omsk-border-muted) px-5 py-3.5">
 						<div
 							id={titleId}
-							className="min-w-0 truncate text-omp-xl font-semibold tracking-[-0.01em] text-(--omp-text)"
+							className="min-w-0 truncate text-omsk-xl font-semibold tracking-[-0.01em] text-(--omsk-text)"
 						>
 							{shown.title}
 						</div>
 						<button
 							aria-label={t("common.close")}
-							className="rounded-lg p-1.5 text-(--omp-muted) transition-colors hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text) focus-visible:outline-2 focus-visible:outline-(--omp-accent)"
+							className="rounded-lg p-1.5 text-(--omsk-muted) transition-colors hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text) focus-visible:outline-2 focus-visible:outline-(--omsk-accent)"
 							onClick={onClose}
 							type="button"
 						>

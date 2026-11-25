@@ -53,17 +53,17 @@ export function MetricCard({
 	tone?: "default" | "accent" | "success" | "warning" | "error";
 }) {
 	const valueColor = {
-		default: "text-(--omp-text)",
-		accent: "text-(--omp-accent)",
-		success: "text-(--omp-success)",
-		warning: "text-(--omp-warning)",
-		error: "text-(--omp-error)",
+		default: "text-(--omsk-text)",
+		accent: "text-(--omsk-accent)",
+		success: "text-(--omsk-success)",
+		warning: "text-(--omsk-warning)",
+		error: "text-(--omsk-error)",
 	}[tone];
 	return (
-		<div className="rounded-lg border border-(--omp-border-muted) bg-transparent px-3.5 py-3 transition-colors hover:border-(--omp-border)">
-			<div className="text-omp-xxs font-semibold text-(--omp-dim)">{label}</div>
-			<div className={`mt-1 text-omp-2xl font-semibold tabular-nums ${valueColor}`}>{value}</div>
-			{sub && <div className="mt-0.5 text-omp-xs text-(--omp-muted)">{sub}</div>}
+		<div className="rounded-lg border border-(--omsk-border-muted) bg-transparent px-3.5 py-3 transition-colors hover:border-(--omsk-border)">
+			<div className="text-omsk-xxs font-semibold text-(--omsk-dim)">{label}</div>
+			<div className={`mt-1 text-omsk-2xl font-semibold tabular-nums ${valueColor}`}>{value}</div>
+			{sub && <div className="mt-0.5 text-omsk-xs text-(--omsk-muted)">{sub}</div>}
 		</div>
 	);
 }
@@ -88,13 +88,13 @@ export function StatTable<T>({
 	onRowClick?: (row: T) => void;
 }) {
 	return (
-		<div className="overflow-x-auto rounded-lg border border-(--omp-border-muted)">
-			<table className="w-full border-collapse text-omp-sm">
+		<div className="overflow-x-auto rounded-lg border border-(--omsk-border-muted)">
+			<table className="w-full border-collapse text-omsk-sm">
 				<thead>
-					<tr className="border-b border-(--omp-border-muted) bg-transparent">
+					<tr className="border-b border-(--omsk-border-muted) bg-transparent">
 						{columns.map(column => (
 							<th
-								className={`px-2.5 py-1.5 text-omp-xxs font-semibold whitespace-nowrap text-(--omp-dim) ${
+								className={`px-2.5 py-1.5 text-omsk-xxs font-semibold whitespace-nowrap text-(--omsk-dim) ${
 									column.align === "right" ? "text-right" : "text-left"
 								}`}
 								key={column.key}
@@ -107,7 +107,7 @@ export function StatTable<T>({
 				<tbody>
 					{rows.map(row => (
 						<tr
-							className={`border-b border-(--omp-border-muted) transition-colors last:border-b-0 hover:bg-(--omp-bg-tertiary) ${onRowClick ? "cursor-pointer" : ""}`}
+							className={`border-b border-(--omsk-border-muted) transition-colors last:border-b-0 hover:bg-(--omsk-bg-tertiary) ${onRowClick ? "cursor-pointer" : ""}`}
 							key={keyFor(row)}
 							onClick={onRowClick ? () => onRowClick(row) : undefined}
 							tabIndex={onRowClick ? 0 : undefined}
@@ -140,12 +140,15 @@ export function StatTable<T>({
 
 export function ChartBox({ height = 260, children }: { height?: number; children: ReactNode }) {
 	return (
-		<div className="rounded-lg border border-(--omp-border-muted) bg-transparent p-3" style={{ height: height + 24 }}>
+		<div
+			className="rounded-lg border border-(--omsk-border-muted) bg-transparent p-3"
+			style={{ height: height + 24 }}
+		>
 			<div className="relative h-full w-full">{children}</div>
 		</div>
 	);
 }
 
 export function SectionTitle({ children }: { children: ReactNode }) {
-	return <h3 className="mb-2 mt-5 text-omp-xs font-semibold text-(--omp-dim) first:mt-0">{children}</h3>;
+	return <h3 className="mb-2 mt-5 text-omsk-xs font-semibold text-(--omsk-dim) first:mt-0">{children}</h3>;
 }

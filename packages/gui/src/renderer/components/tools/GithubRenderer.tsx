@@ -64,10 +64,10 @@ const OP_TITLES: Record<string, string> = {
 };
 
 const STATE_COLOR: Record<string, string> = {
-	open: "var(--omp-success)",
-	closed: "var(--omp-error)",
-	merged: "var(--omp-thinking-high)",
-	draft: "var(--omp-dim)",
+	open: "var(--omsk-success)",
+	closed: "var(--omsk-error)",
+	merged: "var(--omsk-thinking-high)",
+	draft: "var(--omsk-dim)",
 };
 
 const SUCCESS_CONCLUSIONS: Record<string, true> = { success: true, neutral: true, skipped: true };
@@ -90,10 +90,10 @@ function asArray(value: unknown): unknown[] {
 }
 
 function jobColor(job: GhJob): string {
-	if (job.conclusion && SUCCESS_CONCLUSIONS[job.conclusion]) return "var(--omp-success)";
-	if (job.conclusion && FAILURE_CONCLUSIONS[job.conclusion]) return "var(--omp-error)";
-	if (job.status === "in_progress") return "var(--omp-warning)";
-	return "var(--omp-dim)";
+	if (job.conclusion && SUCCESS_CONCLUSIONS[job.conclusion]) return "var(--omsk-success)";
+	if (job.conclusion && FAILURE_CONCLUSIONS[job.conclusion]) return "var(--omsk-error)";
+	if (job.status === "in_progress") return "var(--omsk-warning)";
+	return "var(--omsk-dim)";
 }
 
 function parseRun(value: unknown): GhRun | undefined {
@@ -232,16 +232,16 @@ export function GithubRenderer({ args, result, isPartial, partialResult }: ToolR
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
 				<Icon
 					size={12}
 					className="shrink-0"
-					style={{ color: entity.kind === "pr" ? "var(--omp-thinking-high)" : "var(--omp-success)" }}
+					style={{ color: entity.kind === "pr" ? "var(--omsk-thinking-high)" : "var(--omsk-success)" }}
 				/>
-				<span className="text-[var(--omp-muted)]">{opTitle}</span>
-				{entity.repo && <span className="truncate text-[var(--omp-status-path)]">{entity.repo}</span>}
+				<span className="text-[var(--omsk-muted)]">{opTitle}</span>
+				{entity.repo && <span className="truncate text-[var(--omsk-status-path)]">{entity.repo}</span>}
 				{watch?.state === "watching" && (
-					<span className="ml-auto shrink-0 text-omp-xs text-[var(--omp-accent)]">
+					<span className="ml-auto shrink-0 text-omsk-xs text-[var(--omsk-accent)]">
 						{t("tools.github.watching")}
 					</span>
 				)}
@@ -250,7 +250,7 @@ export function GithubRenderer({ args, result, isPartial, partialResult }: ToolR
 						type="button"
 						title={t("tools.github.openInBrowser")}
 						onClick={event => openLink(externalUrl, event)}
-						className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded text-[var(--omp-dim)] transition-colors hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-md-link)]"
+						className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded text-[var(--omsk-dim)] transition-colors hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-md-link)]"
 					>
 						<ExternalLink size={11} />
 					</button>
@@ -258,21 +258,21 @@ export function GithubRenderer({ args, result, isPartial, partialResult }: ToolR
 			</div>
 
 			{(entity.title || entity.number != null) && (
-				<div className="flex items-center gap-2 rounded-md bg-[var(--omp-code-bg)] px-2 py-1.5">
+				<div className="flex items-center gap-2 rounded-md bg-[var(--omsk-code-bg)] px-2 py-1.5">
 					{entity.number != null && (
-						<span className="shrink-0 font-mono text-omp-sm font-semibold text-[var(--omp-dim)]">
+						<span className="shrink-0 font-mono text-omsk-sm font-semibold text-[var(--omsk-dim)]">
 							#{entity.number}
 						</span>
 					)}
-					<span className="min-w-0 flex-1 truncate text-omp-md font-medium text-[var(--omp-text)]">
+					<span className="min-w-0 flex-1 truncate text-omsk-md font-medium text-[var(--omsk-text)]">
 						{entity.title ?? t("tools.github.untitled")}
 					</span>
 					{entity.state && (
 						<span
-							className="shrink-0 rounded-full px-1.5 py-px text-omp-xxs font-semibold capitalize"
+							className="shrink-0 rounded-full px-1.5 py-px text-omsk-xxs font-semibold capitalize"
 							style={{
-								color: STATE_COLOR[entity.state.toLowerCase()] ?? "var(--omp-muted)",
-								background: "var(--omp-bg-tertiary)",
+								color: STATE_COLOR[entity.state.toLowerCase()] ?? "var(--omsk-muted)",
+								background: "var(--omsk-bg-tertiary)",
 							}}
 						>
 							{t(`tools.github.state.${entity.state.toLowerCase()}`) ===
@@ -286,7 +286,7 @@ export function GithubRenderer({ args, result, isPartial, partialResult }: ToolR
 							type="button"
 							title={t("tools.github.openInBrowser")}
 							onClick={event => openLink(externalUrl, event)}
-							className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-[var(--omp-dim)] transition-colors hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-md-link)]"
+							className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-[var(--omsk-dim)] transition-colors hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-md-link)]"
 						>
 							<ExternalLink size={11} />
 						</button>
@@ -296,30 +296,30 @@ export function GithubRenderer({ args, result, isPartial, partialResult }: ToolR
 
 			{watch && (
 				<div className="flex flex-col gap-1">
-					{watch.note && <div className="text-omp-xs text-[var(--omp-dim)]">{watch.note}</div>}
+					{watch.note && <div className="text-omsk-xs text-[var(--omsk-dim)]">{watch.note}</div>}
 					{watch.runs.map((run, ri) => (
 						<div
 							key={run.id ?? ri}
-							className="rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.7]"
+							className="rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.7]"
 						>
 							<div className="flex items-center gap-2">
-								<span className="min-w-0 flex-1 truncate text-[var(--omp-md-link)]">{run.label}</span>
+								<span className="min-w-0 flex-1 truncate text-[var(--omsk-md-link)]">{run.label}</span>
 								{run.branch && (
-									<span className="shrink-0 text-omp-xs text-[var(--omp-text)]">{run.branch}</span>
+									<span className="shrink-0 text-omsk-xs text-[var(--omsk-text)]">{run.branch}</span>
 								)}
 								{run.id != null && (
-									<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">#{run.id}</span>
+									<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">#{run.id}</span>
 								)}
 							</div>
 							{run.jobs.length === 0 && (
-								<div className="text-omp-xs text-[var(--omp-dim)]">{t("tools.github.waitingJobs")}</div>
+								<div className="text-omsk-xs text-[var(--omsk-dim)]">{t("tools.github.waitingJobs")}</div>
 							)}
 							{run.jobs.map(job => (
 								<div key={job.id ?? job.name} className="flex items-center gap-2">
 									<span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: jobColor(job) }} />
-									<span className="min-w-0 flex-1 truncate text-[var(--omp-muted)]">{job.name}</span>
+									<span className="min-w-0 flex-1 truncate text-[var(--omsk-muted)]">{job.name}</span>
 									{job.durationSeconds != null && (
-										<span className="shrink-0 text-omp-xs tabular-nums text-[var(--omp-dim)]">
+										<span className="shrink-0 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 											{t("time.secondsShort", { count: job.durationSeconds })}
 										</span>
 									)}
@@ -328,17 +328,17 @@ export function GithubRenderer({ args, result, isPartial, partialResult }: ToolR
 						</div>
 					))}
 					{watch.failedLogs.map((log, i) => (
-						<div key={i} className="rounded bg-[var(--omp-tool-error-bg)]/40 px-2 py-1">
-							<div className="font-mono text-omp-xs text-[var(--omp-error)]">
+						<div key={i} className="rounded bg-[var(--omsk-tool-error-bg)]/40 px-2 py-1">
+							<div className="font-mono text-omsk-xs text-[var(--omsk-error)]">
 								{log.jobName ?? t("tools.github.job")}{" "}
-								<span className="text-[var(--omp-dim)]">{log.context}</span>
+								<span className="text-[var(--omsk-dim)]">{log.context}</span>
 							</div>
 							{log.available && log.tail ? (
-								<pre className="mt-0.5 max-h-32 overflow-auto whitespace-pre-wrap font-mono text-omp-xs leading-[1.45] text-[var(--omp-muted)]">
+								<pre className="mt-0.5 max-h-32 overflow-auto whitespace-pre-wrap font-mono text-omsk-xs leading-[1.45] text-[var(--omsk-muted)]">
 									<OutputText text={log.tail} />
 								</pre>
 							) : (
-								<div className="text-omp-xs text-[var(--omp-dim)]">{t("tools.github.logUnavailable")}</div>
+								<div className="text-omsk-xs text-[var(--omsk-dim)]">{t("tools.github.logUnavailable")}</div>
 							)}
 						</div>
 					))}
@@ -346,13 +346,13 @@ export function GithubRenderer({ args, result, isPartial, partialResult }: ToolR
 			)}
 
 			{body && (
-				<pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.45] text-[var(--omp-tool-output)]">
+				<pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] text-[var(--omsk-tool-output)]">
 					{body}
 				</pre>
 			)}
 
 			{!entity.title && entity.number == null && !watch && !body && (
-				<div className="text-omp-sm italic text-[var(--omp-dim)]">
+				<div className="text-omsk-sm italic text-[var(--omsk-dim)]">
 					{isPartial ? t("tools.github.querying") : t("tools.github.noEntity")}
 				</div>
 			)}

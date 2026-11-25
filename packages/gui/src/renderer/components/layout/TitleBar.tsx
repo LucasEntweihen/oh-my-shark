@@ -211,7 +211,7 @@ export function TitleBar() {
 	};
 
 	const iconButton =
-		"no-drag omp-pressable flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]";
+		"no-drag omsk-pressable flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]";
 	const working = isStreaming || isCompacting || manualMaintenance != null;
 	const statusActive = working || status === "starting" || status === "restarting";
 	const statusLabel = working
@@ -224,12 +224,12 @@ export function TitleBar() {
 					? t(`titlebar.status.${status}`)
 					: status;
 	const statusColor = working
-		? "var(--omp-accent)"
+		? "var(--omsk-accent)"
 		: status === "ready"
-			? "var(--omp-dim)"
+			? "var(--omsk-dim)"
 			: status === "error" || status === "exited"
-				? "var(--omp-error)"
-				: "var(--omp-warning)";
+				? "var(--omsk-error)"
+				: "var(--omsk-warning)";
 
 	const actionMenuItems: ContextMenuItem[] = [
 		{
@@ -336,7 +336,7 @@ export function TitleBar() {
 	];
 
 	return (
-		<header className="omp-titlebar drag-region flex h-10 min-w-0 shrink-0 items-center gap-1 overflow-hidden bg-[var(--omp-titlebar-bg)] px-2.5">
+		<header className="omsk-titlebar drag-region flex h-10 min-w-0 shrink-0 items-center gap-1 overflow-hidden bg-[var(--omsk-titlebar-bg)] px-2.5">
 			{headerHasAppMenu() && (
 				<button
 					type="button"
@@ -358,7 +358,7 @@ export function TitleBar() {
 				title={t("titlebar.toggleSidebar")}
 				className={iconButton}
 			>
-				<PanelLeft size={18} className={cx(sidebarVisible && "text-[var(--omp-text)]")} />
+				<PanelLeft size={18} className={cx(sidebarVisible && "text-[var(--omsk-text)]")} />
 			</button>
 			{/* The sidebar carries the labelled Command Center entry; this shortcut
 			    only stands in for it while the sidebar is hidden. */}
@@ -374,9 +374,9 @@ export function TitleBar() {
 				</button>
 			)}
 
-			<div className="omp-titlebar-identity no-drag flex min-w-0 items-center gap-1.5">
+			<div className="omsk-titlebar-identity no-drag flex min-w-0 items-center gap-1.5">
 				<button
-					className="omp-pressable flex min-w-0 max-w-48 shrink-0 items-center gap-2 truncate rounded-lg px-2 py-1.5 text-omp-lg font-medium text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)] disabled:cursor-not-allowed disabled:text-[var(--omp-dim)]"
+					className="omsk-pressable flex min-w-0 max-w-48 shrink-0 items-center gap-2 truncate rounded-lg px-2 py-1.5 text-omsk-lg font-medium text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)] disabled:cursor-not-allowed disabled:text-[var(--omsk-dim)]"
 					disabled={isStreaming}
 					onClick={() => setWorkspaceOpen(true)}
 					title={
@@ -389,9 +389,9 @@ export function TitleBar() {
 					type="button"
 				>
 					<FolderOpen className="shrink-0" size={15} />
-					<span className="omp-titlebar-project-name truncate">{projectName}</span>
+					<span className="omsk-titlebar-project-name truncate">{projectName}</span>
 				</button>
-				<ChevronRight size={14} className="text-[var(--omp-dim)]" />
+				<ChevronRight size={14} className="text-[var(--omsk-dim)]" />
 				{editingName ? (
 					<input
 						ref={nameInputRef}
@@ -403,7 +403,7 @@ export function TitleBar() {
 							if (event.key === "Enter") commitName();
 							onEscape(event, () => setEditingName(false));
 						}}
-						className="min-w-0 max-w-56 rounded-lg border border-[var(--omp-input-focus-border)] bg-[var(--omp-input-bg)] px-2.5 py-1.5 text-omp-lg font-medium text-[var(--omp-text)] outline-none"
+						className="min-w-0 max-w-56 rounded-lg border border-[var(--omsk-input-focus-border)] bg-[var(--omsk-input-bg)] px-2.5 py-1.5 text-omsk-lg font-medium text-[var(--omsk-text)] outline-none"
 					/>
 				) : (
 					<button
@@ -418,10 +418,10 @@ export function TitleBar() {
 							setEditingName(true);
 						}}
 						className={cx(
-							"omp-pressable min-w-0 max-w-72 truncate rounded-lg px-2 py-1.5 text-omp-lg hover:bg-[var(--omp-selected-bg)]",
+							"omsk-pressable min-w-0 max-w-72 truncate rounded-lg px-2 py-1.5 text-omsk-lg hover:bg-[var(--omsk-selected-bg)]",
 							pageAgentId
-								? "font-medium text-[var(--omp-muted)] hover:text-[var(--omp-text)]"
-								: "font-semibold text-[var(--omp-text)]",
+								? "font-medium text-[var(--omsk-muted)] hover:text-[var(--omsk-text)]"
+								: "font-semibold text-[var(--omsk-text)]",
 						)}
 					>
 						{displayName}
@@ -433,21 +433,21 @@ export function TitleBar() {
 			{pageAgentId ? (
 				<AgentTitleStatus agentId={pageAgentId} />
 			) : (
-				<div className="omp-titlebar-status no-drag flex shrink-0 items-center gap-1.5 px-1 text-omp-sm font-medium text-[var(--omp-muted)]">
+				<div className="omsk-titlebar-status no-drag flex shrink-0 items-center gap-1.5 px-1 text-omsk-sm font-medium text-[var(--omsk-muted)]">
 					<span
 						role="img"
 						aria-label={statusLabel}
 						title={statusLabel}
-						className={cx("omp-signal-light", statusActive && "omp-signal-light--active")}
+						className={cx("omsk-signal-light", statusActive && "omsk-signal-light--active")}
 						style={{ color: statusColor }}
 					/>
-					<span className="omp-titlebar-status-label">{statusLabel}</span>
+					<span className="omsk-titlebar-status-label">{statusLabel}</span>
 				</div>
 			)}
 
 			{planModeEnabled && (
 				<span
-					className="no-drag shrink-0 rounded-full border border-[var(--omp-border-accent)] bg-[var(--omp-accent-dim)] px-2 py-1 text-omp-xs font-semibold text-[var(--omp-accent)]"
+					className="no-drag shrink-0 rounded-full border border-[var(--omsk-border-accent)] bg-[var(--omsk-accent-dim)] px-2 py-1 text-omsk-xs font-semibold text-[var(--omsk-accent)]"
 					title={t("titlebar.planMode")}
 				>
 					{t("titlebar.plan")}
@@ -457,11 +457,11 @@ export function TitleBar() {
 			{recording && (
 				<button
 					type="button"
-					className="no-drag flex shrink-0 cursor-pointer items-center gap-1 rounded-full border border-[var(--omp-error)] px-2 py-1 text-omp-xs font-semibold text-[var(--omp-error)]"
+					className="no-drag flex shrink-0 cursor-pointer items-center gap-1 rounded-full border border-[var(--omsk-error)] px-2 py-1 text-omsk-xs font-semibold text-[var(--omsk-error)]"
 					title={t("record.stopHint")}
 					onClick={() => void toggleRecording()}
 				>
-					<span className="omp-rec-dot inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--omp-error)]" />
+					<span className="omsk-rec-dot inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--omsk-error)]" />
 					{t("record.badge")}
 				</button>
 			)}
@@ -473,7 +473,7 @@ export function TitleBar() {
 			{pageAgentId && <AgentTitleFacts agentId={pageAgentId} />}
 			{!pageAgentId && metricParts.length > 0 && (
 				<span
-					className="omp-session-metrics no-drag flex shrink-0 items-center gap-1.5 px-1.5 text-omp-sm tabular-nums text-[var(--omp-dim)]"
+					className="omsk-session-metrics no-drag flex shrink-0 items-center gap-1.5 px-1.5 text-omsk-sm tabular-nums text-[var(--omsk-dim)]"
 					title={metricsTitle}
 				>
 					{metricParts.map((part, index) => (
@@ -542,14 +542,14 @@ export function TitleBar() {
 				onClick={togglePanel}
 				title={reviewLabel}
 				className={cx(
-					"omp-review-toggle no-drag omp-pressable flex h-8 min-w-8 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-transparent px-2.5 text-[var(--omp-muted)] hover:border-[var(--omp-border-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]",
+					"omsk-review-toggle no-drag omsk-pressable flex h-8 min-w-8 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-transparent px-2.5 text-[var(--omsk-muted)] hover:border-[var(--omsk-border-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]",
 					panelVisible &&
-						"border-[var(--omp-border-accent)]/40 bg-[var(--omp-selected-bg)] text-[var(--omp-text)]",
+						"border-[var(--omsk-border-accent)]/40 bg-[var(--omsk-selected-bg)] text-[var(--omsk-text)]",
 				)}
 			>
 				<PanelRight size={16} strokeWidth={1.65} />
 				{changeCount != null && changeCount > 0 && (
-					<span className="omp-review-count font-mono text-omp-sm tabular-nums" aria-hidden="true">
+					<span className="omsk-review-count font-mono text-omsk-sm tabular-nums" aria-hidden="true">
 						{changeCount > 99 ? "99+" : changeCount}
 					</span>
 				)}

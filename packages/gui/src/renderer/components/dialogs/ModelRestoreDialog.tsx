@@ -34,9 +34,9 @@ export function ModelRestoreDialog() {
 
 	return (
 		<Modal bodyClassName="p-4" onClose={close} open={prompt !== null} size="sm" title={t("modelRestore.title")}>
-			<div className="space-y-2 text-omp-md leading-relaxed break-words text-(--omp-muted)">
+			<div className="space-y-2 text-omsk-md leading-relaxed break-words text-(--omsk-muted)">
 				<p>{t("modelRestore.message", { model: prompt?.missingModel ?? "" })}</p>
-				<p className="text-omp-sm">
+				<p className="text-omsk-sm">
 					{currentLabel ? t("modelRestore.offer", { model: currentLabel }) : t("modelRestore.noCurrent")}
 				</p>
 			</div>

@@ -35,9 +35,9 @@ export function FrustrationRoute({ range, refreshKey }: { range: StatsRange; ref
 				label: t("stats.col.model"),
 				render: row => (
 					<span>
-						<span className="block font-medium text-(--omp-text)">{row.label}</span>
+						<span className="block font-medium text-(--omsk-text)">{row.label}</span>
 						{row.models.length > 1 && (
-							<span className="block font-mono text-omp-xs text-(--omp-dim)">{row.models.join(", ")}</span>
+							<span className="block font-mono text-omsk-xs text-(--omsk-dim)">{row.models.join(", ")}</span>
 						)}
 					</span>
 				),
@@ -61,9 +61,9 @@ export function FrustrationRoute({ range, refreshKey }: { range: StatsRange; ref
 				align: "right",
 				render: row =>
 					row.angry > 0 ? (
-						<span className="text-(--omp-warning)">{rate(row.angry, row.messages)}</span>
+						<span className="text-(--omsk-warning)">{rate(row.angry, row.messages)}</span>
 					) : (
-						<span className="text-(--omp-dim)">{rate(0, row.messages)}</span>
+						<span className="text-(--omsk-dim)">{rate(0, row.messages)}</span>
 					),
 			},
 			{
@@ -105,7 +105,7 @@ export function FrustrationRoute({ range, refreshKey }: { range: StatsRange; ref
 							value={rate(overall.angry, overall.messages)}
 						/>
 					</div>
-					<p className="mt-2 text-omp-xs text-(--omp-dim)">
+					<p className="mt-2 text-omsk-xs text-(--omsk-dim)">
 						{t("stats.frustration.judgedNote", {
 							judged: formatTokens(overall.judged),
 							messages: formatTokens(overall.messages),

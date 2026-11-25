@@ -61,16 +61,16 @@ const chartFallbacks = () => {
  * palettes like nord/solarized reuse hues across roles) are removed below.
  */
 const CHART_COLOR_TOKENS = [
-	"--omp-accent",
-	"--omp-md-code",
-	"--omp-success",
-	"--omp-thinking-xhigh",
-	"--omp-warning",
-	"--omp-syntax-string",
-	"--omp-error",
-	"--omp-syntax-number",
-	"--omp-syntax-type",
-	"--omp-muted",
+	"--omsk-accent",
+	"--omsk-md-code",
+	"--omsk-success",
+	"--omsk-thinking-xhigh",
+	"--omsk-warning",
+	"--omsk-syntax-string",
+	"--omsk-error",
+	"--omsk-syntax-number",
+	"--omsk-syntax-type",
+	"--omsk-muted",
 ] as const;
 
 /** Scheme-neutral palette (medium tones) for the no-stylesheet fallback path. */
@@ -94,12 +94,12 @@ export const CHART_COLORS = resolvedChartColors.filter((color, index) => resolve
 export function chartTheme() {
 	const fb = chartFallbacks();
 	return {
-		text: css("--omp-text", fb.text),
-		muted: css("--omp-muted", fb.muted),
-		dim: css("--omp-dim", fb.dim),
-		grid: css("--omp-border-muted", fb.grid),
-		accent: css("--omp-accent", fb.accent),
-		error: css("--omp-error", fb.error),
+		text: css("--omsk-text", fb.text),
+		muted: css("--omsk-muted", fb.muted),
+		dim: css("--omsk-dim", fb.dim),
+		grid: css("--omsk-border-muted", fb.grid),
+		accent: css("--omsk-accent", fb.accent),
+		error: css("--omsk-error", fb.error),
 	};
 }
 
@@ -140,7 +140,7 @@ export function baseChartOptions(): {
 		plugins: {
 			legend: { labels: { color: theme.muted, boxWidth: 8, boxHeight: 8, font: { size: 10 } } },
 			tooltip: {
-				backgroundColor: css("--omp-bg-tertiary", chartFallbacks().surface),
+				backgroundColor: css("--omsk-bg-tertiary", chartFallbacks().surface),
 				titleColor: theme.text,
 				bodyColor: theme.muted,
 				borderColor: theme.grid,

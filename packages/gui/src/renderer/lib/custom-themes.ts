@@ -9,7 +9,7 @@
  *   theme starts from dark, or from light when `scheme` is "light".
  * - `scheme`: "dark" or "light", for native controls and scheme-aware parts
  *   (charts, diagrams). Defaults to the base theme's.
- * - `tokens`: token names with or without the `--omp-` prefix. Each value is
+ * - `tokens`: token names with or without the `--omsk-` prefix. Each value is
  *   checked on its own; an unknown name or a value that is not a color (or a
  *   box shadow for the shadow tokens) is skipped and reported, and the rest
  *   of the theme still applies.
@@ -84,7 +84,7 @@ export function parseCustomThemeFile(file: IpcCustomThemeFile): CustomThemeEntry
 	const overrides = json.tokens;
 	if (typeof overrides === "object" && overrides !== null && !Array.isArray(overrides)) {
 		for (const [name, value] of Object.entries(overrides)) {
-			const key = name.startsWith("--omp-") ? name : `--omp-${name}`;
+			const key = name.startsWith("--omsk-") ? name : `--omsk-${name}`;
 			const trimmed = typeof value === "string" ? value.trim() : "";
 			if (!TOKEN_KEYS.has(key) || !isThemeTokenValue(key as ThemeTokenKey, trimmed)) {
 				entry.skipped.push(name);

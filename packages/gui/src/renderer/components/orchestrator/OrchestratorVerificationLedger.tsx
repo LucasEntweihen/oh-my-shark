@@ -17,10 +17,10 @@ export function OrchestratorVerificationLedger({
 
 	return (
 		<div className="space-y-3">
-			<div className="rounded-xl border border-[var(--omp-border-muted)] p-3.5">
+			<div className="rounded-xl border border-[var(--omsk-border-muted)] p-3.5">
 				<div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
-					<h3 className="flex items-center gap-2 text-omp-md font-semibold text-[var(--omp-text)]">
-						<FileCheck2 size={15} className="text-[var(--omp-accent)]" />
+					<h3 className="flex items-center gap-2 text-omsk-md font-semibold text-[var(--omsk-text)]">
+						<FileCheck2 size={15} className="text-[var(--omsk-accent)]" />
 						Independent Verification & TDD Proof Ledger
 						{wave ? ` · Wave #${wave.index}` : ""}
 					</h3>
@@ -32,16 +32,16 @@ export function OrchestratorVerificationLedger({
 				</div>
 
 				{!verification ? (
-					<div className="rounded-lg border border-dashed border-[var(--omp-border-muted)] p-4 text-omp-sm text-[var(--omp-dim)]">
+					<div className="rounded-lg border border-dashed border-[var(--omsk-border-muted)] p-4 text-omsk-sm text-[var(--omsk-dim)]">
 						No verification gate report recorded for {wave ? `Wave #${wave.index}` : "this run"} yet. Click{" "}
-						<strong className="text-[var(--omp-text-secondary)]">Verify Wave</strong> to execute independent
+						<strong className="text-[var(--omsk-text-secondary)]">Verify Wave</strong> to execute independent
 						checks and TDD category proofs.
 					</div>
 				) : (
 					<div className="space-y-3">
-						<div className="flex flex-wrap items-center justify-between gap-2 text-omp-sm text-[var(--omp-text-secondary)]">
+						<div className="flex flex-wrap items-center justify-between gap-2 text-omsk-sm text-[var(--omsk-text-secondary)]">
 							<span>{verification.summary}</span>
-							<span className="font-mono text-omp-xs text-[var(--omp-dim)]">
+							<span className="font-mono text-omsk-xs text-[var(--omsk-dim)]">
 								{formatClock(new Date(verification.timestamp).toISOString())}
 							</span>
 						</div>
@@ -53,14 +53,14 @@ export function OrchestratorVerificationLedger({
 									return (
 										<div
 											key={`${proof.category}:${proof.command}`}
-											className="rounded-lg border border-[var(--omp-border-muted)] p-2.5"
+											className="rounded-lg border border-[var(--omsk-border-muted)] p-2.5"
 										>
 											<div className="mb-1 flex items-center justify-between gap-2">
-												<span className="flex items-center gap-1.5 text-omp-sm font-semibold text-[var(--omp-text)]">
+												<span className="flex items-center gap-1.5 text-omsk-sm font-semibold text-[var(--omsk-text)]">
 													{ok ? (
-														<CheckCircle2 size={13} className="text-[var(--omp-success)]" />
+														<CheckCircle2 size={13} className="text-[var(--omsk-success)]" />
 													) : (
-														<XCircle size={13} className="text-[var(--omp-error)]" />
+														<XCircle size={13} className="text-[var(--omsk-error)]" />
 													)}
 													{proof.category}
 												</span>
@@ -69,7 +69,7 @@ export function OrchestratorVerificationLedger({
 												</Badge>
 											</div>
 											<div
-												className="mb-1 truncate font-mono text-omp-xxs text-[var(--omp-muted)]"
+												className="mb-1 truncate font-mono text-omsk-xxs text-[var(--omsk-muted)]"
 												title={proof.command}
 											>
 												<Terminal size={10} className="mr-1 inline" />
@@ -80,7 +80,7 @@ export function OrchestratorVerificationLedger({
 													{proof.testFiles.map(file => (
 														<span
 															key={file}
-															className="rounded border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] px-1.5 py-px font-mono text-omp-xxs text-[var(--omp-dim)]"
+															className="rounded border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] px-1.5 py-px font-mono text-omsk-xxs text-[var(--omsk-dim)]"
 														>
 															{file}
 														</span>
@@ -95,8 +95,8 @@ export function OrchestratorVerificationLedger({
 
 						{verification.diagnostics.length > 0 && (
 							<div>
-								<div className="mb-1 text-omp-xs font-semibold text-[var(--omp-dim)]">Diagnostics</div>
-								<pre className="max-h-48 overflow-auto rounded-lg border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] p-2.5 font-mono text-omp-xs text-[var(--omp-text-secondary)]">
+								<div className="mb-1 text-omsk-xs font-semibold text-[var(--omsk-dim)]">Diagnostics</div>
+								<pre className="max-h-48 overflow-auto rounded-lg border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] p-2.5 font-mono text-omsk-xs text-[var(--omsk-text-secondary)]">
 									{verification.diagnostics.join("\n")}
 								</pre>
 							</div>
@@ -105,33 +105,33 @@ export function OrchestratorVerificationLedger({
 				)}
 			</div>
 
-			<div className="rounded-xl border border-[var(--omp-border-muted)] p-3.5">
+			<div className="rounded-xl border border-[var(--omsk-border-muted)] p-3.5">
 				<div className="mb-2 flex items-center justify-between gap-2">
-					<h4 className="flex items-center gap-1.5 text-omp-sm font-semibold text-[var(--omp-text)]">
-						<Activity size={14} className="text-[var(--omp-accent)]" />
+					<h4 className="flex items-center gap-1.5 text-omsk-sm font-semibold text-[var(--omsk-text)]">
+						<Activity size={14} className="text-[var(--omsk-accent)]" />
 						Live Orchestrator Event Feed ({events.length})
 					</h4>
 				</div>
 				{events.length === 0 ? (
-					<div className="text-omp-xs text-[var(--omp-dim)]">
+					<div className="text-omsk-xs text-[var(--omsk-dim)]">
 						Waiting for live orchestrator_event frames from sidecar…
 					</div>
 				) : (
-					<div className="max-h-40 space-y-1 overflow-y-auto font-mono text-omp-xs">
+					<div className="max-h-40 space-y-1 overflow-y-auto font-mono text-omsk-xs">
 						{[...events]
 							.reverse()
 							.slice(0, 30)
 							.map((evt, index) => (
 								<div
 									key={`${evt.timestamp}-${evt.eventType}-${index}`}
-									className="flex flex-wrap items-center gap-2 rounded border border-[var(--omp-border-muted)] px-2 py-1"
+									className="flex flex-wrap items-center gap-2 rounded border border-[var(--omsk-border-muted)] px-2 py-1"
 								>
-									<span className="text-[var(--omp-dim)]">
+									<span className="text-[var(--omsk-dim)]">
 										{formatClock(new Date(evt.timestamp).toISOString())}
 									</span>
 									<Badge variant="info">{evt.phase}</Badge>
-									<span className="font-semibold text-[var(--omp-text)]">{evt.eventType}</span>
-									<span className="truncate text-[var(--omp-muted)]">{evt.runId}</span>
+									<span className="font-semibold text-[var(--omsk-text)]">{evt.eventType}</span>
+									<span className="truncate text-[var(--omsk-muted)]">{evt.runId}</span>
 								</div>
 							))}
 					</div>

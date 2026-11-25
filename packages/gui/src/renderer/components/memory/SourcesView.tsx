@@ -25,8 +25,8 @@ function Group({ title, hint, children }: { title: string; hint?: string; childr
 	return (
 		<section className="flex flex-col gap-1">
 			<header className="flex items-baseline gap-2 px-2 pb-1">
-				<h3 className="text-omp-sm font-semibold tracking-wide text-(--omp-text-secondary) uppercase">{title}</h3>
-				{hint && <span className="text-omp-xs text-(--omp-dim)">{hint}</span>}
+				<h3 className="text-omsk-sm font-semibold tracking-wide text-(--omsk-text-secondary) uppercase">{title}</h3>
+				{hint && <span className="text-omsk-xs text-(--omsk-dim)">{hint}</span>}
 			</header>
 			<ul className="flex flex-col">{children}</ul>
 		</section>
@@ -38,7 +38,7 @@ function StateLine({ source, idleHours }: { source: RpcMemorySource; idleHours: 
 	switch (source.state) {
 		case "reading":
 			return (
-				<span className="flex items-center gap-1.5 text-(--omp-accent)">
+				<span className="flex items-center gap-1.5 text-(--omsk-accent)">
 					<Spinner size="sm" />
 					{t("memory.source.reading")}
 				</span>
@@ -46,7 +46,7 @@ function StateLine({ source, idleHours }: { source: RpcMemorySource; idleHours: 
 		case "failed":
 			return (
 				<span
-					className="flex min-w-0 items-center gap-1.5 text-(--omp-warning)"
+					className="flex min-w-0 items-center gap-1.5 text-(--omsk-warning)"
 					title={source.error ? describeError(source.error) : undefined}
 				>
 					<AlertTriangle aria-hidden="true" className="shrink-0" size={12} />
@@ -54,26 +54,26 @@ function StateLine({ source, idleHours }: { source: RpcMemorySource; idleHours: 
 				</span>
 			);
 		case "queued":
-			return <span className="text-(--omp-text-secondary)">{t("memory.source.queued")}</span>;
+			return <span className="text-(--omsk-text-secondary)">{t("memory.source.queued")}</span>;
 		case "waiting":
 			return (
-				<span className="flex items-center gap-1.5 text-(--omp-dim)">
+				<span className="flex items-center gap-1.5 text-(--omsk-dim)">
 					<Clock aria-hidden="true" size={12} />
 					{t("memory.source.waiting", { hours: idleHours })}
 				</span>
 			);
 		case "forgotten":
 			return (
-				<span className="text-(--omp-dim)">
+				<span className="text-(--omsk-dim)">
 					{t("memory.source.forgottenAt", { when: formatTimeAgo(iso(source.forgottenAt)) })}
 				</span>
 			);
 		case "nothing":
 		case "remembered":
 			return source.changedSinceRead ? (
-				<span className="text-(--omp-dim)">{t("memory.source.changed")}</span>
+				<span className="text-(--omsk-dim)">{t("memory.source.changed")}</span>
 			) : (
-				<span className="text-(--omp-dim)">
+				<span className="text-(--omsk-dim)">
 					{t("memory.source.readAt", { when: formatTimeAgo(iso(source.readAt)) })}
 				</span>
 			);
@@ -107,7 +107,7 @@ function SourceRow({
 	const forgotten = source.state === "forgotten";
 
 	return (
-		<li className="group rounded-lg transition-colors hover:bg-(--omp-sidebar-item-hover)">
+		<li className="group rounded-lg transition-colors hover:bg-(--omsk-sidebar-item-hover)">
 			<div className="flex items-center gap-2 px-2 py-1.5">
 				<button
 					aria-expanded={expandable ? open : undefined}
@@ -119,7 +119,7 @@ function SourceRow({
 					<ChevronRight
 						aria-hidden="true"
 						className={cx(
-							"shrink-0 text-(--omp-dim) transition-transform duration-(--omp-motion-fast)",
+							"shrink-0 text-(--omsk-dim) transition-transform duration-(--omsk-motion-fast)",
 							open && "rotate-90",
 							!expandable && "invisible",
 						)}
@@ -128,17 +128,17 @@ function SourceRow({
 					<span className="min-w-0 flex-1">
 						<span
 							className={cx(
-								"block truncate text-omp-md",
+								"block truncate text-omsk-md",
 								forgotten
-									? "text-(--omp-muted) line-through decoration-(--omp-border-strong)"
-									: "text-(--omp-text)",
+									? "text-(--omsk-muted) line-through decoration-(--omsk-border-strong)"
+									: "text-(--omsk-text)",
 							)}
 						>
 							{title ?? t("memory.source.untitled")}
 						</span>
-						<span className="flex items-center gap-2 text-omp-xs">
-							<span className="shrink-0 text-(--omp-dim)">{formatTimeAgo(iso(source.updatedAt))}</span>
-							<span className="text-(--omp-border-strong)">·</span>
+						<span className="flex items-center gap-2 text-omsk-xs">
+							<span className="shrink-0 text-(--omsk-dim)">{formatTimeAgo(iso(source.updatedAt))}</span>
+							<span className="text-(--omsk-border-strong)">·</span>
 							<StateLine idleHours={idleHours} source={source} />
 						</span>
 					</span>
@@ -168,7 +168,7 @@ function SourceRow({
 			</div>
 			{open && source.summary && (
 				<div className="pr-3 pb-3 pl-8">
-					<p className="border-l-2 border-(--omp-border-muted) pl-3 text-omp-sm leading-relaxed whitespace-pre-wrap text-(--omp-text-secondary)">
+					<p className="border-l-2 border-(--omsk-border-muted) pl-3 text-omsk-sm leading-relaxed whitespace-pre-wrap text-(--omsk-text-secondary)">
 						{source.summary}
 					</p>
 				</div>
@@ -191,10 +191,10 @@ function RowButton({
 	return (
 		<button
 			className={cx(
-				"inline-flex h-6 items-center gap-1 rounded-md px-2 text-omp-xs font-medium transition-colors",
+				"inline-flex h-6 items-center gap-1 rounded-md px-2 text-omsk-xs font-medium transition-colors",
 				danger
-					? "text-(--omp-error) hover:bg-(--omp-error-dim)"
-					: "text-(--omp-muted) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)",
+					? "text-(--omsk-error) hover:bg-(--omsk-error-dim)"
+					: "text-(--omsk-muted) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)",
 			)}
 			onClick={onClick}
 			type="button"
@@ -250,9 +250,9 @@ export function SourcesView({
 	if (total === 0) {
 		return (
 			<div className="flex h-full flex-col items-center justify-center gap-2 px-8 text-center">
-				<History className="text-(--omp-dim)" size={20} />
-				<p className="text-omp-md text-(--omp-text)">{t("memory.sources.emptyTitle")}</p>
-				<p className="max-w-sm text-omp-sm text-(--omp-muted)">
+				<History className="text-(--omsk-dim)" size={20} />
+				<p className="text-omsk-md text-(--omsk-text)">{t("memory.sources.emptyTitle")}</p>
+				<p className="max-w-sm text-omsk-sm text-(--omsk-muted)">
 					{t("memory.sources.empty", { days: overview.limits.maxAgeDays })}
 				</p>
 			</div>
@@ -261,7 +261,7 @@ export function SourcesView({
 
 	return (
 		<div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-5">
-			<p className="px-2 text-omp-sm leading-relaxed text-(--omp-muted)">{t("memory.sources.caption")}</p>
+			<p className="px-2 text-omsk-sm leading-relaxed text-(--omsk-muted)">{t("memory.sources.caption")}</p>
 			{groups.pending.length > 0 && (
 				<Group hint={t("memory.sources.pendingHint")} title={t("memory.sources.pending")}>
 					{groups.pending.map(source => row(source, { forget: source.state !== "reading" }))}
@@ -286,7 +286,7 @@ export function SourcesView({
 				</Group>
 			)}
 			{groups.old > 0 && (
-				<p className="px-2 text-omp-xs text-(--omp-dim)">
+				<p className="px-2 text-omsk-xs text-(--omsk-dim)">
 					{t("memory.sources.old", {
 						count: groups.old,
 						plural: groups.old === 1 ? "" : "s",

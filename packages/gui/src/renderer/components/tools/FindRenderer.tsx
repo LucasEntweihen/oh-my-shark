@@ -123,10 +123,10 @@ export function FindRenderer({ args, result, isError, isPartial, partialResult, 
 
 	return (
 		<div className="flex min-w-0 flex-col gap-1.5">
-			<div className="flex min-w-0 items-center gap-1.5 font-mono text-omp-sm">
-				<Search size={12} className="shrink-0 text-[var(--omp-dim)]" />
-				<span className="min-w-0 flex-1 truncate text-[var(--omp-accent)]">{previewText(query, 1)}</span>
-				<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">
+			<div className="flex min-w-0 items-center gap-1.5 font-mono text-omsk-sm">
+				<Search size={12} className="shrink-0 text-[var(--omsk-dim)]" />
+				<span className="min-w-0 flex-1 truncate text-[var(--omsk-accent)]">{previewText(query, 1)}</span>
+				<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 					{failed
 						? t("tools.find.failed")
 						: pending
@@ -137,18 +137,18 @@ export function FindRenderer({ args, result, isError, isPartial, partialResult, 
 				</span>
 			</div>
 			{scope && (
-				<div className="truncate font-mono text-omp-xs text-[var(--omp-dim)]">
+				<div className="truncate font-mono text-omsk-xs text-[var(--omsk-dim)]">
 					{t("tools.grep.scope", { scope: shortenPath(previewText(scope, 1)) })}
 				</div>
 			)}
 			{keywords.length > 0 && (
-				<div className="truncate font-mono text-omp-xs text-[var(--omp-dim)]">
+				<div className="truncate font-mono text-omsk-xs text-[var(--omsk-dim)]">
 					{t("tools.find.keywords", { keywords: previewText(keywords.join(", "), 1) })}
 				</div>
 			)}
 			{!pending && !failed && structured && (
 				<>
-					<div className="flex flex-wrap gap-2 text-omp-xs text-[var(--omp-dim)]">
+					<div className="flex flex-wrap gap-2 text-omsk-xs text-[var(--omsk-dim)]">
 						{typeof stats?.filesRead === "number" && (
 							<span>{t("tools.find.filesRead", { count: stats.filesRead })}</span>
 						)}
@@ -157,33 +157,33 @@ export function FindRenderer({ args, result, isError, isPartial, partialResult, 
 						)}
 					</div>
 					{hits.length === 0 ? (
-						<div className="text-omp-sm italic text-[var(--omp-dim)]">{t("tools.find.empty")}</div>
+						<div className="text-omsk-sm italic text-[var(--omsk-dim)]">{t("tools.find.empty")}</div>
 					) : (
 						<ol
 							className={cx(
-								"rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm",
+								"rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm",
 								PREVIEW_SCROLL_MD,
 							)}
 						>
 							{shown.map(({ hit, label, ranges }, index) => (
 								<li key={index} className="py-1">
 									<div className="flex items-center gap-2">
-										<span className="shrink-0 tabular-nums text-[var(--omp-dim)]">{index + 1}.</span>
+										<span className="shrink-0 tabular-nums text-[var(--omsk-dim)]">{index + 1}.</span>
 										<span
 											title={t("tools.find.relevance")}
-											className="shrink-0 tabular-nums text-[var(--omp-accent)]"
+											className="shrink-0 tabular-nums text-[var(--omsk-accent)]"
 										>
 											{hit.contentScore.toFixed(2)}
 										</span>
 										<PathLink
 											path={hitPath(hit.rel, details?.cwd)}
-											className="truncate text-[var(--omp-status-path)]"
+											className="truncate text-[var(--omsk-status-path)]"
 										>
 											{label}
 										</PathLink>
 									</div>
 									{Number.isFinite(hit.linesSeen) && (
-										<div className="text-omp-xs text-[var(--omp-dim)]">
+										<div className="text-omsk-xs text-[var(--omsk-dim)]">
 											{t(hit.truncated ? "tools.find.partialCoverage" : "tools.find.coverage", {
 												count: hit.linesSeen,
 											})}
@@ -193,18 +193,18 @@ export function FindRenderer({ args, result, isError, isPartial, partialResult, 
 										<div key={rangeIndex} className="flex min-w-0 gap-2 pl-4">
 											<PathLink
 												path={hitPath(hit.rel, details?.cwd)}
-												className="shrink-0 text-[var(--omp-status-path)]"
+												className="shrink-0 text-[var(--omsk-status-path)]"
 											>
 												:{range.start}
 												{range.end !== range.start ? `–${range.end}` : ""}
 											</PathLink>
 											<span
 												title={t("tools.find.relevance")}
-												className="shrink-0 tabular-nums text-[var(--omp-dim)]"
+												className="shrink-0 tabular-nums text-[var(--omsk-dim)]"
 											>
 												{range.p.toFixed(2)}
 											</span>
-											<span className="min-w-0 truncate whitespace-pre text-[var(--omp-tool-output)]">
+											<span className="min-w-0 truncate whitespace-pre text-[var(--omsk-tool-output)]">
 												{range.snippet}
 											</span>
 										</div>
@@ -213,16 +213,18 @@ export function FindRenderer({ args, result, isError, isPartial, partialResult, 
 							))}
 						</ol>
 					)}
-					{clipped && <div className="text-omp-xs text-[var(--omp-dim)]">{t("tools.find.previewTruncated")}</div>}
+					{clipped && (
+						<div className="text-omsk-xs text-[var(--omsk-dim)]">{t("tools.find.previewTruncated")}</div>
+					)}
 				</>
 			)}
 			{(pending || failed || !structured) && text && (
 				<pre
 					className={cx(
-						"whitespace-pre-wrap break-words rounded px-2 py-1 font-mono text-omp-sm",
+						"whitespace-pre-wrap break-words rounded px-2 py-1 font-mono text-omsk-sm",
 						failed
-							? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-							: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]",
+							? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+							: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]",
 						PREVIEW_SCROLL_SM,
 					)}
 				>
@@ -230,17 +232,17 @@ export function FindRenderer({ args, result, isError, isPartial, partialResult, 
 				</pre>
 			)}
 			{!pending && !failed && !structured && !text && (
-				<div className="text-omp-sm text-[var(--omp-dim)]">{t("tools.find.noResult")}</div>
+				<div className="text-omsk-sm text-[var(--omsk-dim)]">{t("tools.find.noResult")}</div>
 			)}
 			{!pending && !failed && typeof stats?.errors === "number" && stats.errors > 0 && (
-				<div className="text-omp-xs text-[var(--omp-warning)]">
+				<div className="text-omsk-xs text-[var(--omsk-warning)]">
 					{t("tools.find.errors", { count: stats.errors })}
 				</div>
 			)}
 			{!pending && !failed && failures.length > 0 && (
 				<pre
 					className={cx(
-						"whitespace-pre-wrap break-words font-mono text-omp-xs text-[var(--omp-warning)]",
+						"whitespace-pre-wrap break-words font-mono text-omsk-xs text-[var(--omsk-warning)]",
 						PREVIEW_SCROLL_SM,
 					)}
 				>

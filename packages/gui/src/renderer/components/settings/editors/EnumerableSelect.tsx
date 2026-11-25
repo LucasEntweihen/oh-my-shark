@@ -57,7 +57,7 @@ function fetchOnce(fetcher: OptionsFetcher): Promise<EnumerableOption[]> {
 }
 
 const TRIGGER_CLASS =
-	"flex w-full items-center justify-between gap-2 rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-2.5 py-1.5 text-omp-md leading-[1.45] text-left text-(--omp-text) transition-colors hover:border-(--omp-border-strong) disabled:opacity-50";
+	"flex w-full items-center justify-between gap-2 rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2.5 py-1.5 text-omsk-md leading-[1.45] text-left text-(--omsk-text) transition-colors hover:border-(--omsk-border-strong) disabled:opacity-50";
 
 /** One selectable row in the dropdown, in render/tab order. */
 type EnumerableItem =
@@ -245,39 +245,39 @@ export function EnumerableSelect({
 				return (
 					<button
 						{...rowProps}
-						className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-omp-xs ${isActive ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"}`}
+						className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-omsk-xs ${isActive ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)"}`}
 						key="__clear__"
 					>
-						<span className="text-(--omp-dim)">{t("settings.editors.clear")}</span>
+						<span className="text-(--omsk-dim)">{t("settings.editors.clear")}</span>
 					</button>
 				);
 			case "current":
 				return (
 					<button
 						{...rowProps}
-						className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left font-mono text-omp-xs ${isActive ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"}`}
+						className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left font-mono text-omsk-xs ${isActive ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)"}`}
 						key="__current__"
 					>
 						<span>{item.value}</span>
-						<Check size={12} className="text-(--omp-accent)" />
+						<Check size={12} className="text-(--omsk-accent)" />
 					</button>
 				);
 			case "option":
 				return (
 					<button
 						{...rowProps}
-						className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left font-mono text-omp-xs ${isActive ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"}`}
+						className={`flex w-full items-center justify-between rounded px-2 py-1.5 text-left font-mono text-omsk-xs ${isActive ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)"}`}
 						key={item.option.value}
 					>
 						<span className="min-w-0 flex-1 truncate">{item.option.label ?? item.option.value}</span>
-						{item.option.value === value && <Check size={12} className="shrink-0 text-(--omp-accent)" />}
+						{item.option.value === value && <Check size={12} className="shrink-0 text-(--omsk-accent)" />}
 					</button>
 				);
 			case "custom":
 				return (
 					<button
 						{...rowProps}
-						className={`w-full rounded px-2 py-1.5 text-left font-mono text-omp-xs text-(--omp-accent) ${isActive ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"}`}
+						className={`w-full rounded px-2 py-1.5 text-left font-mono text-omsk-xs text-(--omsk-accent) ${isActive ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)"}`}
 						key="__custom__"
 					>
 						{t("settings.editors.useCustom", { value: item.value })}
@@ -297,19 +297,19 @@ export function EnumerableSelect({
 				onClick={() => setOpen(o => !o)}
 				type="button"
 			>
-				<span className={cx("truncate font-mono", value === "" && "text-(--omp-dim)")}>
+				<span className={cx("truncate font-mono", value === "" && "text-(--omsk-dim)")}>
 					{value === "" ? t("settings.editors.unset") : value}
 				</span>
-				<ChevronDown size={13} className="shrink-0 text-(--omp-dim)" />
+				<ChevronDown size={13} className="shrink-0 text-(--omsk-dim)" />
 			</button>
 			{open && (
-				<div className="absolute right-0 z-40 mt-1 w-72 overflow-hidden rounded-lg border border-(--omp-modal-border) bg-(--omp-modal-bg) shadow-(--omp-shadow-lg)">
-					<div className="border-b border-(--omp-border-muted) px-2 py-1.5">
+				<div className="absolute right-0 z-40 mt-1 w-72 overflow-hidden rounded-lg border border-(--omsk-modal-border) bg-(--omsk-modal-bg) shadow-(--omsk-shadow-lg)">
+					<div className="border-b border-(--omsk-border-muted) px-2 py-1.5">
 						<input
 							aria-activedescendant={items.length > 0 ? `${listboxId}-option-${activeIndex}` : undefined}
 							aria-controls={listboxId}
 							aria-label={t("settings.editors.search")}
-							className="w-full bg-transparent text-omp-xs text-(--omp-text) outline-none placeholder:text-(--omp-dim)"
+							className="w-full bg-transparent text-omsk-xs text-(--omsk-text) outline-none placeholder:text-(--omsk-dim)"
 							onChange={e => setQuery(e.target.value)}
 							onKeyDown={onSearchKeyDown}
 							placeholder={t("settings.editors.search")}
@@ -319,13 +319,13 @@ export function EnumerableSelect({
 						/>
 					</div>
 					{options === null && !error && (
-						<div className="px-2 py-2 text-omp-xs text-(--omp-dim)">
+						<div className="px-2 py-2 text-omsk-xs text-(--omsk-dim)">
 							{t("settings.editors.loading", { noun: noun ?? t("settings.editors.options") })}
 						</div>
 					)}
 					{error && (
 						<button
-							className="w-full rounded px-2 py-1.5 text-left text-omp-xs text-(--omp-error) hover:bg-(--omp-bg-tertiary)"
+							className="w-full rounded px-2 py-1.5 text-left text-omsk-xs text-(--omsk-error) hover:bg-(--omsk-bg-tertiary)"
 							onClick={() => {
 								setOptions(null);
 								setError(false);
@@ -349,7 +349,7 @@ export function EnumerableSelect({
 								{items.map(renderItem)}
 							</div>
 							{filtered.length === 0 && trimmedQuery !== "" && !allowCustom && (
-								<div className="px-2 py-2 text-omp-xs text-(--omp-dim)">{t("settings.editors.noMatch")}</div>
+								<div className="px-2 py-2 text-omsk-xs text-(--omsk-dim)">{t("settings.editors.noMatch")}</div>
 							)}
 						</>
 					)}

@@ -65,7 +65,7 @@ function Toggle({
 		<button
 			aria-checked={checked}
 			aria-label={label}
-			className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omp-accent) disabled:cursor-not-allowed disabled:opacity-50"
+			className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omsk-accent) disabled:cursor-not-allowed disabled:opacity-50"
 			disabled={disabled}
 			onClick={event => {
 				event.stopPropagation();
@@ -82,10 +82,10 @@ function Toggle({
 function SkillBadge({ children, accent = false }: { children: string; accent?: boolean }) {
 	return (
 		<span
-			className={`rounded-md border bg-transparent px-1.5 py-0.5 text-omp-xxs font-medium tracking-wide ${
+			className={`rounded-md border bg-transparent px-1.5 py-0.5 text-omsk-xxs font-medium tracking-wide ${
 				accent
-					? "border-[color-mix(in_srgb,var(--omp-accent)_35%,transparent)] text-(--omp-accent)"
-					: "border-(--omp-border-muted) text-(--omp-dim)"
+					? "border-[color-mix(in_srgb,var(--omsk-accent)_35%,transparent)] text-(--omsk-accent)"
+					: "border-(--omsk-border-muted) text-(--omsk-dim)"
 			}`}
 		>
 			{children}
@@ -304,10 +304,10 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 			<div className="flex flex-wrap items-center gap-1.5">
 				{filterOptions.map(option => (
 					<button
-						className={`rounded-md px-2.5 py-1 text-omp-xs font-medium transition-colors ${
+						className={`rounded-md px-2.5 py-1 text-omsk-xs font-medium transition-colors ${
 							filter === option
-								? "bg-(--omp-selected-bg) text-(--omp-text)"
-								: "text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-muted)"
+								? "bg-(--omsk-selected-bg) text-(--omsk-text)"
+								: "text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-muted)"
 						}`}
 						key={option}
 						onClick={() => setFilter(option)}
@@ -316,12 +316,12 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 						{t(`settings.skills.filter.${option}`)}
 					</button>
 				))}
-				<span className="ml-auto text-omp-xs tabular-nums text-(--omp-dim)">
+				<span className="ml-auto text-omsk-xs tabular-nums text-(--omsk-dim)">
 					{visible.length} / {skills.length}
 				</span>
 				<button
 					aria-label={t("settings.skills.refresh")}
-					className="rounded-md p-1.5 text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text) disabled:opacity-40"
+					className="rounded-md p-1.5 text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text) disabled:opacity-40"
 					disabled={!sidecarReady || loading || !routeReady}
 					onClick={() => void loadSkills()}
 					title={!sidecarReady ? t("common.notConnected") : undefined}
@@ -331,13 +331,13 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 				</button>
 			</div>
 
-			<div className="skills-master-detail overflow-hidden rounded-lg border border-(--omp-border-muted)">
+			<div className="skills-master-detail overflow-hidden rounded-lg border border-(--omsk-border-muted)">
 				<aside className="skills-list-pane min-h-0">
 					{/* A failed read outranks the empty list: an outage must not read as "no skills installed". */}
 					{error ? (
 						<div className="flex h-full flex-col items-center justify-center gap-3 px-5 text-center">
-							<AlertTriangle className="text-(--omp-warning)" size={20} />
-							<p className="text-omp-sm text-(--omp-muted)">{error}</p>
+							<AlertTriangle className="text-(--omsk-warning)" size={20} />
+							<p className="text-omsk-sm text-(--omsk-muted)">{error}</p>
 							<Button
 								disabled={!sidecarReady}
 								onClick={() => void loadSkills()}
@@ -352,7 +352,7 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 							<Spinner size="sm" />
 						</div>
 					) : visible.length === 0 ? (
-						<div className="flex h-full items-center justify-center px-5 text-center text-omp-sm text-(--omp-dim)">
+						<div className="flex h-full items-center justify-center px-5 text-center text-omsk-sm text-(--omsk-dim)">
 							{t("settings.skills.empty")}
 						</div>
 					) : (
@@ -362,8 +362,8 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 								return (
 									<div
 										aria-current={active ? "true" : undefined}
-										className={`group flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--omp-accent) ${
-											active ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"
+										className={`group flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--omsk-accent) ${
+											active ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)"
 										}`}
 										key={`${skill.provider}:${skill.name}`}
 										onClick={() => setSelectedName(skill.name)}
@@ -376,15 +376,15 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 										tabIndex={0}
 									>
 										<span
-											className={`flex size-7 shrink-0 items-center justify-center ${skill.managed ? "text-(--omp-accent)" : "text-(--omp-muted)"}`}
+											className={`flex size-7 shrink-0 items-center justify-center ${skill.managed ? "text-(--omsk-accent)" : "text-(--omsk-muted)"}`}
 										>
 											<FileText size={13} />
 										</span>
 										<span className="min-w-0 flex-1">
-											<span className="block truncate font-mono text-omp-sm font-medium text-(--omp-text)">
+											<span className="block truncate font-mono text-omsk-sm font-medium text-(--omsk-text)">
 												{skill.name}
 											</span>
-											<span className="mt-0.5 block truncate text-omp-xxs text-(--omp-dim)">
+											<span className="mt-0.5 block truncate text-omsk-xxs text-(--omsk-dim)">
 												{skill.providerName} · {t(`settings.skills.scope.${skill.level}`)}
 											</span>
 										</span>
@@ -396,7 +396,7 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 										/>
 										<ChevronRight
 											className={
-												active ? "text-(--omp-muted)" : "text-transparent group-hover:text-(--omp-dim)"
+												active ? "text-(--omsk-muted)" : "text-transparent group-hover:text-(--omsk-dim)"
 											}
 											size={12}
 										/>
@@ -412,14 +412,14 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 						<div className="space-y-4">
 							<div className="flex items-center justify-between">
 								<div>
-									<h3 className="text-omp-lg font-semibold text-(--omp-text)">
+									<h3 className="text-omsk-lg font-semibold text-(--omsk-text)">
 										{t(`settings.skills.editor.${editor.mode}`)}
 									</h3>
-									<p className="mt-0.5 text-omp-xs text-(--omp-dim)">{t("settings.skills.editor.hint")}</p>
+									<p className="mt-0.5 text-omsk-xs text-(--omsk-dim)">{t("settings.skills.editor.hint")}</p>
 								</div>
 								<button
 									aria-label={t("common.cancel")}
-									className="rounded-md p-1.5 text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+									className="rounded-md p-1.5 text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 									onClick={() => setEditor(null)}
 									type="button"
 								>
@@ -476,20 +476,22 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 						</div>
 					) : selected ? (
 						<div className="flex min-h-full flex-col gap-5">
-							<header className="flex items-start gap-3 border-b border-(--omp-border-muted) pb-4">
+							<header className="flex items-start gap-3 border-b border-(--omsk-border-muted) pb-4">
 								<span
-									className={`flex size-9 shrink-0 items-center justify-center ${selected.managed ? "text-(--omp-accent)" : "text-(--omp-muted)"}`}
+									className={`flex size-9 shrink-0 items-center justify-center ${selected.managed ? "text-(--omsk-accent)" : "text-(--omsk-muted)"}`}
 								>
 									<BookOpen size={16} />
 								</span>
 								<div className="min-w-0 flex-1">
 									<div className="flex flex-wrap items-center gap-1.5">
-										<h3 className="font-mono text-omp-lg font-semibold text-(--omp-text)">{selected.name}</h3>
+										<h3 className="font-mono text-omsk-lg font-semibold text-(--omsk-text)">
+											{selected.name}
+										</h3>
 										{selected.managed && <SkillBadge accent>{t("settings.skills.managed")}</SkillBadge>}
 										<SkillBadge>{t(`settings.skills.scope.${selected.level}`)}</SkillBadge>
 										{selected.hidden && <SkillBadge>{t("settings.skills.manualOnly")}</SkillBadge>}
 									</div>
-									<p className="mt-1 max-w-5xl text-omp-sm leading-relaxed text-(--omp-muted)">
+									<p className="mt-1 max-w-5xl text-omsk-sm leading-relaxed text-(--omsk-muted)">
 										{selected.description || t("settings.skills.noDescription")}
 									</p>
 								</div>
@@ -497,7 +499,7 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 									<div className="flex gap-1">
 										<button
 											aria-label={t("common.edit")}
-											className="rounded-md p-1.5 text-(--omp-dim) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+											className="rounded-md p-1.5 text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 											disabled={!sidecarReady || !detail}
 											onClick={startEdit}
 											title={!sidecarReady ? t("common.notConnected") : undefined}
@@ -507,7 +509,7 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 										</button>
 										<button
 											aria-label={t("common.delete")}
-											className="rounded-md p-1.5 text-(--omp-dim) hover:bg-(--omp-error-dim) hover:text-(--omp-error)"
+											className="rounded-md p-1.5 text-(--omsk-dim) hover:bg-(--omsk-error-dim) hover:text-(--omsk-error)"
 											disabled={!sidecarReady}
 											onClick={() => setDeleteArmed(true)}
 											title={!sidecarReady ? t("common.notConnected") : undefined}
@@ -520,8 +522,8 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 							</header>
 
 							{deleteArmed && (
-								<div className="flex items-center gap-3 rounded-lg border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent px-3 py-2.5">
-									<p className="min-w-0 flex-1 text-omp-xs text-(--omp-error)">
+								<div className="flex items-center gap-3 rounded-lg border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent px-3 py-2.5">
+									<p className="min-w-0 flex-1 text-omsk-xs text-(--omsk-error)">
 										{t("settings.skills.deleteConfirm")}
 									</p>
 									<Button onClick={() => setDeleteArmed(false)} size="sm">
@@ -540,16 +542,16 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 								</div>
 							)}
 
-							<div className="grid grid-cols-[90px_minmax(0,1fr)] gap-x-3 gap-y-2 text-omp-xs">
-								<span className="text-(--omp-dim)">{t("settings.skills.provider")}</span>
-								<span className="text-(--omp-muted)">{selected.providerName}</span>
-								<span className="text-(--omp-dim)">{t("settings.skills.location")}</span>
-								<span className="truncate font-mono text-(--omp-muted)" title={selected.location}>
+							<div className="grid grid-cols-[90px_minmax(0,1fr)] gap-x-3 gap-y-2 text-omsk-xs">
+								<span className="text-(--omsk-dim)">{t("settings.skills.provider")}</span>
+								<span className="text-(--omsk-muted)">{selected.providerName}</span>
+								<span className="text-(--omsk-dim)">{t("settings.skills.location")}</span>
+								<span className="truncate font-mono text-(--omsk-muted)" title={selected.location}>
 									{shortenPath(selected.location)}
 								</span>
-								<span className="text-(--omp-dim)">{t("settings.skills.status")}</span>
+								<span className="text-(--omsk-dim)">{t("settings.skills.status")}</span>
 								<span
-									className={`flex items-center gap-1 ${selected.enabled ? "text-(--omp-success)" : "text-(--omp-muted)"}`}
+									className={`flex items-center gap-1 ${selected.enabled ? "text-(--omsk-success)" : "text-(--omsk-muted)"}`}
 								>
 									{selected.enabled && <Check size={11} />}
 									{selected.enabled ? t("settings.skills.enabled") : t("settings.skills.disabled")}
@@ -557,7 +559,7 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 							</div>
 
 							<div className="flex min-h-48 flex-1 flex-col">
-								<h4 className="mb-2 text-omp-xs font-semibold text-(--omp-dim)">
+								<h4 className="mb-2 text-omsk-xs font-semibold text-(--omsk-dim)">
 									{t("settings.skills.preview")}
 								</h4>
 								{detailLoading ? (
@@ -566,7 +568,7 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 									</div>
 								) : detailError ? (
 									<div className="flex flex-col items-start gap-2">
-										<p className="rounded-lg border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent px-3 py-2 text-omp-sm text-(--omp-error)">
+										<p className="rounded-lg border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent px-3 py-2 text-omsk-sm text-(--omsk-error)">
 											{detailError}
 										</p>
 										<Button
@@ -581,7 +583,7 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 										</Button>
 									</div>
 								) : detail ? (
-									<div className="skills-preview-pane min-h-0 flex-1 overflow-y-auto border-t border-(--omp-border-muted) pt-3 text-omp-md">
+									<div className="skills-preview-pane min-h-0 flex-1 overflow-y-auto border-t border-(--omsk-border-muted) pt-3 text-omsk-md">
 										<MarkdownRenderer content={detail.body} />
 									</div>
 								) : null}
@@ -589,8 +591,8 @@ export function SkillsSettingsPage({ query }: { query: string }) {
 						</div>
 					) : (
 						<div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-							<BookOpen className="text-(--omp-dim)" size={24} strokeWidth={1.4} />
-							<p className="text-omp-sm text-(--omp-dim)">{t("settings.skills.selectHint")}</p>
+							<BookOpen className="text-(--omsk-dim)" size={24} strokeWidth={1.4} />
+							<p className="text-omsk-sm text-(--omsk-dim)">{t("settings.skills.selectHint")}</p>
 						</div>
 					)}
 				</section>

@@ -75,11 +75,11 @@ export function GainRoute({ range, refreshKey }: { range: StatsRange; refreshKey
 			{overall && (
 				<>
 					<div className="mb-3 flex items-center gap-2">
-						<label className="text-omp-xs font-semibold text-(--omp-dim)" htmlFor="gain-project">
+						<label className="text-omsk-xs font-semibold text-(--omsk-dim)" htmlFor="gain-project">
 							{t("stats.col.project")}
 						</label>
 						<select
-							className="rounded-md border border-(--omp-border-muted) bg-(--omp-input-bg) px-2 py-1 text-omp-sm text-(--omp-text) focus:border-(--omp-border-accent) focus:outline-none"
+							className="rounded-md border border-(--omsk-border-muted) bg-(--omsk-input-bg) px-2 py-1 text-omsk-sm text-(--omsk-text) focus:border-(--omsk-border-accent) focus:outline-none"
 							id="gain-project"
 							onChange={event => setProject(event.target.value)}
 							value={project}
@@ -105,16 +105,16 @@ export function GainRoute({ range, refreshKey }: { range: StatsRange; refreshKey
 					{sourceEntries.length > 0 && <SectionTitle>{t("stats.gain.bySource")}</SectionTitle>}
 					{sourceEntries.map(([source, totals]) => (
 						<div
-							className="mb-1.5 flex items-center gap-3 rounded-md border border-(--omp-border-muted) bg-transparent px-3 py-2 text-omp-sm"
+							className="mb-1.5 flex items-center gap-3 rounded-md border border-(--omsk-border-muted) bg-transparent px-3 py-2 text-omsk-sm"
 							key={source}
 						>
-							<span className="font-mono font-medium text-(--omp-text)">{source}</span>
-							<span className="text-(--omp-muted)">
+							<span className="font-mono font-medium text-(--omsk-text)">{source}</span>
+							<span className="text-(--omsk-muted)">
 								{t("stats.gain.tokens", { count: compact(totals.savedTokens) })}
 							</span>
-							<span className="text-(--omp-dim)">{t("stats.gain.hits", { count: totals.hits })}</span>
+							<span className="text-(--omsk-dim)">{t("stats.gain.hits", { count: totals.hits })}</span>
 							{totals.reductionPercent != null && Number.isFinite(totals.reductionPercent) && (
-								<span className="ml-auto text-(--omp-success)">
+								<span className="ml-auto text-(--omsk-success)">
 									−{formatPercent(totals.reductionPercent, 0)}
 								</span>
 							)}

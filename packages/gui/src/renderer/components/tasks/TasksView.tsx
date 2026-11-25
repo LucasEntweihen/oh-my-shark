@@ -56,7 +56,7 @@ function TaskRow({
 		<button
 			className={cx(
 				"flex w-full flex-col gap-1 rounded-lg px-2.5 py-2 text-left transition-colors duration-150",
-				active ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-selected-bg)",
+				active ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-selected-bg)",
 				task.state !== "active" && "opacity-75",
 			)}
 			onClick={onSelect}
@@ -67,19 +67,21 @@ function TaskRow({
 					className={cx(
 						"shrink-0",
 						live
-							? "omp-signal-light omp-signal-light--active text-(--omp-link)"
+							? "omsk-signal-light omsk-signal-light--active text-(--omsk-link)"
 							: cx(
 									"size-2 rounded-full",
 									task.state === "active"
-										? "bg-(--omp-success)"
+										? "bg-(--omsk-success)"
 										: task.state === "disabled"
-											? "bg-(--omp-error)"
-											: "bg-(--omp-border-strong)",
+											? "bg-(--omsk-error)"
+											: "bg-(--omsk-border-strong)",
 								),
 					)}
 				/>
-				<span className="min-w-0 flex-1 truncate text-omp-md font-medium text-(--omp-text)">{task.title}</span>
-				<span className={cx("shrink-0 text-omp-xs tabular-nums", live ? "text-(--omp-link)" : "text-(--omp-dim)")}>
+				<span className="min-w-0 flex-1 truncate text-omsk-md font-medium text-(--omsk-text)">{task.title}</span>
+				<span
+					className={cx("shrink-0 text-omsk-xs tabular-nums", live ? "text-(--omsk-link)" : "text-(--omsk-dim)")}
+				>
 					{live
 						? t("tasks.list.runningNow")
 						: task.nextFireAt !== null
@@ -87,7 +89,7 @@ function TaskRow({
 							: t(`tasks.state.${task.state}`)}
 				</span>
 			</span>
-			<span className="flex items-center gap-2 pl-4 text-omp-xs text-(--omp-dim)">
+			<span className="flex items-center gap-2 pl-4 text-omsk-xs text-(--omsk-dim)">
 				<span className="min-w-0 flex-1 truncate">{scheduleLabel(t, task.schedule)}</span>
 				<RecentStrip runs={runs} />
 			</span>
@@ -99,8 +101,8 @@ function TaskRow({
 function Setting({ label, children, wide }: { label: string; children: React.ReactNode; wide?: boolean }) {
 	return (
 		<div className={cx("min-w-0", wide && "col-span-2")}>
-			<dt className="text-omp-xs text-(--omp-dim)">{label}</dt>
-			<dd className="mt-0.5 text-omp-md break-words text-(--omp-text)">{children}</dd>
+			<dt className="text-omsk-xs text-(--omsk-dim)">{label}</dt>
+			<dd className="mt-0.5 text-omsk-md break-words text-(--omsk-text)">{children}</dd>
 		</div>
 	);
 }
@@ -109,9 +111,9 @@ function Setting({ label, children, wide }: { label: string; children: React.Rea
 function Stat({ label, value, detail }: { label: string; value: React.ReactNode; detail?: React.ReactNode }) {
 	return (
 		<div className="min-w-0">
-			<p className="text-omp-xs text-(--omp-dim)">{label}</p>
-			<p className="mt-0.5 truncate text-omp-lg font-semibold text-(--omp-text) tabular-nums">{value}</p>
-			{detail && <p className="truncate text-omp-xs text-(--omp-dim) tabular-nums">{detail}</p>}
+			<p className="text-omsk-xs text-(--omsk-dim)">{label}</p>
+			<p className="mt-0.5 truncate text-omsk-lg font-semibold text-(--omsk-text) tabular-nums">{value}</p>
+			{detail && <p className="truncate text-omsk-xs text-(--omsk-dim) tabular-nums">{detail}</p>}
 		</div>
 	);
 }
@@ -142,8 +144,8 @@ function TaskStats({ task, runs }: { task: ScheduledTask; runs: TaskRun[] }) {
 	if (!insights || (insights.runs === 0 && !latest)) return null;
 	const latestOutcome = latest ? runOutcome(latest) : null;
 	return (
-		<section className="omp-fade-up rounded-xl border border-(--omp-border-muted) px-4 py-3">
-			<h3 className="text-omp-sm font-semibold tracking-wide text-(--omp-muted) uppercase">
+		<section className="omsk-fade-up rounded-xl border border-(--omsk-border-muted) px-4 py-3">
+			<h3 className="text-omsk-sm font-semibold tracking-wide text-(--omsk-muted) uppercase">
 				{t("tasks.insights.title", { days: STATS_DAYS })}
 			</h3>
 			<dl className="mt-2 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -194,19 +196,19 @@ function QuietStreak({ runs, onSelect }: { runs: TaskRun[]; onSelect: (id: strin
 		<div>
 			<button
 				aria-expanded={open}
-				className="relative flex w-full items-center gap-2 rounded-lg py-2 pr-2.5 pl-3.5 text-left transition-colors duration-150 hover:bg-(--omp-selected-bg)"
+				className="relative flex w-full items-center gap-2 rounded-lg py-2 pr-2.5 pl-3.5 text-left transition-colors duration-150 hover:bg-(--omsk-selected-bg)"
 				onClick={() => setOpen(value => !value)}
 				type="button"
 			>
-				<span aria-hidden className="absolute inset-y-2 left-1 w-0.5 rounded-full bg-(--omp-border-strong)" />
+				<span aria-hidden className="absolute inset-y-2 left-1 w-0.5 rounded-full bg-(--omsk-border-strong)" />
 				<ChevronRight
-					className={cx("omp-disclosure-chevron shrink-0 text-(--omp-dim)", open && "rotate-90")}
+					className={cx("omsk-disclosure-chevron shrink-0 text-(--omsk-dim)", open && "rotate-90")}
 					size={13}
 				/>
-				<span className="min-w-0 flex-1 truncate text-omp-md text-(--omp-muted)">
+				<span className="min-w-0 flex-1 truncate text-omsk-md text-(--omsk-muted)">
 					{t("tasks.detail.quietStreak", { count: runs.length })}
 				</span>
-				<span className="shrink-0 text-omp-xs text-(--omp-dim) tabular-nums">
+				<span className="shrink-0 text-omsk-xs text-(--omsk-dim) tabular-nums">
 					{at(oldest)} – {at(newest)}
 				</span>
 			</button>
@@ -260,9 +262,9 @@ function TaskDetail({ task, runs }: { task: ScheduledTask; runs: TaskRun[] }) {
 
 	if (shownRun) {
 		return (
-			<div className="omp-fade-in">
+			<div className="omsk-fade-in">
 				<button
-					className="mb-4 text-omp-md text-(--omp-link) hover:underline"
+					className="mb-4 text-omsk-md text-(--omsk-link) hover:underline"
 					onClick={() => setOpenRun(null)}
 					type="button"
 				>
@@ -274,26 +276,26 @@ function TaskDetail({ task, runs }: { task: ScheduledTask; runs: TaskRun[] }) {
 	}
 
 	return (
-		<div className="omp-fade-in flex max-w-4xl flex-col gap-6" key={task.id}>
+		<div className="omsk-fade-in flex max-w-4xl flex-col gap-6" key={task.id}>
 			<header className="flex flex-wrap items-start justify-between gap-3">
 				<div className="min-w-0">
-					<h2 className="flex items-center gap-2 text-omp-xl font-semibold text-(--omp-text)">
+					<h2 className="flex items-center gap-2 text-omsk-xl font-semibold text-(--omsk-text)">
 						<span className="truncate">{task.title}</span>
 						<Badge dot variant={TASK_STATE_VARIANT[task.state]}>
 							{t(`tasks.state.${task.state}`)}
 						</Badge>
 					</h2>
-					<p className="mt-1 text-omp-md text-(--omp-muted)">
+					<p className="mt-1 text-omsk-md text-(--omsk-muted)">
 						{scheduleLabel(t, task.schedule)}
 						{task.nextFireAt !== null && (
-							<span className="text-(--omp-dim)">
+							<span className="text-(--omsk-dim)">
 								{" · "}
 								{t("tasks.detail.next", { when: formatClock(task.nextFireAt) })}
 							</span>
 						)}
 					</p>
 					{task.state === "disabled" && task.disabledReason && (
-						<p className="mt-1 text-omp-md text-(--omp-error)">{t(`tasks.disabled.${task.disabledReason}`)}</p>
+						<p className="mt-1 text-omsk-md text-(--omsk-error)">{t(`tasks.disabled.${task.disabledReason}`)}</p>
 					)}
 				</div>
 				<div className="flex flex-wrap gap-2">
@@ -366,13 +368,13 @@ function TaskDetail({ task, runs }: { task: ScheduledTask; runs: TaskRun[] }) {
 
 			<TaskStats runs={runs} task={task} />
 
-			<section className="rounded-xl border border-(--omp-border-muted) px-4 py-3">
-				<h3 className="text-omp-sm font-semibold tracking-wide text-(--omp-muted) uppercase">
+			<section className="rounded-xl border border-(--omsk-border-muted) px-4 py-3">
+				<h3 className="text-omsk-sm font-semibold tracking-wide text-(--omsk-muted) uppercase">
 					{t("tasks.form.prompt")}
 				</h3>
 				<p
 					className={cx(
-						"mt-1.5 text-omp-md leading-relaxed whitespace-pre-wrap text-(--omp-text)",
+						"mt-1.5 text-omsk-md leading-relaxed whitespace-pre-wrap text-(--omsk-text)",
 						!promptOpen && "line-clamp-3",
 					)}
 				>
@@ -380,21 +382,21 @@ function TaskDetail({ task, runs }: { task: ScheduledTask; runs: TaskRun[] }) {
 				</p>
 				{longPrompt && (
 					<button
-						className="mt-1 text-omp-sm text-(--omp-link) hover:underline"
+						className="mt-1 text-omsk-sm text-(--omsk-link) hover:underline"
 						onClick={() => setPromptOpen(value => !value)}
 						type="button"
 					>
 						{t(promptOpen ? "tasks.detail.showLess" : "tasks.detail.showAll")}
 					</button>
 				)}
-				<dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-(--omp-border-muted) pt-3 lg:grid-cols-4">
+				<dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-(--omsk-border-muted) pt-3 lg:grid-cols-4">
 					<Setting label={t("tasks.form.depth")}>{depthLabel(t, task.depth)}</Setting>
 					<Setting label={t("tasks.form.access")}>{t(`tasks.access.${task.tools}`)}</Setting>
 					<Setting label={t("tasks.detail.timeLimit")}>{timeLimitLabel(t, task.timeoutMs)}</Setting>
 					<Setting label={t("tasks.form.notify")}>{t(`tasks.notify.${task.notify}`)}</Setting>
 					<Setting label={t("tasks.form.model")}>
 						{task.model ? (
-							<span className="block truncate font-mono text-omp-sm" title={task.model}>
+							<span className="block truncate font-mono text-omsk-sm" title={task.model}>
 								{task.model}
 							</span>
 						) : (
@@ -403,30 +405,30 @@ function TaskDetail({ task, runs }: { task: ScheduledTask; runs: TaskRun[] }) {
 					</Setting>
 					<Setting label={t("tasks.detail.origin")}>
 						{t(task.origin.createdBy === "agent" ? "tasks.detail.originAgent" : "tasks.detail.originUser")}
-						<span className="text-(--omp-dim)">
+						<span className="text-(--omsk-dim)">
 							{" · "}
 							{t("tasks.detail.revision", { revision: task.revision })}
 						</span>
 					</Setting>
 					<Setting label={t("tasks.form.folder")} wide>
-						<span className="block truncate font-mono text-omp-sm" title={task.cwd}>
+						<span className="block truncate font-mono text-omsk-sm" title={task.cwd}>
 							{shortenPath(task.cwd)}
 						</span>
 					</Setting>
 					{task.verify && (
 						<Setting label={t("tasks.detail.check")} wide>
-							<span className="font-mono text-omp-sm">{task.verify.command}</span>
+							<span className="font-mono text-omsk-sm">{task.verify.command}</span>
 						</Setting>
 					)}
 				</dl>
 			</section>
 
 			<section>
-				<h3 className="mb-2 text-omp-sm font-semibold tracking-wide text-(--omp-muted) uppercase">
+				<h3 className="mb-2 text-omsk-sm font-semibold tracking-wide text-(--omsk-muted) uppercase">
 					{t("tasks.detail.history")}
 				</h3>
 				{runs.length === 0 ? (
-					<p className="text-omp-md text-(--omp-dim)">{t("tasks.detail.noRuns")}</p>
+					<p className="text-omsk-md text-(--omsk-dim)">{t("tasks.detail.noRuns")}</p>
 				) : (
 					<div className="flex flex-col gap-0.5">
 						{groupHistory(runs.slice(0, HISTORY_RUNS)).map(item =>
@@ -447,15 +449,15 @@ function TaskDetail({ task, runs }: { task: ScheduledTask; runs: TaskRun[] }) {
 
 			{revisions.length > 1 && (
 				<section>
-					<h3 className="mb-2 text-omp-sm font-semibold tracking-wide text-(--omp-muted) uppercase">
+					<h3 className="mb-2 text-omsk-sm font-semibold tracking-wide text-(--omsk-muted) uppercase">
 						{t("tasks.detail.revisions")}
 					</h3>
 					<ul className="flex flex-col gap-1">
 						{[...revisions].reverse().map(revision => (
-							<li className="flex items-center gap-2 text-omp-md text-(--omp-muted)" key={revision.revision}>
-								<span className="w-8 shrink-0 tabular-nums text-(--omp-dim)">r{revision.revision}</span>
+							<li className="flex items-center gap-2 text-omsk-md text-(--omsk-muted)" key={revision.revision}>
+								<span className="w-8 shrink-0 tabular-nums text-(--omsk-dim)">r{revision.revision}</span>
 								<span className="tabular-nums">{formatClock(revision.createdAt)}</span>
-								<span className="min-w-0 truncate text-(--omp-dim)">
+								<span className="min-w-0 truncate text-(--omsk-dim)">
 									· {scheduleLabel(t, revision.config.schedule)}
 								</span>
 							</li>
@@ -491,12 +493,12 @@ export function EmptyState({
 	action?: React.ReactNode;
 }) {
 	return (
-		<div className="omp-empty-canvas flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-			<span className="flex size-12 items-center justify-center rounded-2xl border border-(--omp-border-muted) text-(--omp-muted)">
+		<div className="omsk-empty-canvas flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+			<span className="flex size-12 items-center justify-center rounded-2xl border border-(--omsk-border-muted) text-(--omsk-muted)">
 				{icon}
 			</span>
-			<p className="text-omp-lg font-medium text-(--omp-text)">{title}</p>
-			<p className="max-w-sm text-omp-md leading-relaxed text-(--omp-dim)">{body}</p>
+			<p className="text-omsk-lg font-medium text-(--omsk-text)">{title}</p>
+			<p className="max-w-sm text-omsk-md leading-relaxed text-(--omsk-dim)">{body}</p>
 			{action}
 		</div>
 	);
@@ -538,8 +540,8 @@ export function TasksView({ onNew }: { onNew: () => void }) {
 	}
 
 	return (
-		<div className="omp-docked-master-detail flex h-full min-h-0">
-			<aside className="flex w-80 shrink-0 flex-col border-r border-(--omp-border-muted)">
+		<div className="omsk-docked-master-detail flex h-full min-h-0">
+			<aside className="flex w-80 shrink-0 flex-col border-r border-(--omsk-border-muted)">
 				<div className="min-h-0 flex-1 overflow-y-auto p-2">
 					{visible.map(task => (
 						<TaskRow
@@ -552,10 +554,10 @@ export function TasksView({ onNew }: { onNew: () => void }) {
 					))}
 				</div>
 				{archivedCount > 0 && (
-					<label className="flex shrink-0 items-center gap-2 border-t border-(--omp-border-muted) px-4 py-2 text-omp-sm text-(--omp-muted)">
+					<label className="flex shrink-0 items-center gap-2 border-t border-(--omsk-border-muted) px-4 py-2 text-omsk-sm text-(--omsk-muted)">
 						<input
 							checked={showArchived}
-							className="size-3.5 accent-(--omp-accent)"
+							className="size-3.5 accent-(--omsk-accent)"
 							onChange={event => setShowArchived(event.target.checked)}
 							type="checkbox"
 						/>

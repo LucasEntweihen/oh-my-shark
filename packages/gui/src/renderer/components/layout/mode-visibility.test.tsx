@@ -121,7 +121,7 @@ describe("ComposerModes menu", () => {
 
 		const trigger = buttonByTitle("Active modes: Plan · Goal · Loop · Vibe");
 		expect(trigger).not.toBeNull();
-		expect(trigger?.className).toContain("bg-[var(--omp-accent-dim)]");
+		expect(trigger?.className).toContain("bg-[var(--omsk-accent-dim)]");
 		expect(trigger?.textContent).toContain("4");
 
 		await act(async () => {
@@ -147,7 +147,7 @@ describe("ComposerModes menu", () => {
 
 		const trigger = buttonByTitle("Session modes and coding toggles");
 		expect(trigger).not.toBeNull();
-		expect(trigger?.className).not.toContain("bg-[var(--omp-accent-dim)]");
+		expect(trigger?.className).not.toContain("bg-[var(--omsk-accent-dim)]");
 		expect(container.textContent).toBe("Modes");
 
 		await act(async () => {

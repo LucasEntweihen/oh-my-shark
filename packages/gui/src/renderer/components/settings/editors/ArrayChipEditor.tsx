@@ -66,21 +66,21 @@ export function ArrayChipEditor({ values, onCommit, disabled, placeholder, order
 
 	return (
 		<div
-			className="flex min-h-[38px] w-full flex-wrap items-center gap-1 rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2 py-1.5 transition-colors focus-within:border-(--omp-input-focus-border)"
+			className="flex min-h-[38px] w-full flex-wrap items-center gap-1 rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2 py-1.5 transition-colors focus-within:border-(--omsk-input-focus-border)"
 			onClick={() => inputRef.current?.focus()}
 		>
 			{values.map((value, index) => (
 				<span
-					className="inline-flex items-center gap-1 rounded bg-(--omp-badge-bg) px-1.5 py-0.5 font-mono text-omp-sm text-(--omp-badge-text)"
+					className="inline-flex items-center gap-1 rounded bg-(--omsk-badge-bg) px-1.5 py-0.5 font-mono text-omsk-sm text-(--omsk-badge-text)"
 					key={`${value}-${index}`}
 				>
-					{ordered && <span className="text-(--omp-dim)">{index + 1}.</span>}
+					{ordered && <span className="text-(--omsk-dim)">{index + 1}.</span>}
 					{options?.find(option => option.value === value)?.label ?? value}
 					{ordered && !disabled && (
 						<span className="inline-flex flex-col">
 							<button
 								aria-label={t("settings.editors.chipMoveUp", { value })}
-								className="text-(--omp-dim) hover:text-(--omp-text) disabled:opacity-30"
+								className="text-(--omsk-dim) hover:text-(--omsk-text) disabled:opacity-30"
 								disabled={index === 0}
 								onClick={e => {
 									e.stopPropagation();
@@ -92,7 +92,7 @@ export function ArrayChipEditor({ values, onCommit, disabled, placeholder, order
 							</button>
 							<button
 								aria-label={t("settings.editors.chipMoveDown", { value })}
-								className="text-(--omp-dim) hover:text-(--omp-text) disabled:opacity-30"
+								className="text-(--omsk-dim) hover:text-(--omsk-text) disabled:opacity-30"
 								disabled={index === values.length - 1}
 								onClick={e => {
 									e.stopPropagation();
@@ -107,7 +107,7 @@ export function ArrayChipEditor({ values, onCommit, disabled, placeholder, order
 					{!disabled && (
 						<button
 							aria-label={t("settings.editors.chipRemove", { value })}
-							className="text-(--omp-dim) hover:text-(--omp-error)"
+							className="text-(--omsk-dim) hover:text-(--omsk-error)"
 							onClick={e => {
 								e.stopPropagation();
 								removeAt(index);
@@ -122,7 +122,7 @@ export function ArrayChipEditor({ values, onCommit, disabled, placeholder, order
 			{!disabled && availableOptions ? (
 				<select
 					aria-label={placeholder ?? t("settings.editors.chipPlaceholder")}
-					className="min-w-[130px] flex-1 bg-transparent text-omp-sm text-(--omp-text) outline-none"
+					className="min-w-[130px] flex-1 bg-transparent text-omsk-sm text-(--omsk-text) outline-none"
 					disabled={availableOptions.length === 0}
 					onChange={event => add(event.target.value)}
 					ref={element => {
@@ -139,7 +139,7 @@ export function ArrayChipEditor({ values, onCommit, disabled, placeholder, order
 				</select>
 			) : !disabled ? (
 				<input
-					className="min-w-[70px] flex-1 bg-transparent font-mono text-omp-sm text-(--omp-text) outline-none placeholder:text-(--omp-dim)"
+					className="min-w-[70px] flex-1 bg-transparent font-mono text-omsk-sm text-(--omsk-text) outline-none placeholder:text-(--omsk-dim)"
 					disabled={disabled}
 					onBlur={() => add(draft)}
 					onChange={e => setDraft(e.target.value)}

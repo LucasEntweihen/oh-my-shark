@@ -81,10 +81,10 @@ export function FeedbackDialog() {
 	return (
 		<Modal onClose={close} open={open} size="lg" title={t("feedback.title")}>
 			<div className="space-y-4">
-				<p className="text-omp-sm leading-relaxed text-(--omp-muted)">{t("feedback.intro")}</p>
+				<p className="text-omsk-sm leading-relaxed text-(--omsk-muted)">{t("feedback.intro")}</p>
 
 				<div>
-					<span className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)">
+					<span className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)">
 						{t("feedback.kind")}
 					</span>
 					<div className="flex gap-1.5" role="group" aria-label={t("feedback.kind")}>
@@ -94,10 +94,10 @@ export function FeedbackDialog() {
 								type="button"
 								aria-pressed={kind === value}
 								onClick={() => setKind(value)}
-								className={`omp-pressable rounded-md px-3 py-1.5 text-omp-sm font-medium transition-colors ${
+								className={`omsk-pressable rounded-md px-3 py-1.5 text-omsk-sm font-medium transition-colors ${
 									kind === value
-										? "bg-(--omp-btn-primary-bg) text-(--omp-btn-primary-text)"
-										: "border border-(--omp-border-muted) text-(--omp-muted) hover:text-(--omp-text)"
+										? "bg-(--omsk-btn-primary-bg) text-(--omsk-btn-primary-text)"
+										: "border border-(--omsk-border-muted) text-(--omsk-muted) hover:text-(--omsk-text)"
 								}`}
 							>
 								{t(`feedback.kind.${value}`)}
@@ -116,10 +116,10 @@ export function FeedbackDialog() {
 
 				{prefill?.error && (
 					<div>
-						<span className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)">
+						<span className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)">
 							{t("feedback.capturedError")}
 						</span>
-						<pre className="max-h-24 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-(--omp-border-muted) bg-(--omp-code-bg) p-2.5 font-mono text-omp-xs text-(--omp-error)">
+						<pre className="max-h-24 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-(--omsk-border-muted) bg-(--omsk-code-bg) p-2.5 font-mono text-omsk-xs text-(--omsk-error)">
 							{prefill.error}
 						</pre>
 					</div>
@@ -134,38 +134,38 @@ export function FeedbackDialog() {
 					required
 				/>
 
-				<div className="space-y-2 rounded-lg border border-(--omp-border-muted) p-3">
-					<label className="flex items-start gap-2.5 text-omp-sm text-(--omp-text)">
+				<div className="space-y-2 rounded-lg border border-(--omsk-border-muted) p-3">
+					<label className="flex items-start gap-2.5 text-omsk-sm text-(--omsk-text)">
 						<input
 							type="checkbox"
 							checked={includeEnv}
 							onChange={event => setIncludeEnv(event.target.checked)}
-							className="mt-0.5 accent-(--omp-accent)"
+							className="mt-0.5 accent-(--omsk-accent)"
 						/>
 						<span>
 							{t("feedback.includeEnv")}
 							{includeEnv && envLine && (
-								<span className="block font-mono text-omp-xs text-(--omp-dim)">{envLine}</span>
+								<span className="block font-mono text-omsk-xs text-(--omsk-dim)">{envLine}</span>
 							)}
 						</span>
 					</label>
 					<div>
-						<label className="flex items-start gap-2.5 text-omp-sm text-(--omp-text)">
+						<label className="flex items-start gap-2.5 text-omsk-sm text-(--omsk-text)">
 							<input
 								type="checkbox"
 								checked={includeErrors}
 								onChange={event => setIncludeErrors(event.target.checked)}
-								className="mt-0.5 accent-(--omp-accent)"
+								className="mt-0.5 accent-(--omsk-accent)"
 							/>
 							<span>{t("feedback.includeErrors")}</span>
 						</label>
 						{/* Kept outside the label: clicking the preview to read/select text must not toggle the box. */}
 						{includeErrors && (
 							<details className="mt-1 ml-6">
-								<summary className="cursor-pointer text-omp-xs text-(--omp-dim) hover:text-(--omp-muted)">
+								<summary className="cursor-pointer text-omsk-xs text-(--omsk-dim) hover:text-(--omsk-muted)">
 									{t("feedback.errorsPreview", { count: errorTail.length })}
 								</summary>
-								<pre className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap break-words rounded-md bg-(--omp-code-bg) p-2 font-mono text-omp-xs text-(--omp-dim)">
+								<pre className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap break-words rounded-md bg-(--omsk-code-bg) p-2 font-mono text-omsk-xs text-(--omsk-dim)">
 									{errorPreview || t("feedback.errorsEmpty")}
 								</pre>
 							</details>
@@ -173,7 +173,7 @@ export function FeedbackDialog() {
 					</div>
 				</div>
 
-				<p className="text-omp-xs leading-relaxed text-(--omp-dim)">{t("feedback.note")}</p>
+				<p className="text-omsk-xs leading-relaxed text-(--omsk-dim)">{t("feedback.note")}</p>
 
 				<div className="flex justify-end gap-2 pt-1">
 					<Button onClick={close} size="sm" variant="secondary">

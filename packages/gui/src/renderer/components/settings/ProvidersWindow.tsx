@@ -115,16 +115,16 @@ export function ProviderRow({
 		provider.authenticated && !customConfigs.some(config => config.id === provider.id && config.hasApiKey);
 	return (
 		<div
-			className="omp-list-row flex items-center gap-3 rounded-lg border border-[var(--omp-border-muted)] px-3 py-2.5"
+			className="omsk-list-row flex items-center gap-3 rounded-lg border border-[var(--omsk-border-muted)] px-3 py-2.5"
 			data-ready={provider.authenticated ? "true" : undefined}
 		>
 			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<div className="flex items-center gap-2">
-					<span className="text-omp-lg font-semibold text-[var(--omp-text)]">{provider.name}</span>
+					<span className="text-omsk-lg font-semibold text-[var(--omsk-text)]">{provider.name}</span>
 					<AuthBadge provider={provider} keyless={keyless} t={t} />
 					{provider.disabled && <Badge variant="warning">{t("providers.badge.disabled")}</Badge>}
 				</div>
-				<div className="flex items-center gap-3 text-omp-sm text-[var(--omp-dim)]">
+				<div className="flex items-center gap-3 text-omsk-sm text-[var(--omsk-dim)]">
 					{provider.account && <span>{provider.account}</span>}
 					{provider.modelCount > 0 && (
 						<span>
@@ -451,9 +451,9 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 			<Modal dockable open={open} onClose={close} title={t("providers.title")} size="lg">
 				<div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
 					<div className="flex items-center justify-between">
-						<span className="omp-section-label">
+						<span className="omsk-section-label">
 							{t("providers.authenticated")}
-							<span className="omp-section-count">{authenticated.length}</span>
+							<span className="omsk-section-count">{authenticated.length}</span>
 						</span>
 						<div className="flex items-center gap-1.5">
 							<Button
@@ -503,7 +503,7 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 					{rejectedConfig && (
 						<div
 							role="alert"
-							className="flex items-center gap-2 rounded-md bg-[var(--omp-tool-error-bg)] px-3 py-2 text-omp-md text-[var(--omp-error)]"
+							className="flex items-center gap-2 rounded-md bg-[var(--omsk-tool-error-bg)] px-3 py-2 text-omsk-md text-[var(--omsk-error)]"
 						>
 							<span className="min-w-0 flex-1">
 								{t("providers.modelsYmlRejected", { id: rejectedConfig.id })}
@@ -517,7 +517,7 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 					{configError && (
 						<div
 							role="alert"
-							className="rounded-md bg-[var(--omp-tool-error-bg)] px-3 py-2 text-omp-md text-[var(--omp-error)]"
+							className="rounded-md bg-[var(--omsk-tool-error-bg)] px-3 py-2 text-omsk-md text-[var(--omsk-error)]"
 						>
 							{configError}
 						</div>
@@ -526,7 +526,7 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 					{error && (
 						<div
 							role="alert"
-							className="rounded-md bg-[var(--omp-tool-error-bg)] px-3 py-2 text-omp-md text-[var(--omp-error)]"
+							className="rounded-md bg-[var(--omsk-tool-error-bg)] px-3 py-2 text-omsk-md text-[var(--omsk-error)]"
 						>
 							<span className="font-semibold">
 								{providers.length > 0 ? t("providers.stale") : t("providers.loadFailed")}
@@ -535,13 +535,13 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 						</div>
 					)}
 					{discoveryErrors.length > 0 && (
-						<div className="rounded-md border border-[var(--omp-warning)]/35 bg-[var(--omp-warning)]/10 px-3 py-2 text-omp-md text-[var(--omp-text-secondary)]">
+						<div className="rounded-md border border-[var(--omsk-warning)]/35 bg-[var(--omsk-warning)]/10 px-3 py-2 text-omsk-md text-[var(--omsk-text-secondary)]">
 							{t("providers.discoveryFailed", { details: discoveryErrors.join("; ") })}
 						</div>
 					)}
 					{refreshPending && (
 						<div
-							className="flex items-center gap-2 rounded-md bg-[var(--omp-bg-tertiary)] px-3 py-2 text-omp-md text-[var(--omp-muted)]" // surface-ok: transient discovery status banner
+							className="flex items-center gap-2 rounded-md bg-[var(--omsk-bg-tertiary)] px-3 py-2 text-omsk-md text-[var(--omsk-muted)]" // surface-ok: transient discovery status banner
 						>
 							<Spinner size="sm" />
 							{t("providers.refreshPending")}
@@ -554,7 +554,7 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 					)}
 
 					{!loading && !error && readyCount === 0 && (
-						<div className="omp-empty-hint rounded-md border border-[var(--omp-border-muted)] px-3 py-4 text-center text-omp-md text-[var(--omp-muted)]">
+						<div className="omsk-empty-hint rounded-md border border-[var(--omsk-border-muted)] px-3 py-4 text-center text-omsk-md text-[var(--omsk-muted)]">
 							{t("providers.noAuth")}
 						</div>
 					)}
@@ -583,9 +583,9 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 
 					{unauthenticated.length > 0 && (
 						<>
-							<span className="omp-section-label">
+							<span className="omsk-section-label">
 								{t("providers.available")}
-								<span className="omp-section-count">{unauthenticated.length}</span>
+								<span className="omsk-section-count">{unauthenticated.length}</span>
 							</span>
 							<div className="flex flex-col gap-2">
 								{unauthenticated.map(p => (
@@ -610,16 +610,16 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 					)}
 
 					{needle && authenticated.length === 0 && unauthenticated.length === 0 && (
-						<div className="px-3 py-4 text-center text-omp-md text-[var(--omp-dim)]">
+						<div className="px-3 py-4 text-center text-omsk-md text-[var(--omsk-dim)]">
 							{t("providers.noMatch", { query: query.trim() })}
 						</div>
 					)}
 
-					<div className="omp-note rounded-md border border-[var(--omp-border-muted)] px-3 py-2.5">
-						<div className="mb-1 text-omp-sm font-semibold text-[var(--omp-text)]">
+					<div className="omsk-note rounded-md border border-[var(--omsk-border-muted)] px-3 py-2.5">
+						<div className="mb-1 text-omsk-sm font-semibold text-[var(--omsk-text)]">
 							{t("providers.customTitle")}
 						</div>
-						<div className="text-omp-xs leading-[1.5] text-[var(--omp-muted)]">
+						<div className="text-omsk-xs leading-[1.5] text-[var(--omsk-muted)]">
 							{t("providers.customHelp", {
 								file: "~/.omsk/agent/models.yml",
 								baseUrl: "baseUrl",
@@ -627,13 +627,13 @@ export function ProvidersWindow({ pollMs = 2_500 }: { pollMs?: number }) {
 								models: "models",
 							})}
 						</div>
-						<div className="mt-1 text-omp-xs leading-[1.5] text-[var(--omp-dim)]">
+						<div className="mt-1 text-omsk-xs leading-[1.5] text-[var(--omsk-dim)]">
 							{t("providers.customRouteHint")}
 						</div>
 						{/* A provider the session lists no models for is absent from the rows above,
 						which reads as "the add did nothing". Name it and say why. */}
 						{!loading && providers.length > 0 && unlistedConfigs.length > 0 && !rejectedConfig && (
-							<div className="mt-2 text-omp-xs leading-[1.5] text-[var(--omp-warning)]">
+							<div className="mt-2 text-omsk-xs leading-[1.5] text-[var(--omsk-warning)]">
 								{t("providers.customWithoutModels", {
 									ids: unlistedConfigs.map(config => config.id).join(", "),
 								})}

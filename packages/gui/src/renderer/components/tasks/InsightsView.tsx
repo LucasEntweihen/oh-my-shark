@@ -18,10 +18,10 @@ import { trimLeadingEmptyDays } from "./task-format";
 const PERIODS = [7, 30, 90] as const;
 
 const SERIES: { key: keyof Omit<InsightsDay, "day">; className: string }[] = [
-	{ key: "succeeded", className: "bg-(--omp-success)" },
-	{ key: "quiet", className: "bg-[color-mix(in_srgb,var(--omp-success)_45%,transparent)]" },
-	{ key: "failed", className: "bg-(--omp-error)" },
-	{ key: "skipped", className: "bg-(--omp-border-strong)" },
+	{ key: "succeeded", className: "bg-(--omsk-success)" },
+	{ key: "quiet", className: "bg-[color-mix(in_srgb,var(--omsk-success)_45%,transparent)]" },
+	{ key: "failed", className: "bg-(--omsk-error)" },
+	{ key: "skipped", className: "bg-(--omsk-border-strong)" },
 ];
 
 /**
@@ -30,10 +30,10 @@ const SERIES: { key: keyof Omit<InsightsDay, "day">; className: string }[] = [
  */
 function Kpi({ label, value, detail }: { label: string; value: string; detail?: string }) {
 	return (
-		<div className="omp-fade-up row-span-3 grid grid-rows-subgrid gap-0 rounded-xl border border-(--omp-border-muted) px-4 py-3">
-			<p className="text-omp-sm text-(--omp-dim)">{label}</p>
-			<p className="mt-1 self-end text-omp-xl font-semibold tabular-nums text-(--omp-text)">{value}</p>
-			<p className="mt-0.5 text-omp-xs text-(--omp-dim) tabular-nums">{detail}</p>
+		<div className="omsk-fade-up row-span-3 grid grid-rows-subgrid gap-0 rounded-xl border border-(--omsk-border-muted) px-4 py-3">
+			<p className="text-omsk-sm text-(--omsk-dim)">{label}</p>
+			<p className="mt-1 self-end text-omsk-xl font-semibold tabular-nums text-(--omsk-text)">{value}</p>
+			<p className="mt-0.5 text-omsk-xs text-(--omsk-dim) tabular-nums">{detail}</p>
 		</div>
 	);
 }
@@ -62,8 +62,8 @@ export function DayChart({ days: allDays, compact = false }: { days: InsightsDay
 			{/* The scale: a hairline at the busiest day's height, labelled with its count. */}
 			{!compact && (
 				<div className="relative">
-					<span className="absolute -top-4 right-0 text-omp-xxs text-(--omp-dim) tabular-nums">{max}</span>
-					<div className="absolute inset-x-0 top-0 border-t border-dashed border-(--omp-border-muted)" />
+					<span className="absolute -top-4 right-0 text-omsk-xxs text-(--omsk-dim) tabular-nums">{max}</span>
+					<div className="absolute inset-x-0 top-0 border-t border-dashed border-(--omsk-border-muted)" />
 				</div>
 			)}
 			<div
@@ -86,7 +86,7 @@ export function DayChart({ days: allDays, compact = false }: { days: InsightsDay
 							})}
 						>
 							<div
-								className="omp-insights-bar mx-auto flex w-full max-w-9 flex-col-reverse overflow-hidden rounded-[3px] transition-[filter] duration-150 group-hover:brightness-110"
+								className="omsk-insights-bar mx-auto flex w-full max-w-9 flex-col-reverse overflow-hidden rounded-[3px] transition-[filter] duration-150 group-hover:brightness-110"
 								style={{ height: `${(total / max) * 100}%`, animationDelay: `${Math.min(index, 30) * 12}ms` }}
 							>
 								{SERIES.map(series =>
@@ -99,14 +99,14 @@ export function DayChart({ days: allDays, compact = false }: { days: InsightsDay
 									) : null,
 								)}
 							</div>
-							{total === 0 && <div className="mx-auto h-px w-full max-w-9 bg-(--omp-border-muted)" />}
+							{total === 0 && <div className="mx-auto h-px w-full max-w-9 bg-(--omsk-border-muted)" />}
 						</div>
 					);
 				})}
 			</div>
 			{!compact && (
 				<>
-					<div className="mt-1.5 flex gap-[3px] text-omp-xxs text-(--omp-dim) tabular-nums">
+					<div className="mt-1.5 flex gap-[3px] text-omsk-xxs text-(--omsk-dim) tabular-nums">
 						{days.map((day, index) => (
 							<span className="min-w-0 flex-1 overflow-visible text-center whitespace-nowrap" key={day.day}>
 								{index % labelEvery === 0 ? dayLabel(day.day) : ""}
@@ -115,7 +115,7 @@ export function DayChart({ days: allDays, compact = false }: { days: InsightsDay
 					</div>
 					<div className="mt-3 flex flex-wrap gap-4">
 						{SERIES.map(series => (
-							<span className="flex items-center gap-1.5 text-omp-sm text-(--omp-muted)" key={series.key}>
+							<span className="flex items-center gap-1.5 text-omsk-sm text-(--omsk-muted)" key={series.key}>
 								<span className={cx("size-2 rounded-[2px]", series.className)} />
 								{t(`tasks.insights.series.${series.key}`)}
 							</span>
@@ -171,17 +171,17 @@ export function InsightsView() {
 		<div className="h-full overflow-y-auto px-6 py-5">
 			<div className="mx-auto flex max-w-5xl flex-col gap-6">
 				<div className="flex items-center justify-between">
-					<h2 className="text-omp-lg font-semibold text-(--omp-text)">
+					<h2 className="text-omsk-lg font-semibold text-(--omsk-text)">
 						{t("tasks.insights.title", { days: period })}
 					</h2>
-					<div className="inline-flex rounded-lg border border-(--omp-border-muted) p-0.5">
+					<div className="inline-flex rounded-lg border border-(--omsk-border-muted) p-0.5">
 						{PERIODS.map(days => (
 							<button
 								className={cx(
-									"rounded-md px-3 py-1 text-omp-md font-medium tabular-nums transition-colors duration-150",
+									"rounded-md px-3 py-1 text-omsk-md font-medium tabular-nums transition-colors duration-150",
 									period === days
-										? "bg-(--omp-selected-bg) text-(--omp-text)"
-										: "text-(--omp-muted) hover:text-(--omp-text)",
+										? "bg-(--omsk-selected-bg) text-(--omsk-text)"
+										: "text-(--omsk-muted) hover:text-(--omsk-text)",
 								)}
 								key={days}
 								onClick={() => setPeriod(days)}
@@ -207,11 +207,11 @@ export function InsightsView() {
 						value={insights.medianDurationMs === null ? "—" : formatDuration(insights.medianDurationMs)}
 					/>
 				</div>
-				<section className="rounded-xl border border-(--omp-border-muted) px-4 py-4">
-					<h3 className="mb-3 flex items-baseline gap-2 text-omp-sm font-semibold tracking-wide text-(--omp-muted) uppercase">
+				<section className="rounded-xl border border-(--omsk-border-muted) px-4 py-4">
+					<h3 className="mb-3 flex items-baseline gap-2 text-omsk-sm font-semibold tracking-wide text-(--omsk-muted) uppercase">
 						{t("tasks.insights.perDay")}
 						{charted.length < insights.perDay.length && (
-							<span className="font-normal tracking-normal text-(--omp-dim) normal-case">
+							<span className="font-normal tracking-normal text-(--omsk-dim) normal-case">
 								{t("tasks.insights.since", { day: dayLabel(charted[0].day) })}
 							</span>
 						)}
@@ -219,32 +219,32 @@ export function InsightsView() {
 					<DayChart days={insights.perDay} />
 				</section>
 				<div className="grid gap-4 lg:grid-cols-2">
-					<section className="rounded-xl border border-(--omp-border-muted) px-4 py-4">
-						<h3 className="mb-3 text-omp-sm font-semibold tracking-wide text-(--omp-muted) uppercase">
+					<section className="rounded-xl border border-(--omsk-border-muted) px-4 py-4">
+						<h3 className="mb-3 text-omsk-sm font-semibold tracking-wide text-(--omsk-muted) uppercase">
 							{t("tasks.insights.costByTask")}
 						</h3>
 						{insights.costByTask.length === 0 ? (
-							<p className="text-omp-md text-(--omp-dim)">{t("tasks.insights.noCost")}</p>
+							<p className="text-omsk-md text-(--omsk-dim)">{t("tasks.insights.noCost")}</p>
 						) : (
 							<ul className="flex flex-col gap-2.5">
 								{insights.costByTask.map(entry => (
 									<li key={entry.taskId}>
-										<div className="flex items-baseline justify-between gap-3 text-omp-md">
+										<div className="flex items-baseline justify-between gap-3 text-omsk-md">
 											<button
-												className="min-w-0 truncate text-left text-(--omp-text) hover:underline"
+												className="min-w-0 truncate text-left text-(--omsk-text) hover:underline"
 												onClick={() => openTasks({ view: "tasks", taskId: entry.taskId })}
 												type="button"
 											>
 												{entry.title}
 											</button>
-											<span className="shrink-0 tabular-nums text-(--omp-muted)">
+											<span className="shrink-0 tabular-nums text-(--omsk-muted)">
 												{formatCost(entry.costUsd, 2)} ·{" "}
 												{t("tasks.insights.runsCount", { count: entry.runs })}
 											</span>
 										</div>
-										<div className="mt-1 h-1.5 overflow-hidden rounded-full bg-(--omp-border-muted)">
+										<div className="mt-1 h-1.5 overflow-hidden rounded-full bg-(--omsk-border-muted)">
 											<div
-												className="omp-insights-meter h-full rounded-full bg-(--omp-accent)"
+												className="omsk-insights-meter h-full rounded-full bg-(--omsk-accent)"
 												style={{ width: `${(entry.costUsd / maxCost) * 100}%` }}
 											/>
 										</div>
@@ -253,29 +253,29 @@ export function InsightsView() {
 							</ul>
 						)}
 					</section>
-					<section className="rounded-xl border border-(--omp-border-muted) px-4 py-4">
-						<h3 className="mb-3 text-omp-sm font-semibold tracking-wide text-(--omp-muted) uppercase">
+					<section className="rounded-xl border border-(--omsk-border-muted) px-4 py-4">
+						<h3 className="mb-3 text-omsk-sm font-semibold tracking-wide text-(--omsk-muted) uppercase">
 							{t("tasks.insights.recentFailures")}
 						</h3>
 						{insights.recentFailures.length === 0 ? (
-							<p className="text-omp-md text-(--omp-dim)">{t("tasks.insights.noFailures")}</p>
+							<p className="text-omsk-md text-(--omsk-dim)">{t("tasks.insights.noFailures")}</p>
 						) : (
 							<ul className="flex flex-col gap-1">
 								{insights.recentFailures.map(run => (
 									<li key={run.id}>
 										<button
-											className="flex w-full items-baseline gap-2 rounded-lg px-2 py-1.5 text-left transition-colors duration-150 hover:bg-(--omp-selected-bg)"
+											className="flex w-full items-baseline gap-2 rounded-lg px-2 py-1.5 text-left transition-colors duration-150 hover:bg-(--omsk-selected-bg)"
 											onClick={() => openTasks({ view: "runs", runId: run.id, taskId: run.taskId })}
 											type="button"
 										>
-											<span className="shrink-0 text-omp-sm tabular-nums text-(--omp-dim)">
+											<span className="shrink-0 text-omsk-sm tabular-nums text-(--omsk-dim)">
 												{formatClock(run.startedAt ?? run.createdAt)}
 											</span>
-											<span className="min-w-0 flex-1 truncate text-omp-md text-(--omp-text)">
+											<span className="min-w-0 flex-1 truncate text-omsk-md text-(--omsk-text)">
 												{snapshot?.tasks.find(task => task.id === run.taskId)?.title ?? run.taskId}
 											</span>
 											<span
-												className="max-w-[45%] shrink-0 truncate text-omp-sm text-(--omp-error)"
+												className="max-w-[45%] shrink-0 truncate text-omsk-sm text-(--omsk-error)"
 												title={run.error?.message}
 											>
 												{run.error

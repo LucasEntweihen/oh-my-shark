@@ -163,11 +163,11 @@ function parseLspText(text: string): LspResult {
 }
 
 const SEVERITY_COLOR: Record<string, string> = {
-	error: "var(--omp-error)",
-	warning: "var(--omp-warning)",
-	info: "var(--omp-md-link)",
-	information: "var(--omp-md-link)",
-	hint: "var(--omp-dim)",
+	error: "var(--omsk-error)",
+	warning: "var(--omsk-warning)",
+	info: "var(--omsk-md-link)",
+	information: "var(--omsk-md-link)",
+	hint: "var(--omsk-dim)",
 };
 
 /** LSP: operation badge + typed result (hover / diagnostics / references / symbols). */
@@ -217,31 +217,31 @@ export function LspRenderer({ args, result, isError, isPartial, partialResult }:
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<Braces size={12} className="shrink-0 text-[var(--omp-syntax-type)]" />
-				<span className="rounded bg-[var(--omp-syntax-type)]/15 px-1 py-px text-omp-xxs font-semibold text-[var(--omp-syntax-type)]">
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<Braces size={12} className="shrink-0 text-[var(--omsk-syntax-type)]" />
+				<span className="rounded bg-[var(--omsk-syntax-type)]/15 px-1 py-px text-omsk-xxs font-semibold text-[var(--omsk-syntax-type)]">
 					{operation}
 				</span>
 				{requestFile && (
-					<span className="truncate text-[var(--omp-status-path)]" title={requestFile}>
+					<span className="truncate text-[var(--omsk-status-path)]" title={requestFile}>
 						{requestFile}
 						{requestLine != null ? `:${requestLine}` : ""}
 					</span>
 				)}
-				{requestSymbol && <span className="truncate text-[var(--omp-text)]">{requestSymbol}</span>}
-				<span className="ml-auto shrink-0 text-omp-xs text-[var(--omp-dim)]">{countLabel}</span>
+				{requestSymbol && <span className="truncate text-[var(--omsk-text)]">{requestSymbol}</span>}
+				<span className="ml-auto shrink-0 text-omsk-xs text-[var(--omsk-dim)]">{countLabel}</span>
 			</div>
 
 			{parsed.kind === "hover" && (
 				<div className="flex flex-col gap-1">
 					{parsed.before && (
-						<div className="whitespace-pre-wrap text-omp-sm leading-[1.45] text-[var(--omp-muted)]">
+						<div className="whitespace-pre-wrap text-omsk-sm leading-[1.45] text-[var(--omsk-muted)]">
 							{parsed.before}
 						</div>
 					)}
 					<CodeBlock code={parsed.code} language={parsed.lang} maxHeightClass="max-h-56" />
 					{parsed.after && (
-						<div className="line-clamp-3 whitespace-pre-wrap text-omp-sm leading-[1.45] text-[var(--omp-muted)]">
+						<div className="line-clamp-3 whitespace-pre-wrap text-omsk-sm leading-[1.45] text-[var(--omsk-muted)]">
 							{parsed.after}
 						</div>
 					)}
@@ -250,35 +250,35 @@ export function LspRenderer({ args, result, isError, isPartial, partialResult }:
 
 			{parsed.kind === "diagnostics" && (
 				<div className="flex flex-col gap-1">
-					<div className="flex items-center gap-1.5 font-mono text-omp-xs">
+					<div className="flex items-center gap-1.5 font-mono text-omsk-xs">
 						{parsed.errors > 0 && (
-							<span className="rounded bg-[var(--omp-error)]/15 px-1 py-px font-semibold text-[var(--omp-error)]">
+							<span className="rounded bg-[var(--omsk-error)]/15 px-1 py-px font-semibold text-[var(--omsk-error)]">
 								{t("tools.lsp.errors", { count: parsed.errors })}
 							</span>
 						)}
 						{parsed.warnings > 0 && (
-							<span className="rounded bg-[var(--omp-warning)]/15 px-1 py-px font-semibold text-[var(--omp-warning)]">
+							<span className="rounded bg-[var(--omsk-warning)]/15 px-1 py-px font-semibold text-[var(--omsk-warning)]">
 								{t("tools.lsp.warnings", { count: parsed.warnings })}
 							</span>
 						)}
 						{parsed.errors === 0 && parsed.warnings === 0 && (
-							<span className="text-[var(--omp-dim)]">{text.trim() || "OK"}</span>
+							<span className="text-[var(--omsk-dim)]">{text.trim() || "OK"}</span>
 						)}
 					</div>
 					{parsed.items.length > 0 && (
-						<div className="max-h-56 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.6]">
+						<div className="max-h-56 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.6]">
 							{parsed.items.map((item, i) => (
-								<div key={i} className="flex gap-2 transition-colors hover:bg-[var(--omp-selected-bg)]/50">
+								<div key={i} className="flex gap-2 transition-colors hover:bg-[var(--omsk-selected-bg)]/50">
 									<span
 										className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
-										style={{ background: SEVERITY_COLOR[item.severity] ?? "var(--omp-dim)" }}
+										style={{ background: SEVERITY_COLOR[item.severity] ?? "var(--omsk-dim)" }}
 									/>
 									{item.file && (
-										<span className="w-44 shrink-0 truncate text-[var(--omp-status-path)]" title={item.file}>
+										<span className="w-44 shrink-0 truncate text-[var(--omsk-status-path)]" title={item.file}>
 											{item.file}:{item.line}:{item.col}
 										</span>
 									)}
-									<span className="min-w-0 flex-1 truncate text-[var(--omp-muted)]" title={item.message}>
+									<span className="min-w-0 flex-1 truncate text-[var(--omsk-muted)]" title={item.message}>
 										{item.message}
 									</span>
 								</div>
@@ -289,44 +289,44 @@ export function LspRenderer({ args, result, isError, isPartial, partialResult }:
 			)}
 
 			{parsed.kind === "references" && (
-				<div className="max-h-56 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.6]">
+				<div className="max-h-56 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.6]">
 					{parsed.groups.map(group => (
 						<div key={group.file}>
 							<div className="flex gap-2">
-								<span className="min-w-0 flex-1 truncate text-[var(--omp-md-link)]" title={group.file}>
+								<span className="min-w-0 flex-1 truncate text-[var(--omsk-md-link)]" title={group.file}>
 									{group.file}
 								</span>
-								<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">
+								<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 									{t("tools.lsp.locations", { count: group.locs.length })}
 								</span>
 							</div>
 							{group.locs.map((loc, i) => (
-								<div key={i} className="flex gap-2 pl-4 text-[var(--omp-muted)]">
+								<div key={i} className="flex gap-2 pl-4 text-[var(--omsk-muted)]">
 									<span>{t("tools.lsp.location", { line: loc.line, column: loc.col })}</span>
 								</div>
 							))}
 						</div>
 					))}
 					{parsed.groups.length === 0 && (
-						<div className="whitespace-pre-wrap text-[var(--omp-muted)]">{text.trim()}</div>
+						<div className="whitespace-pre-wrap text-[var(--omsk-muted)]">{text.trim()}</div>
 					)}
 				</div>
 			)}
 
 			{parsed.kind === "symbols" && (
-				<div className="max-h-56 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.6]">
+				<div className="max-h-56 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.6]">
 					{parsed.symbols.map((sym, i) => (
 						<div key={i} className="flex gap-2" style={{ paddingLeft: `${Math.min(sym.indent, 8) * 10}px` }}>
-							<span className="min-w-0 flex-1 truncate text-[var(--omp-md-link)]">
+							<span className="min-w-0 flex-1 truncate text-[var(--omsk-md-link)]">
 								{sym.icon} {sym.name}
 							</span>
-							<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">
+							<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 								{t("tools.lsp.line", { line: sym.line })}
 							</span>
 						</div>
 					))}
 					{parsed.symbols.length === 0 && (
-						<div className="whitespace-pre-wrap text-[var(--omp-muted)]">{text.trim()}</div>
+						<div className="whitespace-pre-wrap text-[var(--omsk-muted)]">{text.trim()}</div>
 					)}
 				</div>
 			)}
@@ -334,10 +334,10 @@ export function LspRenderer({ args, result, isError, isPartial, partialResult }:
 			{parsed.kind === "generic" && text && (
 				<pre
 					className={cx(
-						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omp-sm leading-[1.45]",
+						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omsk-sm leading-[1.45]",
 						isError
-							? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-							: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]",
+							? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+							: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]",
 					)}
 				>
 					{text}

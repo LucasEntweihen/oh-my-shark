@@ -41,7 +41,7 @@ function toPrimitive(input: string): Primitive {
 const DRAFT_ROW = "\u0000draft";
 
 const INPUT_CLASS =
-	"rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2 py-1 font-mono text-omp-sm text-(--omp-text) outline-none transition-colors focus:border-(--omp-input-focus-border)";
+	"rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2 py-1 font-mono text-omsk-sm text-(--omsk-text) outline-none transition-colors focus:border-(--omsk-input-focus-border)";
 
 export function RecordKvEditor({
 	value,
@@ -164,7 +164,7 @@ export function RecordKvEditor({
 						{!disabled && (
 							<button
 								aria-label={t("settings.editors.kvRemove")}
-								className="shrink-0 text-(--omp-dim) hover:text-(--omp-error)"
+								className="shrink-0 text-(--omsk-dim) hover:text-(--omsk-error)"
 								onClick={() => removeEntry(index)}
 								type="button"
 							>
@@ -173,7 +173,7 @@ export function RecordKvEditor({
 						)}
 					</div>
 					{collision?.row === k && (
-						<span className="pl-1 text-omp-xs text-(--omp-error)">
+						<span className="pl-1 text-omsk-xs text-(--omsk-error)">
 							{t("settings.editors.kvDuplicateKey", { key: collision.typed })}
 						</span>
 					)}
@@ -224,7 +224,7 @@ export function RecordKvEditor({
 						)}
 						<button
 							aria-label={t("settings.editors.kvRemove")}
-							className="shrink-0 text-(--omp-dim) hover:text-(--omp-error)"
+							className="shrink-0 text-(--omsk-dim) hover:text-(--omsk-error)"
 							onClick={() => {
 								setCollision(null);
 								setDraft(null);
@@ -235,7 +235,7 @@ export function RecordKvEditor({
 						</button>
 					</div>
 					{collision?.row === DRAFT_ROW && (
-						<span className="pl-1 text-omp-xs text-(--omp-error)">
+						<span className="pl-1 text-omsk-xs text-(--omsk-error)">
 							{t("settings.editors.kvDuplicateKey", { key: collision.typed })}
 						</span>
 					)}
@@ -243,7 +243,7 @@ export function RecordKvEditor({
 			)}
 			{!disabled && !draft && (
 				<button
-					className="mt-0.5 inline-flex w-fit items-center gap-1 rounded-md border border-(--omp-border-muted) px-2 py-1 text-omp-sm text-(--omp-muted) transition-colors hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+					className="mt-0.5 inline-flex w-fit items-center gap-1 rounded-md border border-(--omsk-border-muted) px-2 py-1 text-omsk-sm text-(--omsk-muted) transition-colors hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 					onClick={addEntry}
 					type="button"
 				>

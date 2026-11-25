@@ -25,16 +25,16 @@ function HealthPill() {
 	return (
 		<div className="flex items-center gap-3">
 			<span
-				className="flex items-center gap-1.5 text-omp-sm text-(--omp-muted)"
+				className="flex items-center gap-1.5 text-omsk-sm text-(--omsk-muted)"
 				title={t(`tasks.health.${state}.title`)}
 			>
 				<span
 					className={
 						state === "healthy"
-							? "omp-signal-light omp-signal-light--active text-(--omp-success)"
+							? "omsk-signal-light omsk-signal-light--active text-(--omsk-success)"
 							: state === "paused"
-								? "size-1.5 rounded-full bg-(--omp-border-strong)"
-								: "size-1.5 rounded-full bg-(--omp-warning)"
+								? "size-1.5 rounded-full bg-(--omsk-border-strong)"
+								: "size-1.5 rounded-full bg-(--omsk-warning)"
 					}
 				/>
 				{state === "healthy" && nextFireAt !== null
@@ -43,17 +43,17 @@ function HealthPill() {
 			</span>
 			<button
 				aria-checked={!paused}
-				className="flex items-center gap-2 rounded-lg px-2 py-1 text-omp-sm text-(--omp-muted) transition-colors duration-150 hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+				className="flex items-center gap-2 rounded-lg px-2 py-1 text-omsk-sm text-(--omsk-muted) transition-colors duration-150 hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 				onClick={() => void setPaused(!paused)}
 				role="switch"
 				type="button"
 			>
 				{t("tasks.health.scheduling")}
 				<span
-					className={`relative h-4 w-7 shrink-0 rounded-full transition-colors duration-150 ${paused ? "bg-(--omp-switch-off)" : "bg-(--omp-switch-on)"}`}
+					className={`relative h-4 w-7 shrink-0 rounded-full transition-colors duration-150 ${paused ? "bg-(--omsk-switch-off)" : "bg-(--omsk-switch-on)"}`}
 				>
 					<span
-						className={`omp-switch-thumb absolute top-0.5 left-0.5 size-3 rounded-full bg-white shadow ${paused ? "translate-x-0" : "translate-x-3"}`}
+						className={`omsk-switch-thumb absolute top-0.5 left-0.5 size-3 rounded-full bg-white shadow ${paused ? "translate-x-0" : "translate-x-3"}`}
 					/>
 				</span>
 			</button>
@@ -90,14 +90,14 @@ export function TasksWindow() {
 			size="full"
 			title={
 				<span className="flex items-center gap-2">
-					<CalendarClock size={16} className="text-(--omp-muted)" />
+					<CalendarClock size={16} className="text-(--omsk-muted)" />
 					{t("tasks.title")}
 				</span>
 			}
 			ariaLabel={t("tasks.title")}
 		>
 			<div className="flex h-full min-h-0 flex-col">
-				<div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-(--omp-border-muted) px-4 pt-1.5">
+				<div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b border-(--omsk-border-muted) px-4 pt-1.5">
 					<Tabs
 						activeId={view}
 						ariaLabel={t("tasks.title")}
@@ -112,7 +112,7 @@ export function TasksWindow() {
 						</Button>
 					</div>
 				</div>
-				<div className="omp-fade-in min-h-0 flex-1" key={view}>
+				<div className="omsk-fade-in min-h-0 flex-1" key={view}>
 					{view === "tasks" && <TasksView onNew={newTask} />}
 					{view === "runs" && <RunsView />}
 					{view === "review" && <ReviewView />}

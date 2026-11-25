@@ -48,8 +48,8 @@ export function TaskEditorDialog() {
 					<div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
 						<TaskForm draft={draft} onChange={setDraft} problems={problems} />
 					</div>
-					<div className="flex shrink-0 items-center justify-between gap-3 border-t border-(--omp-border-muted) px-5 py-3">
-						<span className="text-omp-sm text-(--omp-dim)">
+					<div className="flex shrink-0 items-center justify-between gap-3 border-t border-(--omsk-border-muted) px-5 py-3">
+						<span className="text-omsk-sm text-(--omsk-dim)">
 							{editor?.mode === "edit" ? t("tasks.editor.revisionNote") : t("tasks.editor.createNote")}
 						</span>
 						<div className="flex gap-2">

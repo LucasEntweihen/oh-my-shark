@@ -172,11 +172,11 @@ function SidebarAgentRows({
 	const cut = useMemo(() => cutAgentTree(rows, SIDEBAR_AGENT_LIMIT), [rows]);
 	const openDrawer = () => useUiStore.getState().setPanelTab("agents");
 	return (
-		<div className="omp-sidebar-agents relative" role="group">
+		<div className="omsk-sidebar-agents relative" role="group">
 			{layout.lines.map(x => (
 				<span
 					aria-hidden
-					className="omp-sidebar-agent-guide omp-sidebar-agent-guide--full"
+					className="omsk-sidebar-agent-guide omsk-sidebar-agent-guide--full"
 					key={x}
 					style={{ left: x, top: -1 }}
 				/>
@@ -194,20 +194,20 @@ function SidebarAgentRows({
 			))}
 			{cut.hidden > 0 && (
 				<button
-					className="omp-sidebar-agent-row omp-color-fade relative flex h-7 w-full items-center rounded-lg pr-2 text-left text-omp-sm text-[var(--omp-dim)] hover:bg-[var(--omp-sidebar-item-hover)]"
+					className="omsk-sidebar-agent-row omsk-color-fade relative flex h-7 w-full items-center rounded-lg pr-2 text-left text-omsk-sm text-[var(--omsk-dim)] hover:bg-[var(--omsk-sidebar-item-hover)]"
 					onClick={openDrawer}
 					style={{ paddingLeft: 8 + INDENT + 16 + 8 + layout.offset }}
 					type="button"
 				>
-					<span aria-hidden className="omp-sidebar-agent-elbow" style={{ left: 15 + layout.offset }} />
+					<span aria-hidden className="omsk-sidebar-agent-elbow" style={{ left: 15 + layout.offset }} />
 					{layout.trunk && (
-						<span aria-hidden className="omp-sidebar-agent-guide" style={{ left: 15 + layout.offset }} />
+						<span aria-hidden className="omsk-sidebar-agent-guide" style={{ left: 15 + layout.offset }} />
 					)}
 					<span className="min-w-0 truncate">
 						{t("agents.sidebar.more", { count: cut.hidden })}
 						{cut.hiddenWorking > 0 && <> · {t("agents.sidebar.moreWorking", { count: cut.hiddenWorking })}</>}
 						{cut.hiddenFailed > 0 && (
-							<span className="text-[var(--omp-error)]">
+							<span className="text-[var(--omsk-error)]">
 								{" "}
 								· {t("agents.sidebar.moreFailed", { count: cut.hiddenFailed })}
 							</span>
@@ -265,20 +265,20 @@ function SidebarAgentRow({
 			aria-current={selected ? "page" : undefined}
 			aria-label={t("agents.sidebar.rowLabel", { title, state })}
 			className={cx(
-				"omp-sidebar-agent-row omp-color-fade relative flex h-7 w-full items-center rounded-lg pr-2 text-left",
-				selected ? "bg-[var(--omp-selected-bg)]" : "hover:bg-[var(--omp-sidebar-item-hover)]",
+				"omsk-sidebar-agent-row omsk-color-fade relative flex h-7 w-full items-center rounded-lg pr-2 text-left",
+				selected ? "bg-[var(--omsk-selected-bg)]" : "hover:bg-[var(--omsk-sidebar-item-hover)]",
 			)}
 			onClick={event => useAgentPagesStore.getState().open(tabId, row.agent.id, { beside: event.altKey })}
 			style={{ paddingLeft: 8 + level * INDENT + offset }}
 			title={title}
 			type="button"
 		>
-			<span aria-hidden className="omp-sidebar-agent-elbow" style={{ left: parentDot - 1 }} />
-			{hasNextSibling && <span aria-hidden className="omp-sidebar-agent-guide" style={{ left: parentDot - 1 }} />}
+			<span aria-hidden className="omsk-sidebar-agent-elbow" style={{ left: parentDot - 1 }} />
+			{hasNextSibling && <span aria-hidden className="omsk-sidebar-agent-guide" style={{ left: parentDot - 1 }} />}
 			{rootGuide && (
 				<span
 					aria-hidden
-					className="omp-sidebar-agent-guide omp-sidebar-agent-guide--full"
+					className="omsk-sidebar-agent-guide omsk-sidebar-agent-guide--full"
 					style={{ left: 15 + offset }}
 				/>
 			)}
@@ -287,16 +287,16 @@ function SidebarAgentRow({
 			</span>
 			<span
 				className={cx(
-					"min-w-0 flex-1 truncate text-omp-sm",
+					"min-w-0 flex-1 truncate text-omsk-sm",
 					row.activity === "working" && !row.context
-						? "text-[var(--omp-text-secondary)]"
-						: "text-[var(--omp-muted)]",
+						? "text-[var(--omsk-text-secondary)]"
+						: "text-[var(--omsk-muted)]",
 				)}
 			>
 				{title}
 			</span>
 			{row.activity === "failed" && (
-				<span className="ml-2 shrink-0 text-omp-xs text-[var(--omp-error)]">{state}</span>
+				<span className="ml-2 shrink-0 text-omsk-xs text-[var(--omsk-error)]">{state}</span>
 			)}
 		</button>
 	);

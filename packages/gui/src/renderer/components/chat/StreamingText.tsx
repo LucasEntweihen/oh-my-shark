@@ -52,24 +52,24 @@ export const StreamingMarkdown = memo(function StreamingMarkdown({
 		const root = rootRef.current;
 		if (!root) return;
 		const target = lastTextElement(root);
-		for (const marked of root.querySelectorAll("[data-omp-caret]")) {
-			if (marked !== target) marked.removeAttribute("data-omp-caret");
+		for (const marked of root.querySelectorAll("[data-omsk-caret]")) {
+			if (marked !== target) marked.removeAttribute("data-omsk-caret");
 		}
-		target?.setAttribute("data-omp-caret", "");
+		target?.setAttribute("data-omsk-caret", "");
 	});
 
 	if (!content) return null;
 
 	return (
-		<div className="omp-streaming" ref={rootRef}>
+		<div className="omsk-streaming" ref={rootRef}>
 			{segments.blocks.map(block => (
-				<div className="omp-streaming-block" key={block.end}>
+				<div className="omsk-streaming-block" key={block.end}>
 					<MarkdownRenderer content={block.content} />
 				</div>
 			))}
-			<div className="omp-streaming-tail">
+			<div className="omsk-streaming-tail">
 				{tail.markdown && <MarkdownRenderer content={tail.markdown} streaming />}
-				{tail.plain && <div className="omp-streaming-plain">{tail.plain}</div>}
+				{tail.plain && <div className="omsk-streaming-plain">{tail.plain}</div>}
 			</div>
 		</div>
 	);

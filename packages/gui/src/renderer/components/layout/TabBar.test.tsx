@@ -463,10 +463,10 @@ describe("TabBar", () => {
 		await mount(<TabBar />);
 
 		const rendered = chips();
-		expect(rendered.every(chip => chip.querySelector(".omp-tab-signal") !== null)).toBe(true);
+		expect(rendered.every(chip => chip.querySelector(".omsk-tab-signal") !== null)).toBe(true);
 		expect(rendered.every(chip => chip.getAttribute("class")?.includes("overflow-hidden"))).toBe(true);
-		expect(rendered[0]?.querySelector(".omp-signal-light--active")).not.toBeNull();
-		expect(rendered[1]?.querySelector(".omp-signal-light--active")).toBeNull();
+		expect(rendered[0]?.querySelector(".omsk-signal-light--active")).not.toBeNull();
+		expect(rendered[1]?.querySelector(".omsk-signal-light--active")).toBeNull();
 		expect(rendered[0]?.querySelector('[aria-label="Working"]')).not.toBeNull();
 		expect(rendered[1]?.querySelector('[aria-label="Run completed"]')).not.toBeNull();
 		expect(rendered.every(chip => chip.getAttribute("draggable") === "true")).toBe(true);
@@ -494,10 +494,10 @@ describe("TabBar", () => {
 		const merged = container.querySelectorAll("[data-tab-pair]");
 		expect(merged).toHaveLength(1);
 		expect(merged[0]?.querySelectorAll('[role="tab"]').map(chip => chip.getAttribute("id"))).toEqual([
-			"omp-tab-t0",
-			"omp-tab-t2",
+			"omsk-tab-t0",
+			"omsk-tab-t2",
 		]);
-		expect(chips().map(chip => chip.getAttribute("id"))).toEqual(["omp-tab-t0", "omp-tab-t2", "omp-tab-t1"]);
+		expect(chips().map(chip => chip.getAttribute("id"))).toEqual(["omsk-tab-t0", "omsk-tab-t2", "omsk-tab-t1"]);
 
 		await rightClick(chips()[1]!);
 		await click(menuItem("Separate pair")!);

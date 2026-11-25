@@ -57,16 +57,16 @@ function InspectorTab({ label, description, icon: Icon, active, signal, onSelect
 			aria-pressed={active}
 			type="button"
 			onClick={onSelect}
-			className="relative flex h-7 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-2.5 text-omp-md font-medium"
+			className="relative flex h-7 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-2.5 text-omsk-md font-medium"
 		>
 			<Icon size={14} />
-			<span className="omp-inspector-tab-label">{label}</span>
+			<span className="omsk-inspector-tab-label">{label}</span>
 			{signal && (
 				<span
 					aria-hidden
 					className={cx(
 						"absolute top-1 right-1 h-1.5 w-1.5 rounded-full",
-						signal === "error" ? "bg-[var(--omp-error)]" : "bg-[var(--omp-accent)]",
+						signal === "error" ? "bg-[var(--omsk-error)]" : "bg-[var(--omsk-accent)]",
 					)}
 				/>
 			)}
@@ -154,19 +154,19 @@ export function PanelContainer() {
 			aria-busy={!routeReady}
 			data-inspector-left-edge={viewportWidth - panelWidth < 78 ? "" : undefined}
 			className={cx(
-				"omp-inspector flex h-full flex-col border-l border-[var(--omp-border-muted)]",
-				overlay ? "absolute inset-y-0 right-0 z-30 shadow-[var(--omp-shadow-lg)]" : "relative shrink-0",
+				"omsk-inspector flex h-full flex-col border-l border-[var(--omsk-border-muted)]",
+				overlay ? "absolute inset-y-0 right-0 z-30 shadow-[var(--omsk-shadow-lg)]" : "relative shrink-0",
 				!routeReady && "pointer-events-none",
 			)}
 			style={{ width: panelWidth }}
 		>
 			{/* One header row: the view switcher and the close control. The panel's
 	    name is announced, not printed — the tabs already say what it holds. */}
-			<div className="omp-inspector-header drag-region flex h-12 shrink-0 items-center gap-2 border-b border-[var(--omp-border-muted)] pl-3">
+			<div className="omsk-inspector-header drag-region flex h-12 shrink-0 items-center gap-2 border-b border-[var(--omsk-border-muted)] pl-3">
 				<h2 className="sr-only">
 					{t("panel.title")} — {t("panel.subtitle")}
 				</h2>
-				<div className="omp-segmented omp-tab-scroller no-drag" onWheel={scrollStripOnWheel}>
+				<div className="omsk-segmented omsk-tab-scroller no-drag" onWheel={scrollStripOnWheel}>
 					<Glide activeKey={visiblePanelTab} selector='[aria-pressed="true"]' variant="thumb" />
 					{visibleTabs.map(({ id, labelKey, icon }) => {
 						const active = visiblePanelTab === id;
@@ -197,7 +197,7 @@ export function PanelContainer() {
 					type="button"
 					onClick={togglePanel}
 					title={t("panel.close")}
-					className="omp-pressable no-drag ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+					className="omsk-pressable no-drag ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 				>
 					<X size={16} />
 				</button>
@@ -240,7 +240,7 @@ export function PanelContainer() {
 					);
 				}}
 				className={cx(
-					"no-drag absolute inset-y-0 left-0 z-10 w-2 cursor-col-resize touch-none transition-colors hover:bg-(--omp-accent)/40 focus-visible:bg-(--omp-accent)/40 active:bg-(--omp-accent)",
+					"no-drag absolute inset-y-0 left-0 z-10 w-2 cursor-col-resize touch-none transition-colors hover:bg-(--omsk-accent)/40 focus-visible:bg-(--omsk-accent)/40 active:bg-(--omsk-accent)",
 					!atLeftEdge && "-translate-x-1/2",
 				)}
 			/>

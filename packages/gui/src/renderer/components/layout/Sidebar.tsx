@@ -109,12 +109,12 @@ import { useUnreadNoticeCount } from "./NotificationBell";
 import { SidebarQuotas } from "./SidebarQuotas";
 
 const STATUS_COLOR: Record<SessionInfo["status"], string> = {
-	complete: "var(--omp-success)",
-	interrupted: "var(--omp-warning)",
-	aborted: "var(--omp-warning)",
-	error: "var(--omp-error)",
-	pending: "var(--omp-dim)",
-	unknown: "var(--omp-dim)",
+	complete: "var(--omsk-success)",
+	interrupted: "var(--omsk-warning)",
+	aborted: "var(--omsk-warning)",
+	error: "var(--omsk-error)",
+	pending: "var(--omsk-dim)",
+	unknown: "var(--omsk-dim)",
 };
 
 const STATUS_LABEL_KEY: Record<SessionInfo["status"], string> = {
@@ -180,7 +180,7 @@ function modifiedAt(session: SessionInfo): number {
 
 function SidebarRowTitle({ className, title }: { className?: string; title: string }) {
 	return (
-		<span className={cx("omp-sidebar-title min-w-0 flex-1 truncate", className)} title={title}>
+		<span className={cx("omsk-sidebar-title min-w-0 flex-1 truncate", className)} title={title}>
 			{title}
 		</span>
 	);
@@ -802,7 +802,7 @@ export function Sidebar() {
 			if (document.querySelector('[role="dialog"], [role="menu"]')) return;
 			const target = event.target instanceof HTMLElement ? event.target : null;
 			if (target?.closest("input, textarea, [contenteditable='true']")) return;
-			const inSidebar = target?.closest(".omp-session-sidebar") != null;
+			const inSidebar = target?.closest(".omsk-session-sidebar") != null;
 			const command = event.metaKey || event.ctrlKey;
 			if (event.key === "Escape") {
 				setSelection(null);
@@ -822,7 +822,7 @@ export function Sidebar() {
 	}, [selecting]);
 
 	const rowActionButton =
-		"omp-sidebar-action flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]";
+		"omsk-sidebar-action flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]";
 
 	const renderSessionRow = (spec: SessionRowSpec) => {
 		// Sessions open in a tab list this turn's agents under them (plan/24 §3.1).
@@ -857,7 +857,7 @@ export function Sidebar() {
 						key={spec.pair.key}
 						data-sidebar-pair
 						data-on-screen={spec.pair.onScreen || undefined}
-						className="omp-sidebar-pair space-y-px"
+						className="omsk-sidebar-pair space-y-px"
 					>
 						{framed.map(renderSessionRow)}
 					</div>,
@@ -885,8 +885,8 @@ export function Sidebar() {
 					? t("sidebar.signal.running")
 					: t(STATUS_LABEL_KEY[session.status]);
 		const signalColor = waiting
-			? "var(--omp-warning)"
-			: (tabSignal?.color ?? (externalRunning ? "var(--omp-accent)" : STATUS_COLOR[session.status]));
+			? "var(--omsk-warning)"
+			: (tabSignal?.color ?? (externalRunning ? "var(--omsk-accent)" : STATUS_COLOR[session.status]));
 		const title = sessionDisplayTitle(session, t("sidebar.untitled"));
 		const hasActions = !signalActive;
 		const renaming = renamingSessionPath === session.path;
@@ -977,22 +977,22 @@ export function Sidebar() {
 				data-session-parent={spec.parentPath}
 				style={level > 0 ? { paddingLeft: 8 + level * 14 } : undefined}
 				className={cx(
-					"omp-sidebar-session-row omp-color-fade group relative flex h-[30px] cursor-pointer items-center rounded-lg px-2 select-none",
+					"omsk-sidebar-session-row omsk-color-fade group relative flex h-[30px] cursor-pointer items-center rounded-lg px-2 select-none",
 					selected || (active && !selecting && !agents?.pageShown)
-						? "bg-[var(--omp-selected-bg)]"
-						: "hover:bg-[var(--omp-sidebar-item-hover)]",
+						? "bg-[var(--omsk-selected-bg)]"
+						: "hover:bg-[var(--omsk-sidebar-item-hover)]",
 				)}
 			>
 				{level > 0 && (
 					<>
-						<span aria-hidden className="omp-sidebar-agent-elbow" style={{ left: lineX(level) }} />
+						<span aria-hidden className="omsk-sidebar-agent-elbow" style={{ left: lineX(level) }} />
 						{spec.moreSiblings && (
-							<span aria-hidden className="omp-sidebar-agent-guide" style={{ left: lineX(level) }} />
+							<span aria-hidden className="omsk-sidebar-agent-guide" style={{ left: lineX(level) }} />
 						)}
 						{spec.guides.map(depth => (
 							<span
 								aria-hidden
-								className="omp-sidebar-agent-guide omp-sidebar-agent-guide--full"
+								className="omsk-sidebar-agent-guide omsk-sidebar-agent-guide--full"
 								key={depth}
 								style={{ left: lineX(depth) }}
 							/>
@@ -1013,7 +1013,7 @@ export function Sidebar() {
 								event.stopPropagation();
 								disclosure.toggle();
 							}}
-							className="hidden h-4 w-4 items-center justify-center rounded text-[var(--omp-dim)] group-hover:flex group-focus-visible:flex hover:text-[var(--omp-text)]"
+							className="hidden h-4 w-4 items-center justify-center rounded text-[var(--omsk-dim)] group-hover:flex group-focus-visible:flex hover:text-[var(--omsk-text)]"
 						>
 							{disclosure.expanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
 						</button>
@@ -1022,7 +1022,7 @@ export function Sidebar() {
 						<SelectIcon
 							size={14}
 							strokeWidth={1.75}
-							className={selected ? "text-[var(--omp-accent)]" : "text-[var(--omp-dim)]"}
+							className={selected ? "text-[var(--omsk-accent)]" : "text-[var(--omsk-dim)]"}
 						/>
 					) : (
 						<span
@@ -1030,15 +1030,15 @@ export function Sidebar() {
 							aria-label={signalLabel}
 							title={signalLabel}
 							className={cx(
-								"omp-signal-light",
-								signalActive && "omp-signal-light--active",
+								"omsk-signal-light",
+								signalActive && "omsk-signal-light--active",
 								disclosure && "group-hover:hidden group-focus-visible:hidden",
 							)}
 							data-idle={
 								// Past sessions that simply finished carry no signal; unread
 								// completions (an open tab) and anything live or failed do.
 								(!signalActive &&
-									(signalColor === "var(--omp-dim)" ||
+									(signalColor === "var(--omsk-dim)" ||
 										(tabSignal === null && session.status === "complete"))) ||
 								undefined
 							}
@@ -1047,14 +1047,14 @@ export function Sidebar() {
 					)}
 				</span>
 				{pinned && (
-					<Pin size={11} className="mr-1.5 shrink-0 text-[var(--omp-dim)]" aria-label={t("sidebar.pinned")} />
+					<Pin size={11} className="mr-1.5 shrink-0 text-[var(--omsk-dim)]" aria-label={t("sidebar.pinned")} />
 				)}
 				{pair && !inPairFrame && (
 					<PairIcon
 						size={11}
 						className={cx(
 							"mr-1.5 shrink-0",
-							pair.onScreen ? "text-[var(--omp-accent)]" : "text-[var(--omp-dim)]",
+							pair.onScreen ? "text-[var(--omsk-accent)]" : "text-[var(--omsk-dim)]",
 						)}
 						aria-label={t("sidebar.pairedWith", {
 							title: partnerSession ? sessionDisplayTitle(partnerSession, t("sidebar.untitled")) : "",
@@ -1073,13 +1073,13 @@ export function Sidebar() {
 							onEscape(event, () => setRenamingSessionPath(null));
 						}}
 						onClick={event => event.stopPropagation()}
-						className="min-w-0 flex-1 rounded-md border border-[var(--omp-input-focus-border)] bg-[var(--omp-input-bg)] px-1.5 py-0.5 text-omp-md text-[var(--omp-text)] outline-none"
+						className="min-w-0 flex-1 rounded-md border border-[var(--omsk-input-focus-border)] bg-[var(--omsk-input-bg)] px-1.5 py-0.5 text-omsk-md text-[var(--omsk-text)] outline-none"
 					/>
 				) : (
 					<SidebarRowTitle
 						className={cx(
-							"text-omp-md leading-5",
-							active ? "text-[var(--omp-text)]" : "text-[var(--omp-text-secondary)]",
+							"text-omsk-md leading-5",
+							active ? "text-[var(--omsk-text)]" : "text-[var(--omsk-text-secondary)]",
 						)}
 						title={title}
 					/>
@@ -1095,22 +1095,22 @@ export function Sidebar() {
 							disclosure.toggle();
 						}}
 						data-holds-active={spec.holdsActive || undefined}
-						className="omp-sidebar-agent-pill ml-1.5 shrink-0 hover:text-[var(--omp-text)]"
+						className="omsk-sidebar-agent-pill ml-1.5 shrink-0 hover:text-[var(--omsk-text)]"
 					>
 						{disclosure.working && (
-							<span aria-hidden className="h-[5px] w-[5px] rounded-full bg-[var(--omp-accent)]" />
+							<span aria-hidden className="h-[5px] w-[5px] rounded-full bg-[var(--omsk-accent)]" />
 						)}
 						{disclosure.count}
 					</button>
 				)}
 				{!renaming && recency > 0 && (
-					<span className="omp-sidebar-time ml-2 shrink-0 text-omp-xs tabular-nums text-[var(--omp-dim)]">
+					<span className="omsk-sidebar-time ml-2 shrink-0 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 						{formatTimeAgo(new Date(recency).toISOString(), { compact: true })}
 					</span>
 				)}
 				<span
 					hidden={selecting}
-					className="omp-sidebar-session-actions flex shrink-0 items-center justify-end gap-0.5"
+					className="omsk-sidebar-session-actions flex shrink-0 items-center justify-end gap-0.5"
 					onClick={event => event.stopPropagation()}
 				>
 					{!signalActive && !renaming && (
@@ -1128,7 +1128,7 @@ export function Sidebar() {
 						<button
 							className={cx(
 								rowActionButton,
-								"hover:!bg-[var(--omp-tool-error-bg)] hover:!text-[var(--omp-error)]",
+								"hover:!bg-[var(--omsk-tool-error-bg)] hover:!text-[var(--omsk-error)]",
 							)}
 							onClick={() => setPendingDelete({ kind: "session", session })}
 							title={t("sidebar.delete")}
@@ -1171,9 +1171,9 @@ export function Sidebar() {
 			data-workspace-group={id.startsWith("__") ? undefined : id}
 			onContextMenu={onContextMenu}
 			className={cx(
-				"omp-sidebar-workspace-row omp-color-fade group/header flex h-[30px] w-full items-center rounded-lg px-2 text-omp-md",
-				current ? "text-[var(--omp-text)]" : "text-[var(--omp-muted)] hover:text-[var(--omp-text)]",
-				"hover:bg-[var(--omp-sidebar-item-hover)]",
+				"omsk-sidebar-workspace-row omsk-color-fade group/header flex h-[30px] w-full items-center rounded-lg px-2 text-omsk-md",
+				current ? "text-[var(--omsk-text)]" : "text-[var(--omsk-muted)] hover:text-[var(--omsk-text)]",
+				"hover:bg-[var(--omsk-sidebar-item-hover)]",
 			)}
 		>
 			<button
@@ -1182,7 +1182,7 @@ export function Sidebar() {
 				aria-expanded={!collapsedState}
 				className="flex min-w-0 flex-1 items-center text-left"
 			>
-				<span className="omp-sidebar-group-icon relative mr-2 flex size-4 shrink-0 items-center justify-center">
+				<span className="omsk-sidebar-group-icon relative mr-2 flex size-4 shrink-0 items-center justify-center">
 					<Icon
 						aria-hidden="true"
 						data-sidebar-workspace-icon={id.startsWith("__") ? undefined : true}
@@ -1192,15 +1192,15 @@ export function Sidebar() {
 					<ChevronRight
 						aria-hidden="true"
 						size={13}
-						className={cx("omp-disclosure-chevron absolute", !collapsedState && "rotate-90")}
+						className={cx("omsk-disclosure-chevron absolute", !collapsedState && "rotate-90")}
 					/>
 				</span>
 				{pinned && (
-					<Pin size={11} className="mr-1.5 shrink-0 text-[var(--omp-dim)]" aria-label={t("sidebar.pinned")} />
+					<Pin size={11} className="mr-1.5 shrink-0 text-[var(--omsk-dim)]" aria-label={t("sidebar.pinned")} />
 				)}
 				<SidebarRowTitle className="text-left font-medium" title={name} />
 			</button>
-			<span className="omp-sidebar-group-count ml-2 shrink-0 text-omp-xs tabular-nums text-[var(--omp-dim)]">
+			<span className="omsk-sidebar-group-count ml-2 shrink-0 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 				{count}
 			</span>
 			{actions && (
@@ -1349,7 +1349,7 @@ export function Sidebar() {
 		allNavigation,
 		pinnedNavIds,
 	);
-	const navDragMime = "application/x-omp-nav-item";
+	const navDragMime = "application/x-omsk-nav-item";
 	const startNavDrag = (id: string, event: ReactDragEvent) => {
 		setDraggingNavId(id);
 		event.dataTransfer.setData(navDragMime, id);
@@ -1379,7 +1379,7 @@ export function Sidebar() {
 		finishNavDrag();
 	};
 	const navigationRow =
-		"omp-pressable group/nav flex h-8 w-full min-w-0 items-center gap-2.5 rounded-lg px-2 text-left text-omp-md text-[var(--omp-text-secondary)] hover:bg-[var(--omp-sidebar-item-hover)] hover:text-[var(--omp-text)]";
+		"omsk-pressable group/nav flex h-8 w-full min-w-0 items-center gap-2.5 rounded-lg px-2 text-left text-omsk-md text-[var(--omsk-text-secondary)] hover:bg-[var(--omsk-sidebar-item-hover)] hover:text-[var(--omsk-text)]";
 	const renderNavigationItem = (item: NavigationItem) => {
 		const Icon = item.icon;
 		const selected = item.page !== undefined && item.page === workspacePage;
@@ -1411,28 +1411,28 @@ export function Sidebar() {
 				title={item.title}
 				className={cx(
 					navigationRow,
-					selected && "bg-(--omp-sidebar-item-hover) font-medium",
+					selected && "bg-(--omsk-sidebar-item-hover) font-medium",
 					draggingNavId === item.id && "opacity-50",
-					isDropBefore && "ring-2 ring-inset ring-(--omp-accent)",
+					isDropBefore && "ring-2 ring-inset ring-(--omsk-accent)",
 				)}
 			>
-				<Icon aria-hidden="true" className="shrink-0 text-[var(--omp-muted)]" size={16} strokeWidth={1.75} />
+				<Icon aria-hidden="true" className="shrink-0 text-[var(--omsk-muted)]" size={16} strokeWidth={1.75} />
 				<span className="min-w-0 flex-1 truncate">{item.label}</span>
 				{item.unread && (
 					<span
 						role="img"
 						aria-label={t("notices.unread", { count: unreadNotices })}
 						data-nav-unread=""
-						className="size-2 shrink-0 rounded-full bg-(--omp-error)"
+						className="size-2 shrink-0 rounded-full bg-(--omsk-error)"
 					/>
 				)}
 				{item.badge ? (
-					<span className="shrink-0 rounded-full bg-(--omp-accent-dim) px-1.5 text-omp-xxs font-medium tabular-nums text-(--omp-accent)">
+					<span className="shrink-0 rounded-full bg-(--omsk-accent-dim) px-1.5 text-omsk-xxs font-medium tabular-nums text-(--omsk-accent)">
 						{item.badge}
 					</span>
 				) : null}
 				{!item.badge && item.shortcut && (
-					<span className="shrink-0 text-omp-xs tracking-wide text-[var(--omp-dim)] opacity-0 transition-opacity group-hover/nav:opacity-100 group-focus-visible/nav:opacity-100">
+					<span className="shrink-0 text-omsk-xs tracking-wide text-[var(--omsk-dim)] opacity-0 transition-opacity group-hover/nav:opacity-100 group-focus-visible/nav:opacity-100">
 						{item.shortcut}
 					</span>
 				)}
@@ -1441,14 +1441,14 @@ export function Sidebar() {
 	};
 
 	const utilityButton =
-		"omp-pressable flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]";
+		"omsk-pressable flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]";
 	return (
 		<>
 			<aside
-				className="omp-session-sidebar relative flex h-full shrink-0 flex-col border-r border-[var(--omp-border-muted)] bg-[var(--omp-sidebar-bg)]"
+				className="omsk-session-sidebar relative flex h-full shrink-0 flex-col border-r border-[var(--omsk-border-muted)] bg-[var(--omsk-sidebar-bg)]"
 				style={{ width: visibleSidebarWidth }}
 			>
-				<div aria-hidden className="omp-window-caption drag-region" />
+				<div aria-hidden className="omsk-window-caption drag-region" />
 				{/* Primary action + navigation. */}
 				<div className="shrink-0 px-2 pt-1 pb-3" data-sidebar-navigation>
 					<div className="mb-1 flex items-center gap-1">
@@ -1456,7 +1456,7 @@ export function Sidebar() {
 							type="button"
 							data-sidebar-new-agent
 							onClick={startNew}
-							className="omp-pressable group/nav flex h-8 min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 text-left text-omp-md font-medium text-[var(--omp-text)] hover:bg-[var(--omp-sidebar-item-hover)]"
+							className="omsk-pressable group/nav flex h-8 min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2 text-left text-omsk-md font-medium text-[var(--omsk-text)] hover:bg-[var(--omsk-sidebar-item-hover)]"
 						>
 							<SquarePen aria-hidden="true" size={16} strokeWidth={1.75} className="shrink-0" />
 							<span className="min-w-0 flex-1 truncate">{t("sidebar.newSession")}</span>
@@ -1466,7 +1466,7 @@ export function Sidebar() {
 							onClick={openSessionPicker}
 							title={t("sidebar.search")}
 							aria-label={t("sidebar.search")}
-							className="omp-pressable flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+							className="omsk-pressable flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 						>
 							<Search aria-hidden="true" size={15} />
 						</button>
@@ -1478,18 +1478,18 @@ export function Sidebar() {
 							aria-current={workspacePage === "orchestratorOpen" ? "page" : undefined}
 							title="Open OMSK Multi-Wave Orchestrator Studio"
 							className={cx(
-								"omp-pressable flex h-7 min-w-0 items-center justify-between gap-1.5 rounded-lg border px-2 text-left text-omp-xs font-medium transition-colors",
+								"omsk-pressable flex h-7 min-w-0 items-center justify-between gap-1.5 rounded-lg border px-2 text-left text-omsk-xs font-medium transition-colors",
 								workspacePage === "orchestratorOpen"
-									? "border-[var(--omp-accent)]/50 bg-[var(--omp-accent-dim)]/30 text-[var(--omp-text)]"
-									: "border-[var(--omp-border-muted)] bg-transparent text-[var(--omp-text-secondary)] hover:bg-[var(--omp-sidebar-item-hover)] hover:text-[var(--omp-text)]",
+									? "border-[var(--omsk-accent)]/50 bg-[var(--omsk-accent-dim)]/30 text-[var(--omsk-text)]"
+									: "border-[var(--omsk-border-muted)] bg-transparent text-[var(--omsk-text-secondary)] hover:bg-[var(--omsk-sidebar-item-hover)] hover:text-[var(--omsk-text)]",
 							)}
 						>
 							<span className="flex min-w-0 items-center gap-1.5">
-								<Workflow aria-hidden="true" size={13} className="shrink-0 text-[var(--omp-accent)]" />
+								<Workflow aria-hidden="true" size={13} className="shrink-0 text-[var(--omsk-accent)]" />
 								<span className="truncate">Orchestrator</span>
 							</span>
 							{orchestratorPhase && (
-								<span className="shrink-0 rounded bg-[var(--omp-accent)]/20 px-1 py-0.5 font-mono text-omp-xxs uppercase text-[var(--omp-accent)]">
+								<span className="shrink-0 rounded bg-[var(--omsk-accent)]/20 px-1 py-0.5 font-mono text-omsk-xxs uppercase text-[var(--omsk-accent)]">
 									{orchestratorPhase.slice(0, 4)}
 								</span>
 							)}
@@ -1500,18 +1500,18 @@ export function Sidebar() {
 							aria-current={workspacePage === "sharkOpen" ? "page" : undefined}
 							title="Open Shark Command Center"
 							className={cx(
-								"omp-pressable flex h-7 min-w-0 items-center justify-between gap-1.5 rounded-lg border px-2 text-left text-omp-xs font-medium transition-colors",
+								"omsk-pressable flex h-7 min-w-0 items-center justify-between gap-1.5 rounded-lg border px-2 text-left text-omsk-xs font-medium transition-colors",
 								workspacePage === "sharkOpen"
-									? "border-[var(--omp-accent)]/50 bg-[var(--omp-accent-dim)]/30 text-[var(--omp-text)]"
-									: "border-[var(--omp-border-muted)] bg-transparent text-[var(--omp-text-secondary)] hover:bg-[var(--omp-sidebar-item-hover)] hover:text-[var(--omp-text)]",
+									? "border-[var(--omsk-accent)]/50 bg-[var(--omsk-accent-dim)]/30 text-[var(--omsk-text)]"
+									: "border-[var(--omsk-border-muted)] bg-transparent text-[var(--omsk-text-secondary)] hover:bg-[var(--omsk-sidebar-item-hover)] hover:text-[var(--omsk-text)]",
 							)}
 						>
 							<span className="flex min-w-0 items-center gap-1.5">
-								<Radar aria-hidden="true" size={13} className="shrink-0 text-[var(--omp-accent)]" />
+								<Radar aria-hidden="true" size={13} className="shrink-0 text-[var(--omsk-accent)]" />
 								<span className="truncate">Shark</span>
 							</span>
 							{sharkFsmState && (
-								<span className="shrink-0 truncate rounded bg-[var(--omp-accent-dim)]/20 px-1 py-0.5 font-mono text-omp-xxs text-[var(--omp-muted)]">
+								<span className="shrink-0 truncate rounded bg-[var(--omsk-accent-dim)]/20 px-1 py-0.5 font-mono text-omsk-xxs text-[var(--omsk-muted)]">
 									{sharkFsmState.slice(0, 4)}
 								</span>
 							)}
@@ -1522,7 +1522,7 @@ export function Sidebar() {
 							"space-y-px rounded-lg transition-colors",
 							draggingNavId !== null &&
 								navDropTarget === "end" &&
-								"bg-(--omp-accent-dim)/30 ring-1 ring-(--omp-accent)",
+								"bg-(--omsk-accent-dim)/30 ring-1 ring-(--omsk-accent)",
 						)}
 						data-sidebar-primary-nav=""
 						onDragOver={event => {
@@ -1564,13 +1564,13 @@ export function Sidebar() {
 							className={cx(
 								navigationRow,
 								"mt-px",
-								moreMenu && "bg-[var(--omp-sidebar-item-hover)] text-[var(--omp-text)]",
-								draggingNavId !== null && navDropTarget === "more" && "ring-2 ring-inset ring-(--omp-accent)",
+								moreMenu && "bg-[var(--omsk-sidebar-item-hover)] text-[var(--omsk-text)]",
+								draggingNavId !== null && navDropTarget === "more" && "ring-2 ring-inset ring-(--omsk-accent)",
 							)}
 						>
 							<MoreHorizontal
 								aria-hidden="true"
-								className="shrink-0 text-[var(--omp-muted)]"
+								className="shrink-0 text-[var(--omsk-muted)]"
 								size={16}
 								strokeWidth={1.75}
 							/>
@@ -1580,7 +1580,7 @@ export function Sidebar() {
 				</div>
 
 				<div className="flex h-7 shrink-0 items-center ps-4 pe-2.5">
-					<span className="min-w-0 flex-1 truncate text-omp-xs font-medium text-[var(--omp-dim)]">
+					<span className="min-w-0 flex-1 truncate text-omsk-xs font-medium text-[var(--omsk-dim)]">
 						{t("sidebar.projects")}
 					</span>
 					<button
@@ -1608,7 +1608,7 @@ export function Sidebar() {
 						title={t(workspaceSort === "name" ? "sidebar.sort.byNameHint" : "sidebar.sort.byRecentHint")}
 						aria-label={t(workspaceSort === "name" ? "sidebar.sort.byNameHint" : "sidebar.sort.byRecentHint")}
 						data-workspace-sort={workspaceSort}
-						className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 					>
 						{workspaceSort === "name" ? (
 							<ArrowDownAZ aria-hidden="true" size={13} />
@@ -1623,10 +1623,10 @@ export function Sidebar() {
 						onClick={() => (selecting ? endSelection() : startSelection([]))}
 						title={t("sidebar.bulk.selectHint")}
 						className={cx(
-							"omp-pressable flex h-6 items-center gap-1 rounded-md px-1.5 text-omp-xs",
+							"omsk-pressable flex h-6 items-center gap-1 rounded-md px-1.5 text-omsk-xs",
 							selecting
-								? "bg-[var(--omp-selected-bg)] text-[var(--omp-text)]"
-								: "text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]",
+								? "bg-[var(--omsk-selected-bg)] text-[var(--omsk-text)]"
+								: "text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]",
 						)}
 					>
 						<ListChecks aria-hidden="true" size={13} />
@@ -1634,31 +1634,31 @@ export function Sidebar() {
 					</button>
 				</div>
 
-				<div className="omp-sidebar-list relative min-h-0 flex-1 overflow-y-auto px-2 pb-3 [overflow-anchor:none]">
+				<div className="omsk-sidebar-list relative min-h-0 flex-1 overflow-y-auto px-2 pb-3 [overflow-anchor:none]">
 					<Glide activeKey={sessionId ?? null} selector="[data-glide-target]" variant="pill" />
 					{listError && sessions.length > 0 && (
-						<p role="alert" className="mx-2 mb-1 break-words text-omp-xs text-[var(--omp-error)]">
+						<p role="alert" className="mx-2 mb-1 break-words text-omsk-xs text-[var(--omsk-error)]">
 							{t("sidebar.stale")}: {listError}
 						</p>
 					)}
 					{isLoading && sessions.length === 0 && (
 						<div className="space-y-1 px-2 py-1" aria-label={t("sidebar.loading")}>
 							{[72, 56, 64].map(width => (
-								<div key={width} className="omp-skeleton h-[22px] rounded-md" style={{ width: `${width}%` }} />
+								<div key={width} className="omsk-skeleton h-[22px] rounded-md" style={{ width: `${width}%` }} />
 							))}
 						</div>
 					)}
 					{listError && sessions.length === 0 && (
 						<div className="mx-1 mt-2 flex flex-col items-center gap-2 px-4 py-6 text-center">
-							<div className="text-omp-md font-medium text-[var(--omp-error)]">{t("sidebar.loadFailed")}</div>
-							<div className="break-words text-omp-xs text-[var(--omp-muted)]">{listError}</div>
+							<div className="text-omsk-md font-medium text-[var(--omsk-error)]">{t("sidebar.loadFailed")}</div>
+							<div className="break-words text-omsk-xs text-[var(--omsk-muted)]">{listError}</div>
 							<Button icon={<RefreshCw size={12} />} onClick={() => refresh(true)} size="sm" variant="secondary">
 								{t("common.retry")}
 							</Button>
 						</div>
 					)}
 					{!isLoading && !listError && groups.length === 0 && projectlessSessions.length === 0 && (
-						<div className="omp-sidebar-empty px-2 py-2 text-omp-sm leading-relaxed text-[var(--omp-dim)]">
+						<div className="omsk-sidebar-empty px-2 py-2 text-omsk-sm leading-relaxed text-[var(--omsk-dim)]">
 							{t("sidebar.emptySessions")}
 						</div>
 					)}
@@ -1715,8 +1715,8 @@ export function Sidebar() {
 								    hundreds of sessions must not build the full DOM per
 								    debounced refresh just to hide it. */}
 								{!groupCollapsed && (
-									<div className="omp-sidebar-group" data-session-group={group.cwd} data-state="expanded">
-										<div className="omp-sidebar-group-content space-y-px">
+									<div className="omsk-sidebar-group" data-session-group={group.cwd} data-state="expanded">
+										<div className="omsk-sidebar-group-content space-y-px">
 											{renderSessionRows(group.sessions)}
 										</div>
 									</div>
@@ -1735,8 +1735,8 @@ export function Sidebar() {
 								onToggle: () => setCollapsed(prev => ({ ...prev, __projectless__: !projectlessCollapsed })),
 							})}
 							{!projectlessCollapsed && (
-								<div className="omp-sidebar-group" data-session-group="__projectless__" data-state="expanded">
-									<div className="omp-sidebar-group-content space-y-px">
+								<div className="omsk-sidebar-group" data-session-group="__projectless__" data-state="expanded">
+									<div className="omsk-sidebar-group-content space-y-px">
 										{renderSessionRows(projectlessSessions)}
 									</div>
 								</div>
@@ -1754,8 +1754,8 @@ export function Sidebar() {
 								onToggle: () => setCollapsed(prev => ({ ...prev, __archived__: !archivedCollapsed })),
 							})}
 							{!archivedCollapsed && (
-								<div className="omp-sidebar-group" data-session-group="__archived__" data-state="expanded">
-									<div className="omp-sidebar-group-content space-y-px">
+								<div className="omsk-sidebar-group" data-session-group="__archived__" data-state="expanded">
+									<div className="omsk-sidebar-group-content space-y-px">
 										{renderSessionRows(archivedSessions)}
 									</div>
 								</div>
@@ -1770,19 +1770,19 @@ export function Sidebar() {
 						role="toolbar"
 						aria-label={t("sidebar.bulk.label")}
 						data-sidebar-bulk
-						className="flex h-10 shrink-0 items-center gap-0.5 border-t border-[var(--omp-border-muted)] px-2"
+						className="flex h-10 shrink-0 items-center gap-0.5 border-t border-[var(--omsk-border-muted)] px-2"
 					>
 						{/* A narrow rail keeps the number and leaves the words to the tooltip. */}
 						{visibleSidebarWidth < 220 ? (
 							<span aria-live="polite" aria-label={bulkLabel} title={bulkLabel} className="min-w-0 flex-1 px-1">
-								<span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-(--omp-accent-dim) px-1.5 text-omp-xs font-medium tabular-nums text-(--omp-accent)">
+								<span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-(--omsk-accent-dim) px-1.5 text-omsk-xs font-medium tabular-nums text-(--omsk-accent)">
 									{selectedSessions.length}
 								</span>
 							</span>
 						) : (
 							<span
 								aria-live="polite"
-								className="min-w-0 flex-1 truncate px-1 text-omp-sm text-[var(--omp-text-secondary)]"
+								className="min-w-0 flex-1 truncate px-1 text-omsk-sm text-[var(--omsk-text-secondary)]"
 							>
 								{bulkLabel}
 							</span>
@@ -1821,7 +1821,7 @@ export function Sidebar() {
 							aria-label={t("sidebar.bulk.delete")}
 							className={cx(
 								utilityButton,
-								"hover:!bg-[var(--omp-tool-error-bg)] hover:!text-[var(--omp-error)] disabled:pointer-events-none disabled:opacity-40",
+								"hover:!bg-[var(--omsk-tool-error-bg)] hover:!text-[var(--omsk-error)] disabled:pointer-events-none disabled:opacity-40",
 							)}
 						>
 							<Trash2 size={15} strokeWidth={1.75} />
@@ -1842,14 +1842,14 @@ export function Sidebar() {
 
 				{/* Footer: app-level controls that are not tied to a session. */}
 				{/* A container so a narrow sidebar folds Settings to its icon instead of cutting the word. */}
-				<div className="@container flex h-11 shrink-0 items-center gap-0.5 border-t border-[var(--omp-border-muted)] px-2 text-omp-md">
+				<div className="@container flex h-11 shrink-0 items-center gap-0.5 border-t border-[var(--omsk-border-muted)] px-2 text-omsk-md">
 					<button
 						type="button"
 						data-sidebar-settings
 						onClick={() => useUiStore.getState().openSettings()}
 						title={t("titlebar.settings")}
 						aria-label={t("titlebar.settings")}
-						className="omp-pressable flex h-7 min-w-0 items-center gap-2 rounded-md px-2 text-omp-md text-[var(--omp-text-secondary)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable flex h-7 min-w-0 items-center gap-2 rounded-md px-2 text-omsk-md text-[var(--omsk-text-secondary)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 					>
 						<Settings aria-hidden="true" size={15} strokeWidth={1.75} className="shrink-0" />
 						<span className="truncate @max-[14em]:hidden">{t("titlebar.settings")}</span>
@@ -1864,7 +1864,7 @@ export function Sidebar() {
 					>
 						<Palette size={15} strokeWidth={1.75} />
 					</button>
-					<LangSwitcher className="h-7 max-h-7 rounded-md px-1.5 text-omp-sm [&_svg]:size-[14px]" />
+					<LangSwitcher className="h-7 max-h-7 rounded-md px-1.5 text-omsk-sm [&_svg]:size-[14px]" />
 				</div>
 				<div
 					role="separator"
@@ -1872,7 +1872,7 @@ export function Sidebar() {
 					onPointerDown={startSidebarDrag}
 					onPointerMove={onSidebarDrag}
 					onPointerUp={endSidebarDrag}
-					className="absolute inset-y-0 right-0 z-10 w-1 translate-x-1/2 cursor-col-resize transition-colors hover:bg-[var(--omp-accent)]/40 active:bg-[var(--omp-accent)] max-[1000px]:hidden"
+					className="absolute inset-y-0 right-0 z-10 w-1 translate-x-1/2 cursor-col-resize transition-colors hover:bg-[var(--omsk-accent)]/40 active:bg-[var(--omsk-accent)] max-[1000px]:hidden"
 				/>
 			</aside>
 			{/* App-wide tools: draggable into the primary sidebar list or pinned in one click (#67). */}
@@ -1893,7 +1893,7 @@ export function Sidebar() {
 								Math.min(moreMenu.y, (Number.isFinite(window.innerHeight) ? window.innerHeight : 768) - 280),
 							),
 						}}
-						className="omp-pop-in fixed z-[100] min-w-[220px] max-w-[280px] rounded-xl border border-(--omp-modal-border) bg-(--omp-modal-bg) p-1.5 shadow-(--omp-shadow-lg)"
+						className="omsk-pop-in fixed z-[100] min-w-[220px] max-w-[280px] rounded-xl border border-(--omsk-modal-border) bg-(--omsk-modal-bg) p-1.5 shadow-(--omsk-shadow-lg)"
 					>
 						{secondaryNavigation.map(item => {
 							const Icon = item.icon;
@@ -1905,7 +1905,7 @@ export function Sidebar() {
 									onDragStart={event => startNavDrag(item.id, event)}
 									onDragEnd={finishNavDrag}
 									className={cx(
-										"group/more flex items-center gap-1 rounded-lg pr-1 hover:bg-(--omp-sidebar-item-hover)",
+										"group/more flex items-center gap-1 rounded-lg pr-1 hover:bg-(--omsk-sidebar-item-hover)",
 										draggingNavId === item.id && "opacity-50",
 									)}
 								>
@@ -1916,17 +1916,17 @@ export function Sidebar() {
 											setMoreMenu(null);
 											item.onClick();
 										}}
-										className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-omp-md text-(--omp-text) focus:outline-none"
+										className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2 py-1.5 text-left text-omsk-md text-(--omsk-text) focus:outline-none"
 									>
 										<GripVertical
 											aria-hidden="true"
 											size={13}
-											className="shrink-0 cursor-grab text-(--omp-dim) opacity-60 group-hover/more:opacity-100"
+											className="shrink-0 cursor-grab text-(--omsk-dim) opacity-60 group-hover/more:opacity-100"
 										/>
-										<Icon aria-hidden="true" size={14} className="shrink-0 text-(--omp-muted)" />
+										<Icon aria-hidden="true" size={14} className="shrink-0 text-(--omsk-muted)" />
 										<span className="min-w-0 flex-1 truncate">{item.label}</span>
 										{item.shortcut && (
-											<span className="shrink-0 font-mono text-omp-xxs text-(--omp-dim)">
+											<span className="shrink-0 font-mono text-omsk-xxs text-(--omsk-dim)">
 												{item.shortcut}
 											</span>
 										)}
@@ -1940,7 +1940,7 @@ export function Sidebar() {
 											event.stopPropagation();
 											void setPinnedNavIds(pinNavItemId(pinnedNavIds, item.id, validNavIds));
 										}}
-										className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omp-dim) opacity-70 hover:bg-(--omp-selected-bg) hover:text-(--omp-text) group-hover/more:opacity-100"
+										className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-(--omsk-dim) opacity-70 hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text) group-hover/more:opacity-100"
 									>
 										<Pin aria-hidden="true" size={12} />
 									</button>
@@ -1948,7 +1948,7 @@ export function Sidebar() {
 							);
 						})}
 						{pinnedNavIds !== null && (
-							<div className="mt-1 border-t border-(--omp-border-muted) pt-1">
+							<div className="mt-1 border-t border-(--omsk-border-muted) pt-1">
 								<button
 									type="button"
 									role="menuitem"
@@ -1956,7 +1956,7 @@ export function Sidebar() {
 										void setPinnedNavIds(null);
 										setMoreMenu(null);
 									}}
-									className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-omp-sm text-(--omp-muted) hover:bg-(--omp-sidebar-item-hover) hover:text-(--omp-text)"
+									className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-omsk-sm text-(--omsk-muted) hover:bg-(--omsk-sidebar-item-hover) hover:text-(--omsk-text)"
 								>
 									<RefreshCw aria-hidden="true" size={13} className="shrink-0" />
 									<span className="truncate">{t("sidebar.navigation.reset")}</span>

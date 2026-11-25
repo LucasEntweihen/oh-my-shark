@@ -36,7 +36,7 @@ export function OmskLogo({ size = 24, tile = false, className }: OmskLogoProps) 
 	return (
 		<span
 			className={cx(
-				"inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-(--omp-border-accent)/40 bg-(--omp-bg-elevated)/60 shadow-[0_0_24px_-6px_var(--omp-accent-glow)]",
+				"inline-flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-(--omsk-border-accent)/40 bg-(--omsk-bg-elevated)/60 shadow-[0_0_24px_-6px_var(--omsk-accent-glow)]",
 				className,
 			)}
 			style={{ width: size, height: size }}

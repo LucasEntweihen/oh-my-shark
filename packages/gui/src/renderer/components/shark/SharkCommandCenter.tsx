@@ -69,14 +69,14 @@ export function SharkCommandCenter({ open = true, onClose, initialTab = "cockpit
 			ariaLabel="Shark Command Center"
 			title={
 				<span className="flex items-center gap-2">
-					<Radar size={16} className="text-[var(--omp-accent)]" />
+					<Radar size={16} className="text-[var(--omsk-accent)]" />
 					<span>Shark Command Center</span>
 					{status?.version && <Badge variant="info">v{status.version}</Badge>}
 				</span>
 			}
 		>
 			<div className="flex h-full min-h-0 flex-col">
-				<div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-[var(--omp-border-muted)] px-4 pt-1.5">
+				<div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-[var(--omsk-border-muted)] px-4 pt-1.5">
 					<Tabs
 						tabs={tabs}
 						activeId={activeTab}
@@ -109,10 +109,10 @@ export function SharkCommandCenter({ open = true, onClose, initialTab = "cockpit
 					{error && (
 						<div
 							role="alert"
-							className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-[var(--omp-error)] bg-[var(--omp-error-dim)] px-3 py-2 text-omp-sm text-[var(--omp-error)]"
+							className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-[var(--omsk-error)] bg-[var(--omsk-error-dim)] px-3 py-2 text-omsk-sm text-[var(--omsk-error)]"
 						>
 							<span>{error}</span>
-							<button type="button" onClick={clearError} className="text-omp-xs underline">
+							<button type="button" onClick={clearError} className="text-omsk-xs underline">
 								Dismiss
 							</button>
 						</div>

@@ -10,8 +10,8 @@ describe("Badge", () => {
 			</Badge>,
 		);
 
-		expect(html.match(/omp-signal-light--active/g)).toHaveLength(1);
-		expect(html).toContain("text-(--omp-success)");
+		expect(html.match(/omsk-signal-light--active/g)).toHaveLength(1);
+		expect(html).toContain("text-(--omsk-success)");
 		expect(html).not.toContain("animate-ping");
 	});
 });

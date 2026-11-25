@@ -24,10 +24,10 @@ import { useUiStore } from "../../stores/ui";
 
 const triggerClass = (active: boolean) =>
 	cx(
-		"omp-pressable flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-omp-md font-medium",
+		"omsk-pressable flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-omsk-md font-medium",
 		active
-			? "border-[var(--omp-border-accent)] bg-[var(--omp-accent-dim)] text-[var(--omp-accent)]"
-			: "border-transparent text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)]",
+			? "border-[var(--omsk-border-accent)] bg-[var(--omsk-accent-dim)] text-[var(--omsk-accent)]"
+			: "border-transparent text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)]",
 	);
 
 export function ComposerModes() {
@@ -149,13 +149,13 @@ export function ComposerModes() {
 				className={triggerClass(activeModeLabels.length > 0)}
 			>
 				<SlidersHorizontal size={14} />
-				<span className="omp-composer-control-label">{t("modesPanel.title")}</span>
+				<span className="omsk-composer-control-label">{t("modesPanel.title")}</span>
 				{activeModeLabels.length > 0 && (
-					<span className="rounded-full bg-(--omp-btn-primary-bg) px-1.5 text-omp-xs leading-4 text-(--omp-btn-primary-text) tabular-nums">
+					<span className="rounded-full bg-(--omsk-btn-primary-bg) px-1.5 text-omsk-xs leading-4 text-(--omsk-btn-primary-text) tabular-nums">
 						{activeModeLabels.length}
 					</span>
 				)}
-				<ChevronDown size={12} className="shrink-0 text-[var(--omp-dim)]" />
+				<ChevronDown size={12} className="shrink-0 text-[var(--omsk-dim)]" />
 			</button>
 
 			{menuMounted && pos
@@ -165,8 +165,8 @@ export function ComposerModes() {
 							style={{ left: pos.left, bottom: pos.bottom }}
 							aria-hidden={menuClosing || undefined}
 							className={cx(
-								"fixed z-[100] w-72 overflow-hidden rounded-xl border border-[var(--omp-border)] bg-[var(--omp-panel-bg)] p-1 shadow-[var(--omp-shadow-md)]",
-								menuClosing ? "omp-scale-out pointer-events-none" : "omp-pop-in",
+								"fixed z-[100] w-72 overflow-hidden rounded-xl border border-[var(--omsk-border)] bg-[var(--omsk-panel-bg)] p-1 shadow-[var(--omsk-shadow-md)]",
+								menuClosing ? "omsk-scale-out pointer-events-none" : "omsk-pop-in",
 							)}
 							role="menu"
 							aria-busy={pending}
@@ -217,8 +217,8 @@ export function ComposerModes() {
 								navigates
 								onSelect={() => select(openModelRoles)}
 							/>
-							<div className="mx-2 my-1 border-t border-[var(--omp-border-muted)]" />
-							<div className="px-2.5 pt-1 pb-0.5 text-omp-xs font-semibold text-[var(--omp-dim)]">
+							<div className="mx-2 my-1 border-t border-[var(--omsk-border-muted)]" />
+							<div className="px-2.5 pt-1 pb-0.5 text-omsk-xs font-semibold text-[var(--omsk-dim)]">
 								{t("input.more.label")}
 							</div>
 							<MoreRow
@@ -279,19 +279,19 @@ function ModeRow({
 		<button
 			type="button"
 			aria-pressed={checked}
-			className="omp-pressable group flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left hover:bg-[var(--omp-selected-bg)]"
+			className="omsk-pressable group flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left hover:bg-[var(--omsk-selected-bg)]"
 			onClick={onSelect}
 			title={title}
 			role="menuitem"
 		>
 			<span className="min-w-0 flex-1">
-				<span className="block truncate text-omp-md font-medium text-[var(--omp-text-secondary)] group-hover:text-[var(--omp-text)]">
+				<span className="block truncate text-omsk-md font-medium text-[var(--omsk-text-secondary)] group-hover:text-[var(--omsk-text)]">
 					{label}
 				</span>
-				<span className="block truncate text-omp-xs text-[var(--omp-dim)]">{description}</span>
+				<span className="block truncate text-omsk-xs text-[var(--omsk-dim)]">{description}</span>
 			</span>
-			{checked && <Check size={13} className="shrink-0 text-[var(--omp-accent)]" strokeWidth={3} />}
-			{navigates && <ChevronRight size={13} className="shrink-0 text-[var(--omp-dim)]" />}
+			{checked && <Check size={13} className="shrink-0 text-[var(--omsk-accent)]" strokeWidth={3} />}
+			{navigates && <ChevronRight size={13} className="shrink-0 text-[var(--omsk-dim)]" />}
 		</button>
 	);
 }
@@ -303,13 +303,13 @@ function MoreRow({ label, checked, onToggle }: { label: string; checked: boolean
 			onClick={onToggle}
 			role="menuitemcheckbox"
 			aria-checked={checked}
-			className="omp-pressable flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-omp-md font-medium text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+			className="omsk-pressable flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-omsk-md font-medium text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 		>
 			<span className="truncate">{label}</span>
 			<span
 				className={cx(
 					"relative h-4 w-7 shrink-0 rounded-full transition-colors",
-					checked ? "bg-[var(--omp-switch-on)]" : "bg-[var(--omp-switch-off)]",
+					checked ? "bg-[var(--omsk-switch-on)]" : "bg-[var(--omsk-switch-off)]",
 				)}
 			>
 				<span

@@ -31,7 +31,7 @@ export function ToolsRoute({ range, refreshKey }: { range: StatsRange; refreshKe
 			{
 				key: "tool",
 				label: t("stats.tools.col.tool"),
-				render: row => <span className="font-mono font-medium text-(--omp-text)">{row.tool}</span>,
+				render: row => <span className="font-mono font-medium text-(--omsk-text)">{row.tool}</span>,
 			},
 			{ key: "calls", label: t("stats.tools.col.calls"), align: "right", render: row => compact(row.calls) },
 			{
@@ -42,7 +42,7 @@ export function ToolsRoute({ range, refreshKey }: { range: StatsRange; refreshKe
 					row.errors > 0 ? (
 						<Badge variant="error">{compact(row.errors)}</Badge>
 					) : (
-						<span className="text-(--omp-dim)">0</span>
+						<span className="text-(--omsk-dim)">0</span>
 					),
 			},
 			{ key: "args", label: t("stats.tools.col.args"), align: "right", render: row => compact(row.argsChars) },

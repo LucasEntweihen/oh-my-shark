@@ -722,25 +722,25 @@ export function SessionTreeDialog() {
 	return (
 		<Modal dockable open={open} onClose={handleClose} title={t("sessionTree.title")} size="full" bodyClassName="p-0">
 			<div className="flex h-full min-h-0 flex-col">
-				<div className="flex shrink-0 items-center gap-2 border-b border-(--omp-border-muted) px-4 py-2 text-omp-sm text-(--omp-muted)">
+				<div className="flex shrink-0 items-center gap-2 border-b border-(--omsk-border-muted) px-4 py-2 text-omsk-sm text-(--omsk-muted)">
 					<span className="truncate">{sessionName ?? t("sessionTree.untitled")}</span>
 					{sessionId && (
-						<span className="shrink-0 font-mono text-omp-xs text-(--omp-dim)">#{sessionId.slice(0, 8)}</span>
+						<span className="shrink-0 font-mono text-omsk-xs text-(--omsk-dim)">#{sessionId.slice(0, 8)}</span>
 					)}
 					{model && model.entries.length > 0 && (
 						<div
 							aria-label={t("sessionTree.filter.group")}
-							className="ml-1 flex shrink-0 items-center gap-0.5 rounded-md border border-(--omp-border-muted) p-0.5"
+							className="ml-1 flex shrink-0 items-center gap-0.5 rounded-md border border-(--omsk-border-muted) p-0.5"
 							role="group"
 						>
 							{TREE_FILTER_MODES.map(mode => (
 								<button
 									aria-pressed={filterMode === mode.id}
 									className={cx(
-										"rounded px-1.5 py-0.5 text-omp-xxs font-medium transition-colors",
+										"rounded px-1.5 py-0.5 text-omsk-xxs font-medium transition-colors",
 										filterMode === mode.id
-											? "bg-(--omp-selected-bg) text-(--omp-accent)"
-											: "text-(--omp-dim) hover:text-(--omp-text)",
+											? "bg-(--omsk-selected-bg) text-(--omsk-accent)"
+											: "text-(--omsk-dim) hover:text-(--omsk-text)",
 									)}
 									key={mode.id}
 									onClick={() => setFilterMode(mode.id)}
@@ -752,7 +752,7 @@ export function SessionTreeDialog() {
 						</div>
 					)}
 					{layout && layout.nodeCount > 0 && (
-						<span className="ml-auto shrink-0 text-omp-xs text-(--omp-dim)">
+						<span className="ml-auto shrink-0 text-omsk-xs text-(--omsk-dim)">
 							{filterMode === "all"
 								? t("sessionTree.messageCount", {
 										count: layout.nodeCount,
@@ -773,7 +773,7 @@ export function SessionTreeDialog() {
 				</div>
 				{error ? (
 					<div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
-						<p role="alert" className="text-omp-xs text-[var(--omp-error)]">
+						<p role="alert" className="text-omsk-xs text-[var(--omsk-error)]">
 							{error}
 						</p>
 						<Button
@@ -790,10 +790,10 @@ export function SessionTreeDialog() {
 				) : loading || !layout ? (
 					<div className="flex flex-1 items-center justify-center gap-2">
 						<Spinner size="sm" />
-						<span className="text-omp-xs text-(--omp-dim)">{t("sessionTree.loading")}</span>
+						<span className="text-omsk-xs text-(--omsk-dim)">{t("sessionTree.loading")}</span>
 					</div>
 				) : layout.nodeCount === 0 ? (
-					<div className="flex flex-1 items-center justify-center text-omp-xs text-(--omp-dim)">
+					<div className="flex flex-1 items-center justify-center text-omsk-xs text-(--omsk-dim)">
 						{model && model.entries.length > 0 ? t("sessionTree.noFilterMatch") : t("sessionTree.empty")}
 					</div>
 				) : (
@@ -846,10 +846,10 @@ export function SessionTreeDialog() {
 												markerEnd="url(#session-tree-arrow)"
 												stroke={
 													childSelected
-														? "var(--omp-link)"
+														? "var(--omsk-link)"
 														: childActive
-															? "var(--omp-accent)"
-															: "var(--omp-border-muted)"
+															? "var(--omsk-accent)"
+															: "var(--omsk-border-muted)"
 												}
 												strokeWidth={childActive || childSelected ? 1.75 : 1.25}
 											/>
@@ -887,17 +887,17 @@ export function SessionTreeDialog() {
 								})}
 							</div>
 						)}
-						<div className="absolute right-3 bottom-3 flex items-center gap-0.5 rounded-md border border-(--omp-border-muted) bg-(--omp-bg-elevated) p-0.5 shadow-sm">
+						<div className="absolute right-3 bottom-3 flex items-center gap-0.5 rounded-md border border-(--omsk-border-muted) bg-(--omsk-bg-elevated) p-0.5 shadow-sm">
 							<ToolbarButton onClick={() => zoomBy(1 / 1.25)} title={t("sessionTree.zoomOut")}>
 								<ZoomOut size={13} />
 							</ToolbarButton>
-							<span className="w-9 text-center text-omp-xs tabular-nums text-(--omp-muted)">
+							<span className="w-9 text-center text-omsk-xs tabular-nums text-(--omsk-muted)">
 								{Math.round(transform.k * 100)}%
 							</span>
 							<ToolbarButton onClick={() => zoomBy(1.25)} title={t("sessionTree.zoomIn")}>
 								<ZoomIn size={13} />
 							</ToolbarButton>
-							<div className="mx-0.5 h-4 w-px bg-(--omp-border-muted)" />
+							<div className="mx-0.5 h-4 w-px bg-(--omsk-border-muted)" />
 							<ToolbarButton onClick={fitToView} title={t("sessionTree.fitToView")}>
 								<Maximize size={13} />
 							</ToolbarButton>
@@ -913,7 +913,7 @@ export function SessionTreeDialog() {
 				)}
 				{summarizingSince !== null && (
 					<LongTaskStatus
-						className="shrink-0 border-t border-(--omp-border-muted) px-3 py-2"
+						className="shrink-0 border-t border-(--omsk-border-muted) px-3 py-2"
 						label={t("sessionTree.summarizing")}
 						slowHint={t("chat.maintenance.slow")}
 						startedAt={summarizingSince}
@@ -921,12 +921,12 @@ export function SessionTreeDialog() {
 				)}
 				{!error && !loading && layout && layout.nodeCount > 0 ? (
 					selectedEntry && labelEditId === selectedEntry.entryId ? (
-						<div className="flex shrink-0 items-center gap-2 border-t border-(--omp-border-muted) px-3 py-2">
-							<Tag className="shrink-0 text-(--omp-dim)" size={12} />
+						<div className="flex shrink-0 items-center gap-2 border-t border-(--omsk-border-muted) px-3 py-2">
+							<Tag className="shrink-0 text-(--omsk-dim)" size={12} />
 							<input
 								aria-label={t("sessionTree.editLabel")}
 								autoFocus
-								className="min-w-0 flex-1 rounded border border-(--omp-input-focus-border) bg-(--omp-input-bg) px-2 py-1 text-omp-xs text-(--omp-text) outline-none"
+								className="min-w-0 flex-1 rounded border border-(--omsk-input-focus-border) bg-(--omsk-input-bg) px-2 py-1 text-omsk-xs text-(--omsk-text) outline-none"
 								onChange={event => setLabelDraft(event.target.value)}
 								onKeyDown={event => {
 									if (isImeKeyEvent(event)) return;
@@ -954,17 +954,17 @@ export function SessionTreeDialog() {
 						</div>
 					) : selectedEntry ? (
 						<div
-							className="flex max-h-28 shrink-0 items-start gap-3 overflow-y-auto border-t border-(--omp-border-muted) px-3 py-2"
+							className="flex max-h-28 shrink-0 items-start gap-3 overflow-y-auto border-t border-(--omsk-border-muted) px-3 py-2"
 							onPointerDown={event => event.stopPropagation()}
 						>
 							<div className="min-w-0 flex-1">
 								<div className="mb-0.5 flex items-center gap-2">
 									<RoleGlyph role={selectedEntry.role} />
-									<span className={cx("text-omp-xxs font-semibold", roleMeta(selectedEntry.role).className)}>
+									<span className={cx("text-omsk-xxs font-semibold", roleMeta(selectedEntry.role).className)}>
 										{t(roleMeta(selectedEntry.role).labelKey)}
 									</span>
 									{selectedEntry.timestamp > 0 && (
-										<span className="text-omp-xs text-(--omp-dim)">
+										<span className="text-omsk-xs text-(--omsk-dim)">
 											{formatClock(selectedEntry.timestamp)}
 										</span>
 									)}
@@ -974,7 +974,7 @@ export function SessionTreeDialog() {
 										<Badge variant="muted">{t("sessionTree.inactiveBranch")}</Badge>
 									)}
 								</div>
-								<p className="text-omp-xs leading-relaxed whitespace-pre-wrap text-(--omp-text)">
+								<p className="text-omsk-xs leading-relaxed whitespace-pre-wrap text-(--omsk-text)">
 									{selectedEntry.textPreview}
 								</p>
 							</div>
@@ -1005,7 +1005,7 @@ export function SessionTreeDialog() {
 							</div>
 						</div>
 					) : (
-						<div className="shrink-0 border-t border-(--omp-border-muted) px-3 py-1.5 text-omp-xs text-(--omp-dim)">
+						<div className="shrink-0 border-t border-(--omsk-border-muted) px-3 py-1.5 text-omsk-xs text-(--omsk-dim)">
 							{model?.source === "chain" ? t("sessionTree.footerChain") : t("sessionTree.footerTree")}
 							{t("sessionTree.footerHint")}
 							{t("sessionTree.footerKeys")}

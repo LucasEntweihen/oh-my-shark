@@ -155,13 +155,13 @@ export function BranchPickerDialog() {
 			size="picker"
 		>
 			<div className="flex h-full flex-col">
-				<div className="flex items-center gap-2.5 border-b border-(--omp-border-muted) px-3.5 py-2.5">
-					<Search className="shrink-0 text-(--omp-dim)" size={14} />
+				<div className="flex items-center gap-2.5 border-b border-(--omsk-border-muted) px-3.5 py-2.5">
+					<Search className="shrink-0 text-(--omsk-dim)" size={14} />
 					<input
 						aria-activedescendant={filtered.length > 0 ? `${listboxId}-option-${activeIndex}` : undefined}
 						aria-controls={listboxId}
 						aria-label={t("branchPicker.searchLabel")}
-						className="min-w-0 flex-1 bg-transparent text-omp-md text-(--omp-text) placeholder:text-(--omp-dim) focus:outline-none"
+						className="min-w-0 flex-1 bg-transparent text-omsk-md text-(--omsk-text) placeholder:text-(--omsk-dim) focus:outline-none"
 						onChange={event => setQuery(event.target.value)}
 						onKeyDown={onKeyDown}
 						placeholder={t("branchPicker.placeholder")}
@@ -178,7 +178,7 @@ export function BranchPickerDialog() {
 				>
 					{error ? (
 						<div className="flex flex-col items-center gap-2 py-10 text-center">
-							<p role="alert" className="text-omp-xs text-[var(--omp-error)]">
+							<p role="alert" className="text-omsk-xs text-[var(--omsk-error)]">
 								{error}
 							</p>
 							<Button
@@ -195,10 +195,10 @@ export function BranchPickerDialog() {
 					) : loading ? (
 						<div className="flex items-center justify-center gap-2 py-10">
 							<Spinner size="sm" />
-							<span className="text-omp-xs text-(--omp-dim)">{t("branchPicker.loading")}</span>
+							<span className="text-omsk-xs text-(--omsk-dim)">{t("branchPicker.loading")}</span>
 						</div>
 					) : filtered.length === 0 ? (
-						<div className="py-10 text-center text-omp-xs text-(--omp-dim)">
+						<div className="py-10 text-center text-omsk-xs text-(--omsk-dim)">
 							{entries.length === 0 ? t("branchPicker.empty") : t("branchPicker.noMatch", { query })}
 						</div>
 					) : (
@@ -208,7 +208,7 @@ export function BranchPickerDialog() {
 								<button
 									aria-selected={false}
 									className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors ${
-										isActive ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"
+										isActive ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)"
 									}`}
 									data-option-index={index}
 									disabled={branching !== null || !sidecarReady}
@@ -221,10 +221,10 @@ export function BranchPickerDialog() {
 									type="button"
 								>
 									<GitBranch
-										className={`shrink-0 ${isActive ? "text-(--omp-accent)" : "text-(--omp-dim)"}`}
+										className={`shrink-0 ${isActive ? "text-(--omsk-accent)" : "text-(--omsk-dim)"}`}
 										size={13}
 									/>
-									<span className="min-w-0 flex-1 truncate text-omp-xs text-(--omp-text)">{entry.text}</span>
+									<span className="min-w-0 flex-1 truncate text-omsk-xs text-(--omsk-text)">{entry.text}</span>
 									{branching === entry.entryId && <Spinner size="sm" />}
 								</button>
 							);

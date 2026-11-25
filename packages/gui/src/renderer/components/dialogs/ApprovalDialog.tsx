@@ -90,29 +90,29 @@ export function ApprovalDialog({
 		<Modal onClose={deny} open size="md" title={t("approval.title")}>
 			<div className="flex flex-col">
 				<div className="flex items-center gap-2.5">
-					<ShieldAlert className="shrink-0 text-(--omp-warning)" size={18} />
-					<span className="min-w-0 flex-1 truncate font-mono text-omp-md font-semibold text-(--omp-text)">
+					<ShieldAlert className="shrink-0 text-(--omsk-warning)" size={18} />
+					<span className="min-w-0 flex-1 truncate font-mono text-omsk-md font-semibold text-(--omsk-text)">
 						{toolName}
 					</span>
 					<Badge dot variant={tier.variant}>
 						{t(tier.key)}
 					</Badge>
 				</div>
-				<div className="mt-3 max-h-[45vh] overflow-y-auto rounded-md border border-(--omp-border-muted) bg-(--omp-code-bg) p-3">
+				<div className="mt-3 max-h-[45vh] overflow-y-auto rounded-md border border-(--omsk-border-muted) bg-(--omsk-code-bg) p-3">
 					{body ? (
-						<pre className="font-mono text-omp-sm leading-[1.55] break-words whitespace-pre-wrap text-(--omp-muted)">
+						<pre className="font-mono text-omsk-sm leading-[1.55] break-words whitespace-pre-wrap text-(--omsk-muted)">
 							{body}
 						</pre>
 					) : (
-						<span className="text-omp-sm text-(--omp-dim) italic">{t("approval.noArgs")}</span>
+						<span className="text-omsk-sm text-(--omsk-dim) italic">{t("approval.noArgs")}</span>
 					)}
 				</div>
 				{grants.length > 0 && (
 					<div className="mt-3 flex flex-col gap-1.5">
-						<span className="text-omp-xs font-medium text-(--omp-dim)">{t("approval.remember")}</span>
+						<span className="text-omsk-xs font-medium text-(--omsk-dim)">{t("approval.remember")}</span>
 						{grants.map(option => (
 							<button
-								className="rounded-md border border-(--omp-border-muted) px-3 py-1.5 text-left text-omp-xs text-(--omp-text-secondary) transition-colors hover:border-(--omp-border-accent) hover:bg-(--omp-selected-bg)"
+								className="rounded-md border border-(--omsk-border-muted) px-3 py-1.5 text-left text-omsk-xs text-(--omsk-text-secondary) transition-colors hover:border-(--omsk-border-accent) hover:bg-(--omsk-selected-bg)"
 								key={option}
 								onClick={() => onRespond({ value: option })}
 								type="button"
@@ -123,7 +123,7 @@ export function ApprovalDialog({
 					</div>
 				)}
 				<div className="mt-4 flex items-center justify-between gap-2">
-					<span className="text-omp-xs text-(--omp-dim)">{t("approval.waiting")}</span>
+					<span className="text-omsk-xs text-(--omsk-dim)">{t("approval.waiting")}</span>
 					<div className="flex gap-2">
 						<Button onClick={deny} size="md" variant="danger">
 							{t("approval.deny")}

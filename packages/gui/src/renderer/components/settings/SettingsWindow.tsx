@@ -160,7 +160,7 @@ function DisplayPreferenceRow({ field }: { field: (typeof GUI_DISPLAY_BOOL_FIELD
 		<div id={`setting-gui-${field}`} className="relative flex items-center pr-8">
 			<div className="min-w-0 flex-1">
 				<Toggle
-					className="omp-settings-row"
+					className="omsk-settings-row"
 					label={t(`settings.display.${field}`)}
 					// The section intro already explains that unset rows read the Agent
 					// setting; only a row that diverges from it needs a marker.
@@ -210,15 +210,15 @@ export function PendingRestartBanner({
 	};
 	return (
 		<div
-			className="omp-fade-in sticky top-0 z-10 mb-4 flex items-start gap-3 rounded-lg border border-[var(--omp-warning)]/35 bg-(--omp-bg-elevated) px-3 py-2.5 shadow-[var(--omp-shadow-sm)]"
+			className="omsk-fade-in sticky top-0 z-10 mb-4 flex items-start gap-3 rounded-lg border border-[var(--omsk-warning)]/35 bg-(--omsk-bg-elevated) px-3 py-2.5 shadow-[var(--omsk-shadow-sm)]"
 			data-settings-restart-banner="true"
 			role="status"
 		>
-			<RotateCw className="mt-0.5 shrink-0 text-[var(--omp-warning)]" size={14} />
+			<RotateCw className="mt-0.5 shrink-0 text-[var(--omsk-warning)]" size={14} />
 			<div className="min-w-0 flex-1">
-				<div className="text-omp-sm font-medium text-(--omp-text)">{t("settings.restartBanner.title")}</div>
-				<div className="mt-0.5 text-omp-xs text-(--omp-muted)">{pending.map(item => item.label).join(" · ")}</div>
-				{busy && <div className="mt-1 text-omp-xs text-(--omp-dim)">{t("settings.restartBanner.busy")}</div>}
+				<div className="text-omsk-sm font-medium text-(--omsk-text)">{t("settings.restartBanner.title")}</div>
+				<div className="mt-0.5 text-omsk-xs text-(--omsk-muted)">{pending.map(item => item.label).join(" · ")}</div>
+				{busy && <div className="mt-1 text-omsk-xs text-(--omsk-dim)">{t("settings.restartBanner.busy")}</div>}
 			</div>
 			<Button
 				disabled={busy || restarting}
@@ -257,17 +257,17 @@ export function SettingsConnectionNotice({
 			: t("settings.connection.retryHint");
 	return (
 		<div
-			className="mb-4 flex items-start gap-3 rounded-lg border border-[var(--omp-warning)]/35 bg-[var(--omp-warning)]/10 px-3 py-2.5"
+			className="mb-4 flex items-start gap-3 rounded-lg border border-[var(--omsk-warning)]/35 bg-[var(--omsk-warning)]/10 px-3 py-2.5"
 			data-settings-connection-notice="true"
 			role={waiting ? "status" : "alert"}
 		>
-			<AlertTriangle className="mt-0.5 shrink-0 text-[var(--omp-warning)]" size={15} />
+			<AlertTriangle className="mt-0.5 shrink-0 text-[var(--omsk-warning)]" size={15} />
 			<div className="min-w-0 flex-1">
-				<div className="text-omp-sm font-medium text-(--omp-text)">{title}</div>
-				<div className="mt-0.5 text-omp-xs text-(--omp-muted)" title={error ?? undefined}>
+				<div className="text-omsk-sm font-medium text-(--omsk-text)">{title}</div>
+				<div className="mt-0.5 text-omsk-xs text-(--omsk-muted)" title={error ?? undefined}>
 					{detail}
 				</div>
-				<div className="mt-1 text-omp-xs text-(--omp-dim)">
+				<div className="mt-1 text-omsk-xs text-(--omsk-dim)">
 					{hasCachedSchema ? t("settings.connection.cached") : t("settings.connection.noSchema")}
 				</div>
 			</div>
@@ -806,7 +806,7 @@ export function SettingsWindow() {
 		if (target) {
 			target.scrollIntoView({ block: "center" });
 			target.querySelector<HTMLElement>("button, input, select, textarea")?.focus({ preventScroll: true });
-			target.animate?.([{ backgroundColor: "var(--omp-selected-bg)" }, { backgroundColor: "transparent" }], {
+			target.animate?.([{ backgroundColor: "var(--omsk-selected-bg)" }, { backgroundColor: "transparent" }], {
 				duration: 1600,
 			});
 		}
@@ -1076,40 +1076,40 @@ export function SettingsWindow() {
 			aria-label={t("settings.title")}
 			aria-modal="true"
 			className={
-				"omp-settings-window fixed inset-0 z-50 flex flex-col bg-(--omp-bg-primary) text-(--omp-text)" /* surface-ok: fullscreen settings window canvas */
+				"omsk-settings-window fixed inset-0 z-50 flex flex-col bg-(--omsk-bg-primary) text-(--omsk-text)" /* surface-ok: fullscreen settings window canvas */
 			}
 			ref={dialogRef}
 			role="dialog"
 		>
-			<div className="omp-settings-layout flex min-h-0 flex-1">
+			<div className="omsk-settings-layout flex min-h-0 flex-1">
 				<nav
 					aria-label={t("settings.title")}
-					className="settings-sidebar flex shrink-0 flex-col border-r border-(--omp-border-muted)"
+					className="settings-sidebar flex shrink-0 flex-col border-r border-(--omsk-border-muted)"
 				>
-					<div aria-hidden className="omp-window-caption drag-region" />
+					<div aria-hidden className="omsk-window-caption drag-region" />
 					<div className="px-3 pb-3 pt-2">
 						<button
-							className="no-drag mb-2 flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-omp-sm text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+							className="no-drag mb-2 flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-omsk-sm text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 							onClick={close}
 							type="button"
 						>
 							<ArrowLeft aria-hidden="true" size={15} />
 							{t("settings.backToChat")}
 						</button>
-						<div className="mb-2 px-2 text-omp-lg font-semibold">{t("settings.title")}</div>
+						<div className="mb-2 px-2 text-omsk-lg font-semibold">{t("settings.title")}</div>
 						{showGlobalSearch && (
 							<div className="no-drag relative min-w-0">
-								<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-(--omp-dim)" size={14} />
+								<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-(--omsk-dim)" size={14} />
 								<input
 									aria-label={t("settings.searchPlaceholder")}
-									className="h-8 w-full rounded-lg border border-(--omp-border-muted) bg-(--omp-input-bg) pl-8 pr-2 text-omp-sm text-(--omp-text) outline-none transition-colors placeholder:text-(--omp-dim) focus:border-(--omp-input-focus-border) min-[1080px]:pr-10"
+									className="h-8 w-full rounded-lg border border-(--omsk-border-muted) bg-(--omsk-input-bg) pl-8 pr-2 text-omsk-sm text-(--omsk-text) outline-none transition-colors placeholder:text-(--omsk-dim) focus:border-(--omsk-input-focus-border) min-[1080px]:pr-10"
 									onChange={event => setQuery(event.target.value)}
 									placeholder={t("settings.searchPlaceholder")}
 									ref={searchInputRef}
 									spellCheck={false}
 									value={query}
 								/>
-								<span className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 text-omp-xxs text-(--omp-dim) min-[1080px]:inline">
+								<span className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 text-omsk-xxs text-(--omsk-dim) min-[1080px]:inline">
 									{platformChord("⌘K")}
 								</span>
 							</div>
@@ -1123,7 +1123,7 @@ export function SettingsWindow() {
 							return (
 								<button
 									aria-current={active ? "page" : undefined}
-									className="settings-nav-item flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-omp-md text-(--omp-muted) transition-colors hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+									className="settings-nav-item flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-omsk-md text-(--omsk-muted) transition-colors hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 									key={item.id}
 									onClick={() => {
 										setTab(item.id);
@@ -1149,7 +1149,7 @@ export function SettingsWindow() {
 						)}
 					>
 						<div className="min-w-0 flex-1">
-							<h1 className="truncate text-omp-2xl font-semibold tracking-[-0.025em] text-(--omp-text)">
+							<h1 className="truncate text-omsk-2xl font-semibold tracking-[-0.025em] text-(--omsk-text)">
 								{tabTitle({ id: tab, label: tab })}
 							</h1>
 						</div>
@@ -1263,7 +1263,7 @@ export function SettingsWindow() {
 														{t("settings.gui.theme")}
 													</Button>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={followAgentTheme}
 														label={t("settings.gui.followAgentTheme")}
 														description={t("settings.gui.followAgentThemeDesc")}
@@ -1271,7 +1271,7 @@ export function SettingsWindow() {
 													/>
 												</Section>
 												<Section id="setting-gui-display" title={t("settings.display.title")}>
-													<p className="mb-3 text-omp-sm text-(--omp-muted)">
+													<p className="mb-3 text-omsk-sm text-(--omsk-muted)">
 														{t("settings.display.scope")}
 													</p>
 													<div className="space-y-4">
@@ -1281,7 +1281,7 @@ export function SettingsWindow() {
 													</div>
 													<div id="setting-gui-collapseLargePastes" className="mt-4">
 														<Toggle
-															className="omp-settings-row"
+															className="omsk-settings-row"
 															checked={collapseLargePastes}
 															description={t("settings.gui.collapseLargePastesDesc")}
 															label={t("settings.gui.collapseLargePastes")}
@@ -1292,9 +1292,9 @@ export function SettingsWindow() {
 											    number-sized field right — not a full-width text box. */}
 													<div
 														id="setting-gui-pasteMenuThreshold"
-														className="omp-settings-row flex items-center justify-between gap-4"
+														className="omsk-settings-row flex items-center justify-between gap-4"
 													>
-														<span className="text-omp-md font-medium text-(--omp-text)">
+														<span className="text-omsk-md font-medium text-(--omsk-text)">
 															{t("settings.display.pasteMenuThreshold")}
 														</span>
 														<div className="w-24 shrink-0">
@@ -1349,14 +1349,14 @@ export function SettingsWindow() {
 												</Section>
 												<Section id="setting-gui-readability" title={t("settings.gui.readability")}>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={compactDensity}
 														label={t("settings.gui.compactDensity")}
 														description={t("settings.gui.compactDensityDesc")}
 														onChange={value => applyDisplayPreference("compactDensity", value)}
 													/>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={colorBlindMode}
 														label={t("settings.gui.colorBlindMode")}
 														onChange={value => applyDisplayPreference("colorBlindMode", value)}
@@ -1378,7 +1378,7 @@ export function SettingsWindow() {
 															value={fontSizeDraft ?? String(fontSize)}
 														/>
 													</div>
-													<p className="mt-1.5 text-omp-sm text-(--omp-muted)">
+													<p className="mt-1.5 text-omsk-sm text-(--omsk-muted)">
 														{t("settings.gui.fontSizeDesc")}
 													</p>
 												</Section>
@@ -1418,7 +1418,7 @@ export function SettingsWindow() {
 														value={tabWidth}
 													/>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={tabRows === "multi"}
 														description={t("settings.gui.tabRowsDesc")}
 														label={t("settings.gui.tabRows")}
@@ -1427,7 +1427,7 @@ export function SettingsWindow() {
 												</Section>
 												<Section id="setting-gui-sidebarQuotas" title={t("settings.gui.sidebarQuotas")}>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={sidebarQuotas}
 														description={t("settings.gui.sidebarQuotasDesc")}
 														label={t("settings.gui.sidebarQuotas")}
@@ -1439,7 +1439,7 @@ export function SettingsWindow() {
 													title={t("settings.gui.confirmSessionDelete")}
 												>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={confirmSessionDelete}
 														description={t("settings.gui.confirmSessionDeleteDesc")}
 														label={t("settings.gui.confirmSessionDelete")}
@@ -1452,14 +1452,14 @@ export function SettingsWindow() {
 												</Section>
 												<Section id="setting-gui-notifications" title={t("settings.gui.notifications")}>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={notifications}
 														description={t("settings.gui.notificationsDesc")}
 														label={t("settings.gui.notifications")}
 														onChange={applyNotifications}
 													/>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={notificationsWhenFocused}
 														description={t("settings.gui.notificationsWhenFocusedDesc")}
 														disabled={!notifications}
@@ -1467,7 +1467,7 @@ export function SettingsWindow() {
 														onChange={applyNotificationsWhenFocused}
 													/>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={soundEffects}
 														description={t("settings.gui.soundEffectsDesc")}
 														label={t("settings.gui.soundEffects")}
@@ -1479,7 +1479,7 @@ export function SettingsWindow() {
 													title={t("settings.gui.thinkingExpanded")}
 												>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={thinkingExpanded}
 														description={t("settings.gui.thinkingExpandedDesc")}
 														label={t("settings.gui.thinkingExpanded")}
@@ -1510,7 +1510,7 @@ export function SettingsWindow() {
 												</Section>
 												<Section id="setting-gui-lineNumbers" title={t("codeblock.title")}>
 													<Toggle
-														className="omp-settings-row"
+														className="omsk-settings-row"
 														checked={codeLineNumbers}
 														description={t("codeblock.lineNumbersDesc")}
 														label={t("codeblock.lineNumbers")}
@@ -1536,11 +1536,11 @@ export function SettingsWindow() {
 														value={proxyDraft ?? savedProxy}
 													/>
 													{isUnsupportedProxyUrl(proxyDraft ?? savedProxy) ? (
-														<p className="mt-1.5 text-omp-sm text-(--omp-error)" role="alert">
+														<p className="mt-1.5 text-omsk-sm text-(--omsk-error)" role="alert">
 															{t("settings.gui.proxyUnsupported")}
 														</p>
 													) : (
-														<p className="mt-1.5 text-omp-sm text-(--omp-muted)">
+														<p className="mt-1.5 text-omsk-sm text-(--omsk-muted)">
 															{t("settings.gui.proxyDesc")}
 														</p>
 													)}
@@ -1548,7 +1548,7 @@ export function SettingsWindow() {
 												<Section id="setting-gui-launch" title={t("settings.launch.title")}>
 													<fieldset className="space-y-3" disabled={launchSaving || launchRestarting}>
 														<div>
-															<span className="mb-1 block text-omp-md font-medium text-(--omp-text)">
+															<span className="mb-1 block text-omsk-md font-medium text-(--omsk-text)">
 																{t("settings.launch.systemPrompt")}
 															</span>
 															<TextArea
@@ -1568,7 +1568,7 @@ export function SettingsWindow() {
 															/>
 														</div>
 														<div>
-															<span className="mb-1 block text-omp-md font-medium text-(--omp-text)">
+															<span className="mb-1 block text-omsk-md font-medium text-(--omsk-text)">
 																{t("settings.launch.appendSystemPrompt")}
 															</span>
 															<TextArea
@@ -1592,7 +1592,7 @@ export function SettingsWindow() {
 															/>
 														</div>
 														<div>
-															<span className="mb-1 block text-omp-md font-medium text-(--omp-text)">
+															<span className="mb-1 block text-omsk-md font-medium text-(--omsk-text)">
 																{t("settings.launch.addDirs")}
 															</span>
 															<ArrayChipEditor
@@ -1610,45 +1610,45 @@ export function SettingsWindow() {
 																	{t("settings.launch.addDirPick")}
 																</Button>
 															</div>
-															<p className="mt-1.5 text-omp-sm text-(--omp-muted)">
+															<p className="mt-1.5 text-omsk-sm text-(--omsk-muted)">
 																{t("settings.launch.addDirsDesc")}
 															</p>
 														</div>
 														<div>
-															<span className="mb-1 block text-omp-md font-medium text-(--omp-text)">
+															<span className="mb-1 block text-omsk-md font-medium text-(--omsk-text)">
 																{t("settings.launch.tools")}
 															</span>
 															<ArrayChipEditor
 																onCommit={tools => updateLaunchProfile({ tools })}
 																values={launchProfile.tools ?? []}
 															/>
-															<p className="mt-1.5 text-omp-sm text-(--omp-muted)">
+															<p className="mt-1.5 text-omsk-sm text-(--omsk-muted)">
 																{t("settings.launch.toolsDesc")}
 															</p>
 														</div>
 														<Toggle
-															className="omp-settings-row"
+															className="omsk-settings-row"
 															checked={launchProfile.noRules === true}
 															description={t("settings.launch.noRulesDesc")}
 															label={t("settings.launch.noRules")}
 															onChange={value => updateLaunchProfile({ noRules: value })}
 														/>
 														<Toggle
-															className="omp-settings-row"
+															className="omsk-settings-row"
 															checked={launchProfile.noLsp === true}
 															description={t("settings.launch.noLspDesc")}
 															label={t("settings.launch.noLsp")}
 															onChange={value => updateLaunchProfile({ noLsp: value })}
 														/>
 														<Toggle
-															className="omp-settings-row"
+															className="omsk-settings-row"
 															checked={launchProfile.planYolo === true}
 															description={t("settings.launch.planYoloDesc")}
 															label={t("settings.launch.planYolo")}
 															onChange={value => updateLaunchProfile({ planYolo: value })}
 														/>
 														<div>
-															<span className="mb-1 block text-omp-md font-medium text-(--omp-text)">
+															<span className="mb-1 block text-omsk-md font-medium text-(--omsk-text)">
 																{t("settings.launch.profile")}
 															</span>
 															<Input
@@ -1667,7 +1667,7 @@ export function SettingsWindow() {
 															/>
 														</div>
 														<div>
-															<span className="mb-1 block text-omp-md font-medium text-(--omp-text)">
+															<span className="mb-1 block text-omsk-md font-medium text-(--omsk-text)">
 																{t("settings.launch.sessionDir")}
 															</span>
 															<Input
@@ -1689,7 +1689,7 @@ export function SettingsWindow() {
 															/>
 														</div>
 														<div>
-															<span className="mb-1 block text-omp-md font-medium text-(--omp-text)">
+															<span className="mb-1 block text-omsk-md font-medium text-(--omsk-text)">
 																{t("settings.launch.config")}
 															</span>
 															<Input
@@ -1708,7 +1708,7 @@ export function SettingsWindow() {
 															/>
 														</div>
 														<div>
-															<span className="mb-1 block text-omp-md font-medium text-(--omp-text)">
+															<span className="mb-1 block text-omsk-md font-medium text-(--omsk-text)">
 																{t("settings.launch.preview")}
 															</span>
 															<CodeBlock
@@ -1718,8 +1718,8 @@ export function SettingsWindow() {
 																showLineNumbers={false}
 															/>
 														</div>
-														<div className="flex items-center gap-3 rounded-md border border-[var(--omp-warning)]/40 px-3 py-2">
-															<span className="min-w-0 flex-1 text-omp-sm text-[var(--omp-warning)]">
+														<div className="flex items-center gap-3 rounded-md border border-[var(--omsk-warning)]/40 px-3 py-2">
+															<span className="min-w-0 flex-1 text-omsk-sm text-[var(--omsk-warning)]">
 																{t("settings.launch.restartNote")}
 															</span>
 															<Button
@@ -1740,7 +1740,7 @@ export function SettingsWindow() {
 															</Button>
 														</div>
 														{sidecarBusy && (
-															<p className="text-omp-sm text-(--omp-muted)">
+															<p className="text-omsk-sm text-(--omsk-muted)">
 																{t("settings.launch.busyHint")}
 															</p>
 														)}
@@ -1752,17 +1752,17 @@ export function SettingsWindow() {
 										{showsSchemaSettings && sidecarReady && loadState === "loading" && (
 											<div className="flex items-center justify-center gap-2 py-10">
 												<Spinner size="sm" />
-												<span className="text-omp-xs text-(--omp-muted)">
+												<span className="text-omsk-xs text-(--omsk-muted)">
 													{t("settings.schemaLoading")}
 												</span>
 											</div>
 										)}
 										{showsSchemaSettings && sidecarReady && loadState === "error" && (
 											<div className="flex flex-col items-center gap-3 py-10">
-												<span className="text-omp-xs text-(--omp-error)">
+												<span className="text-omsk-xs text-(--omsk-error)">
 													{loadError ?? t("settings.schemaLoadFailed")}
 												</span>
-												<span className="text-omp-xs text-(--omp-dim)">
+												<span className="text-omsk-xs text-(--omsk-dim)">
 													{t("settings.schemaUnavailable")}
 												</span>
 												<Button
@@ -1781,7 +1781,9 @@ export function SettingsWindow() {
 											schemaTabs?.map(schemaTab => (
 												<Fragment key={schemaTab.id}>
 													{general && (
-														<h2 className="mt-7 mb-3 text-omp-xl font-semibold">{tabTitle(schemaTab)}</h2>
+														<h2 className="mt-7 mb-3 text-omsk-xl font-semibold">
+															{tabTitle(schemaTab)}
+														</h2>
 													)}
 													<SchemaTabContent
 														entries={schema.entries}
@@ -1797,7 +1799,7 @@ export function SettingsWindow() {
 										)}
 									</>
 								) : searchGroups.size === 0 && guiSearchResults.length === 0 ? (
-									<div className="py-10 text-center text-omp-xs text-(--omp-dim)">
+									<div className="py-10 text-center text-omsk-xs text-(--omsk-dim)">
 										{t("settings.noMatches")}
 									</div>
 								) : (
@@ -1806,7 +1808,7 @@ export function SettingsWindow() {
 											<button
 												key={item.id}
 												type="button"
-												className="mb-2 block w-full rounded-lg border border-(--omp-border-muted) p-3 text-left hover:bg-(--omp-selected-bg)"
+												className="mb-2 block w-full rounded-lg border border-(--omsk-border-muted) p-3 text-left hover:bg-(--omsk-selected-bg)"
 												onClick={() =>
 													locateSetting(
 														"tabId" in item ? item.tabId : GUI_TAB_ID,
@@ -1814,8 +1816,8 @@ export function SettingsWindow() {
 													)
 												}
 											>
-												<span className="text-omp-md">{t(item.labelKey)}</span>
-												<span className="mt-1 block text-omp-xs text-(--omp-dim)">
+												<span className="text-omsk-md">{t(item.labelKey)}</span>
+												<span className="mt-1 block text-omsk-xs text-(--omsk-dim)">
 													{t("tabId" in item ? `settings.tabs.${item.tabId}` : "settings.tabs.gui")} ·{" "}
 													{item.id}
 												</span>
@@ -1827,13 +1829,15 @@ export function SettingsWindow() {
 													<button
 														key={entry.path}
 														type="button"
-														className="mb-2 block w-full rounded-lg border border-(--omp-border-muted) p-3 text-left hover:bg-(--omp-selected-bg)"
+														className="mb-2 block w-full rounded-lg border border-(--omsk-border-muted) p-3 text-left hover:bg-(--omsk-selected-bg)"
 														onClick={() => locateSetting(tabId, `setting-${entry.path}`)}
 													>
-														<span className="text-omp-md">
+														<span className="text-omsk-md">
 															{settingTranslation(lang, entry.path)?.label ?? entry.label ?? entry.path}
 														</span>
-														<span className="mt-1 block text-omp-xs text-(--omp-dim)">{entry.path}</span>
+														<span className="mt-1 block text-omsk-xs text-(--omsk-dim)">
+															{entry.path}
+														</span>
 													</button>
 												))}
 											</Section>
@@ -1841,8 +1845,8 @@ export function SettingsWindow() {
 									</>
 								)}
 								{!managementTab && (
-									<div className="mt-8 border-t border-(--omp-border-muted) pt-4">
-										<span className="text-omp-sm text-(--omp-dim)">{t("settings.applyImmediately")}</span>
+									<div className="mt-8 border-t border-(--omsk-border-muted) pt-4">
+										<span className="text-omsk-sm text-(--omsk-dim)">{t("settings.applyImmediately")}</span>
 									</div>
 								)}
 							</div>

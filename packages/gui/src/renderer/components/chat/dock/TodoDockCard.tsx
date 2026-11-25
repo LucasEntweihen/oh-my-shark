@@ -70,15 +70,15 @@ function nextStatus(current: TodoTask["status"]): TodoTask["status"] {
 
 function TodoStatusIcon({ status }: { status: TodoTask["status"] }) {
 	if (status === "in_progress") {
-		return <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[var(--omp-link)]" />;
+		return <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[var(--omsk-link)]" />;
 	}
 	if (status === "completed") {
-		return <CheckCircle2 aria-hidden="true" className="text-[var(--omp-muted)]" size={15} />;
+		return <CheckCircle2 aria-hidden="true" className="text-[var(--omsk-muted)]" size={15} />;
 	}
 	if (status === "abandoned") {
-		return <AlertCircle aria-hidden="true" className="text-[var(--omp-error)]" size={15} />;
+		return <AlertCircle aria-hidden="true" className="text-[var(--omsk-error)]" size={15} />;
 	}
-	return <Circle aria-hidden="true" className="text-[var(--omp-dim)]" size={15} strokeDasharray="2.5 2.5" />;
+	return <Circle aria-hidden="true" className="text-[var(--omsk-dim)]" size={15} strokeDasharray="2.5 2.5" />;
 }
 
 function todoPayload(phases: UiTodoPhase[]): TodoPhase[] {
@@ -121,8 +121,8 @@ const SortableTaskRow = memo(function SortableTaskRow({ task, phaseId, onPatch }
 
 	return (
 		<div
-			className={`group flex min-h-8 items-start gap-1.5 rounded-md px-1 py-1.5 text-omp-md leading-relaxed transition-colors ${
-				isDragging ? "z-10 bg-(--omp-selected-bg) shadow-md shadow-black/30" : "hover:bg-(--omp-bg-tertiary)"
+			className={`group flex min-h-8 items-start gap-1.5 rounded-md px-1 py-1.5 text-omsk-md leading-relaxed transition-colors ${
+				isDragging ? "z-10 bg-(--omsk-selected-bg) shadow-md shadow-black/30" : "hover:bg-(--omsk-bg-tertiary)"
 			}`}
 			ref={setNodeRef}
 			style={{
@@ -134,7 +134,7 @@ const SortableTaskRow = memo(function SortableTaskRow({ task, phaseId, onPatch }
 		>
 			<button
 				aria-label={t("todoPanel.reorder")}
-				className="grid size-6 shrink-0 cursor-grab place-items-center text-(--omp-dim) opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 active:cursor-grabbing"
+				className="grid size-6 shrink-0 cursor-grab place-items-center text-(--omsk-dim) opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 active:cursor-grabbing"
 				{...attributes}
 				{...listeners}
 				type="button"
@@ -145,7 +145,7 @@ const SortableTaskRow = memo(function SortableTaskRow({ task, phaseId, onPatch }
 				aria-label={t("todoPanel.statusAria", {
 					status: t(STATUS_LABEL_KEY[task.status] ?? "todoPanel.status.pending"),
 				})}
-				className="omp-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+				className="omsk-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
 				onClick={() => onPatch(phaseId, task.id, { status: nextStatus(task.status) })}
 				onContextMenu={event => setStatusMenu(anchorFromEvent(event))}
 				title={t("todoPanel.cycleHint")}
@@ -171,7 +171,7 @@ const SortableTaskRow = memo(function SortableTaskRow({ task, phaseId, onPatch }
 					<textarea
 						autoFocus
 						aria-label={t("todoPanel.edit")}
-						className="min-h-8 w-full min-w-0 resize-y rounded-md border border-(--omp-border-accent) bg-(--omp-input-bg) px-2 py-1 text-omp-md text-(--omp-text) [field-sizing:content] focus:outline-none"
+						className="min-h-8 w-full min-w-0 resize-y rounded-md border border-(--omsk-border-accent) bg-(--omsk-input-bg) px-2 py-1 text-omsk-md text-(--omsk-text) [field-sizing:content] focus:outline-none"
 						rows={2}
 						onChange={event => setDraft(event.target.value)}
 						onKeyDown={event => {
@@ -187,12 +187,12 @@ const SortableTaskRow = memo(function SortableTaskRow({ task, phaseId, onPatch }
 						}}
 						value={draft}
 					/>
-					<button aria-label={t("common.save")} className="text-(--omp-success)" onClick={commit} type="button">
+					<button aria-label={t("common.save")} className="text-(--omsk-success)" onClick={commit} type="button">
 						<Check size={12} />
 					</button>
 					<button
 						aria-label={t("common.cancel")}
-						className="text-(--omp-muted)"
+						className="text-(--omsk-muted)"
 						onClick={() => {
 							setDraft(task.content);
 							setEditing(false);
@@ -207,10 +207,10 @@ const SortableTaskRow = memo(function SortableTaskRow({ task, phaseId, onPatch }
 					<span
 						className={`min-w-0 flex-1 whitespace-pre-wrap wrap-anywhere ${
 							task.status === "abandoned"
-								? "text-(--omp-dim) line-through"
+								? "text-(--omsk-dim) line-through"
 								: task.status === "completed"
-									? "text-(--omp-muted)"
-									: "text-(--omp-text)"
+									? "text-(--omsk-muted)"
+									: "text-(--omsk-text)"
 						}`}
 						onDoubleClick={() => {
 							setDraft(task.content);
@@ -222,7 +222,7 @@ const SortableTaskRow = memo(function SortableTaskRow({ task, phaseId, onPatch }
 					</span>
 					<button
 						aria-label={t("todoPanel.edit")}
-						className="grid size-6 shrink-0 place-items-center rounded text-(--omp-dim) opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-(--omp-text)"
+						className="grid size-6 shrink-0 place-items-center rounded text-(--omsk-dim) opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-(--omsk-text)"
 						onClick={() => {
 							setDraft(task.content);
 							setEditing(true);
@@ -262,31 +262,31 @@ function PhaseSection({
 			{!hideHeader && (
 				<button
 					aria-expanded={!collapsed}
-					className="flex w-full items-start gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-(--omp-bg-tertiary)"
+					className="flex w-full items-start gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-(--omsk-bg-tertiary)"
 					onClick={onToggle}
 					type="button"
 				>
 					<ChevronRight
-						className="omp-disclosure-chevron mt-0.5 shrink-0 text-(--omp-dim)"
+						className="omsk-disclosure-chevron mt-0.5 shrink-0 text-(--omsk-dim)"
 						size={12}
 						style={{ transform: collapsed ? undefined : "rotate(90deg)" }}
 					/>
-					<span className="min-w-0 flex-1 wrap-anywhere text-omp-sm font-semibold text-(--omp-text)">
+					<span className="min-w-0 flex-1 wrap-anywhere text-omsk-sm font-semibold text-(--omsk-text)">
 						{phase.name}
 					</span>
-					<span className="shrink-0 text-omp-xs tabular-nums text-(--omp-dim)">
+					<span className="shrink-0 text-omsk-xs tabular-nums text-(--omsk-dim)">
 						{done}/{total}
 					</span>
 				</button>
 			)}
 			{(hideHeader || !collapsed) && (
 				<SortableContext items={phase.tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-					<div className={hideHeader ? undefined : "ml-2 border-l border-(--omp-border-muted) pl-1.5"}>
+					<div className={hideHeader ? undefined : "ml-2 border-l border-(--omsk-border-muted) pl-1.5"}>
 						{phase.tasks.map(task => (
 							<SortableTaskRow key={task.id} onPatch={onPatch} phaseId={phase.id} task={task} />
 						))}
 						{total === 0 && (
-							<div className="py-1 text-omp-sm text-(--omp-dim) italic">{t("todoPanel.noTasks")}</div>
+							<div className="py-1 text-omsk-sm text-(--omsk-dim) italic">{t("todoPanel.noTasks")}</div>
 						)}
 					</div>
 				</SortableContext>
@@ -407,7 +407,7 @@ export function TodoDockCard() {
 	return (
 		<DockCard
 			badge={
-				<span className="min-w-0 wrap-anywhere text-omp-xs tabular-nums text-(--omp-muted)">{taskSummary}</span>
+				<span className="min-w-0 wrap-anywhere text-omsk-xs tabular-nums text-(--omsk-muted)">{taskSummary}</span>
 			}
 			expandable
 			icon={ListTodo}
@@ -422,31 +422,31 @@ export function TodoDockCard() {
 							aria-valuenow={taskCounts.completed}
 							aria-valuemin={0}
 							aria-valuemax={summary.totalCount}
-							className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-(--omp-border-muted)"
+							className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-(--omsk-border-muted)"
 							role="progressbar"
 						>
 							<div
-								className="h-full rounded-full bg-(--omp-success)"
+								className="h-full rounded-full bg-(--omsk-success)"
 								style={{ width: `${(taskCounts.completed / summary.totalCount) * 100}%` }}
 							/>
 						</div>
-						<span className="shrink-0 text-omp-xs tabular-nums text-(--omp-muted)">
+						<span className="shrink-0 text-omsk-xs tabular-nums text-(--omsk-muted)">
 							{taskCounts.completed}/{summary.totalCount}
 						</span>
 					</div>
 				)}
 				{reminderVisible && (
-					<div className="mb-1.5 flex items-start gap-2 rounded-md border border-[color-mix(in_srgb,var(--omp-warning)_40%,transparent)] bg-transparent px-2.5 py-2">
-						<AlertTriangle className="mt-px shrink-0 text-(--omp-warning)" size={13} />
-						<div className="min-w-0 flex-1 text-omp-sm leading-snug text-(--omp-warning)">
+					<div className="mb-1.5 flex items-start gap-2 rounded-md border border-[color-mix(in_srgb,var(--omsk-warning)_40%,transparent)] bg-transparent px-2.5 py-2">
+						<AlertTriangle className="mt-px shrink-0 text-(--omsk-warning)" size={13} />
+						<div className="min-w-0 flex-1 text-omsk-sm leading-snug text-(--omsk-warning)">
 							<span className="font-semibold">{t("todoPanel.reminder")}</span>
-							<span className="text-(--omp-muted)">
+							<span className="text-(--omsk-muted)">
 								{` — ${t("todoPanel.reminderCount", { count: reminderTodos.length })}`}
 							</span>
 						</div>
 						<button
 							aria-label={t("todoPanel.dismissReminder")}
-							className="shrink-0 text-(--omp-warning) opacity-70 transition-opacity hover:opacity-100"
+							className="shrink-0 text-(--omsk-warning) opacity-70 transition-opacity hover:opacity-100"
 							onClick={clearReminder}
 							type="button"
 						>
@@ -469,7 +469,7 @@ export function TodoDockCard() {
 				</DndContext>
 				{managed && !focused && summary.hiddenCount > 0 && (
 					<button
-						className="omp-pressable mt-1 flex w-full items-center justify-center rounded-md border border-dashed border-[var(--omp-border-muted)] px-2 py-1.5 text-omp-xs font-medium text-[var(--omp-link)] hover:border-[var(--omp-border-strong)]"
+						className="omsk-pressable mt-1 flex w-full items-center justify-center rounded-md border border-dashed border-[var(--omsk-border-muted)] px-2 py-1.5 text-omsk-xs font-medium text-[var(--omsk-link)] hover:border-[var(--omsk-border-strong)]"
 						onClick={() => focusCard("todo")}
 						type="button"
 					>

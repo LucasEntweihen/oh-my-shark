@@ -104,7 +104,7 @@ function SettingFieldRow({
 		resetState === "idle" ? (
 			<button
 				aria-label={t("pluginDetail.reset")}
-				className="omp-pressable shrink-0 rounded p-1 text-(--omp-dim) hover:bg-(--omp-tool-error-bg) hover:text-(--omp-error)"
+				className="omsk-pressable shrink-0 rounded p-1 text-(--omsk-dim) hover:bg-(--omsk-tool-error-bg) hover:text-(--omsk-error)"
 				onClick={onResetAsk}
 				title={t("pluginDetail.reset")}
 				type="button"
@@ -115,7 +115,7 @@ function SettingFieldRow({
 			<span className="flex shrink-0 items-center gap-0.5">
 				<button
 					aria-label={t("pluginDetail.resetConfirm")}
-					className="omp-pressable flex h-5 w-5 items-center justify-center rounded border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent text-(--omp-error) disabled:opacity-40"
+					className="omsk-pressable flex h-5 w-5 items-center justify-center rounded border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent text-(--omsk-error) disabled:opacity-40"
 					disabled={resetState === "busy"}
 					onClick={onResetConfirm}
 					title={t("pluginDetail.resetConfirm")}
@@ -125,7 +125,7 @@ function SettingFieldRow({
 				</button>
 				<button
 					aria-label={t("common.cancel")}
-					className="omp-pressable flex h-5 w-5 items-center justify-center rounded text-(--omp-dim) hover:bg-(--omp-bg-tertiary) disabled:opacity-40"
+					className="omsk-pressable flex h-5 w-5 items-center justify-center rounded text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary) disabled:opacity-40"
 					disabled={resetState === "busy"}
 					onClick={onResetCancel}
 					title={t("common.cancel")}
@@ -139,7 +139,7 @@ function SettingFieldRow({
 
 	const header = (
 		<div className="flex items-center gap-2">
-			<span className="text-omp-xs font-medium text-(--omp-text)" title={field.key}>
+			<span className="text-omsk-xs font-medium text-(--omsk-text)" title={field.key}>
 				{field.key}
 			</span>
 			{field.secret && <Badge variant="warning">{t("pluginDetail.secretBadge")}</Badge>}
@@ -164,7 +164,7 @@ function SettingFieldRow({
 					</div>
 					{resetControls && <div className="mt-2 mr-2 shrink-0">{resetControls}</div>}
 				</div>
-				{error && <span className="mt-1 block px-2 text-omp-sm text-(--omp-error)">{error}</span>}
+				{error && <span className="mt-1 block px-2 text-omsk-sm text-(--omsk-error)">{error}</span>}
 			</div>
 		);
 	}
@@ -192,8 +192,8 @@ function SettingFieldRow({
 					</div>
 				</div>
 			) : (
-				<div className="mt-2 flex items-center justify-between rounded-md border border-(--omp-border-muted) px-2.5 py-2">
-					<span className="text-omp-xs text-(--omp-muted)">••••••••</span>
+				<div className="mt-2 flex items-center justify-between rounded-md border border-(--omsk-border-muted) px-2.5 py-2">
+					<span className="text-omsk-xs text-(--omsk-muted)">••••••••</span>
 					<Button disabled={saving} onClick={onReplace} size="sm" type="button" variant="ghost">
 						{t("pluginDetail.replace")}
 					</Button>
@@ -267,13 +267,13 @@ function SettingFieldRow({
 	}
 
 	return (
-		<div className="rounded-md px-2 py-2 transition-colors hover:bg-(--omp-bg-tertiary)">
+		<div className="rounded-md px-2 py-2 transition-colors hover:bg-(--omsk-bg-tertiary)">
 			{header}
 			{field.description && (
-				<span className="mt-0.5 block text-omp-sm leading-snug text-(--omp-muted)">{field.description}</span>
+				<span className="mt-0.5 block text-omsk-sm leading-snug text-(--omsk-muted)">{field.description}</span>
 			)}
 			<div className="mt-2">{control}</div>
-			{error && <span className="mt-1 block text-omp-sm break-words text-(--omp-error)">{error}</span>}
+			{error && <span className="mt-1 block text-omsk-sm break-words text-(--omsk-error)">{error}</span>}
 		</div>
 	);
 }
@@ -566,11 +566,11 @@ export function PluginDetailDrawer({
 	const failedCount = Object.keys(fieldErrors).length;
 
 	return (
-		<div className="omp-slide-in-right absolute inset-0 z-10 flex flex-col bg-(--omp-modal-bg)">
-			<div className="flex shrink-0 items-center gap-2 border-b border-(--omp-border-muted) px-4 py-2.5">
+		<div className="omsk-slide-in-right absolute inset-0 z-10 flex flex-col bg-(--omsk-modal-bg)">
+			<div className="flex shrink-0 items-center gap-2 border-b border-(--omsk-border-muted) px-4 py-2.5">
 				<button
 					aria-label={t("pluginDetail.back")}
-					className="omp-pressable flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-omp-sm text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+					className="omsk-pressable flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-omsk-sm text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 					onClick={onClose}
 					type="button"
 				>
@@ -578,8 +578,10 @@ export function PluginDetailDrawer({
 					{t("pluginDetail.back")}
 				</button>
 				<div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-					<span className="truncate text-omp-lg font-semibold text-(--omp-text)">{plugin.name}</span>
-					{plugin.version && <span className="text-omp-xs tabular-nums text-(--omp-dim)">v{plugin.version}</span>}
+					<span className="truncate text-omsk-lg font-semibold text-(--omsk-text)">{plugin.name}</span>
+					{plugin.version && (
+						<span className="text-omsk-xs tabular-nums text-(--omsk-dim)">v{plugin.version}</span>
+					)}
 					{plugin.marketplace === "npm" ? (
 						<Badge variant="info">npm</Badge>
 					) : (
@@ -615,7 +617,7 @@ export function PluginDetailDrawer({
 						{/* A failed refresh keeps the last good detail on screen — say so, and
 						    offer the re-read, instead of letting the panel look healthy. */}
 						{loadError !== null && (
-							<div className="flex items-start gap-2 rounded-lg border border-(--omp-error)/40 bg-(--omp-error-dim) px-3 py-2 text-omp-sm text-(--omp-error)">
+							<div className="flex items-start gap-2 rounded-lg border border-(--omsk-error)/40 bg-(--omsk-error-dim) px-3 py-2 text-omsk-sm text-(--omsk-error)">
 								<div className="min-w-0 flex-1">
 									<span className="font-semibold">{t("pluginDetail.stale")}</span> {loadError}
 								</div>
@@ -645,19 +647,19 @@ export function PluginDetailDrawer({
 								/>
 							</section>
 							<section>
-								<div className="mb-1.5 text-omp-sm font-semibold text-(--omp-dim)">
+								<div className="mb-1.5 text-omsk-sm font-semibold text-(--omsk-dim)">
 									{t("pluginDetail.features")}
 								</div>
 								{detail.features.length === 0 ? (
-									<div className="rounded-md border border-(--omp-border-muted) px-3 py-3 text-omp-sm text-(--omp-dim)">
+									<div className="rounded-md border border-(--omsk-border-muted) px-3 py-3 text-omsk-sm text-(--omsk-dim)">
 										{t("pluginDetail.featuresEmpty")}
 									</div>
 								) : (
 									<>
-										<div className="flex flex-col rounded-lg border border-(--omp-border-muted) bg-transparent">
+										<div className="flex flex-col rounded-lg border border-(--omsk-border-muted) bg-transparent">
 											{detail.features.map(feature => (
 												<label
-													className="flex cursor-pointer items-start gap-2.5 border-b border-(--omp-border-muted) px-3 py-2 last:border-0 hover:bg-(--omp-selected-bg)"
+													className="flex cursor-pointer items-start gap-2.5 border-b border-(--omsk-border-muted) px-3 py-2 last:border-0 hover:bg-(--omsk-selected-bg)"
 													key={feature.id}
 												>
 													<input
@@ -668,11 +670,11 @@ export function PluginDetailDrawer({
 														type="checkbox"
 													/>
 													<span className="min-w-0 flex-1">
-														<span className="block text-omp-md font-medium text-(--omp-text)">
+														<span className="block text-omsk-md font-medium text-(--omsk-text)">
 															{feature.id}
 														</span>
 														{feature.description && (
-															<span className="mt-0.5 block text-omp-sm leading-snug text-(--omp-dim)">
+															<span className="mt-0.5 block text-omsk-sm leading-snug text-(--omsk-dim)">
 																{feature.description}
 															</span>
 														)}
@@ -701,16 +703,16 @@ export function PluginDetailDrawer({
 								)}
 							</section>
 							<section>
-								<div className="mb-1.5 text-omp-sm font-semibold text-(--omp-dim)">
+								<div className="mb-1.5 text-omsk-sm font-semibold text-(--omsk-dim)">
 									{t("pluginDetail.settings")}
 								</div>
 								{fields.length === 0 ? (
-									<div className="rounded-md border border-(--omp-border-muted) px-3 py-3 text-omp-sm text-(--omp-dim)">
+									<div className="rounded-md border border-(--omsk-border-muted) px-3 py-3 text-omsk-sm text-(--omsk-dim)">
 										{t("pluginDetail.settingsEmpty")}
 									</div>
 								) : (
 									<>
-										<div className="flex flex-col rounded-lg border border-(--omp-border-muted) bg-transparent">
+										<div className="flex flex-col rounded-lg border border-(--omsk-border-muted) bg-transparent">
 											{fields.map(field => (
 												<SettingFieldRow
 													draft={drafts[field.key]}
@@ -753,7 +755,7 @@ export function PluginDetailDrawer({
 										)}
 										<div className="mt-2 flex items-center justify-end gap-2">
 											{savedTick && (
-												<span className="flex items-center gap-1 text-omp-sm text-(--omp-success)">
+												<span className="flex items-center gap-1 text-omsk-sm text-(--omsk-success)">
 													<Check size={11} />
 													{t("pluginDetail.saved")}
 												</span>

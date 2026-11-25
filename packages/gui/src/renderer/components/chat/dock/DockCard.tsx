@@ -75,36 +75,36 @@ export function DockCard({ id, icon: Icon, title, badge, actions, expandable, ch
 			className={cx(
 				"shrink-0 overflow-clip rounded-xl border transition-shadow duration-300",
 				flash
-					? "border-[var(--omp-accent)] shadow-[0_0_0_2px_color-mix(in_srgb,var(--omp-accent)_35%,transparent)]"
-					: "border-[var(--omp-border)]",
+					? "border-[var(--omsk-accent)] shadow-[0_0_0_2px_color-mix(in_srgb,var(--omsk-accent)_35%,transparent)]"
+					: "border-[var(--omsk-border)]",
 				hiddenForFocus && "opacity-75",
 				focused && "order-first",
 			)}
 			data-dock-focused={focused || undefined}
 		>
 			<div
-				className="sticky top-0 z-20 flex min-h-10 flex-wrap items-center gap-x-2 gap-y-1 bg-[var(--omp-bg-secondary)] px-3 py-1.5" // surface-ok: dock-card sticky navigation chrome
+				className="sticky top-0 z-20 flex min-h-10 flex-wrap items-center gap-x-2 gap-y-1 bg-[var(--omsk-bg-secondary)] px-3 py-1.5" // surface-ok: dock-card sticky navigation chrome
 			>
 				<button
 					aria-expanded={expanded}
 					aria-label={expanded ? t("dock.collapse") : t("dock.expand")}
-					className="omp-pressable flex min-w-0 flex-[1_1_9rem] items-center gap-2 rounded-md text-left"
+					className="omsk-pressable flex min-w-0 flex-[1_1_9rem] items-center gap-2 rounded-md text-left"
 					onClick={toggle}
 					type="button"
 				>
-					<Icon className="shrink-0 text-[var(--omp-muted)]" size={15} />
-					<span className="shrink-0 text-omp-md font-semibold text-[var(--omp-text)]">{title}</span>
+					<Icon className="shrink-0 text-[var(--omsk-muted)]" size={15} />
+					<span className="shrink-0 text-omsk-md font-semibold text-[var(--omsk-text)]">{title}</span>
 					{badge}
 					<span className="min-w-1 flex-1" />
 					<ChevronRight
-						className="omp-disclosure-chevron shrink-0 text-[var(--omp-dim)]"
+						className="omsk-disclosure-chevron shrink-0 text-[var(--omsk-dim)]"
 						size={14}
 						style={{ transform: expanded ? "rotate(90deg)" : undefined }}
 					/>
 				</button>
 				{!hiddenForFocus && focused && (
 					<button
-						className="omp-pressable flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-omp-xs text-[var(--omp-muted)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-omsk-xs text-[var(--omsk-muted)] hover:text-[var(--omsk-text)]"
 						onClick={clearFocus}
 						type="button"
 					>
@@ -117,7 +117,7 @@ export function DockCard({ id, icon: Icon, title, badge, actions, expandable, ch
 						type="button"
 						aria-label={detailLabel}
 						title={detailLabel}
-						className="omp-pressable grid size-7 shrink-0 place-items-center rounded-md text-(--omp-muted) hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+						className="omsk-pressable grid size-7 shrink-0 place-items-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 						onClick={() => focusCard(id)}
 					>
 						<Maximize2 aria-hidden size={14} />
@@ -125,7 +125,7 @@ export function DockCard({ id, icon: Icon, title, badge, actions, expandable, ch
 				)}
 				{!hiddenForFocus && actions}
 			</div>
-			{expanded && <div className="border-t border-[var(--omp-border-muted)]">{children}</div>}
+			{expanded && <div className="border-t border-[var(--omsk-border-muted)]">{children}</div>}
 		</section>
 	);
 }

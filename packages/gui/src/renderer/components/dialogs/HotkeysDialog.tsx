@@ -72,21 +72,21 @@ export function HotkeysDialog({ open }: { open: boolean }) {
 			</div>
 
 			{groups.length === 0 && (
-				<div className="py-6 text-center text-omp-md text-[var(--omp-dim)]">{t("hotkeys.empty")}</div>
+				<div className="py-6 text-center text-omsk-md text-[var(--omsk-dim)]">{t("hotkeys.empty")}</div>
 			)}
 			{groups.map(group => (
 				<div key={group.section} className="mb-4 last:mb-0">
-					<div className="mb-1.5 text-omp-sm font-semibold text-[var(--omp-dim)]">
+					<div className="mb-1.5 text-omsk-sm font-semibold text-[var(--omsk-dim)]">
 						{t(`hotkeys.group.${group.section}`)}
 					</div>
-					<div className="overflow-hidden rounded-lg border border-[var(--omp-border-muted)]">
+					<div className="overflow-hidden rounded-lg border border-[var(--omsk-border-muted)]">
 						{group.rows.map(row => (
-							<div key={row.id} className="flex items-center justify-between gap-4 px-3 py-2 text-omp-md">
-								<span className="text-[var(--omp-text)]">{row.label}</span>
+							<div key={row.id} className="flex items-center justify-between gap-4 px-3 py-2 text-omsk-md">
+								<span className="text-[var(--omsk-text)]">{row.label}</span>
 								{row.keys ? (
 									<Kbd variant="keycap">{row.keys}</Kbd>
 								) : (
-									<span className="shrink-0 text-omp-sm text-[var(--omp-dim)]">{t("hotkeys.off")}</span>
+									<span className="shrink-0 text-omsk-sm text-[var(--omsk-dim)]">{t("hotkeys.off")}</span>
 								)}
 							</div>
 						))}

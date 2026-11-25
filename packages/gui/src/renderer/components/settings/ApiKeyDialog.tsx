@@ -54,11 +54,11 @@ export function ApiKeyDialog({ providerName, open, onClose, onSave }: ApiKeyDial
 	return (
 		<Modal onClose={close} open={open} size="sm" title={t("providers.apiKey.title", { provider: providerName })}>
 			<form className="flex flex-col gap-4" onSubmit={submit}>
-				<p className="text-omp-md text-(--omp-muted)">
+				<p className="text-omsk-md text-(--omsk-muted)">
 					{t("providers.apiKey.description", { provider: providerName })}
 				</p>
 				<div>
-					<label className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)" htmlFor={fieldId}>
+					<label className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)" htmlFor={fieldId}>
 						{t("providers.apiKey.label")}
 					</label>
 					{/* The toggle centres on the field alone, so it stays put at any font size. */}
@@ -81,7 +81,7 @@ export function ApiKeyDialog({ providerName, open, onClose, onSave }: ApiKeyDial
 						/>
 						<button
 							aria-label={revealed ? t("providerCfg.form.apiKeyHide") : t("providerCfg.form.apiKeyShow")}
-							className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1 text-(--omp-dim) hover:text-(--omp-text)"
+							className="absolute top-1/2 right-2 -translate-y-1/2 rounded-md p-1 text-(--omsk-dim) hover:text-(--omsk-text)"
 							onClick={() => setRevealed(value => !value)}
 							type="button"
 						>
@@ -89,7 +89,7 @@ export function ApiKeyDialog({ providerName, open, onClose, onSave }: ApiKeyDial
 						</button>
 					</div>
 					{error && (
-						<p className="mt-1.5 text-omp-md text-(--omp-error)" id={errorId} role="alert">
+						<p className="mt-1.5 text-omsk-md text-(--omsk-error)" id={errorId} role="alert">
 							{error}
 						</p>
 					)}

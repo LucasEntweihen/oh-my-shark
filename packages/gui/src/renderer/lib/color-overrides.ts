@@ -91,18 +91,18 @@ export function applyManualColorOverrides(overrides: ManualColorOverrides): void
 		appliedOverrideKeys.add(prop);
 	};
 	if (isValidHex(overrides.accent)) {
-		setProp("--omp-accent", overrides.accent);
-		setProp("--omp-accent-bright", `color-mix(in srgb, ${overrides.accent} 80%, #ffffff)`);
-		setProp("--omp-accent-dim", `color-mix(in srgb, ${overrides.accent} 16%, transparent)`);
-		setProp("--omp-accent-glow", `color-mix(in srgb, ${overrides.accent} 32%, transparent)`);
-		setProp("--omp-border-accent", `color-mix(in srgb, ${overrides.accent} 58%, transparent)`);
-		setProp("--omp-selected-bg", `color-mix(in srgb, ${overrides.accent} 16%, transparent)`);
+		setProp("--omsk-accent", overrides.accent);
+		setProp("--omsk-accent-bright", `color-mix(in srgb, ${overrides.accent} 80%, #ffffff)`);
+		setProp("--omsk-accent-dim", `color-mix(in srgb, ${overrides.accent} 16%, transparent)`);
+		setProp("--omsk-accent-glow", `color-mix(in srgb, ${overrides.accent} 32%, transparent)`);
+		setProp("--omsk-border-accent", `color-mix(in srgb, ${overrides.accent} 58%, transparent)`);
+		setProp("--omsk-selected-bg", `color-mix(in srgb, ${overrides.accent} 16%, transparent)`);
 	}
 	if (isValidHex(overrides.bgPrimary)) {
-		setProp("--omp-bg-primary", overrides.bgPrimary);
+		setProp("--omsk-bg-primary", overrides.bgPrimary);
 	}
 	if (isValidHex(overrides.textPrimary)) {
-		setProp("--omp-text", overrides.textPrimary);
+		setProp("--omsk-text", overrides.textPrimary);
 	}
 	if (isValidHex(overrides.oceanTop)) {
 		setProp("--omsk-ocean-top", overrides.oceanTop);

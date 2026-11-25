@@ -15,7 +15,7 @@ export function InlineMarkdown({ text }: { text: string }) {
 				if (index % 2 === 0) return part;
 				const key = `${index}-${part}`;
 				return part.startsWith("`") ? (
-					<code className="omp-inline-code" key={key}>
+					<code className="omsk-inline-code" key={key}>
 						{part.slice(1, -1)}
 					</code>
 				) : (

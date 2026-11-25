@@ -5,7 +5,7 @@
  *
  * Render it as a child of the positioned container that holds the items. It
  * finds the selected item with `selector`, measures it, and exposes the box as
- * custom properties the `.omp-glide` rules turn into a transform. The container
+ * custom properties the `.omsk-glide` rules turn into a transform. The container
  * gets `data-glide-ready` once a box is known, which is the cue for the items'
  * own selected styling to step aside; until then (first paint, a selected item
  * that is not rendered, an environment without layout) the items look exactly
@@ -83,5 +83,5 @@ export function Glide({ activeKey, selector, variant }: GlideProps) {
 		};
 	}, []);
 
-	return <span aria-hidden className={`omp-glide omp-glide--${variant}`} hidden ref={markRef} />;
+	return <span aria-hidden className={`omsk-glide omsk-glide--${variant}`} hidden ref={markRef} />;
 }

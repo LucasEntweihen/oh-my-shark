@@ -143,29 +143,29 @@ export function FirstRunOnboardingDialog() {
 		>
 			<div className="flex flex-col gap-5 p-5">
 				<div className="flex items-start gap-3">
-					<div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-(--omp-border-accent) text-(--omp-accent)">
+					<div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-(--omsk-border-accent) text-(--omsk-accent)">
 						<Sparkles size={17} />
 					</div>
 					<div className="min-w-0">
 						<div className="mb-1 flex flex-wrap items-center gap-2">
-							<h2 className="text-omp-xl font-semibold text-(--omp-text)">{t("onboarding.heading")}</h2>
+							<h2 className="text-omsk-xl font-semibold text-(--omsk-text)">{t("onboarding.heading")}</h2>
 							<Badge variant="warning">{t("onboarding.setupRequired")}</Badge>
 						</div>
-						<p className="text-omp-md leading-relaxed text-(--omp-muted)">{t("onboarding.description")}</p>
+						<p className="text-omsk-md leading-relaxed text-(--omsk-muted)">{t("onboarding.description")}</p>
 					</div>
 				</div>
 
 				<div className="grid gap-3 md:grid-cols-2">
-					<section className="flex flex-col rounded-xl border border-(--omp-border-muted) p-4">
+					<section className="flex flex-col rounded-xl border border-(--omsk-border-muted) p-4">
 						<div className="mb-3 flex items-center gap-2">
-							<KeyRound className="text-(--omp-accent)" size={16} />
-							<h3 className="text-omp-lg font-semibold text-(--omp-text)">{t("onboarding.provider.title")}</h3>
+							<KeyRound className="text-(--omsk-accent)" size={16} />
+							<h3 className="text-omsk-lg font-semibold text-(--omsk-text)">{t("onboarding.provider.title")}</h3>
 							<Badge variant="success">{t("onboarding.recommended")}</Badge>
 						</div>
-						<p className="mb-3 text-omp-md leading-relaxed text-(--omp-muted)">
+						<p className="mb-3 text-omsk-md leading-relaxed text-(--omsk-muted)">
 							{t("onboarding.provider.description")}
 						</p>
-						<p className="mb-4 text-omp-sm leading-relaxed text-(--omp-dim)">
+						<p className="mb-4 text-omsk-sm leading-relaxed text-(--omsk-dim)">
 							{t("onboarding.provider.location")}
 						</p>
 						<Button
@@ -178,15 +178,17 @@ export function FirstRunOnboardingDialog() {
 						</Button>
 					</section>
 
-					<section className="flex flex-col rounded-xl border border-(--omp-border-muted) p-4">
+					<section className="flex flex-col rounded-xl border border-(--omsk-border-muted) p-4">
 						<div className="mb-3 flex items-center gap-2">
-							<FileCode2 className="text-(--omp-accent)" size={16} />
-							<h3 className="text-omp-lg font-semibold text-(--omp-text)">{t("onboarding.custom.title")}</h3>
+							<FileCode2 className="text-(--omsk-accent)" size={16} />
+							<h3 className="text-omsk-lg font-semibold text-(--omsk-text)">{t("onboarding.custom.title")}</h3>
 						</div>
-						<p className="mb-3 text-omp-md leading-relaxed text-(--omp-muted)">
+						<p className="mb-3 text-omsk-md leading-relaxed text-(--omsk-muted)">
 							{t("onboarding.custom.description")}
 						</p>
-						<p className="mb-4 text-omp-sm leading-relaxed text-(--omp-dim)">{t("onboarding.custom.location")}</p>
+						<p className="mb-4 text-omsk-sm leading-relaxed text-(--omsk-dim)">
+							{t("onboarding.custom.location")}
+						</p>
 						<Button
 							className="mt-auto w-full"
 							icon={<FileCode2 size={14} />}
@@ -198,55 +200,55 @@ export function FirstRunOnboardingDialog() {
 					</section>
 				</div>
 
-				<details className="rounded-xl border border-(--omp-border-muted) p-4">
-					<summary className="cursor-pointer text-omp-lg font-semibold text-(--omp-text)">
+				<details className="rounded-xl border border-(--omsk-border-muted) p-4">
+					<summary className="cursor-pointer text-omsk-lg font-semibold text-(--omsk-text)">
 						{t("onboarding.parameters.title")}
 					</summary>
-					<p className="mb-3 text-omp-sm leading-relaxed text-(--omp-dim)">
+					<p className="mb-3 text-omsk-sm leading-relaxed text-(--omsk-dim)">
 						{t("onboarding.parameters.description")}
 					</p>
-					<div className="grid gap-x-5 gap-y-2 text-omp-sm md:grid-cols-2">
+					<div className="grid gap-x-5 gap-y-2 text-omsk-sm md:grid-cols-2">
 						<div>
-							<code className="font-mono text-(--omp-text)">id</code>
-							<span className="ml-2 text-(--omp-muted)">{t("onboarding.parameters.id")}</span>
+							<code className="font-mono text-(--omsk-text)">id</code>
+							<span className="ml-2 text-(--omsk-muted)">{t("onboarding.parameters.id")}</span>
 						</div>
 						<div>
-							<code className="font-mono text-(--omp-text)">api</code>
-							<span className="ml-2 text-(--omp-muted)">{t("onboarding.parameters.api")}</span>
+							<code className="font-mono text-(--omsk-text)">api</code>
+							<span className="ml-2 text-(--omsk-muted)">{t("onboarding.parameters.api")}</span>
 						</div>
 						<div>
-							<code className="font-mono text-(--omp-text)">baseUrl</code>
-							<span className="ml-2 text-(--omp-muted)">{t("onboarding.parameters.baseUrl")}</span>
+							<code className="font-mono text-(--omsk-text)">baseUrl</code>
+							<span className="ml-2 text-(--omsk-muted)">{t("onboarding.parameters.baseUrl")}</span>
 						</div>
 						<div>
-							<code className="font-mono text-(--omp-text)">apiKey / auth</code>
-							<span className="ml-2 text-(--omp-muted)">{t("onboarding.parameters.auth")}</span>
+							<code className="font-mono text-(--omsk-text)">apiKey / auth</code>
+							<span className="ml-2 text-(--omsk-muted)">{t("onboarding.parameters.auth")}</span>
 						</div>
 						<div>
-							<code className="font-mono text-(--omp-text)">models[].id</code>
-							<span className="ml-2 text-(--omp-muted)">{t("onboarding.parameters.modelId")}</span>
+							<code className="font-mono text-(--omsk-text)">models[].id</code>
+							<span className="ml-2 text-(--omsk-muted)">{t("onboarding.parameters.modelId")}</span>
 						</div>
 						<div>
-							<code className="font-mono text-(--omp-text)">contextWindow / maxTokens</code>
-							<span className="ml-2 text-(--omp-muted)">{t("onboarding.parameters.limits")}</span>
+							<code className="font-mono text-(--omsk-text)">contextWindow / maxTokens</code>
+							<span className="ml-2 text-(--omsk-muted)">{t("onboarding.parameters.limits")}</span>
 						</div>
 					</div>
 					<div className="mt-4">
-						<div className="mb-1.5 text-omp-sm font-medium text-(--omp-text)">{t("onboarding.example")}</div>
-						<pre className="overflow-x-auto rounded-lg border border-(--omp-border-muted) bg-(--omp-code-bg) p-3 font-mono text-omp-xs leading-[1.55] text-(--omp-muted)">
+						<div className="mb-1.5 text-omsk-sm font-medium text-(--omsk-text)">{t("onboarding.example")}</div>
+						<pre className="overflow-x-auto rounded-lg border border-(--omsk-border-muted) bg-(--omsk-code-bg) p-3 font-mono text-omsk-xs leading-[1.55] text-(--omsk-muted)">
 							{CUSTOM_PROVIDER_EXAMPLE}
 						</pre>
 					</div>
 				</details>
 
 				{error && (
-					<div className="rounded-lg border border-[color-mix(in_srgb,var(--omp-warning)_40%,transparent)] px-3 py-2 text-omp-sm text-(--omp-warning)">
+					<div className="rounded-lg border border-[color-mix(in_srgb,var(--omsk-warning)_40%,transparent)] px-3 py-2 text-omsk-sm text-(--omsk-warning)">
 						{error}
 					</div>
 				)}
 
-				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-(--omp-border-muted) pt-4">
-					<p className="min-w-0 flex-1 text-omp-xs leading-relaxed text-(--omp-dim)">
+				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-(--omsk-border-muted) pt-4">
+					<p className="min-w-0 flex-1 text-omsk-xs leading-relaxed text-(--omsk-dim)">
 						{t("onboarding.checkHint")}
 					</p>
 					<div className="flex shrink-0 gap-2">

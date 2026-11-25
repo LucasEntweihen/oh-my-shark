@@ -115,26 +115,26 @@ export function WebSearchRenderer({ args, result, isPartial }: ToolRendererProps
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<Globe size={12} className="shrink-0 text-[var(--omp-link)]" />
-				<span className="min-w-0 flex-1 truncate text-[var(--omp-text)]">
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<Globe size={12} className="shrink-0 text-[var(--omsk-link)]" />
+				<span className="min-w-0 flex-1 truncate text-[var(--omsk-text)]">
 					{query || t("tools.websearch.fallback")}
 				</span>
 				{parsed.sources.length > 0 && (
-					<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">
+					<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 						{t("tools.websearch.sources", { count: parsed.sources.length })}
 					</span>
 				)}
 			</div>
 
 			{parsed.error && (
-				<div className="rounded bg-[var(--omp-tool-error-bg)] px-2 py-1.5 text-omp-sm text-[var(--omp-error)]">
+				<div className="rounded bg-[var(--omsk-tool-error-bg)] px-2 py-1.5 text-omsk-sm text-[var(--omsk-error)]">
 					{t("tools.websearch.error", { error: describeError(parsed.error) })}
 				</div>
 			)}
 
 			{!parsed.error && answer && (
-				<div className="rounded bg-[var(--omp-code-bg)] px-2 py-1.5 text-omp-sm [&_.markdown-body]:text-omp-sm">
+				<div className="rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 text-omsk-sm [&_.markdown-body]:text-omsk-sm">
 					<MarkdownRenderer content={answer} />
 				</div>
 			)}
@@ -145,7 +145,7 @@ export function WebSearchRenderer({ args, result, isPartial }: ToolRendererProps
 						const age = formatAge(item.ageSeconds) || item.publishedDate || "";
 						const domain = domainOf(item.url);
 						return (
-							<div key={item.url ?? i} className="rounded bg-[var(--omp-code-bg)] px-2 py-1.5">
+							<div key={item.url ?? i} className="rounded bg-[var(--omsk-code-bg)] px-2 py-1.5">
 								<div className="flex items-baseline gap-1.5">
 									{(() => {
 										const label = item.title ?? item.url ?? t("tools.websearch.resultN", { index: i + 1 });
@@ -154,19 +154,19 @@ export function WebSearchRenderer({ args, result, isPartial }: ToolRendererProps
 											<button
 												type="button"
 												onClick={event => openLink(item.url as string, event)}
-												className="min-w-0 flex-1 truncate text-left text-omp-sm font-medium text-[var(--omp-link)] hover:underline"
+												className="min-w-0 flex-1 truncate text-left text-omsk-sm font-medium text-[var(--omsk-link)] hover:underline"
 												title={item.url}
 											>
 												{label}
 											</button>
 										) : (
-											<div className="min-w-0 flex-1 truncate text-omp-sm font-medium text-[var(--omp-link)]">
+											<div className="min-w-0 flex-1 truncate text-omsk-sm font-medium text-[var(--omsk-link)]">
 												{label}
 											</div>
 										);
 									})()}
 									{(domain || age) && (
-										<div className="shrink-0 text-omp-xs text-[var(--omp-dim)]">
+										<div className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 											{domain && `(${domain})`}
 											{domain && age && " · "}
 											{age}
@@ -174,16 +174,18 @@ export function WebSearchRenderer({ args, result, isPartial }: ToolRendererProps
 									)}
 								</div>
 								{item.url && (
-									<div className="truncate font-mono text-omp-xs text-[var(--omp-dim)]">{item.url}</div>
+									<div className="truncate font-mono text-omsk-xs text-[var(--omsk-dim)]">{item.url}</div>
 								)}
 								{item.snippet && (
-									<div className="mt-0.5 line-clamp-2 text-omp-xs text-[var(--omp-muted)]">{item.snippet}</div>
+									<div className="mt-0.5 line-clamp-2 text-omsk-xs text-[var(--omsk-muted)]">
+										{item.snippet}
+									</div>
 								)}
 							</div>
 						);
 					})}
 					{parsed.sources.length > 8 && (
-						<div className="text-center text-omp-xs text-[var(--omp-dim)]">
+						<div className="text-center text-omsk-xs text-[var(--omsk-dim)]">
 							{t("tools.websearch.more", { count: parsed.sources.length - 8 })}
 						</div>
 					)}
@@ -191,7 +193,7 @@ export function WebSearchRenderer({ args, result, isPartial }: ToolRendererProps
 			)}
 
 			{(providerInfo || usageParts.length > 0) && !isPartial && (
-				<div className="font-mono text-omp-xs text-[var(--omp-dim)]">
+				<div className="font-mono text-omsk-xs text-[var(--omsk-dim)]">
 					{providerInfo && (
 						<span>
 							{providerInfo}
@@ -204,7 +206,7 @@ export function WebSearchRenderer({ args, result, isPartial }: ToolRendererProps
 			)}
 
 			{!parsed.error && !answer && parsed.sources.length === 0 && (
-				<div className="text-omp-sm italic text-[var(--omp-dim)]">
+				<div className="text-omsk-sm italic text-[var(--omsk-dim)]">
 					{isPartial ? t("tools.websearch.searching") : t("tools.websearch.noResults")}
 				</div>
 			)}

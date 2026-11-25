@@ -33,7 +33,7 @@ function dashboard(overrides?: Partial<RpcSecurityDashboardResult>): RpcSecurity
 	return {
 		enabled: false,
 		modelReady: true,
-		repositoryRoot: "/tmp/omp-gui-fixtures/demo",
+		repositoryRoot: "/tmp/omsk-gui-fixtures/demo",
 		scans: [],
 		operations: [],
 		...overrides,

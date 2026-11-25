@@ -52,11 +52,11 @@ function Card({
 	return (
 		<section
 			aria-label={title}
-			className="rounded-xl border border-(--omp-border-muted) bg-(--omp-bg-elevated) px-3 pt-2 pb-3"
+			className="rounded-xl border border-(--omsk-border-muted) bg-(--omsk-bg-elevated) px-3 pt-2 pb-3"
 		>
 			<header className="flex h-7 items-center gap-2">
-				<Icon aria-hidden className="shrink-0 text-(--omp-dim)" size={14} />
-				<h3 className="min-w-0 flex-1 truncate text-omp-sm font-medium text-(--omp-muted)">{title}</h3>
+				<Icon aria-hidden className="shrink-0 text-(--omsk-dim)" size={14} />
+				<h3 className="min-w-0 flex-1 truncate text-omsk-sm font-medium text-(--omsk-muted)">{title}</h3>
 				{action}
 			</header>
 			<div className="mt-1.5">{children}</div>
@@ -73,14 +73,14 @@ function CardLink({ label, onClick }: { label: string; onClick: () => void }) {
 }
 
 function Muted({ children }: { children: ReactNode }) {
-	return <p className="text-omp-md text-(--omp-dim)">{children}</p>;
+	return <p className="text-omsk-md text-(--omsk-dim)">{children}</p>;
 }
 
 function Row({ label, value, title }: { label: string; value: ReactNode; title?: string }) {
 	return (
-		<div className="flex items-baseline gap-3 text-omp-md">
-			<span className="w-16 shrink-0 text-(--omp-dim)">{label}</span>
-			<span className="min-w-0 flex-1 truncate text-(--omp-text)" title={title}>
+		<div className="flex items-baseline gap-3 text-omsk-md">
+			<span className="w-16 shrink-0 text-(--omsk-dim)">{label}</span>
+			<span className="min-w-0 flex-1 truncate text-(--omsk-text)" title={title}>
 				{value}
 			</span>
 		</div>
@@ -103,22 +103,22 @@ function ContextCard() {
 		>
 			{contextUsage ? (
 				<>
-					<div className="mb-2 flex items-baseline justify-between gap-3 text-omp-md">
-						<span className="text-(--omp-text)">
+					<div className="mb-2 flex items-baseline justify-between gap-3 text-omsk-md">
+						<span className="text-(--omsk-text)">
 							{view.capacityKnown
 								? t("overview.context.used", { percent: Math.round(view.percent) })
 								: t("contextUsage.windowUnknown")}
 						</span>
-						<span className="shrink-0 font-mono tabular-nums text-(--omp-dim)">{formatContextUsage(view)}</span>
+						<span className="shrink-0 font-mono tabular-nums text-(--omsk-dim)">{formatContextUsage(view)}</span>
 					</div>
 					<ContextBreakdown approximate segments={segments} view={view} />
 					{loading && segments.length === 0 ? (
-						<div className="mt-2 flex items-center gap-2 text-omp-md text-(--omp-dim)">
+						<div className="mt-2 flex items-center gap-2 text-omsk-md text-(--omsk-dim)">
 							<Spinner size="sm" /> {t("contextUsage.loading")}
 						</div>
 					) : error && segments.length === 0 ? (
 						<div className="mt-2 flex items-center gap-2">
-							<span className="min-w-0 flex-1 text-omp-md text-(--omp-dim)">
+							<span className="min-w-0 flex-1 text-omsk-md text-(--omsk-dim)">
 								{t("contextUsage.unavailable")}
 							</span>
 							<Button onClick={retry} size="sm" variant="secondary">
@@ -166,10 +166,10 @@ function WorkspaceCard({ withGit }: { withGit: boolean }) {
 }
 
 const CHANGE_STATUS_CLASS: Record<string, string> = {
-	A: "text-(--omp-success)",
-	U: "text-(--omp-success)",
-	D: "text-(--omp-error)",
-	R: "text-(--omp-info)",
+	A: "text-(--omsk-success)",
+	U: "text-(--omsk-success)",
+	D: "text-(--omsk-error)",
+	R: "text-(--omsk-info)",
 };
 
 function ChangesCard() {
@@ -194,7 +194,7 @@ function ChangesCard() {
 				<Muted>{t("overview.changes.none")}</Muted>
 			) : (
 				<>
-					<p className="mb-1.5 text-omp-md text-(--omp-text)">
+					<p className="mb-1.5 text-omsk-md text-(--omsk-text)">
 						{t("overview.changes.count", { count: files.length, plural: plural(files.length) })}
 					</p>
 					<ul className="space-y-1">
@@ -203,19 +203,19 @@ function ChangesCard() {
 							const raw = file.status.trim().charAt(0) || "M";
 							const code = raw === "?" ? "U" : raw;
 							return (
-								<li className="flex items-center gap-2 text-omp-md" key={file.path} title={file.path}>
+								<li className="flex items-center gap-2 text-omsk-md" key={file.path} title={file.path}>
 									<span
 										className={cx(
-											"w-3 shrink-0 text-center font-mono text-omp-xs",
-											CHANGE_STATUS_CLASS[code] ?? "text-(--omp-warning)",
+											"w-3 shrink-0 text-center font-mono text-omsk-xs",
+											CHANGE_STATUS_CLASS[code] ?? "text-(--omsk-warning)",
 										)}
 									>
 										{code}
 									</span>
-									<span className="shrink-0 text-(--omp-text)">{basename(file.path)}</span>
+									<span className="shrink-0 text-(--omsk-text)">{basename(file.path)}</span>
 									{/* Name, then its folder — the shape tool rows use; a root file has no folder to show. */}
 									{dirname(file.path) && (
-										<span className="min-w-0 truncate text-omp-sm text-(--omp-dim)">
+										<span className="min-w-0 truncate text-omsk-sm text-(--omsk-dim)">
 											{dirname(file.path)}
 										</span>
 									)}
@@ -224,7 +224,7 @@ function ChangesCard() {
 						})}
 					</ul>
 					{files.length > CHANGES_PREVIEW && (
-						<p className="mt-1.5 text-omp-sm text-(--omp-dim)">
+						<p className="mt-1.5 text-omsk-sm text-(--omsk-dim)">
 							{t("overview.more", { count: files.length - CHANGES_PREVIEW })}
 						</p>
 					)}
@@ -256,9 +256,9 @@ function RunningCard() {
 			{idle ? (
 				<Muted>{t("overview.running.none")}</Muted>
 			) : (
-				<ul className="space-y-1.5 text-omp-md">
+				<ul className="space-y-1.5 text-omsk-md">
 					{(isStreaming || isCompacting) && (
-						<li className="flex items-center gap-2 text-(--omp-text)">
+						<li className="flex items-center gap-2 text-(--omsk-text)">
 							<Spinner size="sm" />
 							{isCompacting ? t("overview.running.compacting") : t("overview.running.agent")}
 						</li>
@@ -266,7 +266,7 @@ function RunningCard() {
 					{liveAgents.length > 0 && (
 						<li>
 							<button
-								className="w-full truncate text-start text-(--omp-text) hover:text-(--omp-link)"
+								className="w-full truncate text-start text-(--omsk-text) hover:text-(--omsk-link)"
 								onClick={() => setPanelTab("agents")}
 								type="button"
 							>
@@ -277,13 +277,13 @@ function RunningCard() {
 							</button>
 							<ul className="mt-1 space-y-0.5 ps-3">
 								{liveAgents.slice(0, RUNNING_PREVIEW).map(agent => (
-									<li className="truncate text-omp-sm text-(--omp-dim)" key={agent.id}>
-										<span className="text-(--omp-muted)">{agent.agent}</span>
+									<li className="truncate text-omsk-sm text-(--omsk-dim)" key={agent.id}>
+										<span className="text-(--omsk-muted)">{agent.agent}</span>
 										{agent.description ? ` · ${agent.description}` : null}
 									</li>
 								))}
 								{liveAgents.length > RUNNING_PREVIEW && (
-									<li className="text-omp-sm text-(--omp-dim)">
+									<li className="text-omsk-sm text-(--omsk-dim)">
 										{t("overview.more", { count: liveAgents.length - RUNNING_PREVIEW })}
 									</li>
 								)}
@@ -293,7 +293,7 @@ function RunningCard() {
 					{sideQuestions.slice(0, RUNNING_PREVIEW).map(record => (
 						<li key={record.id}>
 							<button
-								className="w-full truncate text-start text-(--omp-text) hover:text-(--omp-link)"
+								className="w-full truncate text-start text-(--omsk-text) hover:text-(--omsk-link)"
 								onClick={() => {
 									useBtwStore.getState().select(record.id);
 									setPanelTab("btw");
@@ -306,11 +306,11 @@ function RunningCard() {
 					))}
 					{tasks.length > 0 && (
 						<li>
-							<div className="text-(--omp-text)">
+							<div className="text-(--omsk-text)">
 								{t("overview.running.todos", { done: doneTasks, total: tasks.length })}
 							</div>
 							{currentTask && (
-								<div className="mt-0.5 truncate ps-3 text-omp-sm text-(--omp-dim)">{currentTask.content}</div>
+								<div className="mt-0.5 truncate ps-3 text-omsk-sm text-(--omsk-dim)">{currentTask.content}</div>
 							)}
 						</li>
 					)}
@@ -367,13 +367,13 @@ function ServersCard() {
 		>
 			{failed && !servers ? (
 				<div className="flex items-center gap-2">
-					<span className="min-w-0 flex-1 text-omp-md text-(--omp-dim)">{t("overview.servers.failed")}</span>
+					<span className="min-w-0 flex-1 text-omsk-md text-(--omsk-dim)">{t("overview.servers.failed")}</span>
 					<Button onClick={() => setAttempt(count => count + 1)} size="sm" variant="secondary">
 						{t("common.retry")}
 					</Button>
 				</div>
 			) : !servers ? (
-				<div className="flex items-center gap-2 text-omp-md text-(--omp-dim)">
+				<div className="flex items-center gap-2 text-omsk-md text-(--omsk-dim)">
 					<Spinner size="sm" /> {t("common.loading")}
 				</div>
 			) : servers.length === 0 ? (
@@ -384,13 +384,13 @@ function ServersCard() {
 						const state = serverState(server);
 						return (
 							<li
-								className="flex items-center gap-2 text-omp-md"
+								className="flex items-center gap-2 text-omsk-md"
 								key={server.name}
 								title={server.lastError ? describeError(server.lastError) : undefined}
 							>
-								<span className="min-w-0 flex-1 truncate text-(--omp-text)">{server.name}</span>
+								<span className="min-w-0 flex-1 truncate text-(--omsk-text)">{server.name}</span>
 								{server.status === "connected" && server.enabled && (
-									<span className="shrink-0 text-omp-sm tabular-nums text-(--omp-dim)">
+									<span className="shrink-0 text-omsk-sm tabular-nums text-(--omsk-dim)">
 										{t("overview.servers.tools", {
 											count: server.toolCount,
 											plural: plural(server.toolCount),

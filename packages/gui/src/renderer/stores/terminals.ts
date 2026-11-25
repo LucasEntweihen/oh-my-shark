@@ -100,27 +100,27 @@ export function terminalTheme(): ITheme {
 	const styles = getComputedStyle(document.documentElement);
 	const color = (name: string, fallback: string): string => styles.getPropertyValue(name).trim() || fallback;
 	return {
-		background: color("--omp-code-bg", "#181818"),
-		foreground: color("--omp-text", "#ececec"),
-		cursor: color("--omp-accent", "#5aa9ff"),
-		cursorAccent: color("--omp-code-bg", "#181818"),
-		selectionBackground: color("--omp-accent-glow", "rgba(90, 169, 255, 0.25)"),
-		black: color("--omp-ansi-black", "#6b6b6b"),
-		red: color("--omp-ansi-red", "#f38b82"),
-		green: color("--omp-ansi-green", "#6fcf97"),
-		yellow: color("--omp-ansi-yellow", "#e8b75f"),
-		blue: color("--omp-ansi-blue", "#79b8ff"),
-		magenta: color("--omp-ansi-magenta", "#f2b880"),
-		cyan: color("--omp-ansi-cyan", "#d2a8ff"),
-		white: color("--omp-ansi-white", "#c5c5c5"),
-		brightBlack: color("--omp-ansi-bright-black", "#8f8f8f"),
-		brightRed: color("--omp-ansi-bright-red", "#f38b82"),
-		brightGreen: color("--omp-ansi-bright-green", "#6fcf97"),
-		brightYellow: color("--omp-ansi-bright-yellow", "#e8b75f"),
-		brightBlue: color("--omp-ansi-bright-blue", "#79b8ff"),
-		brightMagenta: color("--omp-ansi-bright-magenta", "#f2b880"),
-		brightCyan: color("--omp-ansi-bright-cyan", "#d2a8ff"),
-		brightWhite: color("--omp-ansi-bright-white", "#ececec"),
+		background: color("--omsk-code-bg", "#181818"),
+		foreground: color("--omsk-text", "#ececec"),
+		cursor: color("--omsk-accent", "#5aa9ff"),
+		cursorAccent: color("--omsk-code-bg", "#181818"),
+		selectionBackground: color("--omsk-accent-glow", "rgba(90, 169, 255, 0.25)"),
+		black: color("--omsk-ansi-black", "#6b6b6b"),
+		red: color("--omsk-ansi-red", "#f38b82"),
+		green: color("--omsk-ansi-green", "#6fcf97"),
+		yellow: color("--omsk-ansi-yellow", "#e8b75f"),
+		blue: color("--omsk-ansi-blue", "#79b8ff"),
+		magenta: color("--omsk-ansi-magenta", "#f2b880"),
+		cyan: color("--omsk-ansi-cyan", "#d2a8ff"),
+		white: color("--omsk-ansi-white", "#c5c5c5"),
+		brightBlack: color("--omsk-ansi-bright-black", "#8f8f8f"),
+		brightRed: color("--omsk-ansi-bright-red", "#f38b82"),
+		brightGreen: color("--omsk-ansi-bright-green", "#6fcf97"),
+		brightYellow: color("--omsk-ansi-bright-yellow", "#e8b75f"),
+		brightBlue: color("--omsk-ansi-bright-blue", "#79b8ff"),
+		brightMagenta: color("--omsk-ansi-bright-magenta", "#f2b880"),
+		brightCyan: color("--omsk-ansi-bright-cyan", "#d2a8ff"),
+		brightWhite: color("--omsk-ansi-bright-white", "#ececec"),
 	};
 }
 
@@ -147,7 +147,7 @@ function createView(tabId: string, info: RpcTerminalInfo): TerminalView {
 	term.loadAddon(fit);
 	registerTerminalLinks(term);
 	const host = document.createElement("div");
-	host.className = "omp-terminal-host";
+	host.className = "omsk-terminal-host";
 	const view: TerminalView = { term, fit, host, opened: false, shownSeq: 0, pending: null, exited: !info.running };
 	const { terminalId } = info;
 	const send = (data: string): void => {

@@ -23,9 +23,9 @@ function optionsFrom(value: unknown): AskOption[] {
 function AskQuestion({ text }: { text: string | undefined }) {
 	const t = useT();
 	return (
-		<div className="flex items-start gap-1.5 text-omp-sm">
-			<MessageCircleQuestion size={13} className="mt-0.5 shrink-0 text-(--omp-md-link)" />
-			<span className="min-w-0 flex-1 leading-relaxed text-(--omp-text)">
+		<div className="flex items-start gap-1.5 text-omsk-sm">
+			<MessageCircleQuestion size={13} className="mt-0.5 shrink-0 text-(--omsk-md-link)" />
+			<span className="min-w-0 flex-1 leading-relaxed text-(--omsk-text)">
 				{text || t("tools.ask.questionFallback")}
 			</span>
 		</div>
@@ -42,22 +42,22 @@ function AskOptionList({ options, isChosen }: { options: AskOption[]; isChosen: 
 					<div
 						key={optionIndex}
 						className={
-							"flex items-start gap-2 rounded-md px-2 py-1 text-omp-sm " +
-							(chosen ? "bg-(--omp-selected-bg) text-(--omp-text)" : "text-(--omp-muted)")
+							"flex items-start gap-2 rounded-md px-2 py-1 text-omsk-sm " +
+							(chosen ? "bg-(--omsk-selected-bg) text-(--omsk-text)" : "text-(--omsk-muted)")
 						}
 					>
 						{chosen ? (
 							<Check
 								aria-label={t("tools.ask.selected")}
 								size={13}
-								className="mt-1 shrink-0 text-(--omp-success)"
+								className="mt-1 shrink-0 text-(--omsk-success)"
 							/>
 						) : (
-							<span className="mt-1 h-3 w-3 shrink-0 rounded-full border border-(--omp-border-muted)" />
+							<span className="mt-1 h-3 w-3 shrink-0 rounded-full border border-(--omsk-border-muted)" />
 						)}
 						<div className="min-w-0">
 							<div>{option.label}</div>
-							{option.description && <div className="text-omp-xs text-(--omp-dim)">{option.description}</div>}
+							{option.description && <div className="text-omsk-xs text-(--omsk-dim)">{option.description}</div>}
 						</div>
 					</div>
 				);
@@ -69,7 +69,7 @@ function AskOptionList({ options, isChosen }: { options: AskOption[]; isChosen: 
 function AskFallback({ text, isError }: { text: string; isError: boolean | undefined }) {
 	if (!text) return null;
 	return (
-		<div className={`whitespace-pre-wrap text-omp-sm ${isError ? "text-(--omp-error)" : "text-(--omp-muted)"}`}>
+		<div className={`whitespace-pre-wrap text-omsk-sm ${isError ? "text-(--omsk-error)" : "text-(--omsk-muted)"}`}>
 			{text}
 		</div>
 	);
@@ -78,7 +78,7 @@ function AskFallback({ text, isError }: { text: string; isError: boolean | undef
 function AskWaiting() {
 	const t = useT();
 	return (
-		<div role="status" className="text-omp-xs text-(--omp-dim)">
+		<div role="status" className="text-omsk-xs text-(--omsk-dim)">
 			{t("tools.ask.waiting")}
 		</div>
 	);
@@ -140,7 +140,7 @@ function AskFormCall({ args, result, isPartial, isError }: ToolRendererProps) {
 							/>
 						)}
 						{answer !== undefined && (
-							<div className="pl-5 whitespace-pre-wrap text-omp-sm text-(--omp-text)">
+							<div className="pl-5 whitespace-pre-wrap text-omsk-sm text-(--omsk-text)">
 								{shown ? t("tools.ask.answered", { answer: shown }) : t("tools.ask.noAnswer")}
 							</div>
 						)}
@@ -148,7 +148,7 @@ function AskFormCall({ args, result, isPartial, isError }: ToolRendererProps) {
 				);
 			})}
 			{details?.timedOut === true && (
-				<div className="text-omp-xs text-(--omp-warning)">{t("tools.ask.formTimedOut")}</div>
+				<div className="text-omsk-xs text-(--omsk-warning)">{t("tools.ask.formTimedOut")}</div>
 			)}
 			<AskFallback text={fallback} isError={isError} />
 			{isPartial && <AskWaiting />}
@@ -188,24 +188,26 @@ function AskQuestionsCall({ args, result, isPartial, isError }: ToolRendererProp
 						<AskQuestion text={text} />
 						{options.length > 0 && <AskOptionList options={options} isChosen={label => selected.has(label)} />}
 						{selected.size > 0 && (
-							<div className="pl-5 text-omp-sm text-(--omp-text)">
+							<div className="pl-5 text-omsk-sm text-(--omsk-text)">
 								{t("tools.ask.answered", { answer: [...selected].join(", ") })}
 							</div>
 						)}
 						{typeof answer?.customInput === "string" && (
-							<div className="pl-5 whitespace-pre-wrap text-omp-sm text-(--omp-text)">{answer.customInput}</div>
+							<div className="pl-5 whitespace-pre-wrap text-omsk-sm text-(--omsk-text)">
+								{answer.customInput}
+							</div>
 						)}
 						{typeof answer?.note === "string" && (
-							<div className="pl-5 whitespace-pre-wrap text-omp-xs text-(--omp-muted)">{answer.note}</div>
+							<div className="pl-5 whitespace-pre-wrap text-omsk-xs text-(--omsk-muted)">{answer.note}</div>
 						)}
 						{answer?.timedOut === true && (
-							<div className="pl-5 text-omp-xs text-(--omp-warning)">{t("tools.ask.timedOut")}</div>
+							<div className="pl-5 text-omsk-xs text-(--omsk-warning)">{t("tools.ask.timedOut")}</div>
 						)}
 					</section>
 				);
 			})}
 			{details?.chatRedirect === true && (
-				<div className="text-omp-sm text-(--omp-muted)">{t("tools.ask.chatRedirect")}</div>
+				<div className="text-omsk-sm text-(--omsk-muted)">{t("tools.ask.chatRedirect")}</div>
 			)}
 			<AskFallback text={fallback} isError={isError} />
 			{isPartial && <AskWaiting />}

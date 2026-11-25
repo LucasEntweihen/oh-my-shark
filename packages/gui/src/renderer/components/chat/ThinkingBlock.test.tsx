@@ -89,7 +89,7 @@ describe("ThinkingBlock", () => {
 		useMessagesStore.setState({ streamingThinking: HEADLINED_THINKING });
 		await mount(<ThinkingBlock live />);
 		expect(container.querySelector(".markdown-body")).toBeNull();
-		expect(container.querySelector(".omp-thinking-body")).toBeNull();
+		expect(container.querySelector(".omsk-thinking-body")).toBeNull();
 	});
 
 	it("formats live reasoning markdown and keeps the caret on the unfinished text", async () => {
@@ -98,19 +98,19 @@ describe("ThinkingBlock", () => {
 		await mount(<ThinkingBlock live />);
 
 		expect(container.querySelectorAll("strong")).toHaveLength(3);
-		expect(container.querySelector("strong[data-omp-caret]")?.textContent).toBe("核对族实例数量");
+		expect(container.querySelector("strong[data-omsk-caret]")?.textContent).toBe("核对族实例数量");
 		expect(container.textContent).not.toContain("**");
-		expect(container.querySelector(".omp-thinking-pulse")).toBeNull();
+		expect(container.querySelector(".omsk-thinking-pulse")).toBeNull();
 	});
 
 	it("keeps live thinking folded after its own bottom button is clicked and more text arrives", async () => {
 		useUiStore.getState().setThinkingExpanded(true);
 		useMessagesStore.setState({ streamingThinking: "First phase" });
 		await mount(<ThinkingBlock live />);
-		const footer = document.querySelector<HTMLButtonElement>(".omp-collapse-button");
+		const footer = document.querySelector<HTMLButtonElement>(".omsk-collapse-button");
 		if (!footer) throw new Error("Expanded live thinking has no bottom button");
 		await act(async () => footer.click());
 		await act(async () => useMessagesStore.setState({ streamingThinking: "First phase continues" }));
-		expect(document.querySelector(".omp-thinking-header")?.getAttribute("aria-expanded")).toBe("false");
+		expect(document.querySelector(".omsk-thinking-header")?.getAttribute("aria-expanded")).toBe("false");
 	});
 });

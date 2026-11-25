@@ -37,7 +37,7 @@ function AdvancedTab({
 	return (
 		<>
 			<div className="relative mb-3">
-				<Search className="absolute top-1/2 left-2.5 -translate-y-1/2 text-(--omp-dim)" size={13} />
+				<Search className="absolute top-1/2 left-2.5 -translate-y-1/2 text-(--omsk-dim)" size={13} />
 				<Input
 					className="pl-7"
 					onChange={event => setQuery(event.target.value)}
@@ -46,7 +46,7 @@ function AdvancedTab({
 				/>
 			</div>
 			{filtered.length === 0 ? (
-				<div className="py-10 text-center text-omp-xs text-(--omp-dim)">{t("settings.advancedEmpty")}</div>
+				<div className="py-10 text-center text-omsk-xs text-(--omsk-dim)">{t("settings.advancedEmpty")}</div>
 			) : (
 				filtered.map(entry => (
 					<div id={`setting-${entry.path}`} key={entry.path} className="scroll-mt-4">

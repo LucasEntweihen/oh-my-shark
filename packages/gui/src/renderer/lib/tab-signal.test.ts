@@ -25,7 +25,7 @@ describe("tabSignalPresentation", () => {
 		// until it is shown, so a strip full of warning dots would be a lie.
 		expect(tabSignalPresentation(tab({ status: "asleep" }))).toEqual({
 			active: false,
-			color: "var(--omp-dim)",
+			color: "var(--omsk-dim)",
 			labelKey: "titlebar.status.asleep",
 			running: false,
 		});

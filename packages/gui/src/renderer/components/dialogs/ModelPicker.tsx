@@ -80,8 +80,8 @@ export function ModelPicker() {
 	useLayoutEffect(() => {
 		if (!open) return;
 		const anchor = modelTrigger(tabId);
-		const fallback = document.querySelector<HTMLElement>(".omp-workspace-main");
-		const composer = anchor?.closest(".omp-composer-box");
+		const fallback = document.querySelector<HTMLElement>(".omsk-workspace-main");
+		const composer = anchor?.closest(".omsk-composer-box");
 		restoreFocus.current = anchor ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
 		const place = () => {
 			const rect = anchor?.getBoundingClientRect();
@@ -331,20 +331,20 @@ export function ModelPicker() {
 	return createPortal(
 		<div
 			aria-label={t("modelPicker.searchLabel")}
-			className="omp-pop-in fixed z-[100] flex flex-col overflow-hidden rounded-xl border border-(--omp-border) bg-(--omp-bg-elevated) shadow-(--omp-shadow-md)"
-			id="omp-model-picker"
+			className="omsk-pop-in fixed z-[100] flex flex-col overflow-hidden rounded-xl border border-(--omsk-border) bg-(--omsk-bg-elevated) shadow-(--omsk-shadow-md)"
+			id="omsk-model-picker"
 			ref={panelRef}
 			role="region"
 			style={position ?? { visibility: "hidden" }}
 		>
 			<div className="flex min-h-0 flex-col">
-				<div className="flex items-center gap-2.5 border-b border-(--omp-border-muted) px-3.5 py-2.5">
-					<Search className="shrink-0 text-(--omp-dim)" size={14} />
+				<div className="flex items-center gap-2.5 border-b border-(--omsk-border-muted) px-3.5 py-2.5">
+					<Search className="shrink-0 text-(--omsk-dim)" size={14} />
 					<input
 						aria-activedescendant={flatOptions.length > 0 ? `${listboxId}-option-${activeIndex}` : undefined}
 						aria-controls={listboxId}
 						aria-label={t("modelPicker.searchLabel")}
-						className="min-w-0 flex-1 bg-transparent text-omp-md text-(--omp-text) placeholder:text-(--omp-dim) focus:outline-none"
+						className="min-w-0 flex-1 bg-transparent text-omsk-md text-(--omsk-text) placeholder:text-(--omsk-dim) focus:outline-none"
 						onChange={event => {
 							setQuery(event.target.value);
 							setSearchCollapsed(new Set());
@@ -363,11 +363,11 @@ export function ModelPicker() {
 				>
 					{error ? (
 						<div className="flex flex-col items-center gap-3 py-10">
-							<span className="text-omp-xs text-[var(--omp-error)]">{error}</span>
-							<span className="text-omp-xs text-[var(--omp-dim)]">{t("modelPicker.notRespondingHint")}</span>
+							<span className="text-omsk-xs text-[var(--omsk-error)]">{error}</span>
+							<span className="text-omsk-xs text-[var(--omsk-dim)]">{t("modelPicker.notRespondingHint")}</span>
 							<button
 								type="button"
-								className="rounded-md border border-[var(--omp-border-muted)] px-3 py-1 text-omp-sm font-medium text-[var(--omp-text)] hover:bg-[var(--omp-selected-bg)]"
+								className="rounded-md border border-[var(--omsk-border-muted)] px-3 py-1 text-omsk-sm font-medium text-[var(--omsk-text)] hover:bg-[var(--omsk-selected-bg)]"
 								onClick={() => void load(true, t("modelPicker.stillNotResponding"))}
 								disabled={!sidecarReady}
 								title={!sidecarReady ? t("modelPicker.notConnected") : undefined}
@@ -378,12 +378,12 @@ export function ModelPicker() {
 					) : loading ? (
 						<div className="flex items-center justify-center gap-2 py-10">
 							<Spinner size="sm" />
-							<span className="text-omp-xs text-(--omp-dim)">{t("modelPicker.loading")}</span>
+							<span className="text-omsk-xs text-(--omsk-dim)">{t("modelPicker.loading")}</span>
 						</div>
 					) : availableModels.length === 0 ? (
-						<div className="py-10 text-center text-omp-xs text-(--omp-dim)">{t("modelPicker.empty")}</div>
+						<div className="py-10 text-center text-omsk-xs text-(--omsk-dim)">{t("modelPicker.empty")}</div>
 					) : groups.length === 0 ? (
-						<div className="py-10 text-center text-omp-xs text-(--omp-dim)">
+						<div className="py-10 text-center text-omsk-xs text-(--omsk-dim)">
 							{t("modelPicker.noMatch", { query })}
 						</div>
 					) : (
@@ -397,20 +397,20 @@ export function ModelPicker() {
 										<button
 											aria-controls={expanded ? groupId : undefined}
 											aria-expanded={expanded}
-											className="omp-pressable flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1 text-left hover:bg-(--omp-bg-tertiary)"
+											className="omsk-pressable flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1 text-left hover:bg-(--omsk-bg-tertiary)"
 											onClick={() => toggleProvider(provider)}
 											type="button"
 										>
 											<ChevronRight
 												aria-hidden="true"
 												className={cx(
-													"omp-disclosure-chevron shrink-0 text-(--omp-dim)",
+													"omsk-disclosure-chevron shrink-0 text-(--omsk-dim)",
 													expanded && "rotate-90",
 												)}
 												size={12}
 											/>
-											<Cpu className="shrink-0 text-(--omp-dim)" size={10} />
-											<span className="truncate text-omp-xxs font-semibold text-(--omp-dim)">
+											<Cpu className="shrink-0 text-(--omsk-dim)" size={10} />
+											<span className="truncate text-omsk-xxs font-semibold text-(--omsk-dim)">
 												{provider}
 											</span>
 											{auth && (
@@ -425,16 +425,16 @@ export function ModelPicker() {
 												</Badge>
 											)}
 											{!expanded && current?.provider === provider && (
-												<Check aria-hidden="true" className="shrink-0 text-(--omp-accent)" size={11} />
+												<Check aria-hidden="true" className="shrink-0 text-(--omsk-accent)" size={11} />
 											)}
-											<span className="ml-auto text-omp-xxs tabular-nums text-(--omp-dim)">
+											<span className="ml-auto text-omsk-xxs tabular-nums text-(--omsk-dim)">
 												{models.length}
 											</span>
 										</button>
 										{auth?.available && !auth.authenticated && (
 											<button
 												type="button"
-												className="rounded px-1.5 py-0.5 text-omp-xxs font-medium text-(--omp-accent) hover:bg-(--omp-selected-bg)"
+												className="rounded px-1.5 py-0.5 text-omsk-xxs font-medium text-(--omsk-accent) hover:bg-(--omsk-selected-bg)"
 												onClick={() => {
 													close();
 													openProviders();
@@ -456,7 +456,7 @@ export function ModelPicker() {
 													<button
 														aria-selected={isCurrent}
 														className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors ${
-															isActive ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"
+															isActive ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)"
 														}`}
 														data-option-index={optionIndex}
 														disabled={switching !== null || !sidecarReady}
@@ -471,29 +471,29 @@ export function ModelPicker() {
 														<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 															<div className="flex min-w-0 items-center gap-1.5">
 																<span
-																	className={`truncate text-omp-xs ${isCurrent ? "font-semibold text-(--omp-accent)" : over ? "text-(--omp-dim)" : "text-(--omp-text)"}`}
+																	className={`truncate text-omsk-xs ${isCurrent ? "font-semibold text-(--omsk-accent)" : over ? "text-(--omsk-dim)" : "text-(--omsk-text)"}`}
 																>
 																	{model.name || model.id}
 																</span>
 																{model.isRecommended && (
-																	<Badge className="px-1.5 text-omp-xxs leading-3" variant="success">
+																	<Badge className="px-1.5 text-omsk-xxs leading-3" variant="success">
 																		{t("modelPicker.badge.recommended")}
 																	</Badge>
 																)}
 																{model.isNew && (
-																	<Badge className="px-1.5 text-omp-xxs leading-3" variant="info">
+																	<Badge className="px-1.5 text-omsk-xxs leading-3" variant="info">
 																		{t("modelPicker.badge.new")}
 																	</Badge>
 																)}
 																{model.isBeta && (
-																	<Badge className="px-1.5 text-omp-xxs leading-3" variant="warning">
+																	<Badge className="px-1.5 text-omsk-xxs leading-3" variant="warning">
 																		{t("modelPicker.badge.beta")}
 																	</Badge>
 																)}
 															</div>
 															{((model.name && model.name !== model.id) || model.description) && (
 																<span
-																	className="truncate text-omp-xxs text-(--omp-dim)"
+																	className="truncate text-omsk-xxs text-(--omsk-dim)"
 																	title={model.description}
 																>
 																	{/* Only the id is code; the description is prose and stays
@@ -507,12 +507,12 @@ export function ModelPicker() {
 															)}
 														</div>
 														{model.int != null && Number.isFinite(model.int) && (
-															<span className="shrink-0 text-omp-xxs tabular-nums text-(--omp-dim)">
+															<span className="shrink-0 text-omsk-xxs tabular-nums text-(--omsk-dim)">
 																{t("modelPicker.intelligence", { value: Math.round(model.int) })}
 															</span>
 														)}
 														{model.tps != null && Number.isFinite(model.tps) && model.tps > 0 && (
-															<span className="shrink-0 text-omp-xxs tabular-nums text-(--omp-dim)">
+															<span className="shrink-0 text-omsk-xxs tabular-nums text-(--omsk-dim)">
 																{t("modelPicker.speed", {
 																	value:
 																		model.tps >= 10 ? Math.round(model.tps) : model.tps.toFixed(1),
@@ -521,20 +521,20 @@ export function ModelPicker() {
 														)}
 														{over && (
 															<span
-																className="flex shrink-0 items-center gap-1 text-(--omp-warning)"
+																className="flex shrink-0 items-center gap-1 text-(--omsk-warning)"
 																title={t("modelPicker.overContextHint", {
 																	current: formatTokens(contextUsage?.tokens),
 																	limit: formatTokens(model.contextWindow),
 																})}
 															>
 																<TriangleAlert size={12} />
-																<span className="text-omp-xxs font-medium">
+																<span className="text-omsk-xxs font-medium">
 																	{t("modelPicker.overContext")}
 																</span>
 															</span>
 														)}
 														{switching === key && <Spinner size="sm" />}
-														{isCurrent && <Check className="shrink-0 text-(--omp-accent)" size={13} />}
+														{isCurrent && <Check className="shrink-0 text-(--omsk-accent)" size={13} />}
 													</button>
 												);
 											})}
@@ -546,10 +546,10 @@ export function ModelPicker() {
 					)}
 				</div>
 				{/* Adding a model means adding (or signing in to) its provider. */}
-				<div className="flex shrink-0 items-center border-t border-(--omp-border-muted) px-3 py-2">
+				<div className="flex shrink-0 items-center border-t border-(--omsk-border-muted) px-3 py-2">
 					<button
 						type="button"
-						className="omp-pressable flex items-center gap-1.5 rounded-md px-1.5 py-1 text-omp-sm text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+						className="omsk-pressable flex items-center gap-1.5 rounded-md px-1.5 py-1 text-omsk-sm text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 						onClick={() => {
 							close();
 							openProviders();

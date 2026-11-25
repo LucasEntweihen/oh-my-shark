@@ -153,15 +153,15 @@ function asMessage(value: unknown): MessageRow | undefined {
 function statusColor(status: JobStatus): string {
 	switch (status) {
 		case "completed":
-			return "var(--omp-success)";
+			return "var(--omsk-success)";
 		case "failed":
-			return "var(--omp-error)";
+			return "var(--omsk-error)";
 		case "cancelled":
-			return "var(--omp-warning)";
+			return "var(--omsk-warning)";
 		case "queued":
-			return "var(--omp-muted)";
+			return "var(--omsk-muted)";
 		case "running":
-			return "var(--omp-accent)";
+			return "var(--omsk-accent)";
 	}
 }
 
@@ -188,27 +188,27 @@ function shortText(value: string | undefined, max = 240): string {
 
 function JobRowView({ job, t }: { job: JobRow; t: (key: string, params?: Record<string, string | number>) => string }) {
 	return (
-		<div className="flex min-w-0 items-center gap-2 py-1 font-mono text-omp-sm">
+		<div className="flex min-w-0 items-center gap-2 py-1 font-mono text-omsk-sm">
 			<span className="shrink-0" style={{ color: statusColor(job.status) }}>
 				<StatusIcon status={job.status} />
 			</span>
-			<span className="shrink-0 font-semibold text-[var(--omp-text)]">{shortText(job.id, 120)}</span>
-			{job.type && <span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">{shortText(job.type, 80)}</span>}
+			<span className="shrink-0 font-semibold text-[var(--omsk-text)]">{shortText(job.id, 120)}</span>
+			{job.type && <span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">{shortText(job.type, 80)}</span>}
 			{job.label && (
-				<span className="min-w-0 flex-1 truncate text-[var(--omp-muted)]" title={shortText(job.label, 240)}>
+				<span className="min-w-0 flex-1 truncate text-[var(--omsk-muted)]" title={shortText(job.label, 240)}>
 					{shortText(job.label)}
 				</span>
 			)}
-			<span className="shrink-0 text-omp-xs" style={{ color: statusColor(job.status) }}>
+			<span className="shrink-0 text-omsk-xs" style={{ color: statusColor(job.status) }}>
 				{statusLabel(t, job.status)}
 			</span>
 			{job.durationMs !== undefined && (
-				<span className="shrink-0 text-omp-xs tabular-nums text-[var(--omp-dim)]">
+				<span className="shrink-0 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 					{formatDuration(job.durationMs)}
 				</span>
 			)}
 			{job.exitCode !== undefined && (
-				<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">
+				<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 					{t("tools.coordination.exit", { code: job.exitCode })}
 				</span>
 			)}
@@ -223,7 +223,7 @@ function JobPreview({ job }: { job: JobRow }) {
 	return (
 		<pre
 			className={cx(
-				"mt-1 whitespace-pre-wrap break-words rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-xs leading-[1.45]",
+				"mt-1 whitespace-pre-wrap break-words rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-xs leading-[1.45]",
 				PREVIEW_SCROLL_SM,
 			)}
 		>
@@ -240,23 +240,23 @@ function AgentRowView({
 	t: (key: string, params?: Record<string, string | number>) => string;
 }) {
 	return (
-		<div className="flex min-w-0 items-center gap-2 py-1 font-mono text-omp-sm">
+		<div className="flex min-w-0 items-center gap-2 py-1 font-mono text-omsk-sm">
 			<span
 				className="h-1.5 w-1.5 shrink-0 rounded-full"
-				style={{ background: agent.live ? "var(--omp-accent)" : "var(--omp-warning)" }}
+				style={{ background: agent.live ? "var(--omsk-accent)" : "var(--omsk-warning)" }}
 			/>
-			<span className="shrink-0 font-semibold text-[var(--omp-text)]">{shortText(agent.id, 120)}</span>
+			<span className="shrink-0 font-semibold text-[var(--omsk-text)]">{shortText(agent.id, 120)}</span>
 			{agent.activity && (
-				<span className="min-w-0 flex-1 truncate text-[var(--omp-muted)]">{shortText(agent.activity)}</span>
+				<span className="min-w-0 flex-1 truncate text-[var(--omsk-muted)]">{shortText(agent.activity)}</span>
 			)}
 			<span
-				className="shrink-0 text-omp-xs"
-				style={{ color: agent.live ? "var(--omp-accent)" : "var(--omp-warning)" }}
+				className="shrink-0 text-omsk-xs"
+				style={{ color: agent.live ? "var(--omsk-accent)" : "var(--omsk-warning)" }}
 			>
 				{agent.live ? t("tools.coordination.agentRunning") : t("tools.coordination.agentStale")}
 			</span>
 			{agent.ageMs !== undefined && (
-				<span className="shrink-0 text-omp-xs tabular-nums text-[var(--omp-dim)]">
+				<span className="shrink-0 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 					{formatDuration(agent.ageMs)}
 				</span>
 			)}
@@ -274,34 +274,34 @@ function DaemonRowView({
 	const elapsed =
 		daemon.startedAt !== undefined ? Math.max(0, (daemon.exitedAt ?? Date.now()) - daemon.startedAt) : undefined;
 	return (
-		<div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 py-1 font-mono text-omp-sm">
-			<SquareTerminal aria-hidden className="shrink-0 text-[var(--omp-dim)]" size={12} />
-			<span className="shrink-0 font-semibold text-[var(--omp-text)]">{shortText(daemon.name, 120)}</span>
+		<div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 py-1 font-mono text-omsk-sm">
+			<SquareTerminal aria-hidden className="shrink-0 text-[var(--omsk-dim)]" size={12} />
+			<span className="shrink-0 font-semibold text-[var(--omsk-text)]">{shortText(daemon.name, 120)}</span>
 			{daemon.label && daemon.label !== daemon.name && (
-				<span className="min-w-0 truncate text-[var(--omp-muted)]" title={shortText(daemon.label)}>
+				<span className="min-w-0 truncate text-[var(--omsk-muted)]" title={shortText(daemon.label)}>
 					{shortText(daemon.label)}
 				</span>
 			)}
 			{daemon.state && (
-				<span className="shrink-0 text-omp-xs text-[var(--omp-muted)]">{shortText(daemon.state, 80)}</span>
+				<span className="shrink-0 text-omsk-xs text-[var(--omsk-muted)]">{shortText(daemon.state, 80)}</span>
 			)}
 			{daemon.pid !== undefined && (
-				<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">
+				<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 					{t("tools.coordination.pid", { pid: daemon.pid })}
 				</span>
 			)}
 			{daemon.exitCode !== undefined && (
-				<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">
+				<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 					{t("tools.coordination.exit", { code: daemon.exitCode })}
 				</span>
 			)}
 			{(daemon.detached || daemon.persist) && (
-				<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">
+				<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">
 					{t(daemon.detached ? "tools.coordination.detached" : "tools.coordination.persistent")}
 				</span>
 			)}
 			{elapsed !== undefined && (
-				<span className="ml-auto shrink-0 text-omp-xs tabular-nums text-[var(--omp-dim)]">
+				<span className="ml-auto shrink-0 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 					{formatDuration(elapsed)}
 				</span>
 			)}
@@ -310,7 +310,7 @@ function DaemonRowView({
 }
 
 function Section({ children }: { children: ReactNode }) {
-	return <div className="max-h-56 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1">{children}</div>;
+	return <div className="max-h-56 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1">{children}</div>;
 }
 
 /** Renderer for the upstream `wait` coordination tool. */
@@ -331,33 +331,33 @@ export function WaitRenderer({ result, isPartial, partialResult }: ToolRendererP
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<Icon aria-hidden className="shrink-0 text-[var(--omp-status-subagents)]" size={12} />
-				<span className="font-semibold text-[var(--omp-text)]">{t("tools.coordination.wait")}</span>
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<Icon aria-hidden className="shrink-0 text-[var(--omsk-status-subagents)]" size={12} />
+				<span className="font-semibold text-[var(--omsk-text)]">{t("tools.coordination.wait")}</span>
 				{jobs.length > 0 && (
-					<span className="text-omp-xs text-[var(--omp-dim)]">
+					<span className="text-omsk-xs text-[var(--omsk-dim)]">
 						{t("tools.coordination.jobs", { count: jobs.length })}
 					</span>
 				)}
 				{agents.length > 0 && (
-					<span className="text-omp-xs text-[var(--omp-dim)]">
+					<span className="text-omsk-xs text-[var(--omsk-dim)]">
 						{t("tools.coordination.agents", { count: agents.length })}
 					</span>
 				)}
 				{isPartial && (
-					<span className="ml-auto text-omp-xs text-[var(--omp-accent)]">{t("tools.coordination.waiting")}</span>
+					<span className="ml-auto text-omsk-xs text-[var(--omsk-accent)]">{t("tools.coordination.waiting")}</span>
 				)}
 			</div>
 			{waited && (
-				<div className="rounded bg-[var(--omp-code-bg)] px-2 py-1.5 text-omp-sm">
-					<div className="flex items-center gap-2 font-mono text-omp-xs text-[var(--omp-dim)]">
+				<div className="rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 text-omsk-sm">
+					<div className="flex items-center gap-2 font-mono text-omsk-xs text-[var(--omsk-dim)]">
 						<MessageCircle aria-hidden size={11} />
 						{waited.from && (
-							<span className="font-semibold text-[var(--omp-text)]">{shortText(waited.from, 120)}</span>
+							<span className="font-semibold text-[var(--omsk-text)]">{shortText(waited.from, 120)}</span>
 						)}
 					</div>
 					{waited.body && (
-						<div className="mt-0.5 whitespace-pre-wrap text-[var(--omp-muted)]">
+						<div className="mt-0.5 whitespace-pre-wrap text-[var(--omsk-muted)]">
 							{shortText(waited.body, 2_000)}
 						</div>
 					)}
@@ -383,10 +383,10 @@ export function WaitRenderer({ result, isPartial, partialResult }: ToolRendererP
 			{cancelled.length > 0 && (
 				<Section>
 					{cancelled.map(row => (
-						<div className="flex items-center gap-2 py-1 font-mono text-omp-sm" key={String(row.id)}>
-							<Ban aria-hidden className="text-[var(--omp-warning)]" size={12} />
-							<span className="font-semibold text-[var(--omp-text)]">{shortText(String(row.id), 120)}</span>
-							<span className="text-omp-xs text-[var(--omp-warning)]">
+						<div className="flex items-center gap-2 py-1 font-mono text-omsk-sm" key={String(row.id)}>
+							<Ban aria-hidden className="text-[var(--omsk-warning)]" size={12} />
+							<span className="font-semibold text-[var(--omsk-text)]">{shortText(String(row.id), 120)}</span>
+							<span className="text-omsk-xs text-[var(--omsk-warning)]">
 								{statusLabel(t, typeof row.status === "string" ? row.status : "cancelled")}
 							</span>
 						</div>
@@ -394,7 +394,7 @@ export function WaitRenderer({ result, isPartial, partialResult }: ToolRendererP
 				</Section>
 			)}
 			{!waited && jobs.length === 0 && agents.length === 0 && cancelled.length === 0 && text && (
-				<div className="whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-xs text-[var(--omp-tool-output)]">
+				<div className="whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-xs text-[var(--omsk-tool-output)]">
 					{text}
 				</div>
 			)}
@@ -428,16 +428,16 @@ export function ProcReadRenderer({
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<SquareTerminal aria-hidden className="shrink-0 text-[var(--omp-dim)]" size={12} />
-				<span className="font-semibold text-[var(--omp-text)]">{title}</span>
-				{daemon?.state && <span className="text-omp-xs text-[var(--omp-muted)]">{daemon.state}</span>}
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<SquareTerminal aria-hidden className="shrink-0 text-[var(--omsk-dim)]" size={12} />
+				<span className="font-semibold text-[var(--omsk-text)]">{title}</span>
+				{daemon?.state && <span className="text-omsk-xs text-[var(--omsk-muted)]">{daemon.state}</span>}
 				{isPartial && (
-					<span className="ml-auto text-omp-xs text-[var(--omp-accent)]">{t("tools.coordination.reading")}</span>
+					<span className="ml-auto text-omsk-xs text-[var(--omsk-accent)]">{t("tools.coordination.reading")}</span>
 				)}
 			</div>
 			{isError ? (
-				<div className="whitespace-pre-wrap rounded bg-[var(--omp-tool-error-bg)] px-2 py-1.5 font-mono text-omp-xs text-[var(--omp-error)]">
+				<div className="whitespace-pre-wrap rounded bg-[var(--omsk-tool-error-bg)] px-2 py-1.5 font-mono text-omsk-xs text-[var(--omsk-error)]">
 					{shortText(resultText(effective), 4_000)}
 				</div>
 			) : null}
@@ -452,7 +452,7 @@ export function ProcReadRenderer({
 					{job && procLog && (
 						<pre
 							className={cx(
-								"mt-1 whitespace-pre-wrap break-words border-t border-[var(--omp-border-muted)] pt-1 font-mono text-omp-xs text-[var(--omp-tool-output)]",
+								"mt-1 whitespace-pre-wrap break-words border-t border-[var(--omsk-border-muted)] pt-1 font-mono text-omsk-xs text-[var(--omsk-tool-output)]",
 								PREVIEW_SCROLL_SM,
 							)}
 						>
@@ -467,7 +467,7 @@ export function ProcReadRenderer({
 					{daemonOutput && (
 						<pre
 							className={cx(
-								"mt-1 whitespace-pre-wrap break-words border-t border-[var(--omp-border-muted)] pt-1 font-mono text-omp-xs text-[var(--omp-tool-output)]",
+								"mt-1 whitespace-pre-wrap break-words border-t border-[var(--omsk-border-muted)] pt-1 font-mono text-omsk-xs text-[var(--omsk-tool-output)]",
 								PREVIEW_SCROLL_SM,
 							)}
 						>
@@ -493,7 +493,7 @@ export function ProcReadRenderer({
 			{!isError && allJobs.length === 0 && !daemon && daemons.length === 0 && agents.length === 0 && log && (
 				<pre
 					className={cx(
-						"whitespace-pre-wrap break-words rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-xs text-[var(--omp-tool-output)]",
+						"whitespace-pre-wrap break-words rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-xs text-[var(--omsk-tool-output)]",
 						PREVIEW_SCROLL_SM,
 					)}
 				>
@@ -533,25 +533,25 @@ export function ProtocolWriteRenderer({
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
 				{isAgent ? (
-					<MessageCircle aria-hidden className="shrink-0 text-[var(--omp-status-subagents)]" size={12} />
+					<MessageCircle aria-hidden className="shrink-0 text-[var(--omsk-status-subagents)]" size={12} />
 				) : (
-					<SquareTerminal aria-hidden className="shrink-0 text-[var(--omp-dim)]" size={12} />
+					<SquareTerminal aria-hidden className="shrink-0 text-[var(--omsk-dim)]" size={12} />
 				)}
-				<span className="font-semibold text-[var(--omp-text)]">{title}</span>
-				<span className="min-w-0 truncate text-omp-xs text-[var(--omp-muted)]">
+				<span className="font-semibold text-[var(--omsk-text)]">{title}</span>
+				<span className="min-w-0 truncate text-omsk-xs text-[var(--omsk-muted)]">
 					{isAgent ? shortText(targetId, 120) : shortText(id, 120)}
 				</span>
-				{isPartial && <Loader2 aria-hidden className="ml-auto animate-spin text-[var(--omp-accent)]" size={12} />}
+				{isPartial && <Loader2 aria-hidden className="ml-auto animate-spin text-[var(--omsk-accent)]" size={12} />}
 			</div>
 			{content && (
-				<div className="whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 text-omp-sm text-[var(--omp-muted)]">
+				<div className="whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 text-omsk-sm text-[var(--omsk-muted)]">
 					{shortText(content, 2_000)}
 				</div>
 			)}
 			{isError && (
-				<div className="whitespace-pre-wrap rounded bg-[var(--omp-tool-error-bg)] px-2 py-1.5 font-mono text-omp-xs text-[var(--omp-error)]">
+				<div className="whitespace-pre-wrap rounded bg-[var(--omsk-tool-error-bg)] px-2 py-1.5 font-mono text-omsk-xs text-[var(--omsk-error)]">
 					{shortText(resultText(effective), 4_000)}
 				</div>
 			)}
@@ -572,10 +572,10 @@ export function ProtocolWriteRenderer({
 			{cancelled.length > 0 && (
 				<Section>
 					{cancelled.map(row => (
-						<div className="flex items-center gap-2 py-1 font-mono text-omp-sm" key={String(row.id)}>
-							<Ban aria-hidden className="text-[var(--omp-warning)]" size={12} />
-							<span className="font-semibold text-[var(--omp-text)]">{shortText(String(row.id), 120)}</span>
-							<span className="text-omp-xs text-[var(--omp-warning)]">
+						<div className="flex items-center gap-2 py-1 font-mono text-omsk-sm" key={String(row.id)}>
+							<Ban aria-hidden className="text-[var(--omsk-warning)]" size={12} />
+							<span className="font-semibold text-[var(--omsk-text)]">{shortText(String(row.id), 120)}</span>
+							<span className="text-omsk-xs text-[var(--omsk-warning)]">
 								{statusLabel(t, typeof row.status === "string" ? row.status : "cancelled")}
 							</span>
 						</div>
@@ -585,10 +585,10 @@ export function ProtocolWriteRenderer({
 			{receipts.length > 0 && (
 				<Section>
 					{receipts.map(row => (
-						<div className="flex items-center gap-2 py-1 font-mono text-omp-sm" key={String(row.to)}>
-							<Users aria-hidden className="text-[var(--omp-status-subagents)]" size={12} />
-							<span className="text-[var(--omp-text)]">{shortText(String(row.to), 120)}</span>
-							<span className="text-omp-xs text-[var(--omp-muted)]">
+						<div className="flex items-center gap-2 py-1 font-mono text-omsk-sm" key={String(row.to)}>
+							<Users aria-hidden className="text-[var(--omsk-status-subagents)]" size={12} />
+							<span className="text-[var(--omsk-text)]">{shortText(String(row.to), 120)}</span>
+							<span className="text-omsk-xs text-[var(--omsk-muted)]">
 								{shortText(String(row.outcome ?? "sent"), 80)}
 							</span>
 						</div>
@@ -602,7 +602,7 @@ export function ProtocolWriteRenderer({
 				cancelled.length === 0 &&
 				receipts.length === 0 &&
 				resultText(effective) && (
-					<div className="whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-xs text-[var(--omp-tool-output)]">
+					<div className="whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-xs text-[var(--omsk-tool-output)]">
 						{shortText(resultText(effective), 4_000)}
 					</div>
 				)}

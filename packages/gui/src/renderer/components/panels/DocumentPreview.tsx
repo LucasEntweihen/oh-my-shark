@@ -50,11 +50,11 @@ export function DocumentPreview({
 	return (
 		<div className="flex h-full min-h-0 flex-col">
 			{pages.length > 1 && (
-				<div className="flex shrink-0 gap-1 overflow-x-auto border-b border-(--omp-border-muted) px-2 py-1.5">
+				<div className="flex shrink-0 gap-1 overflow-x-auto border-b border-(--omsk-border-muted) px-2 py-1.5">
 					{pages.map((item, index) => (
 						<button
 							aria-pressed={selected === index}
-							className="omp-pressable shrink-0 rounded-md px-2.5 py-1 text-omp-sm hover:bg-(--omp-bg-tertiary) aria-pressed:bg-(--omp-selected-bg) aria-pressed:text-(--omp-accent)"
+							className="omsk-pressable shrink-0 rounded-md px-2.5 py-1 text-omsk-sm hover:bg-(--omsk-bg-tertiary) aria-pressed:bg-(--omsk-selected-bg) aria-pressed:text-(--omsk-accent)"
 							key={index}
 							onClick={() => setSelected(index)}
 							type="button"
@@ -67,7 +67,7 @@ export function DocumentPreview({
 			{incomplete && (
 				<p
 					role="status"
-					className="shrink-0 border-b border-(--omp-border-muted) px-3 py-1.5 text-omp-xs text-(--omp-dim)"
+					className="shrink-0 border-b border-(--omsk-border-muted) px-3 py-1.5 text-omsk-xs text-(--omsk-dim)"
 				>
 					{t("filesPanel.documentIncomplete")}
 				</p>
@@ -119,13 +119,13 @@ export function DelimitedTable({ content, path }: { content: string; path: strin
 	const rows = useMemo(() => separatedRows(content, /\.tsv$/i.test(path) ? "\t" : ","), [content, path]);
 	const [head = [], ...body] = rows;
 	return (
-		<table className="min-w-full border-collapse text-left text-omp-sm" data-table-preview>
+		<table className="min-w-full border-collapse text-left text-omsk-sm" data-table-preview>
 			<thead
-				className="sticky top-0 bg-(--omp-bg-secondary)" // surface-ok: sticky table headers cover scrolled cell text
+				className="sticky top-0 bg-(--omsk-bg-secondary)" // surface-ok: sticky table headers cover scrolled cell text
 			>
 				<tr>
 					{head.map((cell, index) => (
-						<th className="border border-(--omp-border-muted) px-2 py-1.5" key={index}>
+						<th className="border border-(--omsk-border-muted) px-2 py-1.5" key={index}>
 							{cell}
 						</th>
 					))}
@@ -136,7 +136,7 @@ export function DelimitedTable({ content, path }: { content: string; path: strin
 					<tr key={index}>
 						{row.map((cell, column) => (
 							<td
-								className="min-w-12 border border-(--omp-border-muted) px-2 py-1 whitespace-pre-wrap"
+								className="min-w-12 border border-(--omsk-border-muted) px-2 py-1 whitespace-pre-wrap"
 								key={column}
 							>
 								{cell}

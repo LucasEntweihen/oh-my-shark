@@ -137,7 +137,7 @@ function HighlightedContent({ content, pattern }: { content: string; pattern: st
 	const html = pattern
 		? escapeHtml(content).replace(
 				new RegExp(escapeRegExp(escapeHtml(pattern)), "gi"),
-				m => `<mark class="omp-hl">${m}</mark>`,
+				m => `<mark class="omsk-hl">${m}</mark>`,
 			)
 		: escapeHtml(content);
 	return (
@@ -190,17 +190,17 @@ export function GrepRenderer({ args, result, isPartial, partialResult }: ToolRen
 
 	return (
 		<div className="flex flex-col gap-1">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<Search size={12} className="shrink-0 text-[var(--omp-dim)]" />
-				<span className="truncate text-[var(--omp-accent)]">/{pattern}/</span>
-				<span className="ml-auto flex shrink-0 items-center gap-1.5 text-omp-xs text-[var(--omp-dim)]">
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<Search size={12} className="shrink-0 text-[var(--omsk-dim)]" />
+				<span className="truncate text-[var(--omsk-accent)]">/{pattern}/</span>
+				<span className="ml-auto flex shrink-0 items-center gap-1.5 text-omsk-xs text-[var(--omsk-dim)]">
 					{scope && (
 						<span className="max-w-40 truncate" title={scope}>
 							{t("tools.grep.scope", { scope })}
 						</span>
 					)}
 					{truncated && !isPartial && (
-						<span className="text-[var(--omp-warning)]">{t("tools.grep.truncated")}</span>
+						<span className="text-[var(--omsk-warning)]">{t("tools.grep.truncated")}</span>
 					)}
 					<span>
 						{isPartial
@@ -215,35 +215,35 @@ export function GrepRenderer({ args, result, isPartial, partialResult }: ToolRen
 			{renderedGroups.length > 0 && (
 				<div
 					className={cx(
-						"rounded bg-[var(--omp-code-bg)] py-1 font-mono text-omp-sm leading-[1.5]",
+						"rounded bg-[var(--omsk-code-bg)] py-1 font-mono text-omsk-sm leading-[1.5]",
 						PREVIEW_SCROLL_MD,
 					)}
 				>
 					{renderedGroups.map((group, gi) => (
 						<div key={gi}>
 							{group.file && (
-								<PathLink path={group.file} className="block truncate px-2 pt-1 text-[var(--omp-status-path)]">
+								<PathLink path={group.file} className="block truncate px-2 pt-1 text-[var(--omsk-status-path)]">
 									{group.file}
 								</PathLink>
 							)}
 							{group.lines.map((line, li) =>
 								line.kind === "gap" ? (
-									<div key={li} className="px-2 text-[var(--omp-dim)]">
+									<div key={li} className="px-2 text-[var(--omsk-dim)]">
 										…
 									</div>
 								) : (
 									<div
 										key={li}
-										className="flex gap-2 px-2 transition-colors hover:bg-[var(--omp-selected-bg)]/50"
+										className="flex gap-2 px-2 transition-colors hover:bg-[var(--omsk-selected-bg)]/50"
 									>
-										<span className="w-8 shrink-0 text-right tabular-nums text-[var(--omp-dim)]">
+										<span className="w-8 shrink-0 text-right tabular-nums text-[var(--omsk-dim)]">
 											{line.line}
 										</span>
 										<span
 											className={
 												line.kind === "match"
-													? "min-w-0 flex-1 whitespace-pre text-[var(--omp-muted)]"
-													: "min-w-0 flex-1 whitespace-pre text-[var(--omp-dim)]"
+													? "min-w-0 flex-1 whitespace-pre text-[var(--omsk-muted)]"
+													: "min-w-0 flex-1 whitespace-pre text-[var(--omsk-dim)]"
 											}
 										>
 											<HighlightedContent content={line.content ?? ""} pattern={pattern} />
@@ -254,7 +254,7 @@ export function GrepRenderer({ args, result, isPartial, partialResult }: ToolRen
 						</div>
 					))}
 					{hidden > 0 && (
-						<div className="px-2 pt-0.5 text-[var(--omp-dim)]">
+						<div className="px-2 pt-0.5 text-[var(--omsk-dim)]">
 							{t("tools.read.more", { count: hidden, plural: hidden === 1 ? "" : "s" })}
 						</div>
 					)}
@@ -265,14 +265,14 @@ export function GrepRenderer({ args, result, isPartial, partialResult }: ToolRen
 				(text ? (
 					<pre
 						className={cx(
-							"whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm text-[var(--omp-tool-output)]",
+							"whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm text-[var(--omsk-tool-output)]",
 							PREVIEW_SCROLL_SM,
 						)}
 					>
 						{text}
 					</pre>
 				) : (
-					<div className="text-omp-sm italic text-[var(--omp-dim)]">{t("tools.grep.noMatches")}</div>
+					<div className="text-omsk-sm italic text-[var(--omsk-dim)]">{t("tools.grep.noMatches")}</div>
 				))}
 		</div>
 	);

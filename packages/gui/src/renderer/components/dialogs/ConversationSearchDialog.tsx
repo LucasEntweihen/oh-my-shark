@@ -240,7 +240,7 @@ function SearchPanel() {
 			<button
 				className={cx(
 					"group flex w-full items-start gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors",
-					active ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)",
+					active ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)",
 				)}
 				data-search-index={index}
 				key={`${item.result.path}:${item.hit.entryId}`}
@@ -253,16 +253,16 @@ function SearchPanel() {
 					aria-label={item.hit.role === "user" ? t("search.role.user") : t("search.role.assistant")}
 					className={cx(
 						"mt-0.5 flex size-4 shrink-0 items-center justify-center",
-						item.hit.role === "user" ? "text-(--omp-muted)" : "text-(--omp-accent)",
+						item.hit.role === "user" ? "text-(--omsk-muted)" : "text-(--omsk-accent)",
 					)}
 					role="img"
 				>
 					<RoleIcon size={12} />
 				</span>
-				<span className="min-w-0 flex-1 truncate text-omp-sm leading-5 text-(--omp-text)">
+				<span className="min-w-0 flex-1 truncate text-omsk-sm leading-5 text-(--omsk-text)">
 					{snippetParts(item.hit.snippet).map((part, partIndex) =>
 						part.match ? (
-							<mark className="omp-hl" key={partIndex}>
+							<mark className="omsk-hl" key={partIndex}>
 								{part.text}
 							</mark>
 						) : (
@@ -271,7 +271,7 @@ function SearchPanel() {
 					)}
 				</span>
 				{item.hit.timestamp > 0 && (
-					<span className="mt-0.5 shrink-0 text-omp-xxs tabular-nums text-(--omp-dim)">
+					<span className="mt-0.5 shrink-0 text-omsk-xxs tabular-nums text-(--omsk-dim)">
 						{formatClock(item.hit.timestamp)}
 					</span>
 				)}
@@ -282,22 +282,22 @@ function SearchPanel() {
 	const renderSession = (result: ConversationSearchResult) => (
 		<section className="mb-1.5" key={result.path}>
 			<div className="flex items-center gap-1.5 px-2.5 pt-2 pb-0.5">
-				{result.kind === "chat" && <MessageSquare className="shrink-0 text-(--omp-dim)" size={11} />}
-				<span className="min-w-0 truncate text-omp-xs font-semibold text-(--omp-text-secondary)">
+				{result.kind === "chat" && <MessageSquare className="shrink-0 text-(--omsk-dim)" size={11} />}
+				<span className="min-w-0 truncate text-omsk-xs font-semibold text-(--omsk-text-secondary)">
 					{result.title ?? t("search.untitled")}
 				</span>
 				{effectiveScope === "all" && result.cwd && (
-					<span className="min-w-0 shrink truncate text-omp-xxs text-(--omp-dim)" title={result.cwd}>
+					<span className="min-w-0 shrink truncate text-omsk-xxs text-(--omsk-dim)" title={result.cwd}>
 						{projectName(result.cwd)}
 					</span>
 				)}
-				<span className="ml-auto shrink-0 text-omp-xxs text-(--omp-dim)">
+				<span className="ml-auto shrink-0 text-omsk-xxs text-(--omsk-dim)">
 					{formatTimeAgo(new Date(result.modified).toISOString())}
 				</span>
 			</div>
 			{result.hits.map(hit => renderHit({ result, hit }))}
 			{result.more > 0 && (
-				<div className="px-2.5 pb-0.5 pl-9 text-omp-xxs text-(--omp-dim)">
+				<div className="px-2.5 pb-0.5 pl-9 text-omsk-xxs text-(--omsk-dim)">
 					{t("search.more", { count: result.more, plural: result.more === 1 ? "" : "es" })}
 				</div>
 			)}
@@ -313,14 +313,14 @@ function SearchPanel() {
 			if (recent.length === 0) return <EmptyState title={t("search.emptyTitle")} detail={t("search.emptyDetail")} />;
 			return (
 				<div>
-					<div className="px-2.5 pt-1.5 pb-0.5 text-omp-xxs font-semibold text-(--omp-dim)">
+					<div className="px-2.5 pt-1.5 pb-0.5 text-omsk-xxs font-semibold text-(--omsk-dim)">
 						{t("search.recent")}
 					</div>
 					{recent.map((item, index) => (
 						<button
 							className={cx(
-								"flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-omp-sm text-(--omp-text) transition-colors",
-								index === activeIndex ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)",
+								"flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-omsk-sm text-(--omsk-text) transition-colors",
+								index === activeIndex ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)",
 							)}
 							data-search-index={index}
 							key={item}
@@ -331,7 +331,7 @@ function SearchPanel() {
 							onMouseMove={() => setActiveIndex(index)}
 							type="button"
 						>
-							<History className="shrink-0 text-(--omp-dim)" size={12} />
+							<History className="shrink-0 text-(--omsk-dim)" size={12} />
 							<span className="truncate">{item}</span>
 						</button>
 					))}
@@ -358,7 +358,7 @@ function SearchPanel() {
 	const shortcutMod = isMac ? "⌘" : "Ctrl";
 	return (
 		<div
-			className={`omp-dialog-overlay omp-fade-in fixed inset-0 ${DIALOG_OVERLAY_Z} flex items-start justify-center bg-[var(--omp-overlay-bg)] p-4 pt-[12dvh]`}
+			className={`omsk-dialog-overlay omsk-fade-in fixed inset-0 ${DIALOG_OVERLAY_Z} flex items-start justify-center bg-[var(--omsk-overlay-bg)] p-4 pt-[12dvh]`}
 			onMouseDown={event => {
 				if (event.target === event.currentTarget) close();
 			}}
@@ -367,16 +367,16 @@ function SearchPanel() {
 			<div
 				aria-label={t("search.title")}
 				aria-modal="true"
-				className="omp-dialog-panel omp-dialog-size-picker flex flex-col overflow-hidden rounded-[14px] border border-(--omp-modal-border) bg-(--omp-modal-bg) shadow-(--omp-shadow-lg)"
+				className="omsk-dialog-panel omsk-dialog-size-picker flex flex-col overflow-hidden rounded-[14px] border border-(--omsk-modal-border) bg-(--omsk-modal-bg) shadow-(--omsk-shadow-lg)"
 				onKeyDown={onKeyDown}
 				ref={dialogRef}
 				role="dialog"
 			>
-				<div className="flex items-center gap-2.5 border-b border-(--omp-border-muted) px-3.5 py-2.5">
-					{slow ? <Spinner size="sm" /> : <Search className="shrink-0 text-(--omp-dim)" size={14} />}
+				<div className="flex items-center gap-2.5 border-b border-(--omsk-border-muted) px-3.5 py-2.5">
+					{slow ? <Spinner size="sm" /> : <Search className="shrink-0 text-(--omsk-dim)" size={14} />}
 					<input
 						aria-label={t("search.title")}
-						className="min-w-0 flex-1 bg-transparent text-omp-md text-(--omp-text) placeholder:text-(--omp-dim) focus:outline-none"
+						className="min-w-0 flex-1 bg-transparent text-omsk-md text-(--omsk-text) placeholder:text-(--omsk-dim) focus:outline-none"
 						onChange={event => setQuery(event.target.value)}
 						placeholder={t("search.placeholder")}
 						ref={inputRef}
@@ -385,17 +385,17 @@ function SearchPanel() {
 					/>
 					<div
 						aria-label={t("search.scope")}
-						className="flex shrink-0 items-center rounded-md border border-(--omp-border-muted) p-0.5"
+						className="flex shrink-0 items-center rounded-md border border-(--omsk-border-muted) p-0.5"
 						role="group"
 					>
 						{(["project", "all"] as const).map(option => (
 							<button
 								aria-pressed={effectiveScope === option}
 								className={cx(
-									"rounded px-2 py-0.5 text-omp-xs transition-colors disabled:opacity-45",
+									"rounded px-2 py-0.5 text-omsk-xs transition-colors disabled:opacity-45",
 									effectiveScope === option
-										? "bg-(--omp-selected-bg) font-medium text-(--omp-text)"
-										: "text-(--omp-muted) hover:text-(--omp-text)",
+										? "bg-(--omsk-selected-bg) font-medium text-(--omsk-text)"
+										: "text-(--omsk-muted) hover:text-(--omsk-text)",
 								)}
 								disabled={option === "project" && !cwd}
 								key={option}
@@ -411,14 +411,14 @@ function SearchPanel() {
 				<div
 					aria-busy={stale || slow}
 					className={cx(
-						"omp-command-list min-h-0 overflow-y-auto p-1.5 transition-opacity",
+						"omsk-command-list min-h-0 overflow-y-auto p-1.5 transition-opacity",
 						stale && "opacity-60",
 					)}
 					ref={listRef}
 				>
 					{body}
 				</div>
-				<div className="flex items-center gap-3 border-t border-(--omp-border-muted) px-3.5 py-2 text-omp-xxs text-(--omp-dim)">
+				<div className="flex items-center gap-3 border-t border-(--omsk-border-muted) px-3.5 py-2 text-omsk-xxs text-(--omsk-dim)">
 					<span className="flex min-w-0 items-center gap-1.5 truncate">
 						<Kbd>↵</Kbd>
 						{t("search.footer.open")}
@@ -456,11 +456,11 @@ function EmptyState({
 }) {
 	return (
 		<div className="flex flex-col items-center gap-1 px-6 py-9 text-center">
-			<div className="text-omp-sm font-medium text-(--omp-text-secondary)">{title}</div>
-			{detail && <div className="max-w-sm text-omp-xs leading-relaxed text-(--omp-dim)">{detail}</div>}
+			<div className="text-omsk-sm font-medium text-(--omsk-text-secondary)">{title}</div>
+			{detail && <div className="max-w-sm text-omsk-xs leading-relaxed text-(--omsk-dim)">{detail}</div>}
 			{action && (
 				<button
-					className="mt-2 rounded-md border border-(--omp-border-muted) px-2.5 py-1 text-omp-xs text-(--omp-text) transition-colors hover:bg-(--omp-bg-tertiary)"
+					className="mt-2 rounded-md border border-(--omsk-border-muted) px-2.5 py-1 text-omsk-xs text-(--omsk-text) transition-colors hover:bg-(--omsk-bg-tertiary)"
 					onClick={action.run}
 					type="button"
 				>

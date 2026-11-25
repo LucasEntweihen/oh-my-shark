@@ -68,11 +68,11 @@ export function Segmented<T extends number>({
 	if (!shown.includes(value)) shown.push(value);
 	return (
 		<div className="flex items-center justify-between gap-3">
-			<span className="text-omp-sm text-(--omp-muted)">{label}</span>
+			<span className="text-omsk-sm text-(--omsk-muted)">{label}</span>
 			<div
 				role="radiogroup"
 				aria-label={label}
-				className="flex overflow-hidden rounded-md border border-(--omp-border-muted)"
+				className="flex overflow-hidden rounded-md border border-(--omsk-border-muted)"
 			>
 				{shown.map(option => (
 					<button
@@ -83,10 +83,10 @@ export function Segmented<T extends number>({
 						disabled={disabled}
 						onClick={() => option !== value && onChange(option)}
 						className={cx(
-							"omp-pressable h-6 px-2 text-omp-xs tabular-nums disabled:opacity-50",
+							"omsk-pressable h-6 px-2 text-omsk-xs tabular-nums disabled:opacity-50",
 							option === value
-								? "bg-(--omp-selected-bg) font-medium text-(--omp-text)"
-								: "text-(--omp-muted) hover:bg-(--omp-bg-tertiary)",
+								? "bg-(--omsk-selected-bg) font-medium text-(--omsk-text)"
+								: "text-(--omsk-muted) hover:bg-(--omsk-bg-tertiary)",
 						)}
 					>
 						{option === -1 ? autoLabel : format(option as T)}
@@ -117,17 +117,17 @@ function Switch({
 			aria-checked={checked}
 			disabled={disabled}
 			onClick={() => onChange(!checked)}
-			className="omp-pressable flex w-full items-start justify-between gap-3 rounded-md py-1 text-left disabled:opacity-50"
+			className="omsk-pressable flex w-full items-start justify-between gap-3 rounded-md py-1 text-left disabled:opacity-50"
 		>
 			<span className="min-w-0">
-				<span className="block text-omp-sm text-(--omp-text-secondary)">{label}</span>
-				{hint && <span className="block text-omp-xs text-(--omp-dim)">{hint}</span>}
+				<span className="block text-omsk-sm text-(--omsk-text-secondary)">{label}</span>
+				{hint && <span className="block text-omsk-xs text-(--omsk-dim)">{hint}</span>}
 			</span>
 			<span
 				aria-hidden
 				className={cx(
 					"relative mt-0.5 h-4 w-7 shrink-0 rounded-full transition-colors",
-					checked ? "bg-(--omp-switch-on)" : "bg-(--omp-switch-off)",
+					checked ? "bg-(--omsk-switch-on)" : "bg-(--omsk-switch-off)",
 				)}
 			>
 				<span
@@ -145,10 +145,10 @@ function Chip({ on, children }: { on: boolean; children: ReactNode }) {
 	return (
 		<span
 			className={cx(
-				"inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-omp-xxs",
+				"inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-omsk-xxs",
 				on
-					? "border-[color-mix(in_srgb,var(--omp-success)_35%,transparent)] text-(--omp-success)"
-					: "border-(--omp-border-muted) text-(--omp-dim)",
+					? "border-[color-mix(in_srgb,var(--omsk-success)_35%,transparent)] text-(--omsk-success)"
+					: "border-(--omsk-border-muted) text-(--omsk-dim)",
 			)}
 		>
 			{on && <Check size={9} strokeWidth={3} />}
@@ -237,7 +237,7 @@ export function ContextStrategyBar() {
 	};
 
 	return (
-		<div className="omp-context-bar flex h-6 min-w-0 items-center justify-between gap-2 px-1">
+		<div className="omsk-context-bar flex h-6 min-w-0 items-center justify-between gap-2 px-1">
 			<button
 				ref={triggerRef}
 				type="button"
@@ -246,18 +246,20 @@ export function ContextStrategyBar() {
 				aria-label={t("contextStrategy.title")}
 				onClick={() => setOpen(value => !value)}
 				title={t("contextStrategy.title")}
-				className="omp-pressable flex h-6 min-w-0 max-w-full items-center gap-1.5 rounded-md px-1.5 text-omp-xs text-(--omp-dim) hover:bg-(--omp-selected-bg) hover:text-(--omp-muted)"
+				className="omsk-pressable flex h-6 min-w-0 max-w-full items-center gap-1.5 rounded-md px-1.5 text-omsk-xs text-(--omsk-dim) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-muted)"
 			>
 				<Layers aria-hidden size={12} className="shrink-0" />
-				<span className="shrink-0 font-medium text-(--omp-muted)">{t(`contextStrategy.strategy.${strategy}`)}</span>
+				<span className="shrink-0 font-medium text-(--omsk-muted)">
+					{t(`contextStrategy.strategy.${strategy}`)}
+				</span>
 				{autoCompaction ? (
-					<span className="omp-context-bar-detail flex min-w-0 items-center gap-1.5">
+					<span className="omsk-context-bar-detail flex min-w-0 items-center gap-1.5">
 						<span aria-hidden>·</span>
 						<span className="truncate">{methodName}</span>
 						{atText && <span className="shrink-0 tabular-nums">{atText}</span>}
 					</span>
 				) : (
-					<span className="omp-context-bar-detail flex items-center gap-1.5 text-(--omp-warning)">
+					<span className="omsk-context-bar-detail flex items-center gap-1.5 text-(--omsk-warning)">
 						<span aria-hidden>·</span>
 						{t("contextStrategy.off")}
 					</span>
@@ -268,7 +270,7 @@ export function ContextStrategyBar() {
 						aria-label={t("contextStrategy.suggested", {
 							strategy: t(`contextStrategy.strategy.${recommended.strategy}`),
 						})}
-						className="size-1.5 shrink-0 rounded-full bg-(--omp-warning)"
+						className="size-1.5 shrink-0 rounded-full bg-(--omsk-warning)"
 					/>
 				)}
 			</button>
@@ -285,8 +287,8 @@ export function ContextStrategyBar() {
 						inert={closing}
 						style={{ left: pos.left, bottom: pos.bottom, width: pos.width }}
 						className={cx(
-							"fixed z-[100] rounded-xl border border-(--omp-border) bg-(--omp-panel-bg) p-3 shadow-(--omp-shadow-md)",
-							closing ? "omp-scale-out pointer-events-none" : "omp-pop-in",
+							"fixed z-[100] rounded-xl border border-(--omsk-border) bg-(--omsk-panel-bg) p-3 shadow-(--omsk-shadow-md)",
+							closing ? "omsk-scale-out pointer-events-none" : "omsk-pop-in",
 						)}
 					>
 						<ModelSummary name={modelName} provider={model.provider} profile={profile} />
@@ -306,10 +308,10 @@ export function ContextStrategyBar() {
 								<div
 									role="radio"
 									aria-checked
-									className="rounded-lg bg-(--omp-selected-bg) px-2.5 py-1.5 text-omp-sm font-medium text-(--omp-text)"
+									className="rounded-lg bg-(--omsk-selected-bg) px-2.5 py-1.5 text-omsk-sm font-medium text-(--omsk-text)"
 								>
 									{t("contextStrategy.strategy.custom")}
-									<span className="block text-omp-xs font-normal text-(--omp-dim)">
+									<span className="block text-omsk-xs font-normal text-(--omsk-dim)">
 										{t("contextStrategy.strategy.custom.desc")}
 									</span>
 								</div>
@@ -323,7 +325,7 @@ export function ContextStrategyBar() {
 							suggestionKey={suggest ? recommended.reasonKey : null}
 						/>
 
-						<div className="mt-3 space-y-2 border-t border-(--omp-border-muted) pt-3">
+						<div className="mt-3 space-y-2 border-t border-(--omsk-border-muted) pt-3">
 							<Segmented
 								label={t("contextStrategy.compactAt")}
 								value={config.thresholdPercent}
@@ -356,7 +358,7 @@ export function ContextStrategyBar() {
 							/>
 						</div>
 
-						<div className="mt-3 flex items-center justify-between gap-3 border-t border-(--omp-border-muted) pt-2.5 text-omp-xs text-(--omp-dim)">
+						<div className="mt-3 flex items-center justify-between gap-3 border-t border-(--omsk-border-muted) pt-2.5 text-omsk-xs text-(--omsk-dim)">
 							<span>{t("contextStrategy.scope")}</span>
 							<button
 								type="button"
@@ -364,7 +366,7 @@ export function ContextStrategyBar() {
 									setOpen(false);
 									openSettings("context");
 								}}
-								className="omp-pressable flex shrink-0 items-center gap-0.5 rounded-md px-1.5 py-1 text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+								className="omsk-pressable flex shrink-0 items-center gap-0.5 rounded-md px-1.5 py-1 text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 							>
 								{t("contextStrategy.allSettings")}
 								<ChevronRight size={12} />
@@ -382,11 +384,11 @@ function ModelSummary({ name, provider, profile }: { name: string; provider: str
 	return (
 		<div>
 			<div className="flex items-baseline justify-between gap-3">
-				<span className="min-w-0 truncate text-omp-md font-semibold text-(--omp-text)">{name}</span>
-				<span className="shrink-0 text-omp-xs text-(--omp-dim)">{provider}</span>
+				<span className="min-w-0 truncate text-omsk-md font-semibold text-(--omsk-text)">{name}</span>
+				<span className="shrink-0 text-omsk-xs text-(--omsk-dim)">{provider}</span>
 			</div>
 			<div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-				<span className="text-omp-xs tabular-nums text-(--omp-muted)">
+				<span className="text-omsk-xs tabular-nums text-(--omsk-muted)">
 					{profile.windowTokens
 						? t("contextStrategy.window", { size: formatTokens(profile.windowTokens) })
 						: t("contextStrategy.windowUnknown")}
@@ -424,34 +426,36 @@ function StrategyRow({
 			disabled={disabled}
 			onClick={onSelect}
 			className={cx(
-				"omp-pressable flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left disabled:opacity-60",
-				selected ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)",
+				"omsk-pressable flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left disabled:opacity-60",
+				selected ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)",
 			)}
 		>
 			<span
 				aria-hidden
 				className={cx(
 					"mt-1 flex size-3.5 shrink-0 items-center justify-center rounded-full border",
-					selected ? "border-(--omp-accent)" : "border-(--omp-border-strong)",
+					selected ? "border-(--omsk-accent)" : "border-(--omsk-border-strong)",
 				)}
 			>
-				{selected && <span className="size-1.5 rounded-full bg-(--omp-accent)" />}
+				{selected && <span className="size-1.5 rounded-full bg-(--omsk-accent)" />}
 			</span>
 			<span className="min-w-0 flex-1">
 				<span className="flex flex-wrap items-center gap-1.5">
-					<span className="text-omp-sm font-medium text-(--omp-text)">{t(`contextStrategy.strategy.${id}`)}</span>
+					<span className="text-omsk-sm font-medium text-(--omsk-text)">
+						{t(`contextStrategy.strategy.${id}`)}
+					</span>
 					{recommended && (
-						<span className="rounded-full border border-(--omp-border-accent) px-1.5 text-omp-xxs text-(--omp-accent)">
+						<span className="rounded-full border border-(--omsk-border-accent) px-1.5 text-omsk-xxs text-(--omsk-accent)">
 							{t("contextStrategy.recommended")}
 						</span>
 					)}
 					{id === "notes" && (
-						<span className="rounded-full border border-(--omp-border-muted) px-1.5 text-omp-xxs text-(--omp-dim)">
+						<span className="rounded-full border border-(--omsk-border-muted) px-1.5 text-omsk-xxs text-(--omsk-dim)">
 							{t("contextStrategy.experimental")}
 						</span>
 					)}
 				</span>
-				<span className="block text-omp-xs leading-snug text-(--omp-dim)">
+				<span className="block text-omsk-xs leading-snug text-(--omsk-dim)">
 					{t(`contextStrategy.strategy.${id}.desc`)}
 				</span>
 			</span>
@@ -474,7 +478,7 @@ function Outcome({
 	const t = useT();
 	const key = methodKey(method);
 	return (
-		<div className="mt-3 rounded-lg border border-(--omp-border-muted) px-2.5 py-2 text-omp-xs leading-snug text-(--omp-muted)">
+		<div className="mt-3 rounded-lg border border-(--omsk-border-muted) px-2.5 py-2 text-omsk-xs leading-snug text-(--omsk-muted)">
 			<div>
 				{threshold !== null
 					? t("contextStrategy.outcome", {
@@ -483,14 +487,14 @@ function Outcome({
 						})
 					: t("contextStrategy.outcomeNoWindow", { method: t(`contextStrategy.method.${key}`) })}
 			</div>
-			<div className="mt-0.5 text-(--omp-dim)">{t(`contextStrategy.method.${key}.desc`)}</div>
+			<div className="mt-0.5 text-(--omsk-dim)">{t(`contextStrategy.method.${key}.desc`)}</div>
 			{method !== null && (
-				<div className={cx("mt-1", isLossless(method) ? "text-(--omp-success)" : "text-(--omp-dim)")}>
+				<div className={cx("mt-1", isLossless(method) ? "text-(--omsk-success)" : "text-(--omsk-dim)")}>
 					{t(isLossless(method) ? "contextStrategy.lossless" : "contextStrategy.lossy")}
 				</div>
 			)}
 			{suggestionKey && config.methodOrder.length > 0 && (
-				<div className="mt-1.5 border-t border-(--omp-border-muted) pt-1.5 text-(--omp-warning)">
+				<div className="mt-1.5 border-t border-(--omsk-border-muted) pt-1.5 text-(--omsk-warning)">
 					{t(`contextStrategy.reason.${suggestionKey}`)}
 				</div>
 			)}

@@ -37,11 +37,11 @@ import { agentPageRuntime, useAgentTranscript } from "./agent-page-runtime";
 const ROSTER_POLL_MS = 3000;
 
 export const ACTIVITY_TONE: Record<SubagentActivity, string> = {
-	working: "var(--omp-accent)",
-	waiting: "var(--omp-dim)",
-	failed: "var(--omp-error)",
-	done: "var(--omp-success)",
-	stopped: "var(--omp-dim)",
+	working: "var(--omsk-accent)",
+	waiting: "var(--omsk-dim)",
+	failed: "var(--omsk-error)",
+	done: "var(--omsk-success)",
+	stopped: "var(--omsk-dim)",
 };
 
 /** The 6 px signal dot; waiting is a ring, so state never rests on colour alone. */
@@ -140,10 +140,10 @@ export function AgentPage({ tabId, agentId, beside = false }: { tabId: string; a
 
 	if (!agent) {
 		return (
-			<div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 text-omp-md text-[var(--omp-muted)]">
+			<div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 text-omsk-md text-[var(--omsk-muted)]">
 				{t("agents.page.gone")}
 				<button
-					className="omp-pressable rounded-full border border-[var(--omp-border)] px-3 py-1 text-omp-sm text-[var(--omp-text)] hover:bg-[var(--omp-selected-bg)]"
+					className="omsk-pressable rounded-full border border-[var(--omsk-border)] px-3 py-1 text-omsk-sm text-[var(--omsk-text)] hover:bg-[var(--omsk-selected-bg)]"
 					onClick={() => useAgentPagesStore.getState().close(tabId, agentId)}
 					type="button"
 				>
@@ -155,25 +155,25 @@ export function AgentPage({ tabId, agentId, beside = false }: { tabId: string; a
 
 	const activity = subagentActivity(agent);
 	return (
-		<div className="omp-agent-page relative flex min-h-0 flex-1 flex-col" data-activity={activity}>
+		<div className="omsk-agent-page relative flex min-h-0 flex-1 flex-col" data-activity={activity}>
 			{beside && <AgentPaneHeader agent={agent} tabId={tabId} />}
 			<SessionRuntimeProvider runtime={runtime}>
 				<ReadOnlyTranscriptContext.Provider value={readOnly}>
 					<ChatStream />
 				</ReadOnlyTranscriptContext.Provider>
 			</SessionRuntimeProvider>
-			<div className="omp-composer-region relative shrink-0 bg-transparent pb-1 pt-2">
-				<div className="omp-composer-shell relative w-full">
+			<div className="omsk-composer-region relative shrink-0 bg-transparent pb-1 pt-2">
+				<div className="omsk-composer-shell relative w-full">
 					{transcript.error && (
 						<div
-							className="mb-2 flex items-center gap-2 rounded-xl border border-[var(--omp-border-muted)] px-3 py-2 text-omp-sm text-[var(--omp-muted)]"
+							className="mb-2 flex items-center gap-2 rounded-xl border border-[var(--omsk-border-muted)] px-3 py-2 text-omsk-sm text-[var(--omsk-muted)]"
 							role="alert"
 						>
 							<span className="min-w-0 flex-1 truncate" title={transcript.error}>
 								{t("agents.page.loadFailed")}
 							</span>
 							<button
-								className="omp-pressable shrink-0 font-medium text-[var(--omp-link)] hover:underline"
+								className="omsk-pressable shrink-0 font-medium text-[var(--omsk-link)] hover:underline"
 								onClick={transcript.retry}
 								type="button"
 							>
@@ -182,7 +182,7 @@ export function AgentPage({ tabId, agentId, beside = false }: { tabId: string; a
 						</div>
 					)}
 					{gone && (
-						<div className="mb-2 px-1 text-omp-sm text-[var(--omp-dim)]" role="status">
+						<div className="mb-2 px-1 text-omsk-sm text-[var(--omsk-dim)]" role="status">
 							{t("agents.page.gone")}
 						</div>
 					)}
@@ -218,9 +218,9 @@ function AgentLiveTail({ agent }: { agent: SubagentSnapshot }) {
 	const toolElapsed =
 		line?.kind === "tool" && progress?.currentToolStartMs ? formatElapsed(now - progress.currentToolStartMs) : null;
 	return (
-		<div aria-live="off" className="omp-agent-live-tail mb-2 flex min-w-0 flex-col gap-0.5 px-3">
+		<div aria-live="off" className="omsk-agent-live-tail mb-2 flex min-w-0 flex-col gap-0.5 px-3">
 			{line?.kind === "retry" ? (
-				<div className="truncate text-omp-sm text-[var(--omp-warning)]">
+				<div className="truncate text-omsk-sm text-[var(--omsk-warning)]">
 					{t("agents.now.retrying", {
 						attempt: line.attempt,
 						max: line.maxAttempts,
@@ -228,23 +228,23 @@ function AgentLiveTail({ agent }: { agent: SubagentSnapshot }) {
 					})}
 				</div>
 			) : line?.kind === "tool" ? (
-				<div className="flex min-w-0 items-center gap-2 text-omp-sm">
+				<div className="flex min-w-0 items-center gap-2 text-omsk-sm">
 					<Spinner size="sm" />
-					<span className="shrink-0 font-mono text-[var(--omp-text-secondary)]">{line.tool}</span>
-					<span className="min-w-0 flex-1 truncate font-mono text-[var(--omp-dim)]">
+					<span className="shrink-0 font-mono text-[var(--omsk-text-secondary)]">{line.tool}</span>
+					<span className="min-w-0 flex-1 truncate font-mono text-[var(--omsk-dim)]">
 						{sanitizeToolText(line.args)}
 					</span>
 					{toolElapsed && (
-						<span className="shrink-0 text-omp-xs tabular-nums text-[var(--omp-dim)]">{toolElapsed}</span>
+						<span className="shrink-0 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">{toolElapsed}</span>
 					)}
 				</div>
 			) : null}
 			{intent && line?.kind !== "intent" ? (
-				<div className="omp-shimmer-text truncate text-omp-sm">{sanitizeToolText(intent)}</div>
+				<div className="omsk-shimmer-text truncate text-omsk-sm">{sanitizeToolText(intent)}</div>
 			) : line?.kind === "intent" ? (
-				<div className="flex min-w-0 items-center gap-2 text-omp-sm">
+				<div className="flex min-w-0 items-center gap-2 text-omsk-sm">
 					<Spinner size="sm" />
-					<span className="omp-shimmer-text min-w-0 truncate">{sanitizeToolText(line.text)}</span>
+					<span className="omsk-shimmer-text min-w-0 truncate">{sanitizeToolText(line.text)}</span>
 				</div>
 			) : null}
 		</div>
@@ -373,21 +373,21 @@ function AgentBar({
 			: t("agents.page.takesInstructionsConversation");
 
 	return (
-		<div aria-label={instruction} className="omp-composer-box omp-agent-bar overflow-hidden" role="group">
-			<div className="flex min-w-0 items-center gap-1.5 px-4 pb-1 pt-3 text-omp-md text-[var(--omp-dim)]">
+		<div aria-label={instruction} className="omsk-composer-box omsk-agent-bar overflow-hidden" role="group">
+			<div className="flex min-w-0 items-center gap-1.5 px-4 pb-1 pt-3 text-omsk-md text-[var(--omsk-dim)]">
 				<CornerDownRight aria-hidden className="shrink-0" size={14} />
 				<span className="min-w-0 truncate">{instruction}</span>
 			</div>
-			<div className="omp-composer-toolbar flex h-11 min-w-0 items-center gap-1 px-2 pb-2 pt-1">
-				<span className="flex h-8 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-omp-md font-medium text-[var(--omp-muted)]">
+			<div className="omsk-composer-toolbar flex h-11 min-w-0 items-center gap-1 px-2 pb-2 pt-1">
+				<span className="flex h-8 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-omsk-md font-medium text-[var(--omsk-muted)]">
 					<Bot aria-hidden size={14} />
 					{agent.agent}
 				</span>
 				{model && (
 					<span
 						className={cx(
-							"min-w-0 truncate px-1 font-mono text-omp-sm",
-							progress?.resolvedModelIsFallback ? "text-[var(--omp-warning)]" : "text-[var(--omp-dim)]",
+							"min-w-0 truncate px-1 font-mono text-omsk-sm",
+							progress?.resolvedModelIsFallback ? "text-[var(--omsk-warning)]" : "text-[var(--omsk-dim)]",
 						)}
 						title={progress?.resolvedModelIsFallback ? t("agents.page.fallbackModel", { model }) : model}
 					>
@@ -397,7 +397,7 @@ function AgentBar({
 				<div className="ml-auto flex shrink-0 items-center gap-1">
 					{abortable && !confirming && (
 						<button
-							className="omp-pressable flex h-8 items-center gap-1.5 rounded-full border border-[var(--omp-border)] px-3 text-omp-sm font-medium text-[var(--omp-text)] hover:border-[color-mix(in_srgb,var(--omp-error)_40%,transparent)] hover:text-[var(--omp-error)] disabled:opacity-50"
+							className="omsk-pressable flex h-8 items-center gap-1.5 rounded-full border border-[var(--omsk-border)] px-3 text-omsk-sm font-medium text-[var(--omsk-text)] hover:border-[color-mix(in_srgb,var(--omsk-error)_40%,transparent)] hover:text-[var(--omsk-error)] disabled:opacity-50"
 							disabled={working || !ready}
 							onClick={() => setConfirming(true)}
 							title={ready ? undefined : t("agentHub.notConnected")}
@@ -410,7 +410,7 @@ function AgentBar({
 					{abortable && confirming && (
 						<span className="flex items-center gap-1">
 							<button
-								className="omp-pressable flex h-8 items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--omp-error)_40%,transparent)] px-3 text-omp-sm font-medium text-[var(--omp-error)] disabled:opacity-50"
+								className="omsk-pressable flex h-8 items-center gap-1.5 rounded-full border border-[color-mix(in_srgb,var(--omsk-error)_40%,transparent)] px-3 text-omsk-sm font-medium text-[var(--omsk-error)] disabled:opacity-50"
 								disabled={working || !ready}
 								onClick={() => void run("abort")}
 								type="button"
@@ -420,7 +420,7 @@ function AgentBar({
 							</button>
 							<button
 								aria-label={t("common.cancel")}
-								className="omp-pressable flex h-8 w-8 items-center justify-center rounded-full text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)]"
+								className="omsk-pressable flex h-8 w-8 items-center justify-center rounded-full text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)]"
 								onClick={() => setConfirming(false)}
 								title={t("common.cancel")}
 								type="button"
@@ -431,7 +431,7 @@ function AgentBar({
 					)}
 					{revivable && (
 						<button
-							className="omp-pressable flex h-8 items-center gap-1.5 rounded-full border border-[var(--omp-border)] px-3 text-omp-sm font-medium text-[var(--omp-text)] hover:bg-[var(--omp-selected-bg)] disabled:opacity-50"
+							className="omsk-pressable flex h-8 items-center gap-1.5 rounded-full border border-[var(--omsk-border)] px-3 text-omsk-sm font-medium text-[var(--omsk-text)] hover:bg-[var(--omsk-selected-bg)] disabled:opacity-50"
 							disabled={working || !ready}
 							onClick={() => void run("revive")}
 							type="button"
@@ -443,7 +443,7 @@ function AgentBar({
 					<button
 						aria-haspopup="menu"
 						aria-label={t("agents.page.more")}
-						className="omp-pressable flex h-8 w-8 items-center justify-center rounded-full text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable flex h-8 w-8 items-center justify-center rounded-full text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 						onClick={openMenu}
 						title={t("agents.page.more")}
 						type="button"
@@ -468,15 +468,15 @@ function AgentStatusLine({ agent }: { agent: SubagentSnapshot }) {
 	const used = progress?.contextTokens;
 	const share = contextWindow && used !== undefined ? Math.min(1, used / contextWindow) : null;
 	return (
-		<div className="omp-context-bar flex h-6 min-w-0 items-center justify-between gap-2 px-2.5 text-omp-xs text-[var(--omp-dim)]">
+		<div className="omsk-context-bar flex h-6 min-w-0 items-center justify-between gap-2 px-2.5 text-omsk-xs text-[var(--omsk-dim)]">
 			<span className="tabular-nums">
 				{t("agents.page.steps", { count: steps, plural: steps === 1 ? "" : "s" })}
 			</span>
 			{share !== null && contextWindow && (
 				<span className="flex items-center gap-2 tabular-nums">
-					<span aria-hidden className="h-1 w-16 overflow-hidden rounded-full bg-[var(--omp-border-muted)]">
+					<span aria-hidden className="h-1 w-16 overflow-hidden rounded-full bg-[var(--omsk-border-muted)]">
 						<span
-							className="block h-full rounded-full bg-[var(--omp-accent)]"
+							className="block h-full rounded-full bg-[var(--omsk-accent)]"
 							style={{ width: `${Math.round(share * 100)}%` }}
 						/>
 					</span>
@@ -494,16 +494,16 @@ function AgentStatusLine({ agent }: { agent: SubagentSnapshot }) {
 function AgentPaneHeader({ agent, tabId }: { agent: SubagentSnapshot; tabId: string }) {
 	const t = useT();
 	return (
-		<header className="relative flex h-8 shrink-0 items-center gap-2 border-b border-[var(--omp-border-muted)] px-3 text-omp-sm">
-			<CornerDownRight aria-hidden className="shrink-0 text-[var(--omp-dim)]" size={13} />
+		<header className="relative flex h-8 shrink-0 items-center gap-2 border-b border-[var(--omsk-border-muted)] px-3 text-omsk-sm">
+			<CornerDownRight aria-hidden className="shrink-0 text-[var(--omsk-dim)]" size={13} />
 			<AgentSignal activity={subagentActivity(agent)} />
-			<span className="min-w-0 flex-1 truncate font-medium text-[var(--omp-text)]">
+			<span className="min-w-0 flex-1 truncate font-medium text-[var(--omsk-text)]">
 				{subagentPrimaryLabel(agent)}
 			</span>
 			<AgentFacts agent={agent} />
 			<button
 				aria-label={t("agents.page.closePage")}
-				className="omp-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+				className="omsk-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 				onClick={() => useAgentPagesStore.getState().close(tabId, agent.id)}
 				title={t("agents.page.closePage")}
 				type="button"
@@ -521,7 +521,7 @@ export function AgentFacts({ agent }: { agent: SubagentSnapshot }) {
 	const elapsed = subagentElapsedMs(agent, now);
 	const progress = agent.progress;
 	return (
-		<span className="flex shrink-0 items-center gap-2 font-mono text-omp-xs tabular-nums text-[var(--omp-dim)]">
+		<span className="flex shrink-0 items-center gap-2 font-mono text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 			{progress?.tokens ? <span>{formatTokens(progress.tokens)}</span> : null}
 			{progress?.cost ? <span>{formatCost(progress.cost, progress.cost < 1 ? 3 : 2)}</span> : null}
 			{elapsed !== null && <span>{formatElapsed(elapsed)}</span>}

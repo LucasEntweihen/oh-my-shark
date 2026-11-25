@@ -106,8 +106,8 @@ export function WorkspaceDirsDialog() {
 	return (
 		<Modal dockable onClose={close} open={open} size="md" title={t("workspaceDirs.title")}>
 			<div className="flex flex-col gap-3">
-				<div className="text-omp-xs text-(--omp-dim)">{t("workspaceDirs.subtitle")}</div>
-				<div className="max-h-[38vh] min-h-16 overflow-y-auto rounded-md border border-(--omp-border-muted)">
+				<div className="text-omsk-xs text-(--omsk-dim)">{t("workspaceDirs.subtitle")}</div>
+				<div className="max-h-[38vh] min-h-16 overflow-y-auto rounded-md border border-(--omsk-border-muted)">
 					<AsyncSection
 						className="min-h-24"
 						empty={directories.length === 0}
@@ -120,12 +120,12 @@ export function WorkspaceDirsDialog() {
 					>
 						{directories.map(directory => (
 							<div
-								className="flex items-center gap-2 border-b border-(--omp-border-muted) px-3 py-2 last:border-b-0"
+								className="flex items-center gap-2 border-b border-(--omsk-border-muted) px-3 py-2 last:border-b-0"
 								key={directory.path}
 							>
-								<FolderGit2 className="shrink-0 text-(--omp-dim)" size={14} />
+								<FolderGit2 className="shrink-0 text-(--omsk-dim)" size={14} />
 								<span
-									className="min-w-0 flex-1 truncate font-mono text-omp-xs text-(--omp-text)"
+									className="min-w-0 flex-1 truncate font-mono text-omsk-xs text-(--omsk-text)"
 									title={directory.path}
 								>
 									{directory.path}
@@ -182,9 +182,9 @@ export function WorkspaceDirsDialog() {
 						{t("workspaceDirs.add")}
 					</Button>
 				</div>
-				<div className="rounded-md border border-(--omp-border-muted) p-3">
-					<div className="mb-1 text-omp-xs font-medium text-(--omp-text)">{t("workspaceDirs.moveTitle")}</div>
-					<div className="mb-2 text-omp-xs text-(--omp-dim)">{t("workspaceDirs.moveDesc")}</div>
+				<div className="rounded-md border border-(--omsk-border-muted) p-3">
+					<div className="mb-1 text-omsk-xs font-medium text-(--omsk-text)">{t("workspaceDirs.moveTitle")}</div>
+					<div className="mb-2 text-omsk-xs text-(--omsk-dim)">{t("workspaceDirs.moveDesc")}</div>
 					<Button
 						disabled={mutating || busy || loading || !sidecarReady}
 						icon={<PackageOpen size={14} />}

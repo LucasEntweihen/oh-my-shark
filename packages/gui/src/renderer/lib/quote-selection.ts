@@ -7,15 +7,15 @@
  */
 
 /** Containers a quote may come from: one message's rendered text. */
-const QUOTABLE = ".markdown-body, .omp-user-bubble-content";
+const QUOTABLE = ".markdown-body, .omsk-user-bubble-content";
 /**
  * Inside these the text is not the conversation itself, or not settled yet. The
  * live turn as a whole: its thinking block renders beside the streamed text,
  * not inside it, and changes just as much.
  */
-const EXCLUDED = ".omp-streaming-turn, .omp-streaming, .omp-tool-card";
+const EXCLUDED = ".omsk-streaming-turn, .omsk-streaming, .omsk-tool-card";
 /** Chrome rendered inside message text that is not part of what was said. */
-const CHROME = "button, .omp-code-block-header, .katex-mathml, [aria-hidden='true']:not(.katex-html)";
+const CHROME = "button, .omsk-code-block-header, .katex-mathml, [aria-hidden='true']:not(.katex-html)";
 
 /**
  * The single message body that holds the whole selection, or null when the

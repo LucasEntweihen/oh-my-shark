@@ -26,7 +26,7 @@ export function LineNumberGutter({ lineCount, startLine = 1, lineNumbers, classN
 		<div
 			aria-hidden
 			className={cx(
-				"sticky left-0 shrink-0 select-none whitespace-pre border-r border-[var(--omp-border-muted)]/50 bg-[var(--omp-code-bg)] text-right font-mono text-[var(--omp-dim)]",
+				"sticky left-0 shrink-0 select-none whitespace-pre border-r border-[var(--omsk-border-muted)]/50 bg-[var(--omsk-code-bg)] text-right font-mono text-[var(--omsk-dim)]",
 				className,
 			)}
 		>

@@ -95,16 +95,16 @@ function asSettled(value: unknown): VibeSettled | undefined {
 }
 
 const STATE_COLOR: Record<string, string> = {
-	running: "var(--omp-accent)",
-	starting: "var(--omp-accent)",
-	idle: "var(--omp-success)",
-	dead: "var(--omp-dim)",
+	running: "var(--omsk-accent)",
+	starting: "var(--omsk-accent)",
+	idle: "var(--omsk-success)",
+	dead: "var(--omsk-dim)",
 };
 
 const SETTLED_COLOR: Record<string, string> = {
-	completed: "var(--omp-success)",
-	failed: "var(--omp-error)",
-	cancelled: "var(--omp-warning)",
+	completed: "var(--omsk-success)",
+	failed: "var(--omsk-error)",
+	cancelled: "var(--omsk-warning)",
 };
 
 /** Locale key per session state; "running" reuses the shared subagent label. */
@@ -136,10 +136,10 @@ function composerLines(message: string): string[] {
 function CliBadge({ cli, live }: { cli: string; live?: boolean }) {
 	return (
 		<span
-			className="rounded px-1 py-px font-mono text-omp-xxs font-semibold"
+			className="rounded px-1 py-px font-mono text-omsk-xxs font-semibold"
 			style={{
-				background: live ? "var(--omp-accent)" : "var(--omp-success)",
-				color: "var(--omp-btn-primary-text)",
+				background: live ? "var(--omsk-accent)" : "var(--omsk-success)",
+				color: "var(--omsk-btn-primary-text)",
 				opacity: 0.9,
 			}}
 		>
@@ -152,17 +152,17 @@ function CliBadge({ cli, live }: { cli: string; live?: boolean }) {
 function ComposerCard({ message, ack, ackColor }: { message: string; ack: string; ackColor: string }) {
 	const lines = composerLines(message);
 	return (
-		<div className="overflow-hidden rounded-md border border-[var(--omp-border-muted)]">
-			<div className="max-h-32 overflow-auto bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.5]">
+		<div className="overflow-hidden rounded-md border border-[var(--omsk-border-muted)]">
+			<div className="max-h-32 overflow-auto bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.5]">
 				{lines.map((line, i) => (
 					<div key={i} className="flex gap-1.5">
-						<span className="shrink-0 font-semibold text-[var(--omp-accent)]">{i === 0 ? ">" : " "}</span>
-						<span className="whitespace-pre-wrap text-[var(--omp-tool-output)]">{line}</span>
+						<span className="shrink-0 font-semibold text-[var(--omsk-accent)]">{i === 0 ? ">" : " "}</span>
+						<span className="whitespace-pre-wrap text-[var(--omsk-tool-output)]">{line}</span>
 					</div>
 				))}
 			</div>
 			<div
-				className="border-t border-[var(--omp-border-muted)] px-2 py-1 font-mono text-omp-xs font-medium"
+				className="border-t border-[var(--omsk-border-muted)] px-2 py-1 font-mono text-omsk-xs font-medium"
 				style={{ color: ackColor }}
 			>
 				{ack}
@@ -178,19 +178,19 @@ const OUTPUT_CAP = 2;
 function ScreenCard({ screen, now, settledStatus }: { screen: VibeScreen; now: number; settledStatus?: string }) {
 	const t = useT();
 	const live = isLive(screen);
-	const stateColor = STATE_COLOR[screen.state ?? ""] ?? "var(--omp-dim)";
-	const settledColor = settledStatus ? (SETTLED_COLOR[settledStatus] ?? "var(--omp-warning)") : undefined;
+	const stateColor = STATE_COLOR[screen.state ?? ""] ?? "var(--omsk-dim)";
+	const settledColor = settledStatus ? (SETTLED_COLOR[settledStatus] ?? "var(--omsk-warning)") : undefined;
 	const turnsLabel = `${screen.turns}t${screen.queued > 0 ? `+${screen.queued}q` : ""}`;
 	const detail = screen.lastIntent ?? screen.currentToolArgs;
 	const trace = screen.trace.slice(-TRACE_CAP);
 	const output = screen.outputTail.slice(-OUTPUT_CAP).filter(line => line.trim().length > 0);
 
 	return (
-		<div className="overflow-hidden rounded-md border border-[var(--omp-border-muted)]">
-			<div className="flex flex-wrap items-center gap-1.5 border-b border-[var(--omp-border-muted)]/70 px-2 py-1 font-mono text-omp-xs">
+		<div className="overflow-hidden rounded-md border border-[var(--omsk-border-muted)]">
+			<div className="flex flex-wrap items-center gap-1.5 border-b border-[var(--omsk-border-muted)]/70 px-2 py-1 font-mono text-omsk-xs">
 				<span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: settledColor ?? stateColor }} />
 				{screen.cli && <CliBadge cli={screen.cli} live={live} />}
-				<span className={cx("font-semibold", live ? "text-[var(--omp-accent)]" : "text-[var(--omp-text)]")}>
+				<span className={cx("font-semibold", live ? "text-[var(--omsk-accent)]" : "text-[var(--omsk-text)]")}>
 					{screen.id}
 				</span>
 				<span style={{ color: settledColor ?? stateColor }}>
@@ -198,56 +198,56 @@ function ScreenCard({ screen, now, settledStatus }: { screen: VibeScreen; now: n
 						? t(SETTLED_LABEL_KEY[settledStatus] ?? "subagent.status.cancelled")
 						: t(STATE_LABEL_KEY[screen.state ?? ""] ?? "tools.vibe.state.starting")}
 				</span>
-				<span className="text-[var(--omp-dim)] tabular-nums">{turnsLabel}</span>
+				<span className="text-[var(--omsk-dim)] tabular-nums">{turnsLabel}</span>
 				{screen.turnStartedAt != null && live && (
-					<span className="text-[var(--omp-dim)] tabular-nums">
+					<span className="text-[var(--omsk-dim)] tabular-nums">
 						{formatDuration(Math.max(0, now - screen.turnStartedAt))}
 					</span>
 				)}
-				{screen.model && <span className="truncate text-[var(--omp-dim)]">{screen.model}</span>}
+				{screen.model && <span className="truncate text-[var(--omsk-dim)]">{screen.model}</span>}
 			</div>
-			<div className="bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.55]">
+			<div className="bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.55]">
 				{live ? (
 					<>
 						{screen.turnMessage && (
 							<div className="flex gap-1.5">
-								<span className="shrink-0 font-semibold text-[var(--omp-accent)]">&gt;</span>
-								<span className="truncate text-[var(--omp-dim)]" title={screen.turnMessage}>
+								<span className="shrink-0 font-semibold text-[var(--omsk-accent)]">&gt;</span>
+								<span className="truncate text-[var(--omsk-dim)]" title={screen.turnMessage}>
 									{screen.turnMessage}
 								</span>
 							</div>
 						)}
 						{trace.map((line, i) => (
 							<div key={i} className="flex gap-1.5">
-								<span className="shrink-0 text-[var(--omp-dim)]">└</span>
-								<span className="truncate text-[var(--omp-dim)]" title={line}>
+								<span className="shrink-0 text-[var(--omsk-dim)]">└</span>
+								<span className="truncate text-[var(--omsk-dim)]" title={line}>
 									{line}
 								</span>
 							</div>
 						))}
 						{screen.currentTool ? (
 							<div className="flex gap-1.5">
-								<span className="shrink-0 text-[var(--omp-accent)]">└</span>
+								<span className="shrink-0 text-[var(--omsk-accent)]">└</span>
 								<span
-									className="truncate text-[var(--omp-muted)]"
+									className="truncate text-[var(--omsk-muted)]"
 									title={detail ? `${screen.currentTool}: ${detail}` : screen.currentTool}
 								>
 									{screen.currentTool}
-									{detail && <span className="text-[var(--omp-dim)]">: {detail}</span>}
+									{detail && <span className="text-[var(--omsk-dim)]">: {detail}</span>}
 								</span>
 							</div>
 						) : (
 							screen.lastIntent && (
 								<div className="flex gap-1.5">
-									<span className="shrink-0 text-[var(--omp-accent)]">└</span>
-									<span className="truncate text-[var(--omp-muted)]" title={screen.lastIntent}>
+									<span className="shrink-0 text-[var(--omsk-accent)]">└</span>
+									<span className="truncate text-[var(--omsk-muted)]" title={screen.lastIntent}>
 										{screen.lastIntent}
 									</span>
 								</div>
 							)
 						)}
 						{output.map((line, i) => (
-							<div key={i} className="truncate pl-3 text-[var(--omp-muted)]" title={line}>
+							<div key={i} className="truncate pl-3 text-[var(--omsk-muted)]" title={line}>
 								{line}
 							</div>
 						))}
@@ -255,8 +255,8 @@ function ScreenCard({ screen, now, settledStatus }: { screen: VibeScreen; now: n
 				) : (
 					screen.lastActivity && (
 						<div className="flex gap-1.5">
-							<span className="shrink-0 text-[var(--omp-dim)]">└</span>
-							<span className="truncate text-[var(--omp-muted)]" title={screen.lastActivity}>
+							<span className="shrink-0 text-[var(--omsk-dim)]">└</span>
+							<span className="truncate text-[var(--omsk-muted)]" title={screen.lastActivity}>
 								{screen.lastActivity}
 							</span>
 						</div>
@@ -265,7 +265,7 @@ function ScreenCard({ screen, now, settledStatus }: { screen: VibeScreen; now: n
 			</div>
 			{settledStatus && (
 				<div
-					className="border-t border-[var(--omp-border-muted)] px-2 py-1 font-mono text-omp-xs font-medium"
+					className="border-t border-[var(--omsk-border-muted)] px-2 py-1 font-mono text-omsk-xs font-medium"
 					style={{ color: settledColor }}
 				>
 					{t("tools.vibe.turnSettled", {
@@ -281,23 +281,23 @@ function ScreenCard({ screen, now, settledStatus }: { screen: VibeScreen; now: n
 function SessionTable({ screens }: { screens: VibeScreen[] }) {
 	const t = useT();
 	return (
-		<div className="max-h-56 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.7]">
+		<div className="max-h-56 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.7]">
 			{screens.map(screen => {
-				const stateColor = STATE_COLOR[screen.state ?? ""] ?? "var(--omp-dim)";
+				const stateColor = STATE_COLOR[screen.state ?? ""] ?? "var(--omsk-dim)";
 				const turnsLabel = `${screen.turns}t${screen.queued > 0 ? `+${screen.queued}q` : ""}`;
 				return (
 					<div key={screen.id} className="flex items-center gap-2">
 						<span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: stateColor }} />
-						<span className="shrink-0 font-semibold text-[var(--omp-text)]">{screen.id}</span>
+						<span className="shrink-0 font-semibold text-[var(--omsk-text)]">{screen.id}</span>
 						{screen.cli && <CliBadge cli={screen.cli} live={isLive(screen)} />}
-						<span className="shrink-0 text-omp-xs" style={{ color: stateColor }}>
+						<span className="shrink-0 text-omsk-xs" style={{ color: stateColor }}>
 							{t(STATE_LABEL_KEY[screen.state ?? ""] ?? "tools.vibe.state.starting")}
 						</span>
-						<span className="shrink-0 text-omp-xs text-[var(--omp-dim)] tabular-nums">{turnsLabel}</span>
-						{screen.model && <span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">{screen.model}</span>}
+						<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)] tabular-nums">{turnsLabel}</span>
+						{screen.model && <span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">{screen.model}</span>}
 						{screen.lastActivity && (
 							<span
-								className="min-w-0 flex-1 truncate text-right text-omp-xs text-[var(--omp-muted)]"
+								className="min-w-0 flex-1 truncate text-right text-omsk-xs text-[var(--omsk-muted)]"
 								title={screen.lastActivity}
 							>
 								{screen.lastActivity}
@@ -369,23 +369,23 @@ function VibeView({ op, args, result, isError, isPartial, partialResult }: ToolR
 		if (isPartial) {
 			return {
 				text: op === "spawn" ? t("tools.vibe.booting") : t("tools.vibe.delivering"),
-				color: "var(--omp-dim)",
+				color: "var(--omsk-dim)",
 			};
 		}
 		if (op === "spawn") {
 			const jobId = asString(spawned?.jobId);
 			return {
 				text: jobId ? t("tools.vibe.turnStartedJob", { jobId }) : t("tools.vibe.turnStarted"),
-				color: "var(--omp-success)",
+				color: "var(--omsk-success)",
 			};
 		}
 		const mode = asString(send?.mode);
 		const jobId = asString(send?.jobId);
-		if (mode === "steered") return { text: t("tools.vibe.steered"), color: "var(--omp-success)" };
-		if (mode === "queued") return { text: t("tools.vibe.queued"), color: "var(--omp-warning)" };
+		if (mode === "steered") return { text: t("tools.vibe.steered"), color: "var(--omsk-success)" };
+		if (mode === "queued") return { text: t("tools.vibe.queued"), color: "var(--omsk-warning)" };
 		return {
 			text: jobId ? t("tools.vibe.turnStartedJob", { jobId }) : t("tools.vibe.turnStarted"),
-			color: "var(--omp-success)",
+			color: "var(--omsk-success)",
 		};
 	})();
 
@@ -397,14 +397,16 @@ function VibeView({ op, args, result, isError, isPartial, partialResult }: ToolR
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<Icon size={12} className="shrink-0 text-[var(--omp-status-subagents)]" />
-				<span className="font-semibold text-[var(--omp-text)]">vibe</span>
-				<span className="min-w-0 truncate text-[var(--omp-muted)]" title={describe}>
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<Icon size={12} className="shrink-0 text-[var(--omsk-status-subagents)]" />
+				<span className="font-semibold text-[var(--omsk-text)]">vibe</span>
+				<span className="min-w-0 truncate text-[var(--omsk-muted)]" title={describe}>
 					{describe}
 				</span>
 				{op === "wait" && waiting && !isError && (
-					<span className="ml-auto shrink-0 text-omp-xs text-[var(--omp-accent)]">{t("tools.vibe.watching")}</span>
+					<span className="ml-auto shrink-0 text-omsk-xs text-[var(--omsk-accent)]">
+						{t("tools.vibe.watching")}
+					</span>
 				)}
 			</div>
 
@@ -412,22 +414,22 @@ function VibeView({ op, args, result, isError, isPartial, partialResult }: ToolR
 				<ComposerCard message={message} ack={ack.text} ackColor={ack.color} />
 			)}
 			{composerOp && message == null && ack && (
-				<div className="font-mono text-omp-xs font-medium" style={{ color: ack.color }}>
+				<div className="font-mono text-omsk-xs font-medium" style={{ color: ack.color }}>
 					{ack.text}
 				</div>
 			)}
 
 			{op === "wait" && (runningCount > 0 || settled.length > 0 || timedOut) && (
-				<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-omp-xs">
+				<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-omsk-xs">
 					{runningCount > 0 && (
-						<span className="text-[var(--omp-accent)]">{t("tools.vibe.onAir", { count: runningCount })}</span>
+						<span className="text-[var(--omsk-accent)]">{t("tools.vibe.onAir", { count: runningCount })}</span>
 					)}
 					{settled.length > 0 && (
-						<span className="text-[var(--omp-success)]">
+						<span className="text-[var(--omsk-success)]">
 							{t("tools.vibe.settled", { count: settled.length })}
 						</span>
 					)}
-					{timedOut && <span className="text-[var(--omp-warning)]">{t("tools.vibe.timedOut")}</span>}
+					{timedOut && <span className="text-[var(--omsk-warning)]">{t("tools.vibe.timedOut")}</span>}
 				</div>
 			)}
 
@@ -440,7 +442,7 @@ function VibeView({ op, args, result, isError, isPartial, partialResult }: ToolR
 			)}
 
 			{op === "wait" && !isPartial && text.trim() && (
-				<pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.45] text-[var(--omp-tool-output)]">
+				<pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] text-[var(--omsk-tool-output)]">
 					{text}
 				</pre>
 			)}
@@ -449,18 +451,18 @@ function VibeView({ op, args, result, isError, isPartial, partialResult }: ToolR
 
 			{op === "kill" && killed != null && (
 				<div className="flex flex-col gap-0.5">
-					<div className="flex items-center gap-2 font-mono text-omp-sm">
-						<span className="font-semibold text-[var(--omp-text)]">
+					<div className="flex items-center gap-2 font-mono text-omsk-sm">
+						<span className="font-semibold text-[var(--omsk-text)]">
 							{t("tools.vibe.killed", { id: killedId || "?" })}
 						</span>
 						{cancelledTurn && (
-							<span className="rounded bg-[var(--omp-warning)]/15 px-1 py-px text-omp-xxs font-semibold text-[var(--omp-warning)]">
+							<span className="rounded bg-[var(--omsk-warning)]/15 px-1 py-px text-omsk-xxs font-semibold text-[var(--omsk-warning)]">
 								{t("tools.vibe.cancelledTurn")}
 							</span>
 						)}
 					</div>
 					{killedId && (
-						<div className="font-mono text-omp-xs text-[var(--omp-dim)]">
+						<div className="font-mono text-omsk-xs text-[var(--omsk-dim)]">
 							{t("tools.vibe.transcriptNote", { id: killedId })}
 						</div>
 					)}
@@ -470,10 +472,10 @@ function VibeView({ op, args, result, isError, isPartial, partialResult }: ToolR
 			{(!hasStructured || isError) && text && (
 				<pre
 					className={cx(
-						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omp-sm leading-[1.45]",
+						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omsk-sm leading-[1.45]",
 						isError
-							? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-							: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]",
+							? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+							: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]",
 					)}
 				>
 					{text}

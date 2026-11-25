@@ -37,7 +37,7 @@ export function SharkCapabilitiesTab({ capabilities, loading, onSearch }: SharkC
 
 	return (
 		<div className="space-y-4">
-			<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--omp-border-muted)] p-3.5">
+			<div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--omsk-border-muted)] p-3.5">
 				<div className="flex min-w-60 flex-1 items-center gap-2">
 					<div className="min-w-0 flex-1">
 						<Input
@@ -73,10 +73,10 @@ export function SharkCapabilitiesTab({ capabilities, loading, onSearch }: SharkC
 							aria-pressed={originFilter === origin}
 							onClick={() => setOriginFilter(origin)}
 							className={cx(
-								"omp-pressable rounded-full border px-2.5 py-0.5 text-omp-xs font-medium",
+								"omsk-pressable rounded-full border px-2.5 py-0.5 text-omsk-xs font-medium",
 								originFilter === origin
-									? "border-[var(--omp-border-accent)] bg-[var(--omp-accent-dim)] text-[var(--omp-accent)]"
-									: "border-[var(--omp-border-muted)] text-[var(--omp-muted)] hover:text-[var(--omp-text)]",
+									? "border-[var(--omsk-border-accent)] bg-[var(--omsk-accent-dim)] text-[var(--omsk-accent)]"
+									: "border-[var(--omsk-border-muted)] text-[var(--omsk-muted)] hover:text-[var(--omsk-text)]",
 							)}
 						>
 							{origin}
@@ -86,14 +86,14 @@ export function SharkCapabilitiesTab({ capabilities, loading, onSearch }: SharkC
 			</div>
 
 			{visible.length === 0 ? (
-				<div className="rounded-xl border border-dashed border-[var(--omp-border-muted)] p-8 text-center text-omp-sm text-[var(--omp-dim)]">
+				<div className="rounded-xl border border-dashed border-[var(--omsk-border-muted)] p-8 text-center text-omsk-sm text-[var(--omsk-dim)]">
 					No capabilities match the current filter.
 				</div>
 			) : (
-				<div className="overflow-x-auto rounded-xl border border-[var(--omp-border-muted)]">
-					<table className="w-full border-collapse text-left text-omp-xs">
+				<div className="overflow-x-auto rounded-xl border border-[var(--omsk-border-muted)]">
+					<table className="w-full border-collapse text-left text-omsk-xs">
 						<thead>
-							<tr className="border-b border-[var(--omp-border-muted)] text-omp-xxs uppercase tracking-wide text-[var(--omp-dim)]">
+							<tr className="border-b border-[var(--omsk-border-muted)] text-omsk-xxs uppercase tracking-wide text-[var(--omsk-dim)]">
 								<th className="px-3 py-2.5 font-semibold">Capability</th>
 								<th className="px-3 py-2.5 font-semibold">Origin</th>
 								<th className="px-3 py-2.5 font-semibold">Risk</th>
@@ -101,17 +101,17 @@ export function SharkCapabilitiesTab({ capabilities, loading, onSearch }: SharkC
 								<th className="px-3 py-2.5 font-semibold">Permissions</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-[var(--omp-border-muted)]">
+						<tbody className="divide-y divide-[var(--omsk-border-muted)]">
 							{visible.map(cap => (
-								<tr key={cap.id} className="align-top hover:bg-[var(--omp-selected-bg)]">
+								<tr key={cap.id} className="align-top hover:bg-[var(--omsk-selected-bg)]">
 									<td className="px-3 py-2.5">
-										<div className="font-semibold text-[var(--omp-text)]">{cap.name}</div>
-										<div className="font-mono text-omp-xxs text-[var(--omp-dim)]">{cap.id}</div>
-										<div className="mt-0.5 text-omp-xs text-[var(--omp-muted)]">{cap.description}</div>
+										<div className="font-semibold text-[var(--omsk-text)]">{cap.name}</div>
+										<div className="font-mono text-omsk-xxs text-[var(--omsk-dim)]">{cap.id}</div>
+										<div className="mt-0.5 text-omsk-xs text-[var(--omsk-muted)]">{cap.description}</div>
 									</td>
 									<td className="px-3 py-2.5 whitespace-nowrap">
 										<Badge variant="info">{cap.originType}</Badge>
-										<div className="mt-1 font-mono text-omp-xxs text-[var(--omp-dim)]">
+										<div className="mt-1 font-mono text-omsk-xxs text-[var(--omsk-dim)]">
 											{cap.originSource}
 										</div>
 									</td>
@@ -136,13 +136,13 @@ export function SharkCapabilitiesTab({ capabilities, loading, onSearch }: SharkC
 												cap.permissions.map(perm => (
 													<span
 														key={perm}
-														className="rounded border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] px-1.5 py-px font-mono text-omp-xxs text-[var(--omp-text-secondary)]"
+														className="rounded border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] px-1.5 py-px font-mono text-omsk-xxs text-[var(--omsk-text-secondary)]"
 													>
 														{perm}
 													</span>
 												))
 											) : (
-												<span className="text-[var(--omp-dim)]">none</span>
+												<span className="text-[var(--omsk-dim)]">none</span>
 											)}
 										</div>
 									</td>

@@ -288,9 +288,9 @@ function ModeFrame({ loading, loaded, error, ready, onRefresh, children }: ModeF
 			);
 		} else if (error) {
 			body = (
-				<div className="m-auto flex max-w-md flex-col items-center gap-2 rounded-lg border border-(--omp-border-muted) px-4 py-6 text-center">
-					<span className="text-omp-md font-medium text-(--omp-error)">{t("modesPanel.loadFailed")}</span>
-					<span className="text-omp-sm break-all text-(--omp-dim)">{error}</span>
+				<div className="m-auto flex max-w-md flex-col items-center gap-2 rounded-lg border border-(--omsk-border-muted) px-4 py-6 text-center">
+					<span className="text-omsk-md font-medium text-(--omsk-error)">{t("modesPanel.loadFailed")}</span>
+					<span className="text-omsk-sm break-all text-(--omsk-dim)">{error}</span>
 					<Button
 						disabled={!ready}
 						icon={<RefreshCw size={12} />}
@@ -345,16 +345,16 @@ function Toggle({
 	title?: string;
 }) {
 	return (
-		<label className="flex cursor-pointer items-start justify-between gap-4 rounded-md px-2 py-2 transition-colors hover:bg-(--omp-bg-tertiary)">
+		<label className="flex cursor-pointer items-start justify-between gap-4 rounded-md px-2 py-2 transition-colors hover:bg-(--omsk-bg-tertiary)">
 			<span className="min-w-0">
-				<span className="block text-omp-xs font-medium text-(--omp-text)">{label}</span>
+				<span className="block text-omsk-xs font-medium text-(--omsk-text)">{label}</span>
 				{description && (
-					<span className="mt-0.5 block text-omp-sm leading-snug text-(--omp-muted)">{description}</span>
+					<span className="mt-0.5 block text-omsk-sm leading-snug text-(--omsk-muted)">{description}</span>
 				)}
 			</span>
 			<button
 				aria-checked={checked}
-				className="mt-0.5 shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omp-accent) disabled:cursor-not-allowed disabled:opacity-50"
+				className="mt-0.5 shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--omsk-accent) disabled:cursor-not-allowed disabled:opacity-50"
 				disabled={disabled}
 				onClick={() => onChange(!checked)}
 				role="switch"
@@ -368,7 +368,7 @@ function Toggle({
 }
 
 function SectionLabel({ children }: { children: ReactNode }) {
-	return <span className="block text-omp-xs font-semibold text-(--omp-muted)">{children}</span>;
+	return <span className="block text-omsk-xs font-semibold text-(--omsk-muted)">{children}</span>;
 }
 
 // ---------------------------------------------------------------------------
@@ -388,8 +388,8 @@ function VibeTab({ rpc }: { rpc: ModeRpc<RpcVibeModeState> }) {
 		>
 			{state && (
 				<div className="flex flex-col gap-4">
-					<p className="text-omp-sm leading-relaxed text-(--omp-muted)">{t("modesPanel.vibe.desc")}</p>
-					<div className="rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-1.5">
+					<p className="text-omsk-sm leading-relaxed text-(--omsk-muted)">{t("modesPanel.vibe.desc")}</p>
+					<div className="rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-1.5">
 						<Toggle
 							checked={state.enabled}
 							description={t("modesPanel.vibe.toggleDesc")}
@@ -400,7 +400,7 @@ function VibeTab({ rpc }: { rpc: ModeRpc<RpcVibeModeState> }) {
 						/>
 					</div>
 					{!state.enabled && typeof state.killedWorkers === "number" && state.killedWorkers > 0 && (
-						<div className="rounded-md border border-[color-mix(in_srgb,var(--omp-warning)_35%,transparent)] bg-transparent px-3 py-2 text-omp-sm text-(--omp-warning)">
+						<div className="rounded-md border border-[color-mix(in_srgb,var(--omsk-warning)_35%,transparent)] bg-transparent px-3 py-2 text-omsk-sm text-(--omsk-warning)">
 							{t("modesPanel.vibe.killedWorkers", { count: state.killedWorkers })}
 						</div>
 					)}
@@ -472,7 +472,7 @@ function GoalEnabledView({ rpc, state }: { rpc: ModeRpc<RpcGoalState>; state: Rp
 				</div>
 			</div>
 
-			<div className="flex flex-col gap-2 rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-2.5">
+			<div className="flex flex-col gap-2 rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-2.5">
 				{tokenBudget !== null ? (
 					<ProgressBar
 						label={t("modesPanel.goal.budget")}
@@ -480,16 +480,16 @@ function GoalEnabledView({ rpc, state }: { rpc: ModeRpc<RpcGoalState>; state: Rp
 						valueText={`${formatTokens(tokensUsed)} / ${formatTokens(tokenBudget)}`}
 					/>
 				) : (
-					<span className="text-omp-sm text-(--omp-dim)">{t("modesPanel.goal.noBudget")}</span>
+					<span className="text-omsk-sm text-(--omsk-dim)">{t("modesPanel.goal.noBudget")}</span>
 				)}
-				<div className="flex flex-wrap gap-x-4 gap-y-1 text-omp-sm text-(--omp-muted)">
+				<div className="flex flex-wrap gap-x-4 gap-y-1 text-omsk-sm text-(--omsk-muted)">
 					<span>
 						{t("modesPanel.goal.tokensUsed")}:{" "}
-						<span className="tabular-nums text-(--omp-text)">{formatTokens(tokensUsed)}</span>
+						<span className="tabular-nums text-(--omsk-text)">{formatTokens(tokensUsed)}</span>
 					</span>
 					<span>
 						{t("modesPanel.goal.timeUsed")}:{" "}
-						<span className="tabular-nums text-(--omp-text)">{formatDuration(timeUsedSeconds * 1000)}</span>
+						<span className="tabular-nums text-(--omsk-text)">{formatDuration(timeUsedSeconds * 1000)}</span>
 					</span>
 				</div>
 			</div>
@@ -597,7 +597,7 @@ function GoalTab({ rpc }: { rpc: ModeRpc<RpcGoalState> }) {
 		>
 			{state && (
 				<div className="flex flex-col gap-4">
-					<p className="text-omp-sm leading-relaxed text-(--omp-muted)">{t("modesPanel.goal.desc")}</p>
+					<p className="text-omsk-sm leading-relaxed text-(--omsk-muted)">{t("modesPanel.goal.desc")}</p>
 					{state.enabled ? <GoalEnabledView rpc={rpc} state={state} /> : <GoalStartForm rpc={rpc} />}
 				</div>
 			)}
@@ -632,8 +632,8 @@ function LoopTab({ rpc }: { rpc: ModeRpc<RpcLoopModeState> }) {
 		>
 			{state && (
 				<div className="flex flex-col gap-4">
-					<p className="text-omp-sm leading-relaxed text-(--omp-muted)">{t("modesPanel.loop.desc")}</p>
-					<div className="rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-1.5">
+					<p className="text-omsk-sm leading-relaxed text-(--omsk-muted)">{t("modesPanel.loop.desc")}</p>
+					<div className="rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-1.5">
 						<Toggle
 							checked={state.enabled}
 							description={t("modesPanel.loop.toggleDesc")}
@@ -654,17 +654,17 @@ function LoopTab({ rpc }: { rpc: ModeRpc<RpcLoopModeState> }) {
 					<div className="flex flex-col gap-1.5">
 						<SectionLabel>{t("modesPanel.loop.promptLabel")}</SectionLabel>
 						{state.prompt ? (
-							<p className="rounded-md border border-(--omp-border-muted) bg-transparent px-3 py-2 font-mono text-omp-sm break-words whitespace-pre-wrap text-(--omp-text)">
+							<p className="rounded-md border border-(--omsk-border-muted) bg-transparent px-3 py-2 font-mono text-omsk-sm break-words whitespace-pre-wrap text-(--omsk-text)">
 								{state.prompt}
 							</p>
 						) : (
-							<p className="text-omp-sm text-(--omp-dim)">{t("modesPanel.loop.noPrompt")}</p>
+							<p className="text-omsk-sm text-(--omsk-dim)">{t("modesPanel.loop.noPrompt")}</p>
 						)}
 					</div>
 
-					<div className="flex flex-wrap items-center gap-2 text-omp-sm text-(--omp-muted)">
+					<div className="flex flex-wrap items-center gap-2 text-omsk-sm text-(--omsk-muted)">
 						<SectionLabel>{t("modesPanel.loop.limitLabel")}</SectionLabel>
-						<span className="tabular-nums text-(--omp-text)">
+						<span className="tabular-nums text-(--omsk-text)">
 							{limit ? loopLimitText(t, limit) : t("modesPanel.loop.noLimit")}
 						</span>
 					</div>
@@ -754,7 +754,7 @@ export function ModesPanel({ open, onClose, initialTab = "vibe" }: ModesPanelPro
 
 	return (
 		<Modal dockable onClose={onClose} open={open} size="lg" title={t("modesPanel.title")} bodyClassName="p-0">
-			<div className="omp-docked-fill flex h-[70vh] min-h-0 flex-col">
+			<div className="omsk-docked-fill flex h-[70vh] min-h-0 flex-col">
 				<Tabs
 					activeId={tab}
 					ariaLabel={t("modesPanel.title")}
@@ -765,7 +765,7 @@ export function ModesPanel({ open, onClose, initialTab = "vibe" }: ModesPanelPro
 				{tab === "vibe" && <VibeTab rpc={vibe} />}
 				{tab === "goal" && <GoalTab rpc={goal} />}
 				{tab === "loop" && <LoopTab rpc={loop} />}
-				<div className="shrink-0 border-t border-(--omp-border-muted) px-4 py-2 text-omp-xs text-(--omp-dim)">
+				<div className="shrink-0 border-t border-(--omsk-border-muted) px-4 py-2 text-omsk-xs text-(--omsk-dim)">
 					{t("modesPanel.footerNote")}
 				</div>
 			</div>

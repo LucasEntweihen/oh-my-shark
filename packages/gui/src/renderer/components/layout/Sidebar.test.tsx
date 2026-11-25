@@ -319,7 +319,7 @@ describe("Sidebar menus and pinned ordering", () => {
 				(element as unknown as Element).getAttribute("data-workspace-group"),
 			);
 		const alphaSessionOrder = () =>
-			[...container.querySelectorAll('[data-session-group="/work/alpha"] .omp-sidebar-session-row')].map(
+			[...container.querySelectorAll('[data-session-group="/work/alpha"] .omsk-sidebar-session-row')].map(
 				element => element.textContent ?? "",
 			);
 
@@ -452,10 +452,10 @@ describe("Sidebar menus and pinned ordering", () => {
 		seedStores();
 		await mount(<Sidebar />);
 
-		const rows = container.querySelectorAll(".omp-sidebar-session-row");
+		const rows = container.querySelectorAll(".omsk-sidebar-session-row");
 		expect(rows.length).toBeGreaterThan(0);
-		expect(rows.every(row => row.querySelector(".omp-signal-light") !== null)).toBe(true);
-		expect(rows.every(row => row.querySelector(".omp-signal-light--active") === null)).toBe(true);
+		expect(rows.every(row => row.querySelector(".omsk-signal-light") !== null)).toBe(true);
+		expect(rows.every(row => row.querySelector(".omsk-signal-light--active") === null)).toBe(true);
 		expect(rows[0]?.querySelector('[aria-label="Completed"]')).not.toBeNull();
 	});
 
@@ -477,15 +477,15 @@ describe("Sidebar menus and pinned ordering", () => {
 		});
 		await mount(<Sidebar />);
 
-		const signal = () => container.querySelector('[data-active="true"] .omp-signal-light') as unknown as Element;
+		const signal = () => container.querySelector('[data-active="true"] .omsk-signal-light') as unknown as Element;
 		expect(signal().getAttribute("aria-label")).toBe("Ready");
-		expect(signal().getAttribute("style")).toContain("--omp-dim");
+		expect(signal().getAttribute("style")).toContain("--omsk-dim");
 
 		await act(async () => {
 			useTabsStore.setState({ tabs: [{ ...useTabsStore.getState().tabs[0]!, status: "running" }] });
 		});
 		expect(signal().getAttribute("aria-label")).toBe("Working");
-		expect(signal().className).toContain("omp-signal-light--active");
+		expect(signal().className).toContain("omsk-signal-light--active");
 	});
 
 	it("lines every session title up under its group icon, with the status light in that slot", async () => {
@@ -498,7 +498,7 @@ describe("Sidebar menus and pinned ordering", () => {
 		const groupedAgentRow = container.querySelector('[data-session-group="/work/alpha"] [data-session-kind="agent"]');
 		for (const row of [chatRow, groupedAgentRow]) {
 			expect(row).not.toBeNull();
-			expect(row?.querySelector("[data-sidebar-session-icon] .omp-signal-light")).not.toBeNull();
+			expect(row?.querySelector("[data-sidebar-session-icon] .omsk-signal-light")).not.toBeNull();
 		}
 	});
 
@@ -821,12 +821,12 @@ describe("Sidebar menus and pinned ordering", () => {
 		seedStores();
 		await mount(<Sidebar />);
 
-		const row = [...document.querySelectorAll(".omp-sidebar-session-row")].find(el =>
+		const row = [...document.querySelectorAll(".omsk-sidebar-session-row")].find(el =>
 			(el.textContent ?? "").includes("Session /work/alpha/one"),
 		);
 		expect(row).toBeDefined();
-		const title = row?.querySelector(".omp-sidebar-title");
-		const actions = row?.querySelector(".omp-sidebar-session-actions");
+		const title = row?.querySelector(".omsk-sidebar-title");
+		const actions = row?.querySelector(".omsk-sidebar-session-actions");
 		expect(title).not.toBeNull();
 		expect(title?.className).toContain("truncate");
 		expect(actions).not.toBeNull();
@@ -839,7 +839,7 @@ describe("Sidebar menus and pinned ordering", () => {
 		seedStores();
 		await mount(<Sidebar />);
 
-		const row = [...document.querySelectorAll(".omp-sidebar-session-row")].find(el =>
+		const row = [...document.querySelectorAll(".omsk-sidebar-session-row")].find(el =>
 			(el.textContent ?? "").includes("Session /work/alpha/one"),
 		) as unknown as Element;
 		await fire(row.querySelector('[aria-label="Delete session"]') as Element, "onClick");
@@ -883,7 +883,7 @@ describe("Sidebar menus and pinned ordering", () => {
 		useSidebarPrefs.setState({ pinnedSessions: [before.path], hydrated: true });
 		await mount(<Sidebar />);
 
-		const rows = [...document.querySelectorAll(".omp-sidebar-session-row")].filter(el =>
+		const rows = [...document.querySelectorAll(".omsk-sidebar-session-row")].filter(el =>
 			(el.textContent ?? "").includes("Moved session"),
 		);
 		expect(rows).toHaveLength(1);
@@ -932,7 +932,7 @@ describe("Sidebar menus and pinned ordering", () => {
 
 describe("Sidebar split pairs (gui#30)", () => {
 	const titles = (root: ParentNode, selector: string) =>
-		[...root.querySelectorAll(selector)].map(el => el.querySelector(".omp-sidebar-title")?.textContent ?? "");
+		[...root.querySelectorAll(selector)].map(el => el.querySelector(".omsk-sidebar-title")?.textContent ?? "");
 
 	it("draws a pair's sessions together in one frame and marks a pair whose partner is listed elsewhere", async () => {
 		installMockOmp([
@@ -963,7 +963,7 @@ describe("Sidebar split pairs (gui#30)", () => {
 		await mount(<Sidebar />);
 
 		// The pair takes the place of its more recent session, in pane order.
-		expect(titles(document, '[data-session-group="/work/alpha"] .omp-sidebar-session-row')).toEqual([
+		expect(titles(document, '[data-session-group="/work/alpha"] .omsk-sidebar-session-row')).toEqual([
 			"Session /work/alpha/two.jsonl",
 			"Session /work/alpha/newest.jsonl",
 			"Session /work/alpha/one.jsonl",
@@ -971,12 +971,12 @@ describe("Sidebar split pairs (gui#30)", () => {
 		const frames = [...document.querySelectorAll("[data-sidebar-pair]")];
 		expect(frames).toHaveLength(1);
 		expect(frames[0]?.getAttribute("data-on-screen")).toBe("true");
-		expect(titles(frames[0] as ParentNode, ".omp-sidebar-session-row")).toEqual([
+		expect(titles(frames[0] as ParentNode, ".omsk-sidebar-session-row")).toEqual([
 			"Session /work/alpha/two.jsonl",
 			"Session /work/alpha/newest.jsonl",
 		]);
 		// Its partner sits in another workspace: the row names it instead.
-		const one = [...document.querySelectorAll(".omp-sidebar-session-row")].find(el =>
+		const one = [...document.querySelectorAll(".omsk-sidebar-session-row")].find(el =>
 			(el.textContent ?? "").includes("alpha/one"),
 		);
 		expect(one?.querySelector('[aria-label="Split with “Session /work/beta/three.jsonl”"]')).not.toBeNull();
@@ -1009,12 +1009,12 @@ describe("Sidebar split pairs (gui#30)", () => {
 		});
 		await mount(<Sidebar />);
 
-		const two = [...document.querySelectorAll(".omp-sidebar-session-row")].find(el =>
+		const two = [...document.querySelectorAll(".omsk-sidebar-session-row")].find(el =>
 			(el.textContent ?? "").includes("alpha/two"),
 		);
-		await fire(two?.querySelector(".omp-sidebar-agent-pill") as unknown as Element, "onClick");
+		await fire(two?.querySelector(".omsk-sidebar-agent-pill") as unknown as Element, "onClick");
 		const frame = document.querySelector("[data-sidebar-pair]");
-		expect(titles(frame as ParentNode, ".omp-sidebar-session-row")).toEqual([
+		expect(titles(frame as ParentNode, ".omsk-sidebar-session-row")).toEqual([
 			"Session /work/alpha/two.jsonl",
 			"Fork of two",
 			"Session /work/alpha/newest.jsonl",
@@ -1024,11 +1024,11 @@ describe("Sidebar split pairs (gui#30)", () => {
 
 describe("Sidebar bulk selection", () => {
 	const row = (title: string) =>
-		[...document.querySelectorAll(".omp-sidebar-session-row")].find(el =>
+		[...document.querySelectorAll(".omsk-sidebar-session-row")].find(el =>
 			(el.textContent ?? "").includes(title),
 		) as unknown as Element;
 	const titles = (selector: string) =>
-		[...document.querySelectorAll(selector)].map(el => el.querySelector(".omp-sidebar-title")?.textContent ?? "");
+		[...document.querySelectorAll(selector)].map(el => el.querySelector(".omsk-sidebar-title")?.textContent ?? "");
 	const bulkBar = () => document.body.querySelector("[data-sidebar-bulk]");
 
 	it("archives ⌘-clicked sessions out of their workspace and restores them from Archived", async () => {
@@ -1073,7 +1073,7 @@ describe("Sidebar bulk selection", () => {
 		]);
 		seedStores();
 		await mount(<Sidebar />);
-		expect(titles(".omp-sidebar-session-row")).toEqual([
+		expect(titles(".omsk-sidebar-session-row")).toEqual([
 			"Session /work/alpha/newest.jsonl",
 			"Session /work/alpha/one.jsonl",
 			"Session /work/alpha/two.jsonl",
@@ -1083,7 +1083,7 @@ describe("Sidebar bulk selection", () => {
 		await fire(row("Session /work/alpha/newest"), "onClick");
 		await fire(row("Session /work/alpha/two"), "onClick", { shiftKey: true });
 
-		expect(titles('.omp-sidebar-session-row[data-selected="true"]')).toEqual([
+		expect(titles('.omsk-sidebar-session-row[data-selected="true"]')).toEqual([
 			"Session /work/alpha/newest.jsonl",
 			"Session /work/alpha/one.jsonl",
 			"Session /work/alpha/two.jsonl",
@@ -1157,7 +1157,7 @@ describe("Sidebar selection keys", () => {
 		seedStores();
 		await mount(<Sidebar />);
 		await fire(container.querySelector("[data-sidebar-select]"), "onClick");
-		const row = document.querySelector(".omp-sidebar-session-row");
+		const row = document.querySelector(".omsk-sidebar-session-row");
 
 		expect(await press(row, "a", { metaKey: true })).toBe(true);
 		expect(document.body.querySelector("[data-sidebar-bulk]")?.textContent).toContain("2 selected");
@@ -1220,11 +1220,11 @@ describe("Sidebar session hierarchy", () => {
 		await mount(<Sidebar />);
 
 		const titles = () =>
-			[...document.querySelectorAll('[data-session-group="/work/alpha"] .omp-sidebar-title')].map(
+			[...document.querySelectorAll('[data-session-group="/work/alpha"] .omsk-sidebar-title')].map(
 				element => element.textContent,
 			);
 		const rowOf = (title: string) =>
-			[...document.querySelectorAll(".omp-sidebar-session-row")].find(element =>
+			[...document.querySelectorAll(".omsk-sidebar-session-row")].find(element =>
 				(element.textContent ?? "").includes(title),
 			);
 		const button = (label: string, row: Element | undefined) =>
@@ -1317,22 +1317,22 @@ describe("Sidebar session hierarchy", () => {
 			]);
 		try {
 			await mount(<Sidebar />);
-			const parentRow = [...document.querySelectorAll(".omp-sidebar-session-row")].find(row =>
+			const parentRow = [...document.querySelectorAll(".omsk-sidebar-session-row")].find(row =>
 				(row.textContent ?? "").includes("Main session"),
 			);
 			// One agent, one earlier transcript and one fork behind one arrow; the
 			// agent's own transcript is the agent row, not another entry.
 			expect(parentRow?.getAttribute("aria-expanded")).toBe("false");
-			expect(parentRow?.querySelector(".omp-sidebar-agent-pill")?.textContent).toBe("3");
+			expect(parentRow?.querySelector(".omsk-sidebar-agent-pill")?.textContent).toBe("3");
 			expect(parentRow?.querySelectorAll("[data-sidebar-session-icon] button").length).toBe(1);
 
-			await fire(parentRow?.querySelector(".omp-sidebar-agent-pill") as unknown as Element, "onClick");
+			await fire(parentRow?.querySelector(".omsk-sidebar-agent-pill") as unknown as Element, "onClick");
 			const group = document.querySelector('[data-session-group="/work/alpha"]');
 			expect(
-				[...(group?.querySelectorAll(".omp-sidebar-agent-row, .omp-sidebar-session-row") ?? [])].map(row =>
-					row.classList.contains("omp-sidebar-agent-row")
+				[...(group?.querySelectorAll(".omsk-sidebar-agent-row, .omsk-sidebar-session-row") ?? [])].map(row =>
+					row.classList.contains("omsk-sidebar-agent-row")
 						? `agent:${row.textContent}`
-						: row.querySelector(".omp-sidebar-title")?.textContent,
+						: row.querySelector(".omsk-sidebar-title")?.textContent,
 				),
 			).toEqual(["Main session", "agent:Essay Rain", "Snow transcript", "Forked session"]);
 		} finally {
@@ -1362,7 +1362,7 @@ describe("Sidebar session hierarchy", () => {
 		await mount(<Sidebar />);
 
 		const titlesIn = (selector: string) =>
-			[...document.querySelectorAll(`${selector} .omp-sidebar-session-row .omp-sidebar-title`)].map(
+			[...document.querySelectorAll(`${selector} .omsk-sidebar-session-row .omsk-sidebar-title`)].map(
 				element => element.textContent,
 			);
 		expect(titlesIn('[data-session-group="/work/alpha"]')).toEqual(["Other session"]);
@@ -1372,14 +1372,14 @@ describe("Sidebar session hierarchy", () => {
 			(element.textContent ?? "").includes("Archived"),
 		);
 		// The parent and its fork count; the subagent transcript sits inside the parent.
-		expect(document.querySelector("[data-archived-section] .omp-sidebar-group-count")?.textContent).toBe("2");
+		expect(document.querySelector("[data-archived-section] .omsk-sidebar-group-count")?.textContent).toBe("2");
 		await fire(archivedHeader as unknown as Element, "onClick");
 		expect(titlesIn("[data-archived-section]")).toEqual(["Main session"]);
-		const parentRow = [...document.querySelectorAll("[data-archived-section] .omp-sidebar-session-row")][0];
-		await fire(parentRow?.querySelector(".omp-sidebar-agent-pill") as unknown as Element, "onClick");
+		const parentRow = [...document.querySelectorAll("[data-archived-section] .omsk-sidebar-session-row")][0];
+		await fire(parentRow?.querySelector(".omsk-sidebar-agent-pill") as unknown as Element, "onClick");
 		expect(titlesIn("[data-archived-section]").sort()).toEqual(["Forked session", "Main session", "Rain transcript"]);
 
-		const forkRow = [...document.querySelectorAll("[data-archived-section] .omp-sidebar-session-row")].find(row =>
+		const forkRow = [...document.querySelectorAll("[data-archived-section] .omsk-sidebar-session-row")].find(row =>
 			(row.textContent ?? "").includes("Forked session"),
 		);
 		await fire(forkRow as unknown as Element, "onContextMenu");
@@ -1402,8 +1402,8 @@ describe("Sidebar session hierarchy", () => {
 		useSessionStore.setState({ sessionId: "fork-id" });
 		await mount(<Sidebar />);
 
-		const rows = [...document.querySelectorAll('[data-session-group="/work/alpha"] .omp-sidebar-session-row')];
-		expect(rows.map(row => row.querySelector(".omp-sidebar-title")?.textContent)).toEqual([
+		const rows = [...document.querySelectorAll('[data-session-group="/work/alpha"] .omsk-sidebar-session-row')];
+		expect(rows.map(row => row.querySelector(".omsk-sidebar-title")?.textContent)).toEqual([
 			"Main session",
 			"Forked session",
 		]);

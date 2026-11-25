@@ -11,14 +11,14 @@ export function SwitchTrack({ on, className }: { on: boolean; className?: string
 		<span
 			aria-hidden="true"
 			className={cx(
-				"omp-switch-track relative block h-5 w-9 shrink-0 rounded-full",
-				on ? "bg-(--omp-switch-on)" : "bg-(--omp-switch-off)", // surface-ok: toggle switch track fill
+				"omsk-switch-track relative block h-5 w-9 shrink-0 rounded-full",
+				on ? "bg-(--omsk-switch-on)" : "bg-(--omsk-switch-off)", // surface-ok: toggle switch track fill
 				className,
 			)}
 		>
 			<span
 				className={cx(
-					"omp-switch-thumb absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow",
+					"omsk-switch-thumb absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow",
 					on ? "translate-x-4" : "translate-x-0",
 				)}
 			/>

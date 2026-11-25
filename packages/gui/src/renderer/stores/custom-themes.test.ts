@@ -37,7 +37,7 @@ it("keeps a theme's last working version while its file is broken, and drops it 
 	loadCustomThemes({ dir: "/themes", files: [{ ...file, data: { tokens: { accent: "#111111" } } }] });
 	loadCustomThemes({ dir: "/themes", files: [{ ...file, error: "Unexpected token } in JSON" }] });
 
-	expect(customTheme("custom:midnight")?.tokens["--omp-accent"]).toBe("#111111");
+	expect(customTheme("custom:midnight")?.tokens["--omsk-accent"]).toBe("#111111");
 	expect(useCustomThemesStore.getState().entries.map(entry => entry.problem)).toEqual(["unreadable"]);
 
 	loadCustomThemes({ dir: "/themes", files: [] });

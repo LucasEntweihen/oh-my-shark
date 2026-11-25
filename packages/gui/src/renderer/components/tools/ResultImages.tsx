@@ -10,7 +10,7 @@ export function ResultImages({ images }: { images: readonly string[] }) {
 			{images.map((src, index) => (
 				<ZoomableImage
 					alt={`${t("tools.image.alt")} ${index + 1}`}
-					className="max-h-72 w-full rounded-md border border-[var(--omp-border-muted)] object-contain"
+					className="max-h-72 w-full rounded-md border border-[var(--omsk-border-muted)] object-contain"
 					key={src}
 					src={src}
 				/>

@@ -85,20 +85,20 @@ export function ComposerEditorDialog() {
 				EditorView.contentAttributes.of({ spellcheck: "true", autocorrect: "on", autocapitalize: "sentences" }),
 				EditorView.theme({
 					"&": {
-						backgroundColor: "var(--omp-code-bg)",
-						color: "var(--omp-text)",
+						backgroundColor: "var(--omsk-code-bg)",
+						color: "var(--omsk-text)",
 						fontSize: "13px",
 						height: "100%",
 					},
 					"&.cm-focused": { outline: "none" },
 					".cm-content": { fontFamily: "var(--font-mono, monospace)", padding: "10px 0" },
 					".cm-line": { padding: "0 14px" },
-					".cm-cursor": { borderLeftColor: "var(--omp-accent)" },
-					".cm-selectionBackground": { backgroundColor: "var(--omp-selected-bg) !important" },
+					".cm-cursor": { borderLeftColor: "var(--omsk-accent)" },
+					".cm-selectionBackground": { backgroundColor: "var(--omsk-selected-bg) !important" },
 					".cm-gutters": {
 						backgroundColor: "transparent",
-						borderRight: "1px solid var(--omp-border-muted)",
-						color: "var(--omp-dim)",
+						borderRight: "1px solid var(--omsk-border-muted)",
+						color: "var(--omsk-dim)",
 					},
 				}),
 				EditorView.updateListener.of(update => {
@@ -135,16 +135,16 @@ export function ComposerEditorDialog() {
 		<Modal open onClose={requestClose} size="full" title={t("editor.title")}>
 			<div className="flex h-full min-h-0 flex-col gap-2">
 				{discardArmed && (
-					<div className="shrink-0 rounded-lg border border-(--omp-warning) px-3 py-1.5 text-omp-md text-(--omp-warning)">
+					<div className="shrink-0 rounded-lg border border-(--omsk-warning) px-3 py-1.5 text-omsk-md text-(--omsk-warning)">
 						{t("editor.discardArmed")}
 					</div>
 				)}
 				{externalError && (
-					<div className="shrink-0 rounded-lg border border-(--omp-error) px-3 py-1.5 text-omp-md text-(--omp-error)">
+					<div className="shrink-0 rounded-lg border border-(--omsk-error) px-3 py-1.5 text-omsk-md text-(--omsk-error)">
 						{externalError}
 					</div>
 				)}
-				<div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-(--omp-border-muted)">
+				<div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-(--omsk-border-muted)">
 					<div ref={hostRef} className="h-full overflow-y-auto" />
 				</div>
 				<div className="flex shrink-0 items-center gap-2">

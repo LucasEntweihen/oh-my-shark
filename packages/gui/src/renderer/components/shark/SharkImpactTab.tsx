@@ -35,12 +35,12 @@ export function SharkImpactTab({ result, loading, onAnalyze }: SharkImpactTabPro
 
 	return (
 		<div className="space-y-4">
-			<section className="rounded-xl border border-[var(--omp-border-muted)] p-4">
-				<h3 className="mb-2 flex items-center gap-2 text-omp-md font-semibold text-[var(--omp-text)]">
-					<Radar size={15} className="text-[var(--omp-accent)]" />
+			<section className="rounded-xl border border-[var(--omsk-border-muted)] p-4">
+				<h3 className="mb-2 flex items-center gap-2 text-omsk-md font-semibold text-[var(--omsk-text)]">
+					<Radar size={15} className="text-[var(--omsk-accent)]" />
 					Shark Impact Analysis (/impact)
 				</h3>
-				<p className="mb-3 text-omp-xs text-[var(--omp-muted)]">
+				<p className="mb-3 text-omsk-xs text-[var(--omsk-muted)]">
 					Compute AST & dependency blast radius, dependent callers, associated tests, and contract breach risk.
 				</p>
 				<div className="flex flex-wrap items-center gap-2">
@@ -74,10 +74,10 @@ export function SharkImpactTab({ result, loading, onAnalyze }: SharkImpactTabPro
 			</section>
 
 			{result ? (
-				<div className="space-y-3 rounded-xl border border-[var(--omp-border-muted)] p-4">
+				<div className="space-y-3 rounded-xl border border-[var(--omsk-border-muted)] p-4">
 					<div className="flex flex-wrap items-center justify-between gap-2">
 						<div className="flex items-center gap-2">
-							<span className="font-mono text-omp-md font-semibold text-[var(--omp-text)]">
+							<span className="font-mono text-omsk-md font-semibold text-[var(--omsk-text)]">
 								{result.targetId}
 							</span>
 							<Badge variant={riskVariant(result.contractRisk)}>
@@ -85,18 +85,18 @@ export function SharkImpactTab({ result, loading, onAnalyze }: SharkImpactTabPro
 							</Badge>
 						</div>
 					</div>
-					<p className="text-omp-sm text-[var(--omp-text-secondary)]">{result.explanation}</p>
+					<p className="text-omsk-sm text-[var(--omsk-text-secondary)]">{result.explanation}</p>
 
 					<div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-						<div className="rounded-lg border border-[var(--omp-border-muted)] p-3">
-							<div className="mb-2 flex items-center gap-1.5 text-omp-xs font-semibold text-[var(--omp-text)]">
-								<FileWarning size={13} className="text-[var(--omp-warning)]" />
+						<div className="rounded-lg border border-[var(--omsk-border-muted)] p-3">
+							<div className="mb-2 flex items-center gap-1.5 text-omsk-xs font-semibold text-[var(--omsk-text)]">
+								<FileWarning size={13} className="text-[var(--omsk-warning)]" />
 								Affected Files ({result.affectedFiles.length})
 							</div>
 							{result.affectedFiles.length === 0 ? (
-								<div className="text-omp-xs text-[var(--omp-dim)]">None</div>
+								<div className="text-omsk-xs text-[var(--omsk-dim)]">None</div>
 							) : (
-								<ul className="max-h-60 space-y-1 overflow-y-auto font-mono text-omp-xs text-[var(--omp-text-secondary)]">
+								<ul className="max-h-60 space-y-1 overflow-y-auto font-mono text-omsk-xs text-[var(--omsk-text-secondary)]">
 									{result.affectedFiles.map(file => (
 										<li key={file} className="truncate" title={file}>
 											{file}
@@ -106,15 +106,15 @@ export function SharkImpactTab({ result, loading, onAnalyze }: SharkImpactTabPro
 							)}
 						</div>
 
-						<div className="rounded-lg border border-[var(--omp-border-muted)] p-3">
-							<div className="mb-2 flex items-center gap-1.5 text-omp-xs font-semibold text-[var(--omp-text)]">
-								<GitFork size={13} className="text-[var(--omp-info)]" />
+						<div className="rounded-lg border border-[var(--omsk-border-muted)] p-3">
+							<div className="mb-2 flex items-center gap-1.5 text-omsk-xs font-semibold text-[var(--omsk-text)]">
+								<GitFork size={13} className="text-[var(--omsk-info)]" />
 								Dependent Callers ({result.dependentCallers.length})
 							</div>
 							{result.dependentCallers.length === 0 ? (
-								<div className="text-omp-xs text-[var(--omp-dim)]">None</div>
+								<div className="text-omsk-xs text-[var(--omsk-dim)]">None</div>
 							) : (
-								<ul className="max-h-60 space-y-1 overflow-y-auto font-mono text-omp-xs text-[var(--omp-text-secondary)]">
+								<ul className="max-h-60 space-y-1 overflow-y-auto font-mono text-omsk-xs text-[var(--omsk-text-secondary)]">
 									{result.dependentCallers.map(caller => (
 										<li key={caller} className="truncate" title={caller}>
 											{caller}
@@ -124,15 +124,15 @@ export function SharkImpactTab({ result, loading, onAnalyze }: SharkImpactTabPro
 							)}
 						</div>
 
-						<div className="rounded-lg border border-[var(--omp-border-muted)] p-3">
-							<div className="mb-2 flex items-center gap-1.5 text-omp-xs font-semibold text-[var(--omp-text)]">
-								<FlaskConical size={13} className="text-[var(--omp-success)]" />
+						<div className="rounded-lg border border-[var(--omsk-border-muted)] p-3">
+							<div className="mb-2 flex items-center gap-1.5 text-omsk-xs font-semibold text-[var(--omsk-text)]">
+								<FlaskConical size={13} className="text-[var(--omsk-success)]" />
 								Associated Tests ({result.associatedTests.length})
 							</div>
 							{result.associatedTests.length === 0 ? (
-								<div className="text-omp-xs text-[var(--omp-dim)]">None</div>
+								<div className="text-omsk-xs text-[var(--omsk-dim)]">None</div>
 							) : (
-								<ul className="max-h-60 space-y-1 overflow-y-auto font-mono text-omp-xs text-[var(--omp-text-secondary)]">
+								<ul className="max-h-60 space-y-1 overflow-y-auto font-mono text-omsk-xs text-[var(--omsk-text-secondary)]">
 									{result.associatedTests.map(test => (
 										<li key={test} className="truncate" title={test}>
 											{test}
@@ -144,7 +144,7 @@ export function SharkImpactTab({ result, loading, onAnalyze }: SharkImpactTabPro
 					</div>
 				</div>
 			) : (
-				<div className="rounded-xl border border-dashed border-[var(--omp-border-muted)] p-8 text-center text-omp-sm text-[var(--omp-dim)]">
+				<div className="rounded-xl border border-dashed border-[var(--omsk-border-muted)] p-8 text-center text-omsk-sm text-[var(--omsk-dim)]">
 					Enter a file or symbol ID above and click <strong>Analyze Impact</strong> to inspect dependency blast
 					radius.
 				</div>

@@ -5,7 +5,7 @@
  *
  * A built-in browser page is a native view drawn over the whole window, so
  * toasts step left of the browser viewport when there is room; otherwise the
- * panel treats them as an overlay (`.omp-toast`) and shows a still instead.
+ * panel treats them as an overlay (`.omsk-toast`) and shows a still instead.
  */
 
 import { AlertTriangle, CheckCircle2, Info, X, XCircle } from "lucide-react";
@@ -15,10 +15,10 @@ import { useT } from "../../lib/i18n";
 import { type ToastVariant, useToastStore } from "../../stores/toast";
 
 const VARIANT_STYLES: Record<ToastVariant, { border: string; icon: string; Icon: typeof Info }> = {
-	info: { border: "border-l-(--omp-link)", icon: "text-(--omp-link)", Icon: Info },
-	success: { border: "border-l-(--omp-success)", icon: "text-(--omp-success)", Icon: CheckCircle2 },
-	warning: { border: "border-l-(--omp-warning)", icon: "text-(--omp-warning)", Icon: AlertTriangle },
-	error: { border: "border-l-(--omp-error)", icon: "text-(--omp-error)", Icon: XCircle },
+	info: { border: "border-l-(--omsk-link)", icon: "text-(--omsk-link)", Icon: Info },
+	success: { border: "border-l-(--omsk-success)", icon: "text-(--omsk-success)", Icon: CheckCircle2 },
+	warning: { border: "border-l-(--omsk-warning)", icon: "text-(--omsk-warning)", Icon: AlertTriangle },
+	error: { border: "border-l-(--omsk-error)", icon: "text-(--omsk-error)", Icon: XCircle },
 };
 
 /** Default column: `top-28 right-4 w-80`. */
@@ -29,7 +29,7 @@ const BANNERS = "[data-toast-clearance]";
 
 /** `right` offset that keeps the stack clear of the browser viewport, or null for the default column. */
 function stackRightOffset(): number | null {
-	const viewport = document.querySelector(".omp-browser-viewport")?.getBoundingClientRect();
+	const viewport = document.querySelector(".omsk-browser-viewport")?.getBoundingClientRect();
 	if (!viewport || viewport.width === 0 || viewport.height === 0) return null;
 	const defaultLeft = window.innerWidth - STACK_GAP - STACK_WIDTH;
 	if (viewport.right <= defaultLeft || viewport.bottom <= STACK_TOP) return null;
@@ -90,20 +90,20 @@ export function ToastStack() {
 				const Icon = style.Icon;
 				return (
 					<div
-						className={`omp-toast flex items-start gap-2.5 rounded-xl border border-(--omp-border-muted) border-l-2 bg-(--omp-toast-bg) px-3 py-2.5 shadow-(--omp-shadow-lg) ${style.border} ${entry.exitingAt != null ? "pointer-events-none omp-toast-out" : "pointer-events-auto omp-toast-in"}`}
+						className={`omsk-toast flex items-start gap-2.5 rounded-xl border border-(--omsk-border-muted) border-l-2 bg-(--omsk-toast-bg) px-3 py-2.5 shadow-(--omsk-shadow-lg) ${style.border} ${entry.exitingAt != null ? "pointer-events-none omsk-toast-out" : "pointer-events-auto omsk-toast-in"}`}
 						key={entry.id}
 						role={entry.variant === "error" ? "alert" : "status"}
 					>
 						<Icon className={`mt-px shrink-0 ${style.icon}`} size={14} />
 						<div className="min-w-0 flex-1">
 							{entry.title && (
-								<div className="mb-0.5 text-omp-sm font-semibold text-(--omp-text)">{entry.title}</div>
+								<div className="mb-0.5 text-omsk-sm font-semibold text-(--omsk-text)">{entry.title}</div>
 							)}
-							<div className="text-omp-sm leading-snug break-words text-(--omp-muted)">{entry.message}</div>
+							<div className="text-omsk-sm leading-snug break-words text-(--omsk-muted)">{entry.message}</div>
 						</div>
 						{entry.count > 1 && (
 							<span
-								className="shrink-0 rounded-full border border-(--omp-border-muted) px-1.5 py-0.5 text-omp-xs font-semibold tabular-nums text-(--omp-muted)"
+								className="shrink-0 rounded-full border border-(--omsk-border-muted) px-1.5 py-0.5 text-omsk-xs font-semibold tabular-nums text-(--omsk-muted)"
 								title={t("toast.repeated", { count: entry.count })}
 							>
 								×{entry.count}
@@ -111,7 +111,7 @@ export function ToastStack() {
 						)}
 						<button
 							aria-label={t("common.close")}
-							className="shrink-0 rounded p-0.5 text-(--omp-dim) transition-colors hover:bg-(--omp-bg-tertiary) hover:text-(--omp-text)"
+							className="shrink-0 rounded p-0.5 text-(--omsk-dim) transition-colors hover:bg-(--omsk-bg-tertiary) hover:text-(--omsk-text)"
 							onClick={() => dismiss(entry.id)}
 							type="button"
 						>

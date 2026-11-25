@@ -4,17 +4,17 @@ import { cx, formatTokens } from "../../lib/format";
 import { useT } from "../../lib/i18n";
 
 const SEGMENT_STYLE: Record<ContextSegmentKey, CSSProperties> = {
-	messages: { backgroundColor: "var(--omp-accent)" },
-	systemTools: { backgroundColor: "var(--omp-warning)" },
-	systemPrompt: { backgroundColor: "var(--omp-syntax-function)" },
+	messages: { backgroundColor: "var(--omsk-accent)" },
+	systemTools: { backgroundColor: "var(--omsk-warning)" },
+	systemPrompt: { backgroundColor: "var(--omsk-syntax-function)" },
 	// No single theme token stays apart from both amber tools and purple prompt
 	// in every theme; this pink does.
-	systemContext: { backgroundColor: "color-mix(in srgb, var(--omp-error) 60%, var(--omp-syntax-function))" },
+	systemContext: { backgroundColor: "color-mix(in srgb, var(--omsk-error) 60%, var(--omsk-syntax-function))" },
 	// Between the prompt's purple and the skills' green, so the three read as related but apart.
-	instructionFiles: { backgroundColor: "color-mix(in srgb, var(--omp-success) 50%, var(--omp-syntax-function))" },
-	skills: { backgroundColor: "var(--omp-success)" },
-	autocompact: { backgroundColor: "var(--omp-dim)", opacity: 0.5 },
-	free: { backgroundColor: "var(--omp-progress-bg)", boxShadow: "inset 0 0 0 1px var(--omp-border-strong)" },
+	instructionFiles: { backgroundColor: "color-mix(in srgb, var(--omsk-success) 50%, var(--omsk-syntax-function))" },
+	skills: { backgroundColor: "var(--omsk-success)" },
+	autocompact: { backgroundColor: "var(--omsk-dim)", opacity: 0.5 },
+	free: { backgroundColor: "var(--omsk-progress-bg)", boxShadow: "inset 0 0 0 1px var(--omsk-border-strong)" },
 };
 
 /** One decimal like the TUI's grid legend; a sliver still reads as present. */
@@ -54,7 +54,7 @@ export function ContextBreakdown({ view, segments, approximate, barHeight = 6, c
 					aria-valuemin={0}
 					aria-valuenow={Math.round(percent)}
 					aria-valuetext={`${formatTokens(usedTokens)} ${t("contextUsage.used")}, ${formatTokens(remainingTokens)} ${t("contextUsage.remaining")}`}
-					className="flex overflow-hidden rounded-full bg-[var(--omp-progress-bg)]"
+					className="flex overflow-hidden rounded-full bg-[var(--omsk-progress-bg)]"
 					role="progressbar"
 					style={{ height: barHeight }}
 				>
@@ -73,7 +73,7 @@ export function ContextBreakdown({ view, segments, approximate, barHeight = 6, c
 					) : (
 						<span
 							aria-hidden="true"
-							className="h-full bg-[var(--omp-status-context)]"
+							className="h-full bg-[var(--omsk-status-context)]"
 							style={{ width: `${percent}%` }}
 						/>
 					)}
@@ -82,7 +82,7 @@ export function ContextBreakdown({ view, segments, approximate, barHeight = 6, c
 			{segments.length > 0 && (
 				<ul className={cx("space-y-2", capacityKnown && "mt-3")}>
 					{segments.map(segment => (
-						<li className="flex items-center gap-2.5 text-omp-md" key={segment.key}>
+						<li className="flex items-center gap-2.5 text-omsk-md" key={segment.key}>
 							<span
 								aria-hidden="true"
 								className="size-2.5 shrink-0 rounded-[3px]"
@@ -92,17 +92,17 @@ export function ContextBreakdown({ view, segments, approximate, barHeight = 6, c
 								className={cx(
 									"min-w-0 flex-1 truncate",
 									segment.key === "autocompact" || segment.key === "free"
-										? "text-[var(--omp-dim)]"
-										: "text-[var(--omp-muted)]",
+										? "text-[var(--omsk-dim)]"
+										: "text-[var(--omsk-muted)]",
 								)}
 							>
 								{t(`contextReport.cat.${segment.key}`)}
 							</span>
-							<span className="shrink-0 font-mono tabular-nums text-[var(--omp-text)]">
+							<span className="shrink-0 font-mono tabular-nums text-[var(--omsk-text)]">
 								{tokens(segment.tokens)}
 							</span>
 							{capacityKnown && (
-								<span className="w-12 shrink-0 text-end font-mono tabular-nums text-[var(--omp-dim)]">
+								<span className="w-12 shrink-0 text-end font-mono tabular-nums text-[var(--omsk-dim)]">
 									{formatShare(segment.tokens, contextWindow)}
 								</span>
 							)}

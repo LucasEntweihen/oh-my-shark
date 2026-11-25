@@ -11,31 +11,31 @@ export function tabSignalPresentation(tab: SessionTab, activeRuntime = false): T
 	const running =
 		tab.status === "running" || tab.compacting === true || tab.backgroundCompacting === true || activeRuntime;
 	if (running && tab.attention === "retrying") {
-		return { active: true, color: "var(--omp-warning)", labelKey: "tabs.retrying", running: true };
+		return { active: true, color: "var(--omsk-warning)", labelKey: "tabs.retrying", running: true };
 	}
 	if (running) {
-		return { active: true, color: "var(--omp-accent)", labelKey: "titlebar.status.working", running: true };
+		return { active: true, color: "var(--omsk-accent)", labelKey: "titlebar.status.working", running: true };
 	}
 	if (tab.unreadDone && tab.attention === "failed") {
-		return { active: false, color: "var(--omp-error)", labelKey: "tabs.failed", running: false };
+		return { active: false, color: "var(--omsk-error)", labelKey: "tabs.failed", running: false };
 	}
 	if (tab.unreadDone) {
-		return { active: false, color: "var(--omp-success)", labelKey: "tabs.done", running: false };
+		return { active: false, color: "var(--omsk-success)", labelKey: "tabs.done", running: false };
 	}
 	if (tab.status === "ready") {
-		return { active: false, color: "var(--omp-dim)", labelKey: "titlebar.status.ready", running: false };
+		return { active: false, color: "var(--omsk-dim)", labelKey: "titlebar.status.ready", running: false };
 	}
 	if (tab.status === "starting") {
-		return { active: true, color: "var(--omp-warning)", labelKey: "titlebar.status.connecting", running: false };
+		return { active: true, color: "var(--omsk-warning)", labelKey: "titlebar.status.connecting", running: false };
 	}
 	// A restored tab whose process has not been spawned yet. Inert, not a
 	// warning: nothing is wrong and nothing is happening.
 	if (tab.status === "asleep") {
-		return { active: false, color: "var(--omp-dim)", labelKey: "titlebar.status.asleep", running: false };
+		return { active: false, color: "var(--omsk-dim)", labelKey: "titlebar.status.asleep", running: false };
 	}
 	return {
 		active: tab.status === "restarting",
-		color: tab.status === "error" || tab.status === "exited" ? "var(--omp-error)" : "var(--omp-warning)",
+		color: tab.status === "error" || tab.status === "exited" ? "var(--omsk-error)" : "var(--omsk-warning)",
 		labelKey: `titlebar.status.${tab.status}`,
 		running: false,
 	};

@@ -69,7 +69,7 @@ function InlineImage({ image }: { image: ImageContent }) {
 			src={src}
 			alt={t("chat.attachedImage")}
 			onOpen={() => useUiStore.getState().openImagePreview(src, t("chat.attachedImage"))}
-			className="my-1 max-h-48 max-w-64 rounded-md border border-[var(--omp-border-muted)] object-contain"
+			className="my-1 max-h-48 max-w-64 rounded-md border border-[var(--omsk-border-muted)] object-contain"
 		/>
 	);
 }
@@ -110,7 +110,7 @@ function MessageError({ message, repeats = 1 }: { message: AgentMessage; repeats
 			type="button"
 			disabled={retrying}
 			onClick={() => void retry()}
-			className="omp-pressable -my-0.5 flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-[var(--omp-border)] px-2.5 text-omp-sm font-medium text-[var(--omp-text)] hover:bg-[var(--omp-selected-bg)] disabled:opacity-50"
+			className="omsk-pressable -my-0.5 flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-[var(--omsk-border)] px-2.5 text-omsk-sm font-medium text-[var(--omsk-text)] hover:bg-[var(--omsk-selected-bg)] disabled:opacity-50"
 		>
 			<RotateCw aria-hidden size={12} className={cx(retrying && "animate-spin")} />
 			{t("common.retry")}
@@ -121,11 +121,11 @@ function MessageError({ message, repeats = 1 }: { message: AgentMessage; repeats
 	if (message.stopReason === "aborted") {
 		const reason = GENERIC_ABORT_RE.test(message.errorMessage ?? "") ? null : message.errorMessage;
 		return (
-			<div className="omp-message-stopped mt-2 flex min-w-0 items-center gap-2 text-omp-sm text-[var(--omp-dim)]">
+			<div className="omsk-message-stopped mt-2 flex min-w-0 items-center gap-2 text-omsk-sm text-[var(--omsk-dim)]">
 				<Square aria-hidden size={10} className="shrink-0 fill-current" />
 				<span className="min-w-0 truncate" title={reason ?? undefined}>
 					{t("chat.stopped")}
-					{reason && <span className="text-[var(--omp-muted)]"> · {describeProviderError(reason)}</span>}
+					{reason && <span className="text-[var(--omsk-muted)]"> · {describeProviderError(reason)}</span>}
 				</span>
 				{retryButton}
 			</div>
@@ -136,32 +136,32 @@ function MessageError({ message, repeats = 1 }: { message: AgentMessage; repeats
 		<div
 			role={stillTrying ? "status" : "alert"}
 			className={cx(
-				"omp-message-error mt-2 flex min-w-0 items-start gap-3 rounded-xl border px-3.5 py-2.5",
-				stillTrying && "omp-message-error-retrying",
+				"omsk-message-error mt-2 flex min-w-0 items-start gap-3 rounded-xl border px-3.5 py-2.5",
+				stillTrying && "omsk-message-error-retrying",
 			)}
 		>
 			<CircleAlert
 				aria-hidden
 				size={15}
-				className={cx("mt-0.5 shrink-0", stillTrying ? "text-[var(--omp-warning)]" : "text-[var(--omp-error)]")}
+				className={cx("mt-0.5 shrink-0", stillTrying ? "text-[var(--omsk-warning)]" : "text-[var(--omsk-error)]")}
 			/>
 			<div className="min-w-0 flex-1">
-				<p className="text-omp-md font-medium text-[var(--omp-text)]">
+				<p className="text-omsk-md font-medium text-[var(--omsk-text)]">
 					{policyBlocked
 						? t("chat.error.cyberPolicyTitle")
 						: stillTrying
 							? t("chat.error.retryingTitle")
 							: t("chat.error.title")}
 					{repeats > 1 && (
-						<span className="ml-2 text-omp-sm font-normal tabular-nums text-[var(--omp-dim)]">
+						<span className="ml-2 text-omsk-sm font-normal tabular-nums text-[var(--omsk-dim)]">
 							{t("chat.error.repeats", { count: repeats })}
 						</span>
 					)}
 				</p>
-				<p className="mt-0.5 break-words text-omp-sm text-[var(--omp-muted)]">{described}</p>
+				<p className="mt-0.5 break-words text-omsk-sm text-[var(--omsk-muted)]">{described}</p>
 				{policyBlocked && (
 					<a
-						className="mt-1 inline-block text-omp-sm text-(--omp-link) hover:underline"
+						className="mt-1 inline-block text-omsk-sm text-(--omsk-link) hover:underline"
 						href="https://learn.chatgpt.com/docs/cyber-safety#false-positives"
 						rel="noreferrer"
 						target="_blank"
@@ -211,22 +211,22 @@ function ExecutionBubble({ message }: { message: AgentMessage }) {
 	const failed = !running && (message.cancelled || (message.exitCode != null && message.exitCode !== 0));
 
 	return (
-		<div className="omp-execution-turn px-6 py-4">
-			<div className="omp-transcript-content overflow-hidden rounded-[10px] border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)] shadow-[var(--omp-shadow-sm)]">
-				<div className="flex items-center gap-2 border-b border-[var(--omp-border-muted)] px-3.5 py-2">
-					<Terminal className="text-[var(--omp-status-path)]" size={13} />
-					<span className="text-omp-sm font-semibold text-[var(--omp-text)]">
+		<div className="omsk-execution-turn px-6 py-4">
+			<div className="omsk-transcript-content overflow-hidden rounded-[10px] border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)] shadow-[var(--omsk-shadow-sm)]">
+				<div className="flex items-center gap-2 border-b border-[var(--omsk-border-muted)] px-3.5 py-2">
+					<Terminal className="text-[var(--omsk-status-path)]" size={13} />
+					<span className="text-omsk-sm font-semibold text-[var(--omsk-text)]">
 						{python ? t("chat.exec.python") : t("chat.exec.shell")}
 					</span>
 					<span
-						className="ml-auto rounded-full px-2 py-0.5 font-mono text-omp-xxs font-medium tracking-wide"
+						className="ml-auto rounded-full px-2 py-0.5 font-mono text-omsk-xxs font-medium tracking-wide"
 						style={{
 							background: running
-								? "var(--omp-info-dim)"
+								? "var(--omsk-info-dim)"
 								: failed
-									? "var(--omp-error-dim)"
-									: "var(--omp-success-dim)",
-							color: running ? "var(--omp-info)" : failed ? "var(--omp-error)" : "var(--omp-success)",
+									? "var(--omsk-error-dim)"
+									: "var(--omsk-success-dim)",
+							color: running ? "var(--omsk-info)" : failed ? "var(--omsk-error)" : "var(--omsk-success)",
 						}}
 					>
 						{status}
@@ -240,21 +240,21 @@ function ExecutionBubble({ message }: { message: AgentMessage }) {
 								setAbortSent(true);
 								void rpc.abortEval();
 							}}
-							className="omp-pressable flex items-center rounded-full px-2 py-0.5 text-omp-xxs font-medium tracking-wide text-[var(--omp-error)] hover:bg-[var(--omp-error-dim)] disabled:opacity-50"
+							className="omsk-pressable flex items-center rounded-full px-2 py-0.5 text-omsk-xxs font-medium tracking-wide text-[var(--omsk-error)] hover:bg-[var(--omsk-error-dim)] disabled:opacity-50"
 						>
 							{t("common.cancel")}
 						</button>
 					)}
 				</div>
 				{input && (
-					<pre className="border-b border-[var(--omp-border-muted)] px-3.5 py-2.5 font-mono text-omp-sm leading-[1.6] break-words whitespace-pre-wrap text-[var(--omp-status-path)]">
+					<pre className="border-b border-[var(--omsk-border-muted)] px-3.5 py-2.5 font-mono text-omsk-sm leading-[1.6] break-words whitespace-pre-wrap text-[var(--omsk-status-path)]">
 						{python ? input : `$ ${input}`}
 					</pre>
 				)}
 				{!running && (
 					<pre
 						className={cx(
-							"px-3.5 py-2.5 font-mono text-omp-sm leading-[1.6] break-words whitespace-pre-wrap text-[var(--omp-tool-output)]",
+							"px-3.5 py-2.5 font-mono text-omsk-sm leading-[1.6] break-words whitespace-pre-wrap text-[var(--omsk-tool-output)]",
 							PREVIEW_SCROLL_LG,
 						)}
 					>
@@ -298,9 +298,9 @@ function ContextBubble({ message }: { message: AgentMessage }) {
 				: t("chat.context.referencedFiles");
 
 	return (
-		<div className="omp-context-turn px-6 py-3">
-			<div className="omp-transcript-content rounded-[10px] border border-[var(--omp-border-muted)] px-3.5 py-3">
-				<div className="mb-2 flex items-center gap-1.5 text-omp-xs font-semibold text-[var(--omp-status-context)]">
+		<div className="omsk-context-turn px-6 py-3">
+			<div className="omsk-transcript-content rounded-[10px] border border-[var(--omsk-border-muted)] px-3.5 py-3">
+				<div className="mb-2 flex items-center gap-1.5 text-omsk-xs font-semibold text-[var(--omsk-status-context)]">
 					{isFiles ? <FileText size={12} /> : <Archive size={12} />}
 					{label}
 				</div>
@@ -308,16 +308,16 @@ function ContextBubble({ message }: { message: AgentMessage }) {
 					<div className="space-y-1.5">
 						{(message.files ?? []).map(file => (
 							<details
-								className="overflow-hidden rounded-lg border border-[var(--omp-border-muted)] bg-[var(--omp-code-bg)]"
+								className="overflow-hidden rounded-lg border border-[var(--omsk-border-muted)] bg-[var(--omsk-code-bg)]"
 								key={file.path}
 							>
-								<summary className="cursor-pointer px-3 py-2 font-mono text-omp-sm text-[var(--omp-status-path)]">
+								<summary className="cursor-pointer px-3 py-2 font-mono text-omsk-sm text-[var(--omsk-status-path)]">
 									{file.path}
 									{file.skippedReason ? ` — ${file.skippedReason}` : ""}
 								</summary>
 								<pre
 									className={cx(
-										"border-t border-[var(--omp-border-muted)] px-3 py-2.5 font-mono text-omp-xs leading-[1.6] break-words whitespace-pre-wrap text-[var(--omp-tool-output)]",
+										"border-t border-[var(--omsk-border-muted)] px-3 py-2.5 font-mono text-omsk-xs leading-[1.6] break-words whitespace-pre-wrap text-[var(--omsk-tool-output)]",
 										PREVIEW_SCROLL_LG,
 									)}
 								>
@@ -332,12 +332,12 @@ function ContextBubble({ message }: { message: AgentMessage }) {
 					<>
 						{message.shortSummary && <MarkdownRenderer content={message.shortSummary} />}
 						{typeof message.warning === "string" && (
-							<p role="status" className="text-omp-md text-(--omp-warning)">
+							<p role="status" className="text-omsk-md text-(--omsk-warning)">
 								{message.warning}
 							</p>
 						)}
 						<details onToggle={event => setExpanded(event.currentTarget.open)}>
-							<summary className="cursor-pointer py-2 text-omp-md text-(--omp-muted)">
+							<summary className="cursor-pointer py-2 text-omsk-md text-(--omsk-muted)">
 								{t("chat.context.details")}
 							</summary>
 							{expanded && (
@@ -378,7 +378,7 @@ function ClampedAssignment({ children }: { children: ReactNode }) {
 	return (
 		<>
 			<div
-				className={cx(!expanded && "omp-assignment-clamp", !expanded && overflows && "omp-assignment-cut")}
+				className={cx(!expanded && "omsk-assignment-clamp", !expanded && overflows && "omsk-assignment-cut")}
 				ref={ref}
 			>
 				{children}
@@ -386,7 +386,7 @@ function ClampedAssignment({ children }: { children: ReactNode }) {
 			{(overflows || expanded) && (
 				<button
 					aria-expanded={expanded}
-					className="omp-pressable mt-1 text-omp-sm font-medium text-[var(--omp-link)] hover:underline"
+					className="omsk-pressable mt-1 text-omsk-sm font-medium text-[var(--omsk-link)] hover:underline"
 					onClick={() => setExpanded(value => !value)}
 					type="button"
 				>
@@ -508,7 +508,7 @@ export const MessageBubble = memo(function MessageBubble({
 		const userBlocks = userMentions.blocks.map((block, i) => {
 			if (block.type === "text" && isRenderableMessageText(block.text)) {
 				return (
-					<div key={i} className="text-omp-xl leading-[1.6] text-[var(--omp-text)]">
+					<div key={i} className="text-omsk-xl leading-[1.6] text-[var(--omsk-text)]">
 						<MarkdownRenderer content={block.text} singleDollarTextMath={false} />
 					</div>
 				);
@@ -516,31 +516,31 @@ export const MessageBubble = memo(function MessageBubble({
 			return null;
 		});
 		return (
-			<div className="omp-user-turn group flex flex-col items-end px-6 py-2.5">
+			<div className="omsk-user-turn group flex flex-col items-end px-6 py-2.5">
 				{readOnly && (
-					<div className="omp-assignment-from mb-1.5 flex min-w-0 max-w-full items-center gap-1 text-omp-xs text-[var(--omp-dim)]">
+					<div className="omsk-assignment-from mb-1.5 flex min-w-0 max-w-full items-center gap-1 text-omsk-xs text-[var(--omsk-dim)]">
 						<CornerDownRight aria-hidden className="shrink-0" size={12} />
 						<span className="truncate">{readOnly.authorLabel}</span>
 					</div>
 				)}
 				<div
-					className="omp-transcript-content omp-user-bubble relative rounded-xl border border-[var(--omp-user-msg-border)] bg-[var(--omp-user-msg-bg)] px-3.5 py-3"
-					style={{ boxShadow: "var(--omp-shadow-sm)" }}
+					className="omsk-transcript-content omsk-user-bubble relative rounded-xl border border-[var(--omsk-user-msg-border)] bg-[var(--omsk-user-msg-bg)] px-3.5 py-3"
+					style={{ boxShadow: "var(--omsk-shadow-sm)" }}
 				>
 					{reaction ? (
 						<span
 							aria-label={reaction}
-							className="absolute -top-2 right-3 z-10 flex h-7 min-w-7 items-center justify-center rounded-full border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] px-1 text-omp-lg shadow-[var(--omp-shadow-sm)]"
+							className="absolute -top-2 right-3 z-10 flex h-7 min-w-7 items-center justify-center rounded-full border border-[var(--omsk-border)] bg-[var(--omsk-bg-elevated)] px-1 text-omsk-lg shadow-[var(--omsk-shadow-sm)]"
 							role="img"
 						>
 							{reaction}
 						</span>
 					) : null}
-					<div className="omp-user-bubble-layout">
-						<span className="omp-user-bubble-author">{readOnly ? readOnly.authorLabel : t("live.you")}</span>
-						<div className="omp-user-bubble-content">
+					<div className="omsk-user-bubble-layout">
+						<span className="omsk-user-bubble-author">{readOnly ? readOnly.authorLabel : t("live.you")}</span>
+						<div className="omsk-user-bubble-content">
 							{isSteering && (
-								<div className="mb-1.5 flex items-center gap-1.5 text-omp-xs font-semibold text-[var(--omp-custom-msg-label)]">
+								<div className="mb-1.5 flex items-center gap-1.5 text-omsk-xs font-semibold text-[var(--omsk-custom-msg-label)]">
 									<span className="h-1 w-1 rounded-full bg-current" />
 									{t("chat.steering")}
 								</div>
@@ -553,7 +553,7 @@ export const MessageBubble = memo(function MessageBubble({
 											title={t("chat.delegatedTo", {
 												name: chip.name ?? chip.selector ?? (chip.agent ? `@${chip.agent}` : ""),
 											})}
-											className="inline-flex items-center gap-1 rounded-full border border-[var(--omp-border-muted)] bg-[var(--omp-selected-bg)] px-2 py-0.5 font-mono text-omp-xxs font-medium text-[var(--omp-accent)]"
+											className="inline-flex items-center gap-1 rounded-full border border-[var(--omsk-border-muted)] bg-[var(--omsk-selected-bg)] px-2 py-0.5 font-mono text-omsk-xxs font-medium text-[var(--omsk-accent)]"
 										>
 											<Bot size={10} />
 											{chip.name ?? chip.selector ?? (chip.agent ? `@${chip.agent}` : "")}
@@ -575,15 +575,15 @@ export const MessageBubble = memo(function MessageBubble({
 						</div>
 					</div>
 				</div>
-				<div className="omp-user-bubble-actions flex items-center gap-0.5 text-omp-xs tabular-nums text-[var(--omp-dim)]">
+				<div className="omsk-user-bubble-actions flex items-center gap-0.5 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 					{timestamp && <span className="me-1 font-mono">{timestamp}</span>}
 					<button
 						type="button"
 						onClick={handleCopy}
 						title={t("chat.copyMessage")}
-						className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 					>
-						{copied ? <Check size={13} className="text-[var(--omp-success)]" /> : <Copy size={13} />}
+						{copied ? <Check size={13} className="text-[var(--omsk-success)]" /> : <Copy size={13} />}
 					</button>
 					{!isSteering && !readOnly && (
 						<button
@@ -592,7 +592,7 @@ export const MessageBubble = memo(function MessageBubble({
 							disabled={branching || switchPending || isStreaming}
 							aria-label={t("chat.editFromHere")}
 							title={t(isStreaming ? "chat.editFromHereBusy" : "chat.editFromHere")}
-							className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)] disabled:cursor-not-allowed disabled:opacity-50"
+							className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)] disabled:cursor-not-allowed disabled:opacity-50"
 						>
 							<Pencil size={13} />
 						</button>
@@ -604,7 +604,7 @@ export const MessageBubble = memo(function MessageBubble({
 							disabled={branching || switchPending}
 							aria-label={t("chat.branchFromHere")}
 							title={t("chat.branchFromHere")}
-							className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)] disabled:cursor-wait disabled:opacity-50"
+							className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)] disabled:cursor-wait disabled:opacity-50"
 						>
 							<GitBranch size={13} />
 						</button>
@@ -663,17 +663,17 @@ export const MessageBubble = memo(function MessageBubble({
 		<div
 			className={cx(
 				"group flex px-6",
-				!compactChrome && "omp-assistant-turn",
-				compactChrome && "omp-assistant-turn--compact",
+				!compactChrome && "omsk-assistant-turn",
+				compactChrome && "omsk-assistant-turn--compact",
 				compactChrome ? "py-1.5" : "py-3",
 			)}
 		>
-			<div className="omp-transcript-content min-w-0">
+			<div className="omsk-transcript-content min-w-0">
 				{customLabel && (
-					<div className="mb-2 text-omp-sm font-semibold text-[var(--omp-status-context)]">{customLabel}</div>
+					<div className="mb-2 text-omsk-sm font-semibold text-[var(--omsk-status-context)]">{customLabel}</div>
 				)}
 				{isSteering && (
-					<div className="mb-2 flex items-center gap-1.5 text-omp-sm font-semibold text-[var(--omp-custom-msg-label)]">
+					<div className="mb-2 flex items-center gap-1.5 text-omsk-sm font-semibold text-[var(--omsk-custom-msg-label)]">
 						<span className="h-1.5 w-1.5 rounded-full bg-current" />
 						{t("chat.steeringResponse")}
 					</div>
@@ -684,15 +684,15 @@ export const MessageBubble = memo(function MessageBubble({
 				)}
 				<UsageRow message={message} />
 				{!compactChrome && (
-					<div className="omp-message-actions mt-1 flex h-6 items-center gap-1 text-omp-xs tabular-nums text-[var(--omp-dim)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+					<div className="omsk-message-actions mt-1 flex h-6 items-center gap-1 text-omsk-xs tabular-nums text-[var(--omsk-dim)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
 						{timestamp && <span className="me-1 font-mono">{timestamp}</span>}
 						<button
 							type="button"
 							onClick={handleCopy}
 							title={t("chat.copyMessage")}
-							className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+							className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 						>
-							{copied ? <Check size={13} className="text-[var(--omp-success)]" /> : <Copy size={13} />}
+							{copied ? <Check size={13} className="text-[var(--omsk-success)]" /> : <Copy size={13} />}
 						</button>
 						{isAssistant && !readOnly && (
 							<button
@@ -701,7 +701,7 @@ export const MessageBubble = memo(function MessageBubble({
 								disabled={branching || switchPending}
 								aria-label={t("chat.branchFromHere")}
 								title={t("chat.branchFromHere")}
-								className="omp-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)] disabled:cursor-wait disabled:opacity-50"
+								className="omsk-pressable flex h-6 w-6 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)] disabled:cursor-wait disabled:opacity-50"
 							>
 								<GitBranch size={13} />
 							</button>

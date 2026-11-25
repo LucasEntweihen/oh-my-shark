@@ -30,10 +30,10 @@ function info(modifiedAt: number): RpcSkillInfo {
 	return {
 		name: "release-build",
 		description: "Build and sign a release",
-		source: "omp-managed:user",
+		source: "omsk-managed:user",
 		enabled: true,
 		location: "/skills/release-build/SKILL.md",
-		provider: "omp-managed",
+		provider: "omsk-managed",
 		providerName: "Managed",
 		level: "user",
 		managed: true,

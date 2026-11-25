@@ -98,39 +98,39 @@ export function LiveVoiceDialog() {
 	return (
 		<Modal onClose={() => void close()} open={open} size="md" title={t("live.title")}>
 			<div className="space-y-4">
-				<div className="flex items-center justify-center gap-2 py-2 text-omp-md font-medium text-(--omp-text)">
+				<div className="flex items-center justify-center gap-2 py-2 text-omsk-md font-medium text-(--omsk-text)">
 					{connecting ? <Spinner size="sm" /> : null}
 					<span>{phaseLabel}</span>
 					{state.active && state.voice ? (
-						<span className="text-omp-xs font-normal text-(--omp-dim)">
+						<span className="text-omsk-xs font-normal text-(--omsk-dim)">
 							· {t("live.voice", { voice: state.voice })}
 						</span>
 					) : null}
 				</div>
-				<div className="space-y-3 rounded-lg border border-(--omp-border-muted) bg-transparent p-4">
+				<div className="space-y-3 rounded-lg border border-(--omsk-border-muted) bg-transparent p-4">
 					<Level label={t("live.input")} value={state.inputLevel} />
 					<Level label={t("live.output")} value={state.outputLevel} />
 				</div>
-				<div className="max-h-64 min-h-24 space-y-2 overflow-y-auto rounded-lg border border-(--omp-border-muted) bg-transparent p-3 text-omp-md">
+				<div className="max-h-64 min-h-24 space-y-2 overflow-y-auto rounded-lg border border-(--omsk-border-muted) bg-transparent p-3 text-omsk-md">
 					{state.transcript.length > 0 ? (
 						state.transcript.map(entry => (
 							<div key={`${entry.role}:${entry.turn}`}>
-								<div className="mb-0.5 text-omp-xs font-semibold text-(--omp-dim)">
+								<div className="mb-0.5 text-omsk-xs font-semibold text-(--omsk-dim)">
 									{entry.role === "user" ? t("live.you") : t("live.assistant")}
 								</div>
 								<div
-									className={`whitespace-pre-wrap ${entry.final ? "text-(--omp-text)" : "text-(--omp-dim)"}`}
+									className={`whitespace-pre-wrap ${entry.final ? "text-(--omsk-text)" : "text-(--omsk-dim)"}`}
 								>
 									{entry.text}
 								</div>
 							</div>
 						))
 					) : (
-						<div className="text-(--omp-dim)">{t("live.waiting")}</div>
+						<div className="text-(--omsk-dim)">{t("live.waiting")}</div>
 					)}
 					<div ref={transcriptEnd} />
 				</div>
-				{state.error ? <div className="text-omp-md text-(--omp-error)">{state.error}</div> : null}
+				{state.error ? <div className="text-omsk-md text-(--omsk-error)">{state.error}</div> : null}
 				<div className="flex justify-end gap-2">
 					{!state.active && (
 						<Button disabled={busy} loading={busy} onClick={() => void run("live_start")}>
@@ -157,14 +157,17 @@ export function LiveVoiceDialog() {
 function Level({ label, value }: { label: string; value: number }) {
 	const percent = Math.max(0, Math.min(100, Math.round(value * 100)));
 	return (
-		<div className="grid grid-cols-[5rem_1fr_2.5rem] items-center gap-2 text-omp-xs">
-			<span className="text-(--omp-dim)">{label}</span>
+		<div className="grid grid-cols-[5rem_1fr_2.5rem] items-center gap-2 text-omsk-xs">
+			<span className="text-(--omsk-dim)">{label}</span>
 			<div
-				className="h-2 overflow-hidden rounded-full bg-(--omp-bg-primary)" // surface-ok: level meter track
+				className="h-2 overflow-hidden rounded-full bg-(--omsk-bg-primary)" // surface-ok: level meter track
 			>
-				<div className="h-full bg-(--omp-accent) transition-[width] duration-75" style={{ width: `${percent}%` }} />
+				<div
+					className="h-full bg-(--omsk-accent) transition-[width] duration-75"
+					style={{ width: `${percent}%` }}
+				/>
 			</div>
-			<span className="text-right tabular-nums text-(--omp-dim)">{percent}%</span>
+			<span className="text-right tabular-nums text-(--omsk-dim)">{percent}%</span>
 		</div>
 	);
 }

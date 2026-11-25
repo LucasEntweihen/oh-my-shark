@@ -13,7 +13,7 @@ export function LogsDialog() {
 	const close = useUiStore(state => state.closeLogs);
 	return (
 		<Modal dockable bodyClassName="p-0" onClose={close} open={open} size="lg" title={t("logPanel.title")}>
-			<div className="omp-docked-fill h-[min(70dvh,640px)]">{open && <LogPanel />}</div>
+			<div className="omsk-docked-fill h-[min(70dvh,640px)]">{open && <LogPanel />}</div>
 		</Modal>
 	);
 }

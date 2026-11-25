@@ -61,10 +61,10 @@ const status = (patch: Partial<RpcAdvisorStatus>): RpcAdvisorStatus => ({
 
 describe("advisorBadgeColor", () => {
 	it("ranks error over quota exhaustion over running", () => {
-		expect(advisorBadgeColor(["running", "error", "quota_exhausted"])).toBe("var(--omp-error)");
-		expect(advisorBadgeColor(["running", "quota_exhausted"])).toBe("var(--omp-warning)");
-		expect(advisorBadgeColor(["paused", "running"])).toBe("var(--omp-success)");
-		expect(advisorBadgeColor(["paused", "no_model"])).toBe("var(--omp-dim)");
+		expect(advisorBadgeColor(["running", "error", "quota_exhausted"])).toBe("var(--omsk-error)");
+		expect(advisorBadgeColor(["running", "quota_exhausted"])).toBe("var(--omsk-warning)");
+		expect(advisorBadgeColor(["paused", "running"])).toBe("var(--omsk-success)");
+		expect(advisorBadgeColor(["paused", "no_model"])).toBe("var(--omsk-dim)");
 	});
 });
 

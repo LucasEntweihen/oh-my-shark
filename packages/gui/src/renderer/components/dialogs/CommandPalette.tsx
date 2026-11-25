@@ -576,7 +576,7 @@ export function CommandPalette() {
 			<button
 				aria-disabled={disabled}
 				className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors ${
-					isActive ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"
+					isActive ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)"
 				} ${disabled ? "opacity-45" : ""}`}
 				data-palette-index={index}
 				data-command-name={item.name}
@@ -589,17 +589,17 @@ export function CommandPalette() {
 				type="button"
 			>
 				{options?.recent ? (
-					<History className="shrink-0 text-(--omp-muted)" size={13} />
+					<History className="shrink-0 text-(--omsk-muted)" size={13} />
 				) : (
-					<CommandIcon className="shrink-0 text-(--omp-muted)" size={13} />
+					<CommandIcon className="shrink-0 text-(--omsk-muted)" size={13} />
 				)}
 				<span className="min-w-0 flex-1">
 					<span className="flex items-center gap-1.5">
-						<span className="truncate text-omp-xs font-medium text-(--omp-text)">{item.label}</span>
+						<span className="truncate text-omsk-xs font-medium text-(--omsk-text)">{item.label}</span>
 						{toggleOn !== null && (
 							<span
-								className={`rounded px-1 text-omp-xxs font-semibold ${
-									toggleOn ? "text-(--omp-success)" : "text-(--omp-dim)"
+								className={`rounded px-1 text-omsk-xxs font-semibold ${
+									toggleOn ? "text-(--omsk-success)" : "text-(--omsk-dim)"
 								}`}
 							>
 								{toggleOn ? t("palette.on") : t("palette.off")}
@@ -607,7 +607,7 @@ export function CommandPalette() {
 						)}
 						{item.shortcut && <Kbd>{item.shortcut}</Kbd>}
 					</span>
-					<span className="block truncate text-omp-xs text-(--omp-muted)">
+					<span className="block truncate text-omsk-xs text-(--omsk-muted)">
 						{disabled
 							? item.affordance.kind === "unavailable"
 								? item.affordance.reason
@@ -616,17 +616,17 @@ export function CommandPalette() {
 					</span>
 				</span>
 				{options?.categoryLabel && (
-					<span className="shrink-0 text-omp-xxs text-(--omp-dim)">{options.categoryLabel}</span>
+					<span className="shrink-0 text-omsk-xxs text-(--omsk-dim)">{options.categoryLabel}</span>
 				)}
 				{isSubmenu ? (
-					<ChevronRight className="shrink-0 text-(--omp-dim)" size={12} />
+					<ChevronRight className="shrink-0 text-(--omsk-dim)" size={12} />
 				) : (
 					toggleOn !== null && (
-						<Check className={`shrink-0 ${toggleOn ? "text-(--omp-success)" : "text-transparent"}`} size={12} />
+						<Check className={`shrink-0 ${toggleOn ? "text-(--omsk-success)" : "text-transparent"}`} size={12} />
 					)
 				)}
 				{isActive && !isSubmenu && toggleOn === null && (
-					<CornerDownLeft className="shrink-0 text-(--omp-dim)" size={11} />
+					<CornerDownLeft className="shrink-0 text-(--omsk-dim)" size={11} />
 				)}
 			</button>
 		);
@@ -634,7 +634,7 @@ export function CommandPalette() {
 
 	return (
 		<div
-			className={`omp-dialog-overlay omp-fade-in fixed inset-0 ${DIALOG_OVERLAY_Z} flex items-start justify-center bg-[var(--omp-overlay-bg)] p-4 pt-[12dvh]`}
+			className={`omsk-dialog-overlay omsk-fade-in fixed inset-0 ${DIALOG_OVERLAY_Z} flex items-start justify-center bg-[var(--omsk-overlay-bg)] p-4 pt-[12dvh]`}
 			onMouseDown={event => {
 				if (event.target === event.currentTarget) close();
 			}}
@@ -643,26 +643,26 @@ export function CommandPalette() {
 			<div
 				aria-label={t("palette.searchLabel")}
 				aria-modal="true"
-				className="omp-dialog-panel omp-dialog-size-picker overflow-hidden rounded-[14px] border border-(--omp-modal-border) bg-(--omp-modal-bg) shadow-(--omp-shadow-lg)"
+				className="omsk-dialog-panel omsk-dialog-size-picker overflow-hidden rounded-[14px] border border-(--omsk-modal-border) bg-(--omsk-modal-bg) shadow-(--omsk-shadow-lg)"
 				onKeyDown={onKeyDown}
 				ref={dialogRef}
 				role="dialog"
 			>
-				<div className="flex items-center gap-2.5 border-b border-(--omp-border-muted) px-3.5 py-2.5">
+				<div className="flex items-center gap-2.5 border-b border-(--omsk-border-muted) px-3.5 py-2.5">
 					{submenu && (
 						<button
 							type="button"
 							onClick={() => setSubmenu(null)}
-							className="flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-omp-sm font-medium text-(--omp-accent) hover:bg-(--omp-bg-tertiary)"
+							className="flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-omsk-sm font-medium text-(--omsk-accent) hover:bg-(--omsk-bg-tertiary)"
 						>
 							<X size={11} />
 							{submenu.label}
 						</button>
 					)}
-					<Search className="shrink-0 text-(--omp-dim)" size={14} />
+					<Search className="shrink-0 text-(--omsk-dim)" size={14} />
 					<input
 						aria-label={t("palette.searchLabel")}
-						className="min-w-0 flex-1 bg-transparent text-omp-md text-(--omp-text) placeholder:text-(--omp-dim) focus:outline-none"
+						className="min-w-0 flex-1 bg-transparent text-omsk-md text-(--omsk-text) placeholder:text-(--omsk-dim) focus:outline-none"
 						onChange={event => setQuery(event.target.value)}
 						placeholder={submenu ? t("palette.searchSubmenu", { name: submenu.label }) : t("palette.search")}
 						ref={inputRef}
@@ -672,16 +672,16 @@ export function CommandPalette() {
 					<Kbd>esc</Kbd>
 				</div>
 				{commandsError !== null && (
-					<div className="flex items-center gap-2 border-b border-(--omp-border-muted) px-3 py-1.5">
+					<div className="flex items-center gap-2 border-b border-(--omsk-border-muted) px-3 py-1.5">
 						<span
-							className="min-w-0 flex-1 truncate text-omp-xs text-(--omp-error)"
+							className="min-w-0 flex-1 truncate text-omsk-xs text-(--omsk-error)"
 							role="alert"
 							title={commandsError || undefined}
 						>
 							{t("palette.commandsFailed")}
 						</span>
 						<button
-							className="shrink-0 rounded border border-(--omp-border-muted) px-1.5 py-0.5 text-omp-xs text-(--omp-text) hover:bg-(--omp-bg-tertiary)"
+							className="shrink-0 rounded border border-(--omsk-border-muted) px-1.5 py-0.5 text-omsk-xs text-(--omsk-text) hover:bg-(--omsk-bg-tertiary)"
 							onClick={refreshCommands}
 							type="button"
 						>
@@ -689,9 +689,9 @@ export function CommandPalette() {
 						</button>
 					</div>
 				)}
-				<div className="omp-command-list overflow-y-auto p-1.5" ref={listRef}>
+				<div className="omsk-command-list overflow-y-auto p-1.5" ref={listRef}>
 					{flatList.length === 0 && !loading && (
-						<div className="px-3 py-8 text-center text-omp-xs text-(--omp-dim)">
+						<div className="px-3 py-8 text-center text-omsk-xs text-(--omsk-dim)">
 							{workingItems.length === 0 ? t("palette.noCommands") : t("palette.noMatch")}
 						</div>
 					)}
@@ -700,7 +700,7 @@ export function CommandPalette() {
 						<>
 							{recentItems.length > 0 && (
 								<div className="mb-1">
-									<div className="flex items-center gap-1.5 px-2 pt-1.5 pb-0.5 text-omp-xxs font-semibold text-(--omp-dim)">
+									<div className="flex items-center gap-1.5 px-2 pt-1.5 pb-0.5 text-omsk-xxs font-semibold text-(--omsk-dim)">
 										{t("palette.recent")}
 									</div>
 									{recentItems.map(item => renderItem(item, { recent: true }))}
@@ -708,7 +708,7 @@ export function CommandPalette() {
 							)}
 							{Array.from(grouped.entries()).map(([category, items]) => (
 								<div key={category} className="mb-1">
-									<div className="flex items-center gap-1.5 px-2 pt-1.5 pb-0.5 text-omp-xxs font-semibold text-(--omp-dim)">
+									<div className="flex items-center gap-1.5 px-2 pt-1.5 pb-0.5 text-omsk-xxs font-semibold text-(--omsk-dim)">
 										{t(`category.${category}`)}
 									</div>
 									{items.map(item => renderItem(item))}

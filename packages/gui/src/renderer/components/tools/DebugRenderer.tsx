@@ -151,18 +151,18 @@ export function DebugRenderer({ args, result, isError, isPartial, partialResult 
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<Bug size={12} className="shrink-0 text-[var(--omp-warning)]" />
-				<span className="font-semibold text-[var(--omp-text)]">{action}</span>
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<Bug size={12} className="shrink-0 text-[var(--omsk-warning)]" />
+				<span className="font-semibold text-[var(--omsk-text)]">{action}</span>
 				{typeof args.program === "string" && (
-					<span className="min-w-0 flex-1 truncate text-[var(--omp-dim)]">{args.program}</span>
+					<span className="min-w-0 flex-1 truncate text-[var(--omsk-dim)]">{args.program}</span>
 				)}
 			</div>
 
 			{snapshot && (
-				<div className="rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.6]">
+				<div className="rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.6]">
 					{snapshotLines(snapshot).map(line => (
-						<div key={line} className="truncate text-[var(--omp-tool-output)]" title={line}>
+						<div key={line} className="truncate text-[var(--omsk-tool-output)]" title={line}>
 							{line}
 						</div>
 					))}
@@ -170,13 +170,13 @@ export function DebugRenderer({ args, result, isError, isPartial, partialResult 
 			)}
 
 			{frames.length > 0 && (
-				<div className="max-h-48 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.6]">
+				<div className="max-h-48 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.6]">
 					{frames.map((f, i) => (
-						<div key={i} className="flex gap-2 transition-colors hover:bg-[var(--omp-selected-bg)]/50">
-							<span className="w-5 shrink-0 text-right tabular-nums text-[var(--omp-dim)]">{i}</span>
-							<span className="min-w-0 flex-1 truncate text-[var(--omp-syntax-function)]">{f.name}</span>
+						<div key={i} className="flex gap-2 transition-colors hover:bg-[var(--omsk-selected-bg)]/50">
+							<span className="w-5 shrink-0 text-right tabular-nums text-[var(--omsk-dim)]">{i}</span>
+							<span className="min-w-0 flex-1 truncate text-[var(--omsk-syntax-function)]">{f.name}</span>
 							{f.file && (
-								<span className="shrink-0 truncate text-[var(--omp-status-path)]">
+								<span className="shrink-0 truncate text-[var(--omsk-status-path)]">
 									{f.file}
 									{f.line != null ? `:${f.line}` : ""}
 								</span>
@@ -187,12 +187,12 @@ export function DebugRenderer({ args, result, isError, isPartial, partialResult 
 			)}
 
 			{evaluation && typeof evaluation.result === "string" && (
-				<div className="flex gap-2 rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.6]">
-					<span className="min-w-0 flex-1 truncate text-[var(--omp-tool-output)]" title={evaluation.result}>
+				<div className="flex gap-2 rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.6]">
+					<span className="min-w-0 flex-1 truncate text-[var(--omsk-tool-output)]" title={evaluation.result}>
 						= {evaluation.result}
 					</span>
 					{typeof evaluation.type === "string" && (
-						<span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">{evaluation.type}</span>
+						<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">{evaluation.type}</span>
 					)}
 				</div>
 			)}
@@ -202,20 +202,22 @@ export function DebugRenderer({ args, result, isError, isPartial, partialResult 
 					<button
 						type="button"
 						onClick={() => setVarsOpen(v => !v)}
-						className="flex items-center gap-1 text-omp-xs font-semibold text-[var(--omp-dim)] transition-colors hover:text-[var(--omp-text)]"
+						className="flex items-center gap-1 text-omsk-xs font-semibold text-[var(--omsk-dim)] transition-colors hover:text-[var(--omsk-text)]"
 					>
 						{varsOpen ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
 						{t("tools.debug.variables")}
 					</button>
 					{varsOpen && (
-						<div className="mt-0.5 max-h-40 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.6]">
+						<div className="mt-0.5 max-h-40 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.6]">
 							{variables.map(row => (
 								<div key={row.name} className="flex gap-2">
-									<span className="shrink-0 text-[var(--omp-syntax-variable)]">{row.name}</span>
-									<span className="min-w-0 flex-1 truncate text-[var(--omp-muted)]" title={row.value}>
+									<span className="shrink-0 text-[var(--omsk-syntax-variable)]">{row.name}</span>
+									<span className="min-w-0 flex-1 truncate text-[var(--omsk-muted)]" title={row.value}>
 										{row.value}
 									</span>
-									{row.type && <span className="shrink-0 text-omp-xs text-[var(--omp-dim)]">{row.type}</span>}
+									{row.type && (
+										<span className="shrink-0 text-omsk-xs text-[var(--omsk-dim)]">{row.type}</span>
+									)}
 								</div>
 							))}
 						</div>
@@ -224,19 +226,19 @@ export function DebugRenderer({ args, result, isError, isPartial, partialResult 
 			)}
 
 			{breakpoints.length > 0 && (
-				<div className="max-h-32 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1 font-mono text-omp-sm leading-[1.6]">
+				<div className="max-h-32 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1 font-mono text-omsk-sm leading-[1.6]">
 					{breakpoints.map((bp, i) => (
 						<div key={i} className="flex gap-2">
 							<span
 								className="h-1.5 w-1.5 mt-1.5 shrink-0 rounded-full"
-								style={{ background: bp.verified ? "var(--omp-success)" : "var(--omp-warning)" }}
+								style={{ background: bp.verified ? "var(--omsk-success)" : "var(--omsk-warning)" }}
 							/>
-							<span className="text-[var(--omp-text)]">{t("tools.debug.line", { line: bp.line ?? "?" })}</span>
-							<span className="text-[var(--omp-dim)]">
+							<span className="text-[var(--omsk-text)]">{t("tools.debug.line", { line: bp.line ?? "?" })}</span>
+							<span className="text-[var(--omsk-dim)]">
 								{bp.verified ? t("tools.debug.verified") : t("tools.debug.pending")}
 							</span>
 							{bp.condition && (
-								<span className="truncate text-[var(--omp-muted)]">
+								<span className="truncate text-[var(--omsk-muted)]">
 									{t("tools.debug.condition", { condition: bp.condition })}
 								</span>
 							)}
@@ -246,7 +248,7 @@ export function DebugRenderer({ args, result, isError, isPartial, partialResult 
 			)}
 
 			{output && (
-				<pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.45] text-[var(--omp-tool-output)]">
+				<pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] text-[var(--omsk-tool-output)]">
 					<OutputText text={output} />
 				</pre>
 			)}
@@ -254,10 +256,10 @@ export function DebugRenderer({ args, result, isError, isPartial, partialResult 
 			{!hasStructured && !output && text && (
 				<pre
 					className={cx(
-						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omp-sm leading-[1.45]",
+						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omsk-sm leading-[1.45]",
 						isError
-							? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-							: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]",
+							? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+							: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]",
 					)}
 				>
 					{text}

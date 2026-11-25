@@ -214,11 +214,11 @@ export function OmskModesBar({ disabled = false }: { disabled?: boolean }) {
 	return (
 		<div
 			aria-label="OMSK Magic Modes"
-			className="omsk-modes-strip flex items-center gap-1 overflow-x-auto border-b border-[var(--omp-border-muted)] px-3 py-1.5"
+			className="omsk-modes-strip flex items-center gap-1 overflow-x-auto border-b border-[var(--omsk-border-muted)] px-3 py-1.5"
 			data-omsk-modes-bar=""
 		>
-			<span className="mr-0.5 flex shrink-0 items-center gap-1 text-omp-xxs font-semibold tracking-wider text-[var(--omp-dim)] uppercase">
-				<Sparkles size={11} className="text-[var(--omp-accent)]" />
+			<span className="mr-0.5 flex shrink-0 items-center gap-1 text-omsk-xxs font-semibold tracking-wider text-[var(--omsk-dim)] uppercase">
+				<Sparkles size={11} className="text-[var(--omsk-accent)]" />
 				OMSK
 			</span>
 			{OMSK_MAGIC_MODES.map(mode => {
@@ -235,10 +235,10 @@ export function OmskModesBar({ disabled = false }: { disabled?: boolean }) {
 						onClick={() => void handleModeClick(mode)}
 						style={style}
 						className={cx(
-							"omsk-mode-pill omp-pressable flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-omp-xxs font-medium disabled:opacity-45",
+							"omsk-mode-pill omsk-pressable flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-omsk-xxs font-medium disabled:opacity-45",
 							isActive || isXlr8Steer
 								? "omsk-mode-pill--active"
-								: "border-[var(--omp-border-muted)] bg-transparent text-[var(--omp-muted)] hover:border-[var(--omp-border-strong)] hover:text-[var(--omp-text)]",
+								: "border-[var(--omsk-border-muted)] bg-transparent text-[var(--omsk-muted)] hover:border-[var(--omsk-border-strong)] hover:text-[var(--omsk-text)]",
 						)}
 					>
 						{mode.id === "xlr8" ? (
@@ -249,7 +249,7 @@ export function OmskModesBar({ disabled = false }: { disabled?: boolean }) {
 							<Gauge size={11} strokeWidth={1.7} />
 						) : null}
 						<span>{mode.label}</span>
-						{isXlr8Steer && <span className="text-omp-xxs opacity-85">steer</span>}
+						{isXlr8Steer && <span className="text-omsk-xxs opacity-85">steer</span>}
 					</button>
 				);
 			})}
@@ -261,12 +261,12 @@ export function OmskModesBar({ disabled = false }: { disabled?: boolean }) {
 				onClick={handleToggleBasic}
 				style={{ "--omsk-pill-color": "#00E5FF" } as CSSProperties}
 				className={cx(
-					"omsk-mode-pill omp-pressable shrink-0 rounded-full border px-2 py-0.5 font-mono text-omp-xxs font-semibold disabled:opacity-45",
+					"omsk-mode-pill omsk-pressable shrink-0 rounded-full border px-2 py-0.5 font-mono text-omsk-xxs font-semibold disabled:opacity-45",
 					xlr8Basic
 						? "omsk-mode-pill--active"
 						: xlr8Active
-							? "border-[var(--omp-border-accent)] bg-transparent text-[var(--omp-accent)]"
-							: "border-dashed border-[var(--omp-border-muted)] bg-transparent text-[var(--omp-dim)] hover:text-[var(--omp-text)]",
+							? "border-[var(--omsk-border-accent)] bg-transparent text-[var(--omsk-accent)]"
+							: "border-dashed border-[var(--omsk-border-muted)] bg-transparent text-[var(--omsk-dim)] hover:text-[var(--omsk-text)]",
 				)}
 			>
 				--basic

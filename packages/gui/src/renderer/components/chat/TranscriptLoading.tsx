@@ -35,28 +35,28 @@ export function TranscriptLoading() {
 	const slow = elapsedMs >= SLOW_HINT_MS;
 
 	return (
-		<div className="omp-transcript-loading flex min-h-full flex-col items-center justify-center gap-8 py-10 ps-(--omp-editorial-inset) pe-(--omp-editorial-edge)">
+		<div className="omsk-transcript-loading flex min-h-full flex-col items-center justify-center gap-8 py-10 ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge)">
 			<span aria-atomic="true" aria-live="polite" className="sr-only" role="status">
 				{t("chat.loading.label")}
 			</span>
 			<div aria-hidden className="flex flex-col items-center gap-5 text-center">
-				<div className="omp-loading-mark">
+				<div className="omsk-loading-mark">
 					<OmskLogo size={42} tile />
 				</div>
 				<div className="flex flex-col items-center gap-2">
-					<p className="omp-shimmer-text font-display text-omp-2xl font-semibold tracking-[-0.01em]">
+					<p className="omsk-shimmer-text font-display text-omsk-2xl font-semibold tracking-[-0.01em]">
 						{t("chat.loading.label")}
 					</p>
-					<p className="h-5 text-omp-md tabular-nums text-[var(--omp-muted)]">
+					<p className="h-5 text-omsk-md tabular-nums text-[var(--omsk-muted)]">
 						{slow ? t("chat.loading.slow", { elapsed: formatElapsed(elapsedMs) }) : null}
 						{!slow && elapsedMs >= ELAPSED_VISIBLE_MS ? formatElapsed(elapsedMs) : null}
 					</p>
 				</div>
 			</div>
-			<div aria-hidden className="omp-loading-skeleton flex w-full max-w-[720px] flex-col gap-3">
-				<div className="omp-skeleton ms-auto mb-1 h-10 w-[36%] rounded-2xl" />
+			<div aria-hidden className="omsk-loading-skeleton flex w-full max-w-[720px] flex-col gap-3">
+				<div className="omsk-skeleton ms-auto mb-1 h-10 w-[36%] rounded-2xl" />
 				{SKELETON_REPLY.map(width => (
-					<div key={width} className="omp-skeleton h-3.5 rounded-full" style={{ width }} />
+					<div key={width} className="omsk-skeleton h-3.5 rounded-full" style={{ width }} />
 				))}
 			</div>
 		</div>

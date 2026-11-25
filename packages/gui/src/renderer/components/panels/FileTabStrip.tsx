@@ -28,13 +28,13 @@ function FileTab({
 	return (
 		<div
 			className={cx(
-				"group/file-tab flex h-9 shrink-0 items-center gap-0.5 border-r border-(--omp-border-muted) pr-1.5",
-				active ? "bg-(--omp-selected-bg) text-(--omp-text)" : "text-(--omp-muted) hover:bg-(--omp-selected-bg)",
+				"group/file-tab flex h-9 shrink-0 items-center gap-0.5 border-r border-(--omsk-border-muted) pr-1.5",
+				active ? "bg-(--omsk-selected-bg) text-(--omsk-text)" : "text-(--omsk-muted) hover:bg-(--omsk-selected-bg)",
 			)}
 		>
 			<button
 				aria-selected={active}
-				className="flex h-full min-w-0 max-w-48 items-center gap-1.5 pl-2.5 text-omp-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--omp-accent)"
+				className="flex h-full min-w-0 max-w-48 items-center gap-1.5 pl-2.5 text-omsk-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--omsk-accent)"
 				onClick={onActivate}
 				ref={ref}
 				role="tab"
@@ -47,7 +47,7 @@ function FileTab({
 			</button>
 			<button
 				aria-label={t("filesPanel.closeTab", { name })}
-				className="relative flex size-5 shrink-0 items-center justify-center rounded hover:bg-(--omp-selected-bg)"
+				className="relative flex size-5 shrink-0 items-center justify-center rounded hover:bg-(--omsk-selected-bg)"
 				disabled={saving}
 				onClick={onClose}
 				title={dirty ? t("filesPanel.unsaved") : t("filesPanel.closeTab", { name })}
@@ -90,7 +90,7 @@ export function FileTabStrip({
 	return (
 		<div
 			aria-label={t("filesPanel.tabs")}
-			className="flex shrink-0 overflow-x-auto border-b border-(--omp-border-muted) [scrollbar-width:thin]"
+			className="flex shrink-0 overflow-x-auto border-b border-(--omsk-border-muted) [scrollbar-width:thin]"
 			onKeyDown={event => {
 				if (!(event.target instanceof HTMLElement) || event.target.getAttribute("role") !== "tab") return;
 				const index = tabs.findIndex(tab => tab.id === activeId);

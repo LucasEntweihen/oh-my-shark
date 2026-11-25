@@ -34,15 +34,15 @@ export function BtwAnswer({ answer, recordId, inject }: { answer: string; record
 			<div
 				data-btw-inject={inject}
 				className={cx(
-					"rounded-lg border-l-[3px] bg-(--omp-bg-elevated) px-3 py-2",
-					sent ? "border-(--omp-success)" : "border-(--omp-ansi-magenta)",
+					"rounded-lg border-l-[3px] bg-(--omsk-bg-elevated) px-3 py-2",
+					sent ? "border-(--omsk-success)" : "border-(--omsk-ansi-magenta)",
 				)}
 			>
-				<div className="mb-1 text-omp-xs font-medium text-(--omp-dim)">{t("btw.injectLabel")}</div>
-				<div className="whitespace-pre-wrap break-words text-omp-md text-(--omp-text)">{parts.inject}</div>
+				<div className="mb-1 text-omsk-xs font-medium text-(--omsk-dim)">{t("btw.injectLabel")}</div>
+				<div className="whitespace-pre-wrap break-words text-omsk-md text-(--omsk-text)">{parts.inject}</div>
 				<div className="mt-2 flex items-center gap-2">
 					{sent ? (
-						<span className="flex items-center gap-1 text-omp-sm text-(--omp-success)">
+						<span className="flex items-center gap-1 text-omsk-sm text-(--omsk-success)">
 							<Check aria-hidden size={14} /> {t("btw.injectSent")}
 						</span>
 					) : (

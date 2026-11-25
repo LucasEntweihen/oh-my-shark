@@ -8,28 +8,28 @@ describe("parseAnsi", () => {
 
 	it("parses a colored run and reset", () => {
 		expect(parseAnsi("\x1b[31merror\x1b[0m ok")).toEqual([
-			{ text: "error", fg: "var(--omp-ansi-red)" },
+			{ text: "error", fg: "var(--omsk-ansi-red)" },
 			{ text: " ok" },
 		]);
 	});
 
 	it("carries style state across segments until reset", () => {
 		const segments = parseAnsi("\x1b[1;32mPASS\x1b[39m still-bold\x1b[0m");
-		expect(segments[0]).toMatchObject({ text: "PASS", fg: "var(--omp-ansi-green)", bold: true });
+		expect(segments[0]).toMatchObject({ text: "PASS", fg: "var(--omsk-ansi-green)", bold: true });
 		expect(segments[1]).toMatchObject({ text: " still-bold", bold: true });
 		expect(segments[1].fg).toBeUndefined();
 	});
 
 	it("maps bright foreground colors", () => {
-		expect(parseAnsi("\x1b[91mx")[0]).toMatchObject({ fg: "var(--omp-ansi-bright-red)" });
+		expect(parseAnsi("\x1b[91mx")[0]).toMatchObject({ fg: "var(--omsk-ansi-bright-red)" });
 	});
 
 	it("maps background colors", () => {
-		expect(parseAnsi("\x1b[44mx")[0]).toMatchObject({ bg: "var(--omp-ansi-blue)" });
+		expect(parseAnsi("\x1b[44mx")[0]).toMatchObject({ bg: "var(--omsk-ansi-blue)" });
 	});
 
 	it("resolves 256-palette indexes, delegating low indexes to theme vars", () => {
-		expect(parseAnsi("\x1b[38;5;9mx")[0]).toMatchObject({ fg: "var(--omp-ansi-bright-red)" });
+		expect(parseAnsi("\x1b[38;5;9mx")[0]).toMatchObject({ fg: "var(--omsk-ansi-bright-red)" });
 		expect(parseAnsi("\x1b[38;5;196mx")[0]).toMatchObject({ fg: "rgb(255 0 0)" });
 		expect(parseAnsi("\x1b[48;5;238mx")[0]).toMatchObject({ bg: "rgb(68 68 68)" });
 	});
@@ -82,7 +82,7 @@ describe("parseAnsi", () => {
 	});
 
 	it("preserves active styles while replaying overwritten text", () => {
-		expect(parseAnsi("\x1b[31mold\rnew\x1b[0m")).toEqual([{ text: "new", fg: "var(--omp-ansi-red)" }]);
+		expect(parseAnsi("\x1b[31mold\rnew\x1b[0m")).toEqual([{ text: "new", fg: "var(--omsk-ansi-red)" }]);
 	});
 
 	it("keeps content when a line ends in a bare carriage return", () => {

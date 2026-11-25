@@ -102,22 +102,22 @@ export function CopySelectorDialog() {
 	return (
 		<Modal bodyClassName="p-0" onClose={close} open={open} size="lg" title={t("copySelector.title")}>
 			<div className="grid h-[62vh] min-h-0 grid-cols-[minmax(220px,0.9fr)_minmax(0,1.3fr)]" onKeyDown={onKeyDown}>
-				<div className="min-h-0 overflow-y-auto border-r border-(--omp-border-muted) p-2" ref={listRef}>
+				<div className="min-h-0 overflow-y-auto border-r border-(--omsk-border-muted) p-2" ref={listRef}>
 					{error ? (
-						<div className="p-4 text-omp-xs text-[var(--omp-error)]">{error}</div>
+						<div className="p-4 text-omsk-xs text-[var(--omsk-error)]">{error}</div>
 					) : loading ? (
-						<div className="flex items-center justify-center gap-2 p-8 text-omp-xs text-(--omp-dim)">
+						<div className="flex items-center justify-center gap-2 p-8 text-omsk-xs text-(--omsk-dim)">
 							<Spinner size="sm" /> {t("copySelector.loading")}
 						</div>
 					) : flat.length === 0 ? (
-						<div className="p-8 text-center text-omp-xs text-(--omp-dim)">{t("copySelector.empty")}</div>
+						<div className="p-8 text-center text-omsk-xs text-(--omsk-dim)">{t("copySelector.empty")}</div>
 					) : (
 						flat.map((item, index) => (
 							<button
-								className={`flex w-full items-center gap-2 rounded-md py-1.5 pr-2 text-left text-omp-xs ${
+								className={`flex w-full items-center gap-2 rounded-md py-1.5 pr-2 text-left text-omsk-xs ${
 									index === selectedIndex
-										? "bg-(--omp-selected-bg) text-(--omp-text)"
-										: "text-(--omp-dim) hover:bg-(--omp-bg-tertiary)"
+										? "bg-(--omsk-selected-bg) text-(--omsk-text)"
+										: "text-(--omsk-dim) hover:bg-(--omsk-bg-tertiary)"
 								}`}
 								data-copy-index={index}
 								key={item.target.id}
@@ -128,7 +128,7 @@ export function CopySelectorDialog() {
 							>
 								<span className="min-w-0 flex-1 truncate">{item.target.label}</span>
 								{item.target.hint && (
-									<span className="shrink-0 text-omp-xs opacity-70">{item.target.hint}</span>
+									<span className="shrink-0 text-omsk-xs opacity-70">{item.target.hint}</span>
 								)}
 							</button>
 						))
@@ -136,12 +136,12 @@ export function CopySelectorDialog() {
 				</div>
 				<div className="flex min-h-0 flex-col">
 					<div className="min-h-0 flex-1 overflow-auto p-4">
-						<div className="mb-2 text-omp-xs font-medium text-(--omp-dim)">{t("copySelector.preview")}</div>
-						<pre className="whitespace-pre-wrap break-words font-mono text-omp-xs leading-relaxed text-(--omp-text)">
+						<div className="mb-2 text-omsk-xs font-medium text-(--omsk-dim)">{t("copySelector.preview")}</div>
+						<pre className="whitespace-pre-wrap break-words font-mono text-omsk-xs leading-relaxed text-(--omsk-text)">
 							{selected?.preview ?? ""}
 						</pre>
 					</div>
-					<div className="flex justify-end border-t border-(--omp-border-muted) p-3">
+					<div className="flex justify-end border-t border-(--omsk-border-muted) p-3">
 						<Button
 							disabled={selected?.content === undefined}
 							onClick={() => void copyTarget(selected)}

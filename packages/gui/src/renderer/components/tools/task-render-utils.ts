@@ -11,10 +11,10 @@ export const FINDING_CAP = 3;
 export const MISSING_YIELD_WARNING_PREFIX = "SYSTEM WARNING: Subagent exited without calling yield tool";
 
 export const PRIORITY_COLOR: Record<string, string> = {
-	P0: "var(--omp-error)",
-	P1: "var(--omp-warning)",
-	P2: "var(--omp-muted)",
-	P3: "var(--omp-accent)",
+	P0: "var(--omsk-error)",
+	P1: "var(--omsk-warning)",
+	P2: "var(--omsk-muted)",
+	P3: "var(--omsk-accent)",
 };
 
 export const PRIORITY_ORD: Record<string, number> = { P0: 0, P1: 1, P2: 2, P3: 3 };

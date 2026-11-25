@@ -58,7 +58,7 @@ const GAUGE_TICK_MS = 500;
  *   the model store's tokensPerSecond before the first observation.
  *
  * GUI extras kept: collapsed by default, word/line counts, duration badge,
- * thinking-level accent (--omp-thinking-*). Settings arrive via get_settings
+ * thinking-level accent (--omsk-thinking-*). Settings arrive via get_settings
  * (settings store) and re-render live on config_update.
  */
 export function ThinkingBlock({ text, live = false, startTime, endTime, level }: ThinkingBlockProps) {
@@ -131,7 +131,7 @@ export function ThinkingBlock({ text, live = false, startTime, endTime, level }:
 	// Gray at rest, brightening toward the level accent as tok/s climbs (sqrt
 	// ease so mid-stream rates already read accent-tinted) — TUI badge lerp.
 	const ratePct = Math.round(100 * Math.sqrt(Math.min(rate, SPEED_MAX) / SPEED_MAX));
-	const rateColor = `color-mix(in srgb, var(--omp-thinking-${tokenLevel}) ${ratePct}%, var(--omp-dim))`;
+	const rateColor = `color-mix(in srgb, var(--omsk-thinking-${tokenLevel}) ${ratePct}%, var(--omsk-dim))`;
 
 	// ── Hidden-thinking glyph pulse ─────────────────────────────────────────
 	const [glyphFrame, setGlyphFrame] = useState(0);
@@ -153,20 +153,20 @@ export function ThinkingBlock({ text, live = false, startTime, endTime, level }:
 		const glyph = THINKING_GLYPH_FRAMES[glyphFrame % THINKING_GLYPH_FRAMES.length] ?? "…";
 		return (
 			<div
-				className="omp-thinking-block omp-thinking-block--pulse mb-2 flex items-center gap-1.5 overflow-hidden rounded-md border-l-2 px-2 py-1 text-omp-sm"
-				style={{ borderLeftColor: `var(--omp-thinking-${tokenLevel})` }}
+				className="omsk-thinking-block omsk-thinking-block--pulse mb-2 flex items-center gap-1.5 overflow-hidden rounded-md border-l-2 px-2 py-1 text-omsk-sm"
+				style={{ borderLeftColor: `var(--omsk-thinking-${tokenLevel})` }}
 			>
 				<span
 					aria-hidden
 					className="inline-block w-3.5 text-center"
-					style={{ color: `var(--omp-thinking-${tokenLevel})` }}
+					style={{ color: `var(--omsk-thinking-${tokenLevel})` }}
 				>
 					{glyph}
 				</span>
-				<span className="font-medium text-[var(--omp-muted)]">{t("chat.thinking.live")}</span>
+				<span className="font-medium text-[var(--omsk-muted)]">{t("chat.thinking.live")}</span>
 				{showGauge && (
 					<>
-						<span className="tabular-nums text-[var(--omp-dim)]">{formatTokens(content.length)}</span>
+						<span className="tabular-nums text-[var(--omsk-dim)]">{formatTokens(content.length)}</span>
 						<span className="tabular-nums" style={{ color: rateColor }}>
 							{t("chat.thinking.speed", { rate: rate.toFixed(1) })}
 						</span>
@@ -185,45 +185,48 @@ export function ThinkingBlock({ text, live = false, startTime, endTime, level }:
 
 	return (
 		<div
-			className="omp-thinking-block mb-2 overflow-hidden rounded-md border-l-2 transition-colors"
-			style={{ borderLeftColor: `var(--omp-thinking-${tokenLevel})` }}
+			className="omsk-thinking-block mb-2 overflow-hidden rounded-md border-l-2 transition-colors"
+			style={{ borderLeftColor: `var(--omsk-thinking-${tokenLevel})` }}
 		>
 			<button
 				type="button"
 				aria-expanded={open}
 				aria-label={t(open ? "chat.thinking.hide" : "chat.thinking.show")}
 				onClick={() => setOpen(v => !v)}
-				className="omp-thinking-header flex w-full items-center gap-1.5 px-2 py-1 text-left text-omp-sm text-[var(--omp-muted)] transition-colors hover:bg-[var(--omp-bg-tertiary)]"
+				className="omsk-thinking-header flex w-full items-center gap-1.5 px-2 py-1 text-left text-omsk-sm text-[var(--omsk-muted)] transition-colors hover:bg-[var(--omsk-bg-tertiary)]"
 			>
 				<ChevronRight
 					aria-hidden
-					className={cx("omp-thinking-chevron omp-disclosure-chevron", open && "rotate-90")}
+					className={cx("omsk-thinking-chevron omsk-disclosure-chevron", open && "rotate-90")}
 					size={12}
 				/>
-				<Brain size={12} className="omp-thinking-brain" style={{ color: `var(--omp-thinking-${tokenLevel})` }} />
+				<Brain size={12} className="omsk-thinking-brain" style={{ color: `var(--omsk-thinking-${tokenLevel})` }} />
 				{isLive ? (
-					<span className="omp-thinking-state omp-thinking-shimmer font-medium">{t("chat.thinking.live")}</span>
+					<span className="omsk-thinking-state omsk-thinking-shimmer font-medium">{t("chat.thinking.live")}</span>
 				) : (
-					<span className="omp-thinking-state font-medium" style={{ color: `var(--omp-thinking-${tokenLevel})` }}>
+					<span
+						className="omsk-thinking-state font-medium"
+						style={{ color: `var(--omsk-thinking-${tokenLevel})` }}
+					>
 						{t("chat.thinking.done")}
 					</span>
 				)}
-				<span className="omp-thinking-level text-[var(--omp-dim)]">{LEVEL_LABEL[resolvedLevel]}</span>
+				<span className="omsk-thinking-level text-[var(--omsk-dim)]">{LEVEL_LABEL[resolvedLevel]}</span>
 				{showGauge && (
-					<span className="omp-thinking-gauge contents">
-						<span className="tabular-nums text-[var(--omp-dim)]">{formatTokens(content.length)}</span>
+					<span className="omsk-thinking-gauge contents">
+						<span className="tabular-nums text-[var(--omsk-dim)]">{formatTokens(content.length)}</span>
 						<span className="tabular-nums" style={{ color: rateColor }}>
 							{t("chat.thinking.speed", { rate: rate.toFixed(1) })}
 						</span>
 					</span>
 				)}
-				<span className="omp-thinking-count tabular-nums text-[var(--omp-dim)]">{countLabel}</span>
+				<span className="omsk-thinking-count tabular-nums text-[var(--omsk-dim)]">{countLabel}</span>
 				{duration && (
-					<span className="omp-thinking-duration ml-auto tabular-nums text-[var(--omp-dim)]">{duration}</span>
+					<span className="omsk-thinking-duration ml-auto tabular-nums text-[var(--omsk-dim)]">{duration}</span>
 				)}
 			</button>
 			<Collapse open={open}>
-				<div className="omp-thinking-body max-h-64 overflow-y-auto px-3 pb-2 font-mono text-omp-sm leading-[1.45] text-[var(--omp-muted)]">
+				<div className="omsk-thinking-body max-h-64 overflow-y-auto px-3 pb-2 font-mono text-omsk-sm leading-[1.45] text-[var(--omsk-muted)]">
 					{isLive ? (
 						<StreamingMarkdown content={formatted} throttle={false} />
 					) : (

@@ -55,7 +55,7 @@ const ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 
 // Same box as common/Input, so selects and text fields line up in one column.
 const SELECT_CLASS =
-	"w-full rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-3 py-[9px] text-omp-lg leading-[1.45] text-(--omp-text) shadow-(--omp-shadow-sm) transition-[border-color,box-shadow] duration-150 hover:border-(--omp-border-strong) focus:border-(--omp-input-focus-border) focus:shadow-[0_0_0_3px_var(--omp-input-glow)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
+	"w-full rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-3 py-[9px] text-omsk-lg leading-[1.45] text-(--omsk-text) shadow-(--omsk-shadow-sm) transition-[border-color,box-shadow] duration-150 hover:border-(--omsk-border-strong) focus:border-(--omsk-input-focus-border) focus:shadow-[0_0_0_3px_var(--omsk-input-glow)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
 
 /** Model-list protocols a server can speak, for fetching once and for keeping the list updated. */
 function DiscoveryTypeOptions() {
@@ -410,7 +410,7 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 		<div className="flex max-h-[70vh] flex-col">
 			<div ref={formRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
 				{readonly && (
-					<div className="rounded-md border border-(--omp-border-muted) bg-transparent px-3 py-2 text-omp-md text-(--omp-muted)">
+					<div className="rounded-md border border-(--omsk-border-muted) bg-transparent px-3 py-2 text-omsk-md text-(--omsk-muted)">
 						{t("providerCfg.form.builtinReadonly")}
 					</div>
 				)}
@@ -483,14 +483,14 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 						<button
 							type="button"
 							aria-label={showKey ? t("providerCfg.form.apiKeyHide") : t("providerCfg.form.apiKeyShow")}
-							className="absolute right-2 top-1/2 -translate-y-1/2 text-(--omp-dim) transition-colors hover:text-(--omp-text) disabled:opacity-50"
+							className="absolute right-2 top-1/2 -translate-y-1/2 text-(--omsk-dim) transition-colors hover:text-(--omsk-text) disabled:opacity-50"
 							onClick={() => setShowKey(prev => !prev)}
 							disabled={readonly || submitting || clearKey}
 						>
 							{showKey ? <EyeOff size={13} /> : <Eye size={13} />}
 						</button>
 					</div>
-					<span className={`mt-1 block text-omp-sm ${clearKey ? "text-(--omp-warning)" : "text-(--omp-dim)"}`}>
+					<span className={`mt-1 block text-omsk-sm ${clearKey ? "text-(--omsk-warning)" : "text-(--omsk-dim)"}`}>
 						{clearKey
 							? t("providerCfg.form.apiKeyRemovingHint")
 							: editing?.hasApiKey
@@ -506,7 +506,7 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 							type="button"
 							onClick={() => setClearKey(true)}
 							disabled={submitting}
-							className="text-omp-sm font-medium text-(--omp-error) transition-opacity hover:opacity-80 disabled:opacity-50"
+							className="text-omsk-sm font-medium text-(--omsk-error) transition-opacity hover:opacity-80 disabled:opacity-50"
 						>
 							{t("providerCfg.form.apiKeyRemove")}
 						</button>
@@ -516,7 +516,7 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 							type="button"
 							onClick={() => setClearKey(false)}
 							disabled={submitting}
-							className="text-omp-sm font-medium text-(--omp-accent) transition-opacity hover:opacity-80 disabled:opacity-50"
+							className="text-omsk-sm font-medium text-(--omsk-accent) transition-opacity hover:opacity-80 disabled:opacity-50"
 						>
 							{t("providerCfg.form.apiKeyKeepIt")}
 						</button>
@@ -539,7 +539,7 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 						<option value="none">{t("providerCfg.form.authNone")}</option>
 						<option value="oauth">OAuth</option>
 					</select>
-					<span className="mt-1 block text-omp-sm text-(--omp-dim)">{t("providerCfg.form.authHint")}</span>
+					<span className="mt-1 block text-omsk-sm text-(--omsk-dim)">{t("providerCfg.form.authHint")}</span>
 				</div>
 
 				<div>
@@ -549,7 +549,7 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 							<div className="mb-1 flex shrink-0 items-center gap-1.5">
 								<select
 									aria-label={t("providerCfg.fetch.server")}
-									className="h-7 max-w-52 rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-1.5 text-omp-sm text-(--omp-text) outline-none focus:border-(--omp-input-focus-border) disabled:opacity-50"
+									className="h-7 max-w-52 rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-1.5 text-omsk-sm text-(--omsk-text) outline-none focus:border-(--omsk-input-focus-border) disabled:opacity-50"
 									disabled={fetching || submitting}
 									onChange={event => setFetchType(event.target.value as CustomProviderDiscoveryType)}
 									value={fetchType}
@@ -570,11 +570,11 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 						)}
 					</div>
 					{!readonly && !fetched && !fetchError && !models.some(row => row.id.trim()) && (
-						<span className="mb-1.5 block text-omp-sm text-(--omp-dim)">{t("providerCfg.fetch.hint")}</span>
+						<span className="mb-1.5 block text-omsk-sm text-(--omsk-dim)">{t("providerCfg.fetch.hint")}</span>
 					)}
 					<div className="scroll-mb-4" ref={fetchOutcomeRef}>
 						{fetchError && (
-							<p className="mb-1.5 text-omp-sm text-(--omp-error)" role="alert">
+							<p className="mb-1.5 text-omsk-sm text-(--omsk-error)" role="alert">
 								{fetchError}
 							</p>
 						)}
@@ -614,7 +614,7 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 					)}
 					<FieldError message={errors.models} />
 					{discoveryType && (
-						<span className="mt-1 block text-omp-sm text-(--omp-dim)">
+						<span className="mt-1 block text-omsk-sm text-(--omsk-dim)">
 							{t("providerCfg.form.modelsDiscoveryOptional")}
 						</span>
 					)}
@@ -624,14 +624,14 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 					<button
 						type="button"
 						aria-expanded={advancedOpen}
-						className="flex items-center gap-1 text-omp-sm font-medium text-(--omp-muted) transition-colors hover:text-(--omp-text)"
+						className="flex items-center gap-1 text-omsk-sm font-medium text-(--omsk-muted) transition-colors hover:text-(--omsk-text)"
 						onClick={() => setAdvancedOpen(prev => !prev)}
 					>
 						{advancedOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
 						{t("providerCfg.form.advanced")}
 					</button>
 					{!advancedOpen && (
-						<span className="mt-0.5 block text-omp-sm text-(--omp-dim)">
+						<span className="mt-0.5 block text-omsk-sm text-(--omsk-dim)">
 							{t("providerCfg.form.advancedHint")}
 						</span>
 					)}
@@ -667,7 +667,7 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 										style={{ flex: "1" }}
 									/>
 								</div>
-								<span className="mt-1 block text-omp-sm text-(--omp-dim)">
+								<span className="mt-1 block text-omsk-sm text-(--omsk-dim)">
 									{t("providerCfg.form.discoveryHint")}
 								</span>
 							</div>
@@ -678,12 +678,12 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 									checked={authHeader}
 									onChange={e => setAuthHeader(e.target.checked)}
 									disabled={readonly || submitting}
-									className="h-4 w-4 rounded border-(--omp-input-border)"
+									className="h-4 w-4 rounded border-(--omsk-input-border)"
 								/>
-								<span className="text-omp-sm text-(--omp-text)">{t("providerCfg.form.authHeader")}</span>
+								<span className="text-omsk-sm text-(--omsk-text)">{t("providerCfg.form.authHeader")}</span>
 							</label>
 							{authHeader && (
-								<span className="ml-6 block text-omp-sm text-(--omp-dim)">
+								<span className="ml-6 block text-omsk-sm text-(--omsk-dim)">
 									{t("providerCfg.form.authHeaderHint")}
 								</span>
 							)}
@@ -694,14 +694,14 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 									checked={disableStrictTools}
 									onChange={e => setDisableStrictTools(e.target.checked)}
 									disabled={readonly || submitting}
-									className="h-4 w-4 rounded border-(--omp-input-border)"
+									className="h-4 w-4 rounded border-(--omsk-input-border)"
 								/>
-								<span className="text-omp-sm text-(--omp-text)">
+								<span className="text-omsk-sm text-(--omsk-text)">
 									{t("providerCfg.form.disableStrictTools")}
 								</span>
 							</label>
 							{disableStrictTools && (
-								<span className="ml-6 block text-omp-sm text-(--omp-dim)">
+								<span className="ml-6 block text-omsk-sm text-(--omsk-dim)">
 									{t("providerCfg.form.disableStrictToolsHint")}
 								</span>
 							)}
@@ -732,9 +732,9 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 									placeholder={t("providerCfg.form.extraBodyPlaceholder")}
 									disabled={readonly || submitting}
 									rows={3}
-									className="w-full rounded-md border border-(--omp-input-border) bg-(--omp-input-bg) px-2.5 py-1.5 font-mono text-omp-sm text-(--omp-text) outline-none transition-colors placeholder:text-(--omp-dim) hover:border-(--omp-border-strong) focus:border-(--omp-input-focus-border) disabled:cursor-not-allowed disabled:opacity-60"
+									className="w-full rounded-md border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2.5 py-1.5 font-mono text-omsk-sm text-(--omsk-text) outline-none transition-colors placeholder:text-(--omsk-dim) hover:border-(--omsk-border-strong) focus:border-(--omsk-input-focus-border) disabled:cursor-not-allowed disabled:opacity-60"
 								/>
-								<span className="mt-1 block text-omp-sm text-(--omp-dim)">
+								<span className="mt-1 block text-omsk-sm text-(--omsk-dim)">
 									{t("providerCfg.form.extraBodyHint")}
 								</span>
 								<FieldError message={errors.extraBody} />
@@ -797,17 +797,17 @@ function ProviderForm({ editing, existing, directEdit, onBack, onSaved, onCancel
 				</div>
 
 				{submitError && (
-					<div className="rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent px-3 py-2 text-omp-md text-(--omp-error)">
+					<div className="rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent px-3 py-2 text-omsk-md text-(--omsk-error)">
 						{t("providerCfg.toast.saveFailed")}: {submitError}
 					</div>
 				)}
 			</div>
 
-			<div className="flex shrink-0 items-center justify-end gap-2 border-t border-(--omp-border-muted) px-4 py-3">
+			<div className="flex shrink-0 items-center justify-end gap-2 border-t border-(--omsk-border-muted) px-4 py-3">
 				{editing && !readonly && onDelete && (
 					<Button
 						variant="ghost"
-						className="mr-auto text-(--omp-error)"
+						className="mr-auto text-(--omsk-error)"
 						icon={<Trash2 size={12} />}
 						onClick={onDelete}
 						disabled={submitting}
@@ -953,7 +953,7 @@ export function ProviderConfigDialog({ open, onClose, editProvider = null }: Pro
 				) : (
 					<div className="flex max-h-[70vh] flex-col gap-3 overflow-y-auto p-4">
 						<div className="flex items-center justify-between gap-2">
-							<span className="min-w-0 flex-1 text-omp-sm text-(--omp-dim)">{t("providerCfg.subtitle")}</span>
+							<span className="min-w-0 flex-1 text-omsk-sm text-(--omsk-dim)">{t("providerCfg.subtitle")}</span>
 							<div className="flex shrink-0 items-center gap-1.5">
 								<Button
 									size="sm"
@@ -975,7 +975,7 @@ export function ProviderConfigDialog({ open, onClose, editProvider = null }: Pro
 						</div>
 
 						{listError && (
-							<div className="flex items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] bg-transparent px-3 py-2 text-omp-md text-(--omp-error)">
+							<div className="flex items-center gap-2 rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] bg-transparent px-3 py-2 text-omsk-md text-(--omsk-error)">
 								<span className="min-w-0 flex-1">
 									{t("providerCfg.list.loadFailed")}: {listError}
 								</span>
@@ -994,7 +994,7 @@ export function ProviderConfigDialog({ open, onClose, editProvider = null }: Pro
 						{providers && (
 							<>
 								{custom.length === 0 ? (
-									<div className="rounded-md border border-(--omp-border-muted) px-3 py-4 text-center text-omp-md text-(--omp-dim)">
+									<div className="rounded-md border border-(--omsk-border-muted) px-3 py-4 text-center text-omsk-md text-(--omsk-dim)">
 										{t("providerCfg.list.empty")}
 									</div>
 								) : (
@@ -1013,7 +1013,7 @@ export function ProviderConfigDialog({ open, onClose, editProvider = null }: Pro
 
 								{builtin.length > 0 && (
 									<>
-										<span className="mt-1 text-omp-sm font-semibold text-(--omp-muted)">
+										<span className="mt-1 text-omsk-sm font-semibold text-(--omsk-muted)">
 											{t("providerCfg.list.builtinSection")}
 										</span>
 										<div className="flex flex-col gap-2">
@@ -1021,7 +1021,9 @@ export function ProviderConfigDialog({ open, onClose, editProvider = null }: Pro
 												<ProviderConfigRow key={provider.id} provider={provider} t={t} />
 											))}
 										</div>
-										<span className="text-omp-sm text-(--omp-dim)">{t("providerCfg.list.builtinNote")}</span>
+										<span className="text-omsk-sm text-(--omsk-dim)">
+											{t("providerCfg.list.builtinNote")}
+										</span>
 									</>
 								)}
 							</>
@@ -1036,13 +1038,13 @@ export function ProviderConfigDialog({ open, onClose, editProvider = null }: Pro
 				size="sm"
 				title={t("providerCfg.delete.title")}
 			>
-				<p className="text-omp-lg leading-relaxed text-(--omp-muted)">
+				<p className="text-omsk-lg leading-relaxed text-(--omsk-muted)">
 					{t("providerCfg.delete.body", { id: pendingDelete?.id ?? "" })}
 				</p>
 				{/* Deleting the provider the session runs on leaves the composer on a
 					model that no longer exists; say so before, not after the next send. */}
 				{pendingDelete && activeModel?.provider === pendingDelete.id && (
-					<p role="alert" className="mt-3 text-omp-md leading-relaxed text-(--omp-warning)">
+					<p role="alert" className="mt-3 text-omsk-md leading-relaxed text-(--omsk-warning)">
 						{t("providerCfg.delete.inUse", { model: activeModel.name ?? activeModel.id })}
 					</p>
 				)}

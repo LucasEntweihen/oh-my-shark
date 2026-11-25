@@ -48,16 +48,16 @@ function SplitDropOverlay({ placement }: { placement: SplitPlacement }) {
 		{ placement: "bottom", className: "col-start-2 row-start-3" },
 	];
 	return (
-		<div className="pointer-events-none absolute inset-0 z-50 grid grid-cols-3 grid-rows-3 gap-3 bg-[var(--omp-overlay-bg)] p-6 omp-drop-overlay backdrop-blur-[2px]">
+		<div className="pointer-events-none absolute inset-0 z-50 grid grid-cols-3 grid-rows-3 gap-3 bg-[var(--omsk-overlay-bg)] p-6 omsk-drop-overlay backdrop-blur-[2px]">
 			{zones.map(zone => (
 				<div
 					key={zone.placement}
 					className={cx(
 						zone.className,
-						"flex items-center justify-center rounded-xl border text-omp-sm font-medium transition-colors",
+						"flex items-center justify-center rounded-xl border text-omsk-sm font-medium transition-colors",
 						zone.placement === placement
-							? "border-[var(--omp-accent)] bg-[var(--omp-accent-dim)] text-[var(--omp-accent)]"
-							: "border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] text-[var(--omp-dim)]",
+							? "border-[var(--omsk-accent)] bg-[var(--omsk-accent-dim)] text-[var(--omsk-accent)]"
+							: "border-[var(--omsk-border)] bg-[var(--omsk-bg-elevated)] text-[var(--omsk-dim)]",
 					)}
 				>
 					{t(`tabs.menu.split${zone.placement[0]?.toUpperCase()}${zone.placement.slice(1)}`)}
@@ -73,9 +73,9 @@ function PaneDropOverlay({ axis, ratio, firstPane }: { axis: SplitAxis; ratio: n
 	const cell = (targeted: boolean) => (
 		<div
 			className={cx(
-				"m-4 flex items-center justify-center rounded-xl border text-omp-sm font-medium transition-colors",
+				"m-4 flex items-center justify-center rounded-xl border text-omsk-sm font-medium transition-colors",
 				targeted
-					? "border-[var(--omp-accent)] bg-[var(--omp-accent-dim)] text-[var(--omp-accent)]"
+					? "border-[var(--omsk-accent)] bg-[var(--omsk-accent-dim)] text-[var(--omsk-accent)]"
 					: "border-transparent text-transparent",
 			)}
 		>
@@ -84,7 +84,7 @@ function PaneDropOverlay({ axis, ratio, firstPane }: { axis: SplitAxis; ratio: n
 	);
 	return (
 		<div
-			className="pointer-events-none absolute inset-0 z-50 grid bg-[var(--omp-overlay-bg)] omp-drop-overlay backdrop-blur-[2px]"
+			className="pointer-events-none absolute inset-0 z-50 grid bg-[var(--omsk-overlay-bg)] omsk-drop-overlay backdrop-blur-[2px]"
 			style={splitGrid(axis, ratio)}
 		>
 			{cell(firstPane)}
@@ -109,14 +109,14 @@ function SessionPane({ tabId, split, label }: { tabId: string; split: boolean; l
 	const running = tab.status === "running" || tab.compacting === true || tab.backgroundCompacting === true;
 	const signalActive = running || tab.status === "starting" || tab.status === "restarting";
 	const signalColor = running
-		? "var(--omp-accent)"
+		? "var(--omsk-accent)"
 		: tab.unreadDone
-			? "var(--omp-success)"
+			? "var(--omsk-success)"
 			: tab.status === "ready" || tab.status === "asleep"
-				? "var(--omp-dim)"
+				? "var(--omsk-dim)"
 				: tab.status === "error" || tab.status === "exited"
-					? "var(--omp-error)"
-					: "var(--omp-warning)";
+					? "var(--omsk-error)"
+					: "var(--omsk-warning)";
 
 	return (
 		<SessionRuntimeProvider runtime={runtime}>
@@ -128,26 +128,26 @@ function SessionPane({ tabId, split, label }: { tabId: string; split: boolean; l
 					if (!active && !(event.target as Element).closest("[data-pane-remove]")) void switchTab(tabId);
 				}}
 				className={cx(
-					"omp-session-pane relative flex min-h-0 min-w-0 flex-col overflow-hidden",
-					active && split && "omp-session-pane--active",
+					"omsk-session-pane relative flex min-h-0 min-w-0 flex-col overflow-hidden",
+					active && split && "omsk-session-pane--active",
 				)}
 			>
 				{split && (
-					<header className="relative flex h-8 shrink-0 items-center gap-2 border-b border-[var(--omp-border-muted)] pr-3 pl-5 text-omp-sm">
+					<header className="relative flex h-8 shrink-0 items-center gap-2 border-b border-[var(--omsk-border-muted)] pr-3 pl-5 text-omsk-sm">
 						<span
 							aria-hidden
-							className={cx("omp-signal-light omp-tab-signal", signalActive && "omp-signal-light--active")}
+							className={cx("omsk-signal-light omsk-tab-signal", signalActive && "omsk-signal-light--active")}
 							style={{ color: signalColor, left: "0.5rem" }}
 						/>
-						<span className="min-w-0 flex-1 truncate font-medium text-[var(--omp-text)]">{label}</span>
-						<span className="omp-session-pane-cwd max-w-[45%] truncate text-[var(--omp-dim)]">{tab.cwd}</span>
+						<span className="min-w-0 flex-1 truncate font-medium text-[var(--omsk-text)]">{label}</span>
+						<span className="omsk-session-pane-cwd max-w-[45%] truncate text-[var(--omsk-dim)]">{tab.cwd}</span>
 						<button
 							type="button"
 							data-pane-remove
 							onClick={() => void unsplit(otherPane ?? tabId)}
 							aria-label={t("split.removePane")}
 							title={t("split.removePane")}
-							className="omp-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+							className="omsk-pressable flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 						>
 							<X size={13} />
 						</button>
@@ -181,8 +181,8 @@ function SessionPaneBody({ tabId, label }: { tabId: string; label: string }) {
 		<AgentBeside
 			conversation={
 				<>
-					<header className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--omp-border-muted)] px-3 text-omp-sm">
-						<span className="min-w-0 flex-1 truncate font-medium text-[var(--omp-text)]">{label}</span>
+					<header className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--omsk-border-muted)] px-3 text-omsk-sm">
+						<span className="min-w-0 flex-1 truncate font-medium text-[var(--omsk-text)]">{label}</span>
 					</header>
 					{conversation}
 				</>
@@ -208,7 +208,7 @@ function SessionConversation() {
 				"relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden",
 				draggingFiles &&
 					!readOnly &&
-					"after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-lg after:border-2 after:border-(--omp-accent)",
+					"after:pointer-events-none after:absolute after:inset-0 after:z-10 after:rounded-lg after:border-2 after:border-(--omsk-accent)",
 			)}
 			onDragOver={event => {
 				if (!event.dataTransfer.types.includes("Files")) return;
@@ -229,7 +229,7 @@ function SessionConversation() {
 				event.stopPropagation();
 				if (readOnly) return;
 				attachFiles(Array.from(event.dataTransfer.files));
-				const composer = event.currentTarget.querySelector<HTMLTextAreaElement>(".omp-composer-box textarea");
+				const composer = event.currentTarget.querySelector<HTMLTextAreaElement>(".omsk-composer-box textarea");
 				requestAnimationFrame(() => composer?.focus());
 			}}
 		>
@@ -360,7 +360,7 @@ export function SplitWorkspace() {
 	const showDrop = canDrop && dragOver;
 	if (!split) {
 		return (
-			<div ref={rootRef} className="omp-split-workspace relative grid min-h-0 flex-1" {...dropProps}>
+			<div ref={rootRef} className="omsk-split-workspace relative grid min-h-0 flex-1" {...dropProps}>
 				{pane(activeTabId, false)}
 				{showDrop && <SplitDropOverlay placement={dropPlacement} />}
 			</div>
@@ -404,7 +404,7 @@ export function SplitWorkspace() {
 	return (
 		<div
 			ref={rootRef}
-			className="omp-split-workspace relative grid min-h-0 flex-1"
+			className="omsk-split-workspace relative grid min-h-0 flex-1"
 			style={splitGrid(axis, split.ratio)}
 			{...dropProps}
 		>
@@ -429,11 +429,11 @@ export function SplitWorkspace() {
 				onPointerUp={finishDrag}
 				onPointerCancel={finishDrag}
 				className={cx(
-					"omp-split-divider group relative z-20 touch-none bg-[var(--omp-border-muted)] focus-visible:bg-[var(--omp-accent)]",
+					"omsk-split-divider group relative z-20 touch-none bg-[var(--omsk-border-muted)] focus-visible:bg-[var(--omsk-accent)]",
 					axis === "columns" ? "cursor-col-resize" : "cursor-row-resize",
 				)}
 			>
-				<span className="pointer-events-none absolute inset-0 m-auto flex h-5 w-5 items-center justify-center rounded-full bg-[var(--omp-bg-elevated)] text-[var(--omp-dim)] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+				<span className="pointer-events-none absolute inset-0 m-auto flex h-5 w-5 items-center justify-center rounded-full bg-[var(--omsk-bg-elevated)] text-[var(--omsk-dim)] opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
 					{axis === "columns" ? <Columns2 size={12} /> : <Rows2 size={12} />}
 				</span>
 			</div>

@@ -21,14 +21,14 @@ export function ProviderConfigRow({
 	t: TFn;
 }) {
 	return (
-		<div className="flex items-center gap-3 rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-2.5">
+		<div className="flex items-center gap-3 rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-2.5">
 			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<div className="flex items-center gap-2">
-					<span className="truncate text-omp-lg font-medium text-(--omp-text)">{provider.id}</span>
+					<span className="truncate text-omsk-lg font-medium text-(--omsk-text)">{provider.id}</span>
 					<Badge variant="info">{provider.api}</Badge>
 					{provider.builtin && <Badge variant="muted">{t("providerCfg.list.builtin")}</Badge>}
 				</div>
-				<div className="flex items-center gap-3 text-omp-sm text-(--omp-dim)">
+				<div className="flex items-center gap-3 text-omsk-sm text-(--omsk-dim)">
 					{provider.baseUrl && (
 						<span className="flex min-w-0 items-center gap-1">
 							<Globe size={10} className="shrink-0" />

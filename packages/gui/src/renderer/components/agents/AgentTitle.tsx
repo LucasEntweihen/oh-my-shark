@@ -42,9 +42,9 @@ export function AgentCrumbs({ tabId, agentId }: { tabId: string; agentId: string
 		<>
 			{hidden.length > 0 && (
 				<>
-					<ChevronRight className="shrink-0 text-[var(--omp-dim)]" size={14} />
+					<ChevronRight className="shrink-0 text-[var(--omsk-dim)]" size={14} />
 					<span
-						className="shrink-0 px-1 text-omp-md text-[var(--omp-dim)]"
+						className="shrink-0 px-1 text-omsk-md text-[var(--omsk-dim)]"
 						title={hidden.map(entry => subagentPrimaryLabel(entry)).join(" › ")}
 					>
 						…
@@ -53,9 +53,9 @@ export function AgentCrumbs({ tabId, agentId }: { tabId: string; agentId: string
 			)}
 			{shownAncestors.map(ancestor => (
 				<Fragment key={ancestor.id}>
-					<ChevronRight className="shrink-0 text-[var(--omp-dim)]" size={14} />
+					<ChevronRight className="shrink-0 text-[var(--omsk-dim)]" size={14} />
 					<button
-						className="omp-pressable min-w-0 max-w-40 truncate rounded-lg px-2 py-1.5 text-omp-md text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable min-w-0 max-w-40 truncate rounded-lg px-2 py-1.5 text-omsk-md text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 						onClick={() => useAgentPagesStore.getState().open(tabId, ancestor.id)}
 						title={t("agents.title.openAncestor", { title: subagentPrimaryLabel(ancestor) })}
 						type="button"
@@ -64,10 +64,10 @@ export function AgentCrumbs({ tabId, agentId }: { tabId: string; agentId: string
 					</button>
 				</Fragment>
 			))}
-			<ChevronRight className="shrink-0 text-[var(--omp-dim)]" size={14} />
+			<ChevronRight className="shrink-0 text-[var(--omsk-dim)]" size={14} />
 			<span
 				aria-current="page"
-				className="min-w-0 max-w-72 truncate px-2 py-1.5 text-omp-lg font-semibold text-[var(--omp-text)]"
+				className="min-w-0 max-w-72 truncate px-2 py-1.5 text-omsk-lg font-semibold text-[var(--omsk-text)]"
 				title={title}
 			>
 				{title}
@@ -83,10 +83,10 @@ export function AgentTitleStatus({ agentId }: { agentId: string }) {
 	const activity = subagentActivity(agent);
 	const label = activityLabel(agent);
 	return (
-		<div className="omp-titlebar-status no-drag flex shrink-0 items-center gap-1.5 px-1 text-omp-sm font-medium text-[var(--omp-muted)]">
+		<div className="omsk-titlebar-status no-drag flex shrink-0 items-center gap-1.5 px-1 text-omsk-sm font-medium text-[var(--omsk-muted)]">
 			<AgentSignal activity={activity} />
 			<span
-				className="omp-titlebar-status-label"
+				className="omsk-titlebar-status-label"
 				style={activity === "failed" ? { color: ACTIVITY_TONE.failed } : undefined}
 			>
 				{label}
@@ -99,7 +99,7 @@ export function AgentTitleFacts({ agentId }: { agentId: string }) {
 	const agent = useSubagentsStore(state => state.subagents.get(agentId));
 	if (!agent) return null;
 	return (
-		<span className="omp-session-metrics no-drag flex shrink-0 items-center px-1.5">
+		<span className="omsk-session-metrics no-drag flex shrink-0 items-center px-1.5">
 			<AgentFacts agent={agent} />
 		</span>
 	);

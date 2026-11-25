@@ -66,23 +66,23 @@ export function RunRow({
 	return (
 		<button
 			className={cx(
-				"omp-fade-in relative flex w-full flex-col gap-0.5 rounded-lg py-2 pr-2.5 pl-3.5 text-left transition-colors duration-150",
-				active ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-selected-bg)",
+				"omsk-fade-in relative flex w-full flex-col gap-0.5 rounded-lg py-2 pr-2.5 pl-3.5 text-left transition-colors duration-150",
+				active ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-selected-bg)",
 			)}
 			onClick={onSelect}
 			type="button"
 		>
 			{/* The outcome at a glance down a long history: green done, red failed, amber review. */}
 			<span aria-hidden className={cx("absolute inset-y-2 left-1 w-0.5 rounded-full", runDotClass(run))} />
-			<span className="truncate text-omp-md font-medium text-(--omp-text)">
+			<span className="truncate text-omsk-md font-medium text-(--omsk-text)">
 				{headline ? <InlineMarkdown text={headline} /> : t(`tasks.run.trigger.${run.trigger}`)}
 			</span>
 			{title !== undefined && finding && (
-				<span className="truncate text-omp-sm text-(--omp-muted)">
+				<span className="truncate text-omsk-sm text-(--omsk-muted)">
 					<InlineMarkdown text={finding} />
 				</span>
 			)}
-			<span className="mt-0.5 flex items-center gap-2 text-omp-xs text-(--omp-dim) tabular-nums">
+			<span className="mt-0.5 flex items-center gap-2 text-omsk-xs text-(--omsk-dim) tabular-nums">
 				{/* One truncating line, so a narrow list clips the meta rather than scrolling sideways. */}
 				<span className="min-w-0 flex-1 truncate">
 					{[
@@ -113,8 +113,8 @@ export function RunRow({
 
 function Section({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
 	return (
-		<section className="omp-fade-up">
-			<h3 className="mb-2 flex items-center gap-1.5 text-omp-sm font-semibold tracking-wide text-(--omp-muted) uppercase">
+		<section className="omsk-fade-up">
+			<h3 className="mb-2 flex items-center gap-1.5 text-omsk-sm font-semibold tracking-wide text-(--omsk-muted) uppercase">
 				{icon}
 				{title}
 			</h3>
@@ -124,9 +124,9 @@ function Section({ title, icon, children }: { title: string; icon: ReactNode; ch
 }
 
 const SEVERITY_ICON = {
-	info: <Info size={13} className="mt-0.5 shrink-0 text-(--omp-link)" />,
-	warn: <AlertTriangle size={13} className="mt-0.5 shrink-0 text-(--omp-warning)" />,
-	error: <XCircle size={13} className="mt-0.5 shrink-0 text-(--omp-error)" />,
+	info: <Info size={13} className="mt-0.5 shrink-0 text-(--omsk-link)" />,
+	warn: <AlertTriangle size={13} className="mt-0.5 shrink-0 text-(--omsk-warning)" />,
+	error: <XCircle size={13} className="mt-0.5 shrink-0 text-(--omsk-error)" />,
 };
 
 function ReportBody({ report }: { report: RunReport }) {
@@ -134,11 +134,11 @@ function ReportBody({ report }: { report: RunReport }) {
 	return (
 		<div className="flex flex-col gap-5">
 			<Section icon={<FileText size={12} />} title={t("tasks.run.summary")}>
-				<div className="text-omp-lg leading-relaxed text-(--omp-text)">
+				<div className="text-omsk-lg leading-relaxed text-(--omsk-text)">
 					<MarkdownRenderer content={report.summary} />
 				</div>
 				{report.status !== "done" && report.status !== "nothing_to_report" && (
-					<p className="mt-2 text-omp-md text-(--omp-warning)">{t(`tasks.run.reportStatus.${report.status}`)}</p>
+					<p className="mt-2 text-omsk-md text-(--omsk-warning)">{t(`tasks.run.reportStatus.${report.status}`)}</p>
 				)}
 			</Section>
 			{report.findings.length > 0 && (
@@ -146,16 +146,16 @@ function ReportBody({ report }: { report: RunReport }) {
 					<ul className="flex flex-col gap-2">
 						{report.findings.map((finding, index) => (
 							<li
-								className="flex gap-2 rounded-lg border border-(--omp-border-muted) px-3 py-2"
+								className="flex gap-2 rounded-lg border border-(--omsk-border-muted) px-3 py-2"
 								key={`${index}-${finding.title}`}
 							>
 								{SEVERITY_ICON[finding.severity ?? "info"]}
 								<div className="min-w-0">
-									<p className="text-omp-md font-medium text-(--omp-text)">
+									<p className="text-omsk-md font-medium text-(--omsk-text)">
 										<InlineMarkdown text={finding.title} />
 									</p>
 									{finding.detail && (
-										<div className="mt-0.5 text-omp-md leading-relaxed text-(--omp-muted)">
+										<div className="mt-0.5 text-omsk-md leading-relaxed text-(--omsk-muted)">
 											<MarkdownRenderer content={finding.detail} />
 										</div>
 									)}
@@ -167,7 +167,7 @@ function ReportBody({ report }: { report: RunReport }) {
 			)}
 			{report.next && (
 				<Section icon={<ArrowRight size={12} />} title={t("tasks.run.next")}>
-					<div className="text-omp-md leading-relaxed text-(--omp-muted)">
+					<div className="text-omsk-md leading-relaxed text-(--omsk-muted)">
 						<MarkdownRenderer content={report.next} />
 					</div>
 				</Section>
@@ -180,7 +180,7 @@ function ReportBody({ report }: { report: RunReport }) {
 function Meta({ label, children }: { label: string; children: ReactNode }) {
 	return (
 		<span
-			className="flex items-center gap-1.5 before:text-(--omp-border-strong) before:content-['·'] first:before:content-none"
+			className="flex items-center gap-1.5 before:text-(--omsk-border-strong) before:content-['·'] first:before:content-none"
 			title={label}
 		>
 			{children}
@@ -221,10 +221,10 @@ export function RunDetail({ run, taskTitle, actions }: { run: TaskRun; taskTitle
 		<div className="flex max-w-4xl flex-col gap-6" key={run.id}>
 			<header className="flex flex-wrap items-start justify-between gap-3">
 				<div className="min-w-0">
-					<h2 className="truncate text-omp-xl font-semibold text-(--omp-text)">
+					<h2 className="truncate text-omsk-xl font-semibold text-(--omsk-text)">
 						{taskTitle ?? formatClock(when)}
 					</h2>
-					<div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-omp-sm text-(--omp-muted) tabular-nums">
+					<div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-omsk-sm text-(--omsk-muted) tabular-nums">
 						<RunOutcomeBadge run={run} />
 						<span className="flex flex-wrap items-center gap-x-2 gap-y-1">
 							{taskTitle && <Meta label={t("tasks.run.fact.when")}>{formatClock(when)}</Meta>}
@@ -241,7 +241,7 @@ export function RunDetail({ run, taskTitle, actions }: { run: TaskRun; taskTitle
 							)}
 							{run.model && (
 								<Meta label={t("tasks.run.fact.model")}>
-									<span className="font-mono text-omp-xs">{run.model}</span>
+									<span className="font-mono text-omsk-xs">{run.model}</span>
 								</Meta>
 							)}
 						</span>
@@ -273,34 +273,34 @@ export function RunDetail({ run, taskTitle, actions }: { run: TaskRun; taskTitle
 			</header>
 
 			{live && (
-				<div className="omp-fade-in flex items-center gap-3 rounded-xl border border-(--omp-border-muted) px-4 py-3">
+				<div className="omsk-fade-in flex items-center gap-3 rounded-xl border border-(--omsk-border-muted) px-4 py-3">
 					<Spinner size="sm" />
 					<div className="min-w-0 flex-1">
-						<p className="text-omp-md text-(--omp-text)">
+						<p className="text-omsk-md text-(--omsk-text)">
 							{run.state === "queued" ? t("tasks.run.queued") : t("tasks.run.running")}
 						</p>
 						{progress && (
-							<p className="truncate text-omp-sm text-(--omp-dim)">
+							<p className="truncate text-omsk-sm text-(--omsk-dim)">
 								{progress.round > 1 && `${t("tasks.run.round", { round: progress.round })} · `}
 								{t("tasks.run.progress", { turns: progress.turns })}
 								{progress.lastTool && ` · ${progress.lastTool}`}
 							</p>
 						)}
 					</div>
-					<div className="h-0.5 w-24 shrink-0 overflow-hidden rounded-full bg-(--omp-border-muted)">
-						<div className="omp-indeterminate-progress h-full rounded-full bg-(--omp-accent)" />
+					<div className="h-0.5 w-24 shrink-0 overflow-hidden rounded-full bg-(--omsk-border-muted)">
+						<div className="omsk-indeterminate-progress h-full rounded-full bg-(--omsk-accent)" />
 					</div>
 				</div>
 			)}
 
 			{run.error && (
-				<div className="omp-fade-up flex gap-2 rounded-xl border border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)] px-4 py-3">
-					<XCircle size={14} className="mt-0.5 shrink-0 text-(--omp-error)" />
+				<div className="omsk-fade-up flex gap-2 rounded-xl border border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)] px-4 py-3">
+					<XCircle size={14} className="mt-0.5 shrink-0 text-(--omsk-error)" />
 					<div className="min-w-0">
-						<p className="text-omp-md font-medium text-(--omp-error)">
+						<p className="text-omsk-md font-medium text-(--omsk-error)">
 							{t(`tasks.run.errorKind.${run.error.kind}`)}
 						</p>
-						<p className="mt-0.5 text-omp-md break-words whitespace-pre-wrap text-(--omp-muted)">
+						<p className="mt-0.5 text-omsk-md break-words whitespace-pre-wrap text-(--omsk-muted)">
 							{describeProviderError(run.error.message)}
 						</p>
 						<TechnicalDetails
@@ -317,7 +317,7 @@ export function RunDetail({ run, taskTitle, actions }: { run: TaskRun; taskTitle
 			) : (
 				!live &&
 				!run.error && (
-					<p className="text-omp-md text-(--omp-dim)">
+					<p className="text-omsk-md text-(--omsk-dim)">
 						{t(
 							`tasks.run.noReport.${run.state === "missed" || run.state.startsWith("skipped") ? "skipped" : "default"}`,
 						)}
@@ -328,16 +328,16 @@ export function RunDetail({ run, taskTitle, actions }: { run: TaskRun; taskTitle
 			{changedPaths.length > 0 && (
 				<Section icon={<GitBranch size={12} />} title={t("tasks.run.changes", { count: changedPaths.length })}>
 					{run.worktree && (
-						<p className="mb-2 text-omp-sm text-(--omp-dim)">
+						<p className="mb-2 text-omsk-sm text-(--omsk-dim)">
 							{t("tasks.run.branch", { branch: run.worktree.branch })}
 							{run.worktree.removed && ` · ${t("tasks.run.worktreeRemoved")}`}
 						</p>
 					)}
-					<ul className="flex flex-col divide-y divide-(--omp-border-muted) rounded-xl border border-(--omp-border-muted)">
+					<ul className="flex flex-col divide-y divide-(--omsk-border-muted) rounded-xl border border-(--omsk-border-muted)">
 						{changedPaths.map(path => (
 							<li className="px-3 py-1.5" key={path}>
-								<p className="truncate font-mono text-omp-sm text-(--omp-text)">{path}</p>
-								{noteFor(path) && <p className="text-omp-sm text-(--omp-dim)">{noteFor(path)}</p>}
+								<p className="truncate font-mono text-omsk-sm text-(--omsk-text)">{path}</p>
+								{noteFor(path) && <p className="text-omsk-sm text-(--omsk-dim)">{noteFor(path)}</p>}
 							</li>
 						))}
 					</ul>
@@ -348,23 +348,23 @@ export function RunDetail({ run, taskTitle, actions }: { run: TaskRun; taskTitle
 				<Section
 					icon={
 						run.verification.state === "passed" ? (
-							<CheckCircle2 size={12} className="text-(--omp-success)" />
+							<CheckCircle2 size={12} className="text-(--omsk-success)" />
 						) : (
-							<XCircle size={12} className="text-(--omp-error)" />
+							<XCircle size={12} className="text-(--omsk-error)" />
 						)
 					}
 					title={t("tasks.run.verification")}
 				>
 					<p
 						className={cx(
-							"text-omp-md",
-							run.verification.state === "passed" ? "text-(--omp-success)" : "text-(--omp-error)",
+							"text-omsk-md",
+							run.verification.state === "passed" ? "text-(--omsk-success)" : "text-(--omsk-error)",
 						)}
 					>
 						{t(`tasks.run.verify.${run.verification.state}`, { code: run.verification.exitCode ?? "—" })}
 					</p>
 					{run.verification.outputTail && (
-						<pre className="mt-2 max-h-64 overflow-auto rounded-lg border border-(--omp-border-muted) px-3 py-2 font-mono text-omp-sm leading-relaxed whitespace-pre-wrap text-(--omp-muted)">
+						<pre className="mt-2 max-h-64 overflow-auto rounded-lg border border-(--omsk-border-muted) px-3 py-2 font-mono text-omsk-sm leading-relaxed whitespace-pre-wrap text-(--omsk-muted)">
 							{run.verification.outputTail}
 						</pre>
 					)}
@@ -373,15 +373,15 @@ export function RunDetail({ run, taskTitle, actions }: { run: TaskRun; taskTitle
 
 			{run.blocked.length > 0 && (
 				<Section
-					icon={<AlertTriangle size={12} className="text-(--omp-warning)" />}
+					icon={<AlertTriangle size={12} className="text-(--omsk-warning)" />}
 					title={t("tasks.run.blocked", { count: run.blocked.length })}
 				>
-					<p className="mb-2 text-omp-sm text-(--omp-dim)">{t("tasks.run.blockedHint")}</p>
+					<p className="mb-2 text-omsk-sm text-(--omsk-dim)">{t("tasks.run.blockedHint")}</p>
 					<ul className="flex flex-col gap-1">
 						{run.blocked.map((item, index) => (
-							<li className="truncate text-omp-md text-(--omp-muted)" key={`${index}-${item.tool}`}>
-								<span className="font-mono text-(--omp-text)">{item.tool}</span>
-								{item.target && <span className="ml-2 font-mono text-omp-sm">{item.target}</span>}
+							<li className="truncate text-omsk-md text-(--omsk-muted)" key={`${index}-${item.tool}`}>
+								<span className="font-mono text-(--omsk-text)">{item.tool}</span>
+								{item.target && <span className="ml-2 font-mono text-omsk-sm">{item.target}</span>}
 							</li>
 						))}
 					</ul>
@@ -390,7 +390,7 @@ export function RunDetail({ run, taskTitle, actions }: { run: TaskRun; taskTitle
 
 			{run.review.state === "rejected" && run.review.note && (
 				<Section icon={<MessageSquare size={12} />} title={t("tasks.run.rejectionNote")}>
-					<p className="text-omp-md text-(--omp-muted)">{run.review.note}</p>
+					<p className="text-omsk-md text-(--omsk-muted)">{run.review.note}</p>
 				</Section>
 			)}
 		</div>

@@ -73,14 +73,14 @@ function AgentPageChip({
 			aria-label={t("agents.chip.label", { parent: parentLabel, title, state })}
 			aria-selected={selected}
 			className={cx(
-				"no-drag group relative flex h-8 w-auto min-w-0 max-w-52 shrink-0 cursor-pointer items-center gap-1.5 overflow-hidden rounded-lg pr-2 pl-2 text-omp-md select-none",
+				"no-drag group relative flex h-8 w-auto min-w-0 max-w-52 shrink-0 cursor-pointer items-center gap-1.5 overflow-hidden rounded-lg pr-2 pl-2 text-omsk-md select-none",
 				selected
-					? "bg-[var(--omp-selected-bg)] font-medium text-[var(--omp-text)]"
+					? "bg-[var(--omsk-selected-bg)] font-medium text-[var(--omsk-text)]"
 					: visible
-						? "bg-[var(--omp-selected-bg)]/55 text-[var(--omp-text)] ring-1 ring-inset ring-[var(--omp-border)]"
-						: "text-[var(--omp-muted)] hover:bg-[var(--omp-sidebar-item-hover)] hover:text-[var(--omp-text)]",
+						? "bg-[var(--omsk-selected-bg)]/55 text-[var(--omsk-text)] ring-1 ring-inset ring-[var(--omsk-border)]"
+						: "text-[var(--omsk-muted)] hover:bg-[var(--omsk-sidebar-item-hover)] hover:text-[var(--omsk-text)]",
 			)}
-			id={`omp-tab-${tabId}-agent-${page.agentId}`}
+			id={`omsk-tab-${tabId}-agent-${page.agentId}`}
 			onAuxClick={event => {
 				if (event.button === 1) pages().close(tabId, page.agentId);
 			}}
@@ -97,9 +97,9 @@ function AgentPageChip({
 			title={`${parentLabel} › ${title}`}
 		>
 			{beside ? (
-				<Columns2 aria-hidden className="shrink-0 text-[var(--omp-dim)]" size={11} />
+				<Columns2 aria-hidden className="shrink-0 text-[var(--omsk-dim)]" size={11} />
 			) : (
-				<CornerDownRight aria-hidden className="shrink-0 text-[var(--omp-dim)]" size={12} />
+				<CornerDownRight aria-hidden className="shrink-0 text-[var(--omsk-dim)]" size={12} />
 			)}
 			<AgentSignal activity={activity} />
 			<span className={cx("min-w-0 flex-1 truncate", !page.pinned && "italic")} data-tab-title>
@@ -108,7 +108,7 @@ function AgentPageChip({
 			<button
 				aria-label={t("agents.page.closePage")}
 				className={cx(
-					"omp-pressable -mr-1 flex h-4 w-4 shrink-0 items-center justify-center rounded text-[var(--omp-dim)] hover:bg-[var(--omp-bg-primary)] hover:text-[var(--omp-text)]",
+					"omsk-pressable -mr-1 flex h-4 w-4 shrink-0 items-center justify-center rounded text-[var(--omsk-dim)] hover:bg-[var(--omsk-bg-primary)] hover:text-[var(--omsk-text)]",
 					selected || visible ? "flex" : "hidden group-hover:flex",
 				)}
 				onClick={event => {

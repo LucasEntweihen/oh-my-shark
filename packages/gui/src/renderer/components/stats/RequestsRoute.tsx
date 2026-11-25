@@ -58,7 +58,7 @@ function DetailDrawer({ row, onClose }: { row: RequestRow; onClose: () => void }
 			panelClassName="ml-auto mr-0"
 		>
 			<div className="min-h-0 flex-1 overflow-y-auto p-4">
-				<div className="mb-3 grid grid-cols-2 gap-2 text-omp-sm">
+				<div className="mb-3 grid grid-cols-2 gap-2 text-omsk-sm">
 					{[
 						[t("stats.col.provider"), row.provider],
 						[t("stats.requests.detail.api"), row.api],
@@ -71,14 +71,14 @@ function DetailDrawer({ row, onClose }: { row: RequestRow; onClose: () => void }
 						[t("stats.requests.detail.cacheRead"), compact(row.usage?.cacheRead ?? 0)],
 						[t("stats.requests.detail.cacheWrite"), compact(row.usage?.cacheWrite ?? 0)],
 					].map(([label, value]) => (
-						<div className="rounded-md border border-(--omp-border-muted) px-2.5 py-1.5" key={label}>
-							<div className="text-omp-xxs font-semibold text-(--omp-dim)">{label}</div>
-							<div className="mt-0.5 truncate font-mono text-(--omp-text)">{value}</div>
+						<div className="rounded-md border border-(--omsk-border-muted) px-2.5 py-1.5" key={label}>
+							<div className="text-omsk-xxs font-semibold text-(--omsk-dim)">{label}</div>
+							<div className="mt-0.5 truncate font-mono text-(--omsk-text)">{value}</div>
 						</div>
 					))}
 				</div>
 				{row.errorMessage && (
-					<div className="mb-3 rounded-md border border-[color-mix(in_srgb,var(--omp-error)_40%,transparent)] bg-transparent px-3 py-2 font-mono text-omp-xs break-words text-(--omp-error)">
+					<div className="mb-3 rounded-md border border-[color-mix(in_srgb,var(--omsk-error)_40%,transparent)] bg-transparent px-3 py-2 font-mono text-omsk-xs break-words text-(--omsk-error)">
 						{row.errorMessage}
 					</div>
 				)}
@@ -86,12 +86,12 @@ function DetailDrawer({ row, onClose }: { row: RequestRow; onClose: () => void }
 				{loading ? (
 					<div className="flex items-center gap-2 py-4">
 						<Spinner size="sm" />
-						<span className="text-omp-sm text-(--omp-dim)">{t("stats.requests.loadingDetail")}</span>
+						<span className="text-omsk-sm text-(--omsk-dim)">{t("stats.requests.loadingDetail")}</span>
 					</div>
 				) : error ? (
-					<div className="text-omp-sm text-(--omp-error)">{error}</div>
+					<div className="text-omsk-sm text-(--omsk-error)">{error}</div>
 				) : (
-					<pre className="max-h-[45vh] overflow-auto rounded-md border border-(--omp-border-muted) bg-(--omp-code-bg) p-3 font-mono text-omp-xs leading-[1.5] break-words whitespace-pre-wrap text-(--omp-muted)">
+					<pre className="max-h-[45vh] overflow-auto rounded-md border border-(--omsk-border-muted) bg-(--omsk-code-bg) p-3 font-mono text-omsk-xs leading-[1.5] break-words whitespace-pre-wrap text-(--omsk-muted)">
 						{JSON.stringify({ messages: detail?.messages, output: detail?.output }, null, 2)?.slice(0, 40_000) ??
 							t("stats.requests.emptyPayload")}
 					</pre>
@@ -121,7 +121,7 @@ export function RequestsRoute({ range, refreshKey }: { range: StatsRange; refres
 				key: "time",
 				label: t("stats.col.when"),
 				render: row => (
-					<span className="whitespace-nowrap text-(--omp-muted)">
+					<span className="whitespace-nowrap text-(--omsk-muted)">
 						{new Date(row.timestamp).toLocaleString(getFormattingLocale(), {
 							month: "short",
 							day: "numeric",
@@ -137,8 +137,8 @@ export function RequestsRoute({ range, refreshKey }: { range: StatsRange; refres
 				label: t("stats.col.model"),
 				render: row => (
 					<span>
-						<span className="block font-mono text-(--omp-text)">{row.model}</span>
-						<span className="block text-omp-xs text-(--omp-dim)">{row.provider}</span>
+						<span className="block font-mono text-(--omsk-text)">{row.model}</span>
+						<span className="block text-omsk-xs text-(--omsk-dim)">{row.provider}</span>
 					</span>
 				),
 			},
@@ -169,7 +169,7 @@ export function RequestsRoute({ range, refreshKey }: { range: StatsRange; refres
 			{
 				key: "folder",
 				label: t("stats.col.project"),
-				render: row => <span className="text-omp-xs text-(--omp-dim)">{row.folder}</span>,
+				render: row => <span className="text-omsk-xs text-(--omsk-dim)">{row.folder}</span>,
 			},
 		],
 		[t],
@@ -185,7 +185,7 @@ export function RequestsRoute({ range, refreshKey }: { range: StatsRange; refres
 				rows={rows}
 			/>
 			<div className="mt-2 flex items-center justify-between">
-				<span className="text-omp-xs text-(--omp-dim)">{t("stats.requests.rowHint")}</span>
+				<span className="text-omsk-xs text-(--omsk-dim)">{t("stats.requests.rowHint")}</span>
 				<div className="flex items-center gap-1.5">
 					<Button
 						disabled={page === 0 || isLoading}
@@ -199,7 +199,7 @@ export function RequestsRoute({ range, refreshKey }: { range: StatsRange; refres
 					>
 						{t("stats.requests.prev")}
 					</Button>
-					<span className="text-omp-xs tabular-nums text-(--omp-muted)">
+					<span className="text-omsk-xs tabular-nums text-(--omsk-muted)">
 						{page + 1} / {pages}
 					</span>
 					<Button

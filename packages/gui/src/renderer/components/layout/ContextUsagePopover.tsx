@@ -129,13 +129,13 @@ export function ContextUsagePopover({ autoCompactAt = null }: { autoCompactAt?: 
 	return (
 		<div className="relative shrink-0" onMouseEnter={reveal} onMouseLeave={scheduleClose}>
 			<button
-				aria-controls="omp-context-usage-popover"
+				aria-controls="omsk-context-usage-popover"
 				aria-expanded={open}
 				aria-label={triggerLabel}
-				className={`omp-context-usage-trigger omp-pressable flex h-6 min-w-0 items-center gap-1.5 rounded-md px-1.5 ${
+				className={`omsk-context-usage-trigger omsk-pressable flex h-6 min-w-0 items-center gap-1.5 rounded-md px-1.5 ${
 					open
-						? "text-[var(--omp-link)] ring-1 ring-[var(--omp-link)]"
-						: "text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-muted)]"
+						? "text-[var(--omsk-link)] ring-1 ring-[var(--omsk-link)]"
+						: "text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-muted)]"
 				}`}
 				onBlur={scheduleClose}
 				onClick={() => {
@@ -158,7 +158,7 @@ export function ContextUsagePopover({ autoCompactAt = null }: { autoCompactAt?: 
 				{capacityKnown ? (
 					<>
 						<UsageRing percent={percent} />
-						<span className="text-omp-xs tabular-nums">
+						<span className="text-omsk-xs tabular-nums">
 							{t("contextUsage.ofWindow", {
 								percent: Math.round(percent),
 								window: formatTokens(contextWindow ?? 0),
@@ -168,7 +168,7 @@ export function ContextUsagePopover({ autoCompactAt = null }: { autoCompactAt?: 
 				) : (
 					<>
 						<CircleGauge aria-hidden="true" size={14} strokeWidth={2} />
-						<span className="font-mono text-omp-xs tabular-nums">{formatContextUsage(view)}</span>
+						<span className="font-mono text-omsk-xs tabular-nums">{formatContextUsage(view)}</span>
 					</>
 				)}
 			</button>
@@ -180,10 +180,10 @@ export function ContextUsagePopover({ autoCompactAt = null }: { autoCompactAt?: 
 						aria-hidden={closing || undefined}
 						aria-label={t("contextUsage.title")}
 						className={cx(
-							"fixed z-[80] rounded-[18px] border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] p-4 shadow-[var(--omp-shadow-lg)]",
-							closing ? "omp-scale-out pointer-events-none" : "omp-pop-in",
+							"fixed z-[80] rounded-[18px] border border-[var(--omsk-border)] bg-[var(--omsk-bg-elevated)] p-4 shadow-[var(--omsk-shadow-lg)]",
+							closing ? "omsk-scale-out pointer-events-none" : "omsk-pop-in",
 						)}
-						id="omp-context-usage-popover"
+						id="omsk-context-usage-popover"
 						inert={closing}
 						onMouseEnter={cancelScheduledClose}
 						onMouseLeave={scheduleClose}
@@ -192,13 +192,13 @@ export function ContextUsagePopover({ autoCompactAt = null }: { autoCompactAt?: 
 						style={popoverStyle}
 					>
 						<div className="flex items-baseline justify-between gap-4">
-							<span className="text-omp-lg text-[var(--omp-muted)]">
+							<span className="text-omsk-lg text-[var(--omsk-muted)]">
 								{t("contextUsage.used")}{" "}
 								{capacityKnown && (
-									<strong className="ml-1 font-semibold text-[var(--omp-text)]">{`${Math.round(percent)}%`}</strong>
+									<strong className="ml-1 font-semibold text-[var(--omsk-text)]">{`${Math.round(percent)}%`}</strong>
 								)}
 							</span>
-							<span className="shrink-0 font-mono text-omp-lg font-semibold tabular-nums text-[var(--omp-text)]">
+							<span className="shrink-0 font-mono text-omsk-lg font-semibold tabular-nums text-[var(--omsk-text)]">
 								{capacityKnown
 									? `${approximateTokens(usedTokens)} / ${formatTokens(contextWindow)}`
 									: approximateTokens(usedTokens)}
@@ -206,7 +206,7 @@ export function ContextUsagePopover({ autoCompactAt = null }: { autoCompactAt?: 
 						</div>
 
 						{capacityKnown ? null : (
-							<div className="mt-3 rounded-lg border border-[var(--omp-border-muted)] px-2.5 py-2 text-omp-md text-[var(--omp-dim)]">
+							<div className="mt-3 rounded-lg border border-[var(--omsk-border-muted)] px-2.5 py-2 text-omsk-md text-[var(--omsk-dim)]">
 								{t("contextUsage.windowUnknown")}
 							</div>
 						)}
@@ -214,13 +214,13 @@ export function ContextUsagePopover({ autoCompactAt = null }: { autoCompactAt?: 
 						<ContextBreakdown approximate className="mt-3" segments={segments} view={view} />
 
 						{loading && segments.length === 0 ? (
-							<div className="flex items-center gap-2 py-5 text-omp-md text-[var(--omp-dim)]">
+							<div className="flex items-center gap-2 py-5 text-omsk-md text-[var(--omsk-dim)]">
 								<LoaderCircle aria-hidden="true" className="animate-spin" size={14} />
 								{t("contextUsage.loading")}
 							</div>
 						) : error && segments.length === 0 ? (
 							<div className="flex flex-col items-start gap-2 py-4">
-								<p role="alert" className="text-omp-md text-[var(--omp-dim)]">
+								<p role="alert" className="text-omsk-md text-[var(--omsk-dim)]">
 									{t("contextUsage.unavailable")}
 								</p>
 								<Button icon={<RotateCw size={12} />} onClick={retry} size="sm" variant="secondary">
@@ -253,14 +253,14 @@ function UsageRing({ percent }: { percent: number }) {
 	const filled = Math.min(Math.max(percent, 0), 100) / 100;
 	return (
 		<svg aria-hidden="true" className="shrink-0 -rotate-90" height={16} viewBox="0 0 16 16" width={16}>
-			<circle cx={8} cy={8} fill="none" r={radius} stroke="var(--omp-border-strong)" strokeWidth={2} />
+			<circle cx={8} cy={8} fill="none" r={radius} stroke="var(--omsk-border-strong)" strokeWidth={2} />
 			<circle
-				className="omp-progress-ring"
+				className="omsk-progress-ring"
 				cx={8}
 				cy={8}
 				fill="none"
 				r={radius}
-				stroke={percent >= 80 ? "var(--omp-warning)" : "currentColor"}
+				stroke={percent >= 80 ? "var(--omsk-warning)" : "currentColor"}
 				strokeDasharray={circumference}
 				strokeDashoffset={circumference * (1 - filled)}
 				strokeLinecap="round"

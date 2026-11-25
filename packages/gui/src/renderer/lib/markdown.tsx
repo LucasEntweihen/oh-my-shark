@@ -228,7 +228,7 @@ function fileTargetFromHref(href: string): FileTarget | null {
 }
 
 const LINK_CLASS =
-	"text-[var(--omp-md-link)] underline decoration-[var(--omp-md-link-url)] hover:decoration-[var(--omp-md-link)]";
+	"text-[var(--omsk-md-link)] underline decoration-[var(--omsk-md-link-url)] hover:decoration-[var(--omsk-md-link)]";
 
 /** Set inside a link so its inline code does not become a second, nested link. */
 const InsideLink = createContext(false);
@@ -276,8 +276,8 @@ function ExternalLink({ href, children }: ComponentPropsWithoutRef<"a">) {
 
 function StyledTable({ children, ...props }: ComponentPropsWithoutRef<"table">) {
 	return (
-		<div className="omp-markdown-table my-2 overflow-x-auto">
-			<table {...props} className="w-full border-collapse text-omp-md">
+		<div className="omsk-markdown-table my-2 overflow-x-auto">
+			<table {...props} className="w-full border-collapse text-omsk-md">
 				{children}
 			</table>
 		</div>
@@ -383,9 +383,9 @@ function CodeBlock({ className, children, ...props }: ComponentPropsWithoutRef<"
 }
 
 const INLINE_CODE_CLASS =
-	"px-1 py-0.5 rounded bg-[var(--omp-code-bg)] text-[var(--omp-md-code)] font-mono text-[0.9em]";
+	"px-1 py-0.5 rounded bg-[var(--omsk-code-bg)] text-[var(--omsk-md-code)] font-mono text-[0.9em]";
 const LINKED_CODE_CLASS =
-	"px-1 py-0.5 rounded bg-[var(--omp-code-bg)] text-[var(--omp-md-link)] font-mono text-[0.9em] underline decoration-dotted decoration-[var(--omp-md-link-url)] underline-offset-2 hover:decoration-solid";
+	"px-1 py-0.5 rounded bg-[var(--omsk-code-bg)] text-[var(--omsk-md-link)] font-mono text-[0.9em] underline decoration-dotted decoration-[var(--omsk-md-link-url)] underline-offset-2 hover:decoration-solid";
 
 /** Inline code; a whole web address or a path that exists on disk becomes a link. */
 function InlineCode({ children, ...props }: ComponentPropsWithoutRef<"code">) {
@@ -417,7 +417,7 @@ function InlineCode({ children, ...props }: ComponentPropsWithoutRef<"code">) {
 
 function H1({ children, ...props }: ComponentPropsWithoutRef<"h1">) {
 	return (
-		<h1 {...props} className="text-omp-2xl font-bold mt-4 mb-2 text-[var(--omp-md-heading)]">
+		<h1 {...props} className="text-omsk-2xl font-bold mt-4 mb-2 text-[var(--omsk-md-heading)]">
 			{children}
 		</h1>
 	);
@@ -425,7 +425,7 @@ function H1({ children, ...props }: ComponentPropsWithoutRef<"h1">) {
 
 function H2({ children, ...props }: ComponentPropsWithoutRef<"h2">) {
 	return (
-		<h2 {...props} className="text-omp-xl font-bold mt-3 mb-2 text-[var(--omp-md-heading)]">
+		<h2 {...props} className="text-omsk-xl font-bold mt-3 mb-2 text-[var(--omsk-md-heading)]">
 			{children}
 		</h2>
 	);
@@ -433,7 +433,7 @@ function H2({ children, ...props }: ComponentPropsWithoutRef<"h2">) {
 
 function H3({ children, ...props }: ComponentPropsWithoutRef<"h3">) {
 	return (
-		<h3 {...props} className="text-omp-lg font-semibold mt-3 mb-1 text-[var(--omp-md-heading)]">
+		<h3 {...props} className="text-omsk-lg font-semibold mt-3 mb-1 text-[var(--omsk-md-heading)]">
 			{children}
 		</h3>
 	);
@@ -443,7 +443,7 @@ function Blockquote({ children, ...props }: ComponentPropsWithoutRef<"blockquote
 	return (
 		<blockquote
 			{...props}
-			className="border-l-2 border-[var(--omp-md-quote-border)] pl-3 text-[var(--omp-md-quote)] italic"
+			className="border-l-2 border-[var(--omsk-md-quote-border)] pl-3 text-[var(--omsk-md-quote)] italic"
 		>
 			{children}
 		</blockquote>
@@ -451,7 +451,7 @@ function Blockquote({ children, ...props }: ComponentPropsWithoutRef<"blockquote
 }
 
 function Hr(props: ComponentPropsWithoutRef<"hr">) {
-	return <hr {...props} className="border-[var(--omp-md-hr)] my-4" />;
+	return <hr {...props} className="border-[var(--omsk-md-hr)] my-4" />;
 }
 
 function Li({ children, className, ...props }: ComponentPropsWithoutRef<"li">) {
@@ -464,7 +464,7 @@ function Li({ children, className, ...props }: ComponentPropsWithoutRef<"li">) {
 		);
 	}
 	return (
-		<li {...props} className="ml-4 [&::marker]:text-[var(--omp-md-list-bullet)]">
+		<li {...props} className="ml-4 [&::marker]:text-[var(--omsk-md-list-bullet)]">
 			{children}
 		</li>
 	);
@@ -544,16 +544,16 @@ export function classifyImageSrc(src: string | undefined): MarkdownImageSrc {
 	return { kind: "local", path: src };
 }
 
-const MARKDOWN_IMAGE_CLASS = `my-1 ${PREVIEW_HEIGHT_LG} max-w-full rounded-md border border-[var(--omp-border-muted)] object-contain`;
+const MARKDOWN_IMAGE_CLASS = `my-1 ${PREVIEW_HEIGHT_LG} max-w-full rounded-md border border-[var(--omsk-border-muted)] object-contain`;
 
 function MarkdownImageFallback({ alt, path }: { alt: string; path?: string }) {
 	return (
 		<span
 			title={path}
-			className="my-1 inline-flex max-w-full items-center gap-1.5 rounded-md border border-[var(--omp-border-muted)] px-2 py-1 text-omp-md text-[var(--omp-dim)]"
+			className="my-1 inline-flex max-w-full items-center gap-1.5 rounded-md border border-[var(--omsk-border-muted)] px-2 py-1 text-omsk-md text-[var(--omsk-dim)]"
 		>
 			<span className="truncate">{alt || path || "image"}</span>
-			{alt && path && <span className="shrink-0 truncate font-mono text-omp-xs opacity-70">{path}</span>}
+			{alt && path && <span className="shrink-0 truncate font-mono text-omsk-xs opacity-70">{path}</span>}
 		</span>
 	);
 }
@@ -591,14 +591,14 @@ function RemoteMarkdownImage({ src, alt }: { src: string; alt: string }) {
 	return (
 		<span
 			title={src}
-			className="my-1 inline-flex max-w-full items-center gap-1.5 rounded-md border border-[var(--omp-border-muted)] px-2 py-1 text-omp-md text-[var(--omp-dim)]"
+			className="my-1 inline-flex max-w-full items-center gap-1.5 rounded-md border border-[var(--omsk-border-muted)] px-2 py-1 text-omsk-md text-[var(--omsk-dim)]"
 		>
 			<ImageOff size={13} className="shrink-0" aria-hidden />
 			<span className="truncate">{alt || t("markdown.remoteImage")}</span>
 			{state === "failed" && <span role="status">{t("markdown.imageFailed")}</span>}
 			<button
 				type="button"
-				className="shrink-0 text-omp-xs text-(--omp-md-link) underline underline-offset-2 disabled:no-underline"
+				className="shrink-0 text-omsk-xs text-(--omsk-md-link) underline underline-offset-2 disabled:no-underline"
 				disabled={state === "loading"}
 				onClick={event => {
 					event.preventDefault();

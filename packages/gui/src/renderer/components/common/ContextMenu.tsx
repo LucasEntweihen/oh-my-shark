@@ -125,7 +125,7 @@ export function ContextMenu({ items, x, y, placement = "below", onClose }: Conte
 					if (item && !item.disabled) item.onSelect();
 				}
 			}}
-			className="omp-pop-in fixed z-50 min-w-44 overflow-hidden rounded-xl border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] py-1 shadow-xl"
+			className="omsk-pop-in fixed z-50 min-w-44 overflow-hidden rounded-xl border border-[var(--omsk-border)] bg-[var(--omsk-bg-elevated)] py-1 shadow-xl"
 		>
 			{items.map((item, index) => (
 				<button
@@ -141,27 +141,27 @@ export function ContextMenu({ items, x, y, placement = "below", onClose }: Conte
 					}}
 					onMouseEnter={() => setActiveIndex(index)}
 					className={cx(
-						"flex w-full items-center gap-2 px-3 py-2 text-left text-omp-md hover:bg-[var(--omp-selected-bg)]",
-						item.danger ? "text-[var(--omp-error)]" : "text-[var(--omp-text)]",
-						index === activeIndex && "bg-[var(--omp-selected-bg)]",
+						"flex w-full items-center gap-2 px-3 py-2 text-left text-omsk-md hover:bg-[var(--omsk-selected-bg)]",
+						item.danger ? "text-[var(--omsk-error)]" : "text-[var(--omsk-text)]",
+						index === activeIndex && "bg-[var(--omsk-selected-bg)]",
 						item.disabled && "cursor-not-allowed opacity-70",
 					)}
 				>
 					{item.icon && (
 						<item.icon
 							size={13}
-							className={cx("shrink-0", item.danger ? "text-[var(--omp-error)]" : "text-[var(--omp-muted)]")}
+							className={cx("shrink-0", item.danger ? "text-[var(--omsk-error)]" : "text-[var(--omsk-muted)]")}
 						/>
 					)}
 					<span className="min-w-0 flex-1">
 						<span className="block truncate">{item.label}</span>
 						{item.description && (
-							<span className="mt-0.5 block text-omp-xs font-normal text-[var(--omp-dim)]">
+							<span className="mt-0.5 block text-omsk-xs font-normal text-[var(--omsk-dim)]">
 								{item.description}
 							</span>
 						)}
 					</span>
-					{item.hint && <span className="text-omp-xs text-[var(--omp-dim)]">{item.hint}</span>}
+					{item.hint && <span className="text-omsk-xs text-[var(--omsk-dim)]">{item.hint}</span>}
 				</button>
 			))}
 		</div>,

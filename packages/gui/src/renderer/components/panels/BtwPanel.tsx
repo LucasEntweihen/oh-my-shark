@@ -139,14 +139,14 @@ export function BtwPanel() {
 
 	return (
 		<div className="flex h-full min-h-0 flex-col">
-			<div className="flex h-9 shrink-0 items-center gap-2 border-b border-(--omp-border-muted) px-2">
+			<div className="flex h-9 shrink-0 items-center gap-2 border-b border-(--omsk-border-muted) px-2">
 				<Button icon={<Plus size={14} />} onClick={newQuestion} size="sm" variant="ghost">
 					{t("btw.newQuestion")}
 				</Button>
 			</div>
 
 			{error ? (
-				<div className="flex shrink-0 items-start gap-2 border-b border-(--omp-border-muted) px-3 py-2 text-omp-xs text-[var(--omp-error)]">
+				<div className="flex shrink-0 items-start gap-2 border-b border-(--omsk-border-muted) px-3 py-2 text-omsk-xs text-[var(--omsk-error)]">
 					<div className="min-w-0 flex-1">
 						<div className="font-medium">{t("btw.historyFailed")}</div>
 						<div className="mt-0.5 break-words">{error}</div>
@@ -158,7 +158,7 @@ export function BtwPanel() {
 			) : null}
 
 			{records.length > 0 ? (
-				<div className="max-h-48 shrink-0 overflow-y-auto border-b border-(--omp-border-muted)">
+				<div className="max-h-48 shrink-0 overflow-y-auto border-b border-(--omsk-border-muted)">
 					{records.map(entry => {
 						const followUps = entry.followUps?.length ?? 0;
 						const active = entry.id === selectedId;
@@ -167,7 +167,7 @@ export function BtwPanel() {
 								aria-pressed={active}
 								className={cx(
 									"block w-full px-3 py-2 text-left transition-colors",
-									active ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-sidebar-item-hover)",
+									active ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-sidebar-item-hover)",
 								)}
 								key={entry.id}
 								onClick={() => {
@@ -176,8 +176,8 @@ export function BtwPanel() {
 								}}
 								type="button"
 							>
-								<span className="block truncate text-omp-md text-[var(--omp-text)]">{entry.question}</span>
-								<span className="mt-0.5 flex items-center gap-1.5 text-omp-xs text-(--omp-dim)">
+								<span className="block truncate text-omsk-md text-[var(--omsk-text)]">{entry.question}</span>
+								<span className="mt-0.5 flex items-center gap-1.5 text-omsk-xs text-(--omsk-dim)">
 									<span className="shrink-0">{formatClock(entry.createdAt)}</span>
 									{followUps > 0 ? (
 										<span className="truncate">
@@ -201,13 +201,13 @@ export function BtwPanel() {
 				ref={threadRef}
 			>
 				{loading && records.length === 0 ? (
-					<div className="flex items-center justify-center gap-2 py-10 text-omp-sm text-(--omp-dim)">
+					<div className="flex items-center justify-center gap-2 py-10 text-omsk-sm text-(--omsk-dim)">
 						<Spinner size="sm" /> {t("common.loading")}
 					</div>
 				) : records.length === 0 ? (
 					<div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center">
-						<div className="text-omp-lg font-medium text-(--omp-text)">{t("btw.empty")}</div>
-						<div className="max-w-xs text-omp-sm text-(--omp-dim)">{t("btw.emptyHint")}</div>
+						<div className="text-omsk-lg font-medium text-(--omsk-text)">{t("btw.empty")}</div>
+						<div className="max-w-xs text-omsk-sm text-(--omsk-dim)">{t("btw.emptyHint")}</div>
 					</div>
 				) : record ? (
 					<div className="space-y-5">
@@ -223,10 +223,10 @@ export function BtwPanel() {
 							return (
 								<div className="space-y-2" key={`${record.id}:${index}`}>
 									<div className="flex flex-col items-end gap-1">
-										<div className="max-w-[85%] rounded-xl border border-[var(--omp-user-msg-border)] bg-[var(--omp-user-msg-bg)] px-3 py-2 text-omp-md leading-[1.6] text-[var(--omp-text)]">
+										<div className="max-w-[85%] rounded-xl border border-[var(--omsk-user-msg-border)] bg-[var(--omsk-user-msg-bg)] px-3 py-2 text-omsk-md leading-[1.6] text-[var(--omsk-text)]">
 											<MarkdownRenderer content={turn.question} />
 										</div>
-										<div className="text-omp-xs tabular-nums text-(--omp-dim)">
+										<div className="text-omsk-xs tabular-nums text-(--omsk-dim)">
 											{index === 0
 												? formatClock(turn.createdAt)
 												: `${t("btw.followUpLabel")} · ${formatClock(turn.createdAt)}`}
@@ -240,11 +240,11 @@ export function BtwPanel() {
 												recordId={record.id}
 											/>
 										) : turn.status === "running" ? (
-											<div className="flex items-center gap-2 py-2 text-omp-sm text-(--omp-dim)">
+											<div className="flex items-center gap-2 py-2 text-omsk-sm text-(--omsk-dim)">
 												<Spinner size="sm" /> {t("btw.thinking")}
 											</div>
 										) : null}
-										{statusNote ? <div className="text-omp-xs text-(--omp-dim)">{statusNote}</div> : null}
+										{statusNote ? <div className="text-omsk-xs text-(--omsk-dim)">{statusNote}</div> : null}
 									</div>
 								</div>
 							);
@@ -254,7 +254,7 @@ export function BtwPanel() {
 			</div>
 
 			{record ? (
-				<div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-(--omp-border-muted) px-3 py-2">
+				<div className="flex shrink-0 flex-wrap items-center gap-2 border-t border-(--omsk-border-muted) px-3 py-2">
 					{running ? (
 						<Button onClick={stop} size="sm" variant="secondary">
 							{t("btw.cancel")}
@@ -275,9 +275,9 @@ export function BtwPanel() {
 				</div>
 			) : null}
 
-			<div className="shrink-0 border-t border-(--omp-border-muted) p-2">
+			<div className="shrink-0 border-t border-(--omsk-border-muted) p-2">
 				{busy && !running ? (
-					<div className="mb-1.5 flex items-center gap-2 text-omp-xs text-(--omp-dim)">
+					<div className="mb-1.5 flex items-center gap-2 text-omsk-xs text-(--omsk-dim)">
 						<span className="min-w-0 flex-1">{t("btw.busyHint")}</span>
 						<Button
 							onClick={() => {
@@ -290,7 +290,9 @@ export function BtwPanel() {
 						</Button>
 					</div>
 				) : null}
-				{askError ? <div className="mb-1.5 break-words text-omp-sm text-[var(--omp-error)]">{askError}</div> : null}
+				{askError ? (
+					<div className="mb-1.5 break-words text-omsk-sm text-[var(--omsk-error)]">{askError}</div>
+				) : null}
 				<TextArea
 					aria-label={t("btw.title")}
 					autoGrow

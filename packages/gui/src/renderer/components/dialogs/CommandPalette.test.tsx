@@ -126,7 +126,7 @@ function rowByLabel(label: string): TestElement {
 
 /** Index of the highlighted row, or -1 when none is. */
 function selectedIndex(): number {
-	return rows().findIndex(row => row.className.includes("omp-selected"));
+	return rows().findIndex(row => row.className.includes("omsk-selected"));
 }
 
 beforeEach(() => {

@@ -82,11 +82,11 @@ const SubagentRow = memo(function SubagentRow({
 	return (
 		<div aria-level={depth + 1} className="relative" role="treeitem" style={{ marginLeft: Math.min(depth, 6) * 14 }}>
 			{depth > 0 && (
-				<span className="pointer-events-none absolute top-0 -left-2.5 h-5 w-2.5 rounded-bl-md border-b border-l border-(--omp-border-muted)" />
+				<span className="pointer-events-none absolute top-0 -left-2.5 h-5 w-2.5 rounded-bl-md border-b border-l border-(--omsk-border-muted)" />
 			)}
 			<div
 				className={cx(
-					"relative overflow-hidden rounded-lg border border-(--omp-border-muted) bg-transparent transition-colors duration-150 hover:bg-(--omp-bg-tertiary)",
+					"relative overflow-hidden rounded-lg border border-(--omsk-border-muted) bg-transparent transition-colors duration-150 hover:bg-(--omsk-bg-tertiary)",
 					agent.status === "cancelled" && "opacity-70",
 				)}
 			>
@@ -97,23 +97,23 @@ const SubagentRow = memo(function SubagentRow({
 						// The rail repeats the pill's color: only an agent that is working is
 						// blue; one waiting or paused stays neutral.
 						meta.variant === "info"
-							? "bg-(--omp-link)"
+							? "bg-(--omsk-link)"
 							: agent.status === "failed"
-								? "bg-(--omp-error)"
-								: "bg-(--omp-border)",
+								? "bg-(--omsk-error)"
+								: "bg-(--omsk-border)",
 					)}
 				/>
 				<div className="flex w-full items-start">
 					<button
 						aria-expanded={expanded}
 						aria-label={t("agents.dock.toggleTranscript")}
-						className="omp-pressable mt-1.5 ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded text-(--omp-dim) hover:bg-(--omp-selected-bg) hover:text-(--omp-text)"
+						className="omsk-pressable mt-1.5 ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded text-(--omsk-dim) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text)"
 						onClick={onToggle}
 						title={t("agents.dock.toggleTranscript")}
 						type="button"
 					>
 						<ChevronRight
-							className="omp-disclosure-chevron shrink-0"
+							className="omsk-disclosure-chevron shrink-0"
 							size={12}
 							style={{ transform: expanded ? "rotate(90deg)" : undefined }}
 						/>
@@ -127,7 +127,7 @@ const SubagentRow = memo(function SubagentRow({
 						<span className="min-w-0 flex-1">
 							<span className="flex min-w-0 items-center gap-1.5">
 								<span
-									className="min-w-0 flex-1 truncate text-omp-sm font-medium text-(--omp-text)"
+									className="min-w-0 flex-1 truncate text-omsk-sm font-medium text-(--omsk-text)"
 									title={title}
 								>
 									{title}
@@ -136,8 +136,8 @@ const SubagentRow = memo(function SubagentRow({
 									{t(meta.labelKey)}
 								</Badge>
 							</span>
-							<span className="mt-1 flex min-w-0 items-center gap-1 text-omp-xxs text-(--omp-dim)">
-								<Bot className="shrink-0 text-(--omp-status-subagents)" size={10} />
+							<span className="mt-1 flex min-w-0 items-center gap-1 text-omsk-xxs text-(--omsk-dim)">
+								<Bot className="shrink-0 text-(--omsk-status-subagents)" size={10} />
 								<span className="shrink-0 tabular-nums">{facts.kind}</span>
 								{facts.model && <span className="min-w-0 truncate">· {facts.model}</span>}
 								{facts.usage && <span className="shrink-0 tabular-nums">· {facts.usage}</span>}
@@ -149,12 +149,12 @@ const SubagentRow = memo(function SubagentRow({
 					</button>
 				</div>
 				{detail && (
-					<div className="truncate px-6 pb-2 text-omp-xs text-(--omp-muted)" title={detail}>
+					<div className="truncate px-6 pb-2 text-omsk-xs text-(--omsk-muted)" title={detail}>
 						{detail}
 					</div>
 				)}
 				{expanded && (
-					<div className="border-t border-(--omp-border-muted)">
+					<div className="border-t border-(--omsk-border-muted)">
 						<SubagentTranscript agent={agent} />
 					</div>
 				)}
@@ -168,17 +168,17 @@ function ViewToggle({ view, onChange }: { view: PanelView; onChange: (view: Pane
 	return (
 		<div
 			aria-label={t("subagentPanel.viewAria")}
-			className="flex items-center gap-0.5 rounded-md border border-(--omp-border-muted) p-0.5"
+			className="flex items-center gap-0.5 rounded-md border border-(--omsk-border-muted) p-0.5"
 			role="group"
 		>
 			{(["list", "graph"] as const).map(option => (
 				<button
 					aria-pressed={view === option}
 					className={cx(
-						"flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-omp-xs transition-colors",
+						"flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-omsk-xs transition-colors",
 						view === option
-							? "bg-(--omp-bg-tertiary) text-(--omp-text)" // surface-ok: aria-pressed selected-view fill
-							: "text-(--omp-dim) hover:text-(--omp-text)",
+							? "bg-(--omsk-bg-tertiary) text-(--omsk-text)" // surface-ok: aria-pressed selected-view fill
+							: "text-(--omsk-dim) hover:text-(--omsk-text)",
 					)}
 					key={option}
 					onClick={() => onChange(option)}
@@ -261,7 +261,7 @@ export function AgentsDockCard() {
 		<DockCard
 			actions={<ViewToggle onChange={changeView} view={view} />}
 			badge={
-				<span className="shrink-0 text-omp-xs tabular-nums text-[var(--omp-dim)]">
+				<span className="shrink-0 text-omsk-xs tabular-nums text-[var(--omsk-dim)]">
 					{runningCount}/{rows.length}
 				</span>
 			}
@@ -288,7 +288,7 @@ export function AgentsDockCard() {
 					))}
 					{!showFull && summary.hiddenCount > 0 && (
 						<button
-							className="omp-pressable flex w-full items-center justify-center rounded-md border border-dashed border-[var(--omp-border-muted)] px-2 py-1.5 text-omp-xs font-medium text-[var(--omp-link)] hover:border-[var(--omp-border-strong)]"
+							className="omsk-pressable flex w-full items-center justify-center rounded-md border border-dashed border-[var(--omsk-border-muted)] px-2 py-1.5 text-omsk-xs font-medium text-[var(--omsk-link)] hover:border-[var(--omsk-border-strong)]"
 							onClick={() => focusCard("agents")}
 							type="button"
 						>

@@ -47,7 +47,7 @@ export function PathLink({
 			}}
 			onContextMenu={event => showLinkMenu(event, { kind: "path", target: { path }, resolved })}
 			className={cx(
-				"min-w-0 cursor-pointer rounded-sm text-left transition-colors hover:text-[var(--omp-accent)] hover:underline hover:decoration-[var(--omp-accent)]/50 hover:underline-offset-2",
+				"min-w-0 cursor-pointer rounded-sm text-left transition-colors hover:text-[var(--omsk-accent)] hover:underline hover:decoration-[var(--omsk-accent)]/50 hover:underline-offset-2",
 				className,
 			)}
 		>

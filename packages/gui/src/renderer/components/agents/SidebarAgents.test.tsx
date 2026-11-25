@@ -85,7 +85,7 @@ async function mount(tabId: string, sessionKey: string): Promise<void> {
 	});
 }
 
-const agentRows = () => container.querySelectorAll(".omp-sidebar-agent-row").map(row => row.textContent);
+const agentRows = () => container.querySelectorAll(".omsk-sidebar-agent-row").map(row => row.textContent);
 
 afterEach(async () => {
 	await act(async () => {

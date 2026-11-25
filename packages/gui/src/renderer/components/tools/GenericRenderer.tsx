@@ -38,20 +38,20 @@ function valueSummary(value: unknown): string {
 function ValueView({ value }: { value: unknown }) {
 	const t = useT();
 	if (value == null || typeof value === "number" || typeof value === "boolean") {
-		return <span className="whitespace-pre-wrap break-words text-[var(--omp-muted)]">{primitiveText(value)}</span>;
+		return <span className="whitespace-pre-wrap break-words text-[var(--omsk-muted)]">{primitiveText(value)}</span>;
 	}
 	if (typeof value === "string" && value.length <= INLINE_VALUE_MAX_CHARS && !value.includes("\n")) {
-		return <span className="whitespace-pre-wrap break-words text-[var(--omp-muted)]">{value}</span>;
+		return <span className="whitespace-pre-wrap break-words text-[var(--omsk-muted)]">{value}</span>;
 	}
 	return (
 		<details className="group/kv">
-			<summary className="cursor-pointer list-none text-[var(--omp-dim)] transition-colors hover:text-[var(--omp-text)]">
+			<summary className="cursor-pointer list-none text-[var(--omsk-dim)] transition-colors hover:text-[var(--omsk-text)]">
 				<span className="select-none">{t("tools.generic.expand")}</span>
 				<span className="ml-1.5 tabular-nums opacity-70">{valueSummary(value)}</span>
 			</summary>
 			<pre
 				className={cx(
-					"mt-1 whitespace-pre-wrap break-words rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.45] text-[var(--omp-muted)]",
+					"mt-1 whitespace-pre-wrap break-words rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] text-[var(--omsk-muted)]",
 					PREVIEW_SCROLL_SM,
 				)}
 			>
@@ -64,13 +64,13 @@ function ValueView({ value }: { value: unknown }) {
 /** Object payload as key/value rows — replaces the raw JSON dump. */
 function KeyValueView({ value }: { value: Record<string, unknown> }) {
 	const entries = Object.entries(value);
-	if (entries.length === 0) return <span className="text-[var(--omp-dim)]">—</span>;
+	if (entries.length === 0) return <span className="text-[var(--omsk-dim)]">—</span>;
 	return (
-		<div className="flex flex-col gap-0.5 font-mono text-omp-sm leading-[1.45]">
+		<div className="flex flex-col gap-0.5 font-mono text-omsk-sm leading-[1.45]">
 			{entries.map(([key, val]) => (
 				<div key={key} className="flex items-start gap-2">
-					<span className="shrink-0 select-none text-[var(--omp-dim)]">{key}</span>
-					<span className="shrink-0 select-none text-[var(--omp-border-strong)]">·</span>
+					<span className="shrink-0 select-none text-[var(--omsk-dim)]">{key}</span>
+					<span className="shrink-0 select-none text-[var(--omsk-border-strong)]">·</span>
 					<span className="min-w-0 flex-1">
 						<ValueView value={val} />
 					</span>
@@ -99,14 +99,14 @@ export function GenericRenderer({ args, result, isError, isPartial, partialResul
 	return (
 		<div className="flex flex-col gap-1.5">
 			<div>
-				<div className="mb-0.5 text-omp-xxs font-semibold text-[var(--omp-dim)]">{t("tools.generic.args")}</div>
+				<div className="mb-0.5 text-omsk-xxs font-semibold text-[var(--omsk-dim)]">{t("tools.generic.args")}</div>
 				<KeyValueView value={args} />
 			</div>
 			<div>
 				<div
 					className={cx(
-						"mb-0.5 text-omp-xxs font-semibold",
-						isError ? "text-[var(--omp-error)]" : "text-[var(--omp-dim)]",
+						"mb-0.5 text-omsk-xxs font-semibold",
+						isError ? "text-[var(--omsk-error)]" : "text-[var(--omsk-dim)]",
 					)}
 				>
 					{isPartial ? t("tools.generic.partialResult") : t("tools.generic.result")}
@@ -115,16 +115,16 @@ export function GenericRenderer({ args, result, isError, isPartial, partialResul
 					<ZoomableImage
 						src={image}
 						alt=""
-						className="max-h-72 rounded-md border border-[var(--omp-border-muted)] object-contain"
+						className="max-h-72 rounded-md border border-[var(--omsk-border-muted)] object-contain"
 					/>
 				) : (
 					<pre
 						className={cx(
-							"whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omp-sm leading-[1.45]",
+							"whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omsk-sm leading-[1.45]",
 							PREVIEW_SCROLL_SM,
 							isError
-								? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-								: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]",
+								? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+								: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]",
 						)}
 					>
 						{/* Unmapped tools commonly return captured subprocess output. */}
@@ -134,7 +134,7 @@ export function GenericRenderer({ args, result, isError, isPartial, partialResul
 			</div>
 			{hasDetails && (
 				<div>
-					<div className="mb-0.5 text-omp-xxs font-semibold text-[var(--omp-dim)]">
+					<div className="mb-0.5 text-omsk-xxs font-semibold text-[var(--omsk-dim)]">
 						{t("tools.generic.details")}
 					</div>
 					<KeyValueView value={details} />

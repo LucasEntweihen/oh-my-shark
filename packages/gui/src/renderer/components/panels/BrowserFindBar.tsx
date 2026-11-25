@@ -26,8 +26,8 @@ export function FindBar({
 }) {
 	const t = useT();
 	return (
-		<div className="flex h-9 shrink-0 items-center gap-1 border-b border-(--omp-border-muted) pr-2 pl-3">
-			<Search aria-hidden="true" size={13} className="shrink-0 text-(--omp-dim)" />
+		<div className="flex h-9 shrink-0 items-center gap-1 border-b border-(--omsk-border-muted) pr-2 pl-3">
+			<Search aria-hidden="true" size={13} className="shrink-0 text-(--omsk-dim)" />
 			<input
 				ref={inputRef}
 				aria-label={t("browser.find")}
@@ -45,14 +45,14 @@ export function FindBar({
 					event.preventDefault();
 					onStep(event.shiftKey);
 				}}
-				className="h-7 min-w-0 flex-1 bg-transparent px-1.5 text-omp-sm text-(--omp-text) outline-none placeholder:text-(--omp-dim)"
+				className="h-7 min-w-0 flex-1 bg-transparent px-1.5 text-omsk-sm text-(--omsk-text) outline-none placeholder:text-(--omsk-dim)"
 			/>
 			{text && result && (
 				<span
 					role="status"
 					className={cx(
-						"shrink-0 px-1 font-mono text-omp-xs tabular-nums",
-						result.matches === 0 ? "text-(--omp-error)" : "text-(--omp-dim)",
+						"shrink-0 px-1 font-mono text-omsk-xs tabular-nums",
+						result.matches === 0 ? "text-(--omsk-error)" : "text-(--omsk-dim)",
 					)}
 				>
 					{t("browser.findCount", { active: result.active, total: result.matches })}

@@ -121,13 +121,13 @@ export function ForceToolDialog() {
 		<Modal onClose={close} open={open} size="picker" title={t("forceTool.title")}>
 			<div className="flex min-h-0 flex-1 flex-col gap-3">
 				{/* Current forced tool + clear */}
-				<div className="flex items-center justify-between rounded-lg border border-(--omp-border-muted) bg-transparent px-3 py-2">
-					<div className="flex min-w-0 items-center gap-2 text-omp-md">
-						<Wrench className="h-4 w-4 shrink-0 text-(--omp-muted)" />
+				<div className="flex items-center justify-between rounded-lg border border-(--omsk-border-muted) bg-transparent px-3 py-2">
+					<div className="flex min-w-0 items-center gap-2 text-omsk-md">
+						<Wrench className="h-4 w-4 shrink-0 text-(--omsk-muted)" />
 						{current ? (
-							<span className="truncate font-medium text-(--omp-text)">{current}</span>
+							<span className="truncate font-medium text-(--omsk-text)">{current}</span>
 						) : (
-							<span className="text-(--omp-muted)">{t("forceTool.none")}</span>
+							<span className="text-(--omsk-muted)">{t("forceTool.none")}</span>
 						)}
 					</div>
 					{current ? (
@@ -149,20 +149,20 @@ export function ForceToolDialog() {
 					placeholder={t("forceTool.filterPlaceholder")}
 					value={filter}
 				/>
-				<div className="min-h-32 flex-1 overflow-y-auto rounded-lg border border-(--omp-border)">
+				<div className="min-h-32 flex-1 overflow-y-auto rounded-lg border border-(--omsk-border)">
 					{loading ? (
 						<div className="flex h-32 items-center justify-center">
 							<Spinner />
 						</div>
 					) : loadError ? (
-						<div className="p-3 text-omp-md text-(--omp-error)">{loadError}</div>
+						<div className="p-3 text-omsk-md text-(--omsk-error)">{loadError}</div>
 					) : filtered.length === 0 ? (
-						<div className="p-3 text-omp-md text-(--omp-muted)">{t("forceTool.empty")}</div>
+						<div className="p-3 text-omsk-md text-(--omsk-muted)">{t("forceTool.empty")}</div>
 					) : (
 						filtered.map(tool => (
 							<button
-								className={`flex w-full items-start gap-2 border-b border-(--omp-border) px-3 py-2 text-left last:border-b-0 hover:bg-(--omp-selected-bg) ${
-									selected === tool.name ? "bg-(--omp-selected-bg)" : ""
+								className={`flex w-full items-start gap-2 border-b border-(--omsk-border) px-3 py-2 text-left last:border-b-0 hover:bg-(--omsk-selected-bg) ${
+									selected === tool.name ? "bg-(--omsk-selected-bg)" : ""
 								}`}
 								key={tool.name}
 								onClick={() => setSelected(tool.name)}
@@ -172,9 +172,11 @@ export function ForceToolDialog() {
 									<Badge variant={tool.name === current ? "info" : "muted"}>{tool.source}</Badge>
 								</span>
 								<span className="min-w-0">
-									<span className="block truncate font-mono text-omp-lg text-(--omp-text)">{tool.name}</span>
+									<span className="block truncate font-mono text-omsk-lg text-(--omsk-text)">{tool.name}</span>
 									{tool.description ? (
-										<span className="block truncate text-omp-xs text-(--omp-muted)">{tool.description}</span>
+										<span className="block truncate text-omsk-xs text-(--omsk-muted)">
+											{tool.description}
+										</span>
 									) : null}
 								</span>
 							</button>

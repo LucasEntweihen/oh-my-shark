@@ -118,14 +118,14 @@ function EditPreview({ entry }: { entry: DiffCandidate }) {
 	const t = useT();
 	return entry.isContent ? (
 		<div className="px-3 py-2">
-			<p className={cx("mb-1.5 text-omp-xs", entry.isError ? "text-(--omp-error)" : "text-(--omp-dim)")}>
+			<p className={cx("mb-1.5 text-omsk-xs", entry.isError ? "text-(--omsk-error)" : "text-(--omsk-dim)")}>
 				{t(entry.isError ? "diffPanel.failedEdit" : "diffPanel.writtenContent")}
 			</p>
-			<pre className="overflow-auto whitespace-pre-wrap break-words font-mono text-omp-xs leading-[1.45] text-(--omp-text-secondary)">
+			<pre className="overflow-auto whitespace-pre-wrap break-words font-mono text-omsk-xs leading-[1.45] text-(--omsk-text-secondary)">
 				{entry.diff.slice(0, PREVIEW_TEXT_CHARS)}
 			</pre>
 			{entry.diff.length > PREVIEW_TEXT_CHARS && (
-				<p className="mt-1.5 text-omp-xs text-(--omp-warning)">{t("diffPanel.previewLimited")}</p>
+				<p className="mt-1.5 text-omsk-xs text-(--omsk-warning)">{t("diffPanel.previewLimited")}</p>
 			)}
 		</div>
 	) : (
@@ -136,8 +136,9 @@ function EditPreview({ entry }: { entry: DiffCandidate }) {
 /** What an edit did: its line delta, "written" for content snapshots, or the failure. */
 function EditOutcome({ entry }: { entry: DiffCandidate }) {
 	const t = useT();
-	if (entry.isError) return <span className="shrink-0 text-omp-xs text-(--omp-error)">{t("diffPanel.error")}</span>;
-	if (entry.isContent) return <span className="shrink-0 text-omp-xs text-(--omp-dim)">{t("diffPanel.written")}</span>;
+	if (entry.isError) return <span className="shrink-0 text-omsk-xs text-(--omsk-error)">{t("diffPanel.error")}</span>;
+	if (entry.isContent)
+		return <span className="shrink-0 text-omsk-xs text-(--omsk-dim)">{t("diffPanel.written")}</span>;
 	return <DiffStat adds={entry.adds} removes={entry.removes} />;
 }
 
@@ -223,10 +224,10 @@ function EditActivityStrip({ edits }: { edits: DiffCandidate[] }) {
 								style={{ height: `${Math.max(15, (total / activity.peak) * 100)}%` }}
 							>
 								<div
-									className="bg-(--omp-diff-removed)"
+									className="bg-(--omsk-diff-removed)"
 									style={{ height: `${(bin.removes / total) * 100}%` }}
 								/>
-								<div className="bg-(--omp-diff-added)" style={{ height: `${(bin.adds / total) * 100}%` }} />
+								<div className="bg-(--omsk-diff-added)" style={{ height: `${(bin.adds / total) * 100}%` }} />
 							</div>
 						)}
 					</div>
@@ -248,20 +249,20 @@ function FileGroupHeader({
 	return (
 		<button
 			aria-expanded={!collapsed}
-			className="omp-diff-card-header flex h-8 w-full min-w-0 items-center gap-2 px-3 text-left text-omp-sm"
+			className="omsk-diff-card-header flex h-8 w-full min-w-0 items-center gap-2 px-3 text-left text-omsk-sm"
 			onClick={onToggle}
 			type="button"
 		>
 			<ChevronRight
 				aria-hidden="true"
-				className={cx("omp-disclosure-chevron shrink-0 text-(--omp-dim)", !collapsed && "rotate-90")}
+				className={cx("omsk-disclosure-chevron shrink-0 text-(--omsk-dim)", !collapsed && "rotate-90")}
 				size={13}
 			/>
 			<span className="min-w-0 flex-1">
 				<FileLabel path={group.file} />
 			</span>
 			{group.adds + group.removes > 0 && <DiffStat adds={group.adds} removes={group.removes} />}
-			<span className="w-7 shrink-0 text-right font-mono text-omp-xs tabular-nums text-(--omp-dim)">
+			<span className="w-7 shrink-0 text-right font-mono text-omsk-xs tabular-nums text-(--omsk-dim)">
 				×{group.edits.length}
 			</span>
 		</button>
@@ -278,22 +279,22 @@ function EditTimelineRow({
 	onToggle: () => void;
 }) {
 	return (
-		<div className="omp-timeline-edit pb-0.5">
+		<div className="omsk-timeline-edit pb-0.5">
 			<button
 				aria-expanded={expanded}
-				className="flex h-7 w-full items-center gap-2 rounded-md pr-3 pl-8 text-left text-omp-xs hover:bg-(--omp-sidebar-item-hover)"
+				className="flex h-7 w-full items-center gap-2 rounded-md pr-3 pl-8 text-left text-omsk-xs hover:bg-(--omsk-sidebar-item-hover)"
 				onClick={onToggle}
 				type="button"
 			>
-				<span aria-hidden="true" className={cx("omp-timeline-dot", entry.isError && "omp-timeline-dot--error")} />
-				<span className="shrink-0 text-(--omp-muted)">{entry.toolName}</span>
+				<span aria-hidden="true" className={cx("omsk-timeline-dot", entry.isError && "omsk-timeline-dot--error")} />
+				<span className="shrink-0 text-(--omsk-muted)">{entry.toolName}</span>
 				<EditOutcome entry={entry} />
-				<span className="ml-auto shrink-0 text-(--omp-dim)" title={formatClock(entry.timestamp)}>
+				<span className="ml-auto shrink-0 text-(--omsk-dim)" title={formatClock(entry.timestamp)}>
 					{formatTimeAgo(new Date(entry.timestamp).toISOString(), { compact: true })}
 				</span>
 			</button>
 			{expanded && (
-				<div className="omp-diff-card-body mt-0.5 mr-3 ml-8 overflow-hidden rounded-md border border-(--omp-border-muted)">
+				<div className="omsk-diff-card-body mt-0.5 mr-3 ml-8 overflow-hidden rounded-md border border-(--omsk-border-muted)">
 					<EditPreview entry={entry} />
 				</div>
 			)}
@@ -351,7 +352,7 @@ function DiffTimeline({ candidates }: { candidates: DiffCandidate[] }) {
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
 			<div className="space-y-2 px-3 pt-2.5 pb-2">
-				<div className="flex items-center gap-2 text-omp-sm text-(--omp-muted)">
+				<div className="flex items-center gap-2 text-omsk-sm text-(--omsk-muted)">
 					<span className="min-w-0 flex-1 truncate">
 						{t("diffPanel.summary", {
 							edits: candidates.length,
@@ -446,7 +447,7 @@ function SessionEdits({ candidates, split }: { candidates: DiffCandidate[]; spli
 	return (
 		<div className="flex min-h-0 flex-1 flex-col">
 			<div className="flex h-9 shrink-0 items-center gap-2 pr-2 pl-3">
-				<span className="min-w-0 flex-1 truncate text-omp-sm text-(--omp-muted)">
+				<span className="min-w-0 flex-1 truncate text-omsk-sm text-(--omsk-muted)">
 					{t("diffPanel.filesEdited", { count: latest.length, plural: latest.length === 1 ? "" : "s" })}
 				</span>
 				{totals.adds + totals.removes > 0 && <DiffStat adds={totals.adds} removes={totals.removes} />}
@@ -470,7 +471,7 @@ function SessionEdits({ candidates, split }: { candidates: DiffCandidate[]; spli
 							<>
 								<EditOutcome entry={entry} />
 								<span
-									className="w-9 shrink-0 text-right text-omp-xs text-(--omp-dim)"
+									className="w-9 shrink-0 text-right text-omsk-xs text-(--omsk-dim)"
 									title={formatClock(entry.timestamp)}
 								>
 									{formatTimeAgo(new Date(entry.timestamp).toISOString(), { compact: true })}
@@ -520,7 +521,7 @@ export function DiffPanel() {
 	return (
 		<div className="flex h-full flex-col">
 			<span className="sr-only">{t("diffPanel.title")}</span>
-			<PanelToolbar className="border-b border-(--omp-border-muted)">
+			<PanelToolbar className="border-b border-(--omsk-border-muted)">
 				<button
 					type="button"
 					aria-label={t("diffPanel.scope.aria")}
@@ -533,15 +534,15 @@ export function DiffPanel() {
 							y: (Number.isFinite(rect.bottom) ? rect.bottom : 40) + 4,
 						});
 					}}
-					className="omp-pressable -ml-1.5 flex h-7 min-w-0 items-center gap-1.5 rounded-md px-1.5 text-omp-md font-medium text-(--omp-text) hover:bg-(--omp-selected-bg)"
+					className="omsk-pressable -ml-1.5 flex h-7 min-w-0 items-center gap-1.5 rounded-md px-1.5 text-omsk-md font-medium text-(--omsk-text) hover:bg-(--omsk-selected-bg)"
 				>
-					<ScopeIcon aria-hidden="true" size={14} className="shrink-0 text-(--omp-muted)" />
+					<ScopeIcon aria-hidden="true" size={14} className="shrink-0 text-(--omsk-muted)" />
 					<span className="truncate">{t(`diffPanel.mode.${mode}`)}</span>
-					<ChevronDown aria-hidden="true" size={13} className="shrink-0 text-(--omp-dim)" />
+					<ChevronDown aria-hidden="true" size={13} className="shrink-0 text-(--omsk-dim)" />
 				</button>
 				<span className="flex-1" />
 				{showLayout && (
-					<div className="omp-segmented" role="group" aria-label={t("diffPanel.layout")}>
+					<div className="omsk-segmented" role="group" aria-label={t("diffPanel.layout")}>
 						<Glide activeKey={split ? "split" : "unified"} selector='[aria-pressed="true"]' variant="thumb" />
 						<button
 							aria-label={t("diffPanel.unified")}

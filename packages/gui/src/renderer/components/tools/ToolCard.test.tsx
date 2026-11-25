@@ -80,7 +80,7 @@ describe("ToolCard terminal states", () => {
 		expect(container.innerHTML).toContain('data-tool-error="true"');
 		const label = Array.from(container.querySelectorAll(".sr-only")).map(node => node.textContent);
 		expect(label).toContain("Failed");
-		expect(container.querySelector(".omp-tool-status-icon .sr-only")).toBeNull();
+		expect(container.querySelector(".omsk-tool-status-icon .sr-only")).toBeNull();
 
 		await act(async () => root.unmount());
 	});

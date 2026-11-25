@@ -33,7 +33,7 @@ const OPEN_DELAY_MS = 400;
 const HIDE_DELAY_MS = 150;
 const CARD_WIDTH = 300;
 const GAP = 8;
-export const AGENT_HOVER_CARD_ID = "omp-agent-hover-card";
+export const AGENT_HOVER_CARD_ID = "omsk-agent-hover-card";
 
 interface HoverTarget {
 	tabId: string;
@@ -178,26 +178,26 @@ function AgentHoverCard({ target }: { target: HoverTarget }) {
 
 	return (
 		<div
-			className="omp-agent-hover-card pointer-events-none fixed z-[70] rounded-xl border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] p-3 shadow-[var(--omp-shadow-md)]"
+			className="omsk-agent-hover-card pointer-events-none fixed z-[70] rounded-xl border border-[var(--omsk-border)] bg-[var(--omsk-bg-elevated)] p-3 shadow-[var(--omsk-shadow-md)]"
 			id={AGENT_HOVER_CARD_ID}
 			ref={cardRef}
 			role="tooltip"
 			style={{ top, left, width: CARD_WIDTH }}
 		>
-			<div className="line-clamp-2 text-omp-md font-semibold text-[var(--omp-text)]">
+			<div className="line-clamp-2 text-omsk-md font-semibold text-[var(--omsk-text)]">
 				{subagentPrimaryLabel(agent, 120)}
 			</div>
 			<div className="mt-1.5 flex min-w-0 items-center gap-2">
 				<Badge dot variant={BADGE[activity]}>
 					{line?.kind === "retry" ? t("agents.hover.retrying") : activityLabel(agent)}
 				</Badge>
-				<span className="min-w-0 truncate text-omp-xs tabular-nums text-[var(--omp-dim)]">{subline}</span>
+				<span className="min-w-0 truncate text-omsk-xs tabular-nums text-[var(--omsk-dim)]">{subline}</span>
 			</div>
 			{line && (
-				<div className="mt-2 truncate text-omp-xs text-[var(--omp-dim)]">
+				<div className="mt-2 truncate text-omsk-xs text-[var(--omsk-dim)]">
 					{line.kind === "tool" ? (
 						<>
-							<span className="font-mono text-[var(--omp-text-secondary)]">{line.tool}</span>{" "}
+							<span className="font-mono text-[var(--omsk-text-secondary)]">{line.tool}</span>{" "}
 							<span className="font-mono">{sanitizeToolText(line.args)}</span>
 						</>
 					) : line.kind === "retry" ? (
@@ -214,17 +214,17 @@ function AgentHoverCard({ target }: { target: HoverTarget }) {
 			{steps.length > 0 && (
 				<ul className="mt-2 space-y-0.5">
 					{steps.map((step, index) => (
-						<li className="flex min-w-0 items-center gap-1.5 text-omp-xs" key={`${step.endMs}-${index}`}>
-							<Check aria-hidden className="shrink-0 text-[var(--omp-success)]" size={11} />
-							<span className="shrink-0 font-mono text-[var(--omp-text-secondary)]">{step.tool}</span>
-							<span className="min-w-0 truncate font-mono text-[var(--omp-dim)]">
+						<li className="flex min-w-0 items-center gap-1.5 text-omsk-xs" key={`${step.endMs}-${index}`}>
+							<Check aria-hidden className="shrink-0 text-[var(--omsk-success)]" size={11} />
+							<span className="shrink-0 font-mono text-[var(--omsk-text-secondary)]">{step.tool}</span>
+							<span className="min-w-0 truncate font-mono text-[var(--omsk-dim)]">
 								{sanitizeToolText(step.args)}
 							</span>
 						</li>
 					))}
 				</ul>
 			)}
-			<div className="mt-2 text-omp-xxs text-[var(--omp-dim)]">{t("agents.openHint")}</div>
+			<div className="mt-2 text-omsk-xxs text-[var(--omsk-dim)]">{t("agents.openHint")}</div>
 		</div>
 	);
 }

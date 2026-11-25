@@ -20,11 +20,11 @@ export function TechnicalDetails({
 	if (!text || text === shown) return null;
 	return (
 		<details className={className}>
-			<summary className="cursor-pointer text-omp-xs text-(--omp-dim) hover:text-(--omp-muted)">
+			<summary className="cursor-pointer text-omsk-xs text-(--omsk-dim) hover:text-(--omsk-muted)">
 				{t("errors.technicalDetails")}
 			</summary>
 			<pre
-				className={`${PREVIEW_SCROLL_SM} mt-1 select-text whitespace-pre-wrap break-words rounded-lg border border-(--omp-border-muted) bg-(--omp-code-bg) p-2 font-mono text-omp-xs leading-relaxed text-(--omp-muted)`}
+				className={`${PREVIEW_SCROLL_SM} mt-1 select-text whitespace-pre-wrap break-words rounded-lg border border-(--omsk-border-muted) bg-(--omsk-code-bg) p-2 font-mono text-omsk-xs leading-relaxed text-(--omsk-muted)`}
 			>
 				{text}
 			</pre>

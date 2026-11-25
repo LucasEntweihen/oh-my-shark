@@ -11,9 +11,9 @@ const PANEL_WIDTH = 360;
 const VIEWPORT_EDGE = 12;
 
 const TONE_DOT: Record<TaskNotice["tone"], string> = {
-	done: "bg-(--omp-success)",
-	review: "bg-(--omp-accent)",
-	failed: "bg-(--omp-error)",
+	done: "bg-(--omsk-success)",
+	review: "bg-(--omsk-accent)",
+	failed: "bg-(--omsk-error)",
 };
 
 /** Unread notices; the list keeps read ones too, newest first. */
@@ -84,14 +84,14 @@ export function NotificationBell({ className }: { className: string }) {
 					place();
 					setOpen(value => !value);
 				}}
-				className={cx(className, "relative", open && "bg-[var(--omp-selected-bg)] text-[var(--omp-text)]")}
+				className={cx(className, "relative", open && "bg-[var(--omsk-selected-bg)] text-[var(--omsk-text)]")}
 			>
 				<Bell aria-hidden="true" size={16} />
 				{unread > 0 && (
 					<span
 						aria-hidden="true"
 						data-notification-count=""
-						className="absolute top-1 right-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-(--omp-error) px-1 text-omp-xxs leading-none font-semibold text-white tabular-nums"
+						className="absolute top-1 right-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-(--omsk-error) px-1 text-omsk-xxs leading-none font-semibold text-white tabular-nums"
 					>
 						{unread > 9 ? "9+" : unread}
 					</span>
@@ -108,23 +108,23 @@ export function NotificationBell({ className }: { className: string }) {
 						inert={closing}
 						style={style}
 						className={cx(
-							"fixed z-[80] flex max-h-[min(480px,70vh)] flex-col overflow-hidden rounded-2xl border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] shadow-[var(--omp-shadow-lg)]",
-							closing ? "omp-scale-out pointer-events-none" : "omp-pop-in",
+							"fixed z-[80] flex max-h-[min(480px,70vh)] flex-col overflow-hidden rounded-2xl border border-[var(--omsk-border)] bg-[var(--omsk-bg-elevated)] shadow-[var(--omsk-shadow-lg)]",
+							closing ? "omsk-scale-out pointer-events-none" : "omsk-pop-in",
 						)}
 					>
-						<div className="flex items-center justify-between gap-3 border-b border-[var(--omp-border-muted)] px-4 py-2.5">
-							<span className="text-omp-md font-semibold text-[var(--omp-text)]">{t("notices.title")}</span>
+						<div className="flex items-center justify-between gap-3 border-b border-[var(--omsk-border-muted)] px-4 py-2.5">
+							<span className="text-omsk-md font-semibold text-[var(--omsk-text)]">{t("notices.title")}</span>
 							<button
 								type="button"
 								disabled={unread === 0}
 								onClick={() => useSchedulerStore.getState().markAllNoticesRead()}
-								className="omp-pressable rounded-md px-1.5 py-0.5 text-omp-sm text-[var(--omp-link)] hover:bg-[var(--omp-selected-bg)] disabled:pointer-events-none disabled:text-[var(--omp-dim)]"
+								className="omsk-pressable rounded-md px-1.5 py-0.5 text-omsk-sm text-[var(--omsk-link)] hover:bg-[var(--omsk-selected-bg)] disabled:pointer-events-none disabled:text-[var(--omsk-dim)]"
 							>
 								{t("notices.markAllRead")}
 							</button>
 						</div>
 						{notices.length === 0 ? (
-							<p className="px-4 py-6 text-center text-omp-sm text-[var(--omp-dim)]">{t("notices.empty")}</p>
+							<p className="px-4 py-6 text-center text-omsk-sm text-[var(--omsk-dim)]">{t("notices.empty")}</p>
 						) : (
 							<ul className="min-h-0 overflow-y-auto py-1">
 								{notices.map(notice => (
@@ -136,7 +136,7 @@ export function NotificationBell({ className }: { className: string }) {
 												setOpen(false);
 												useSchedulerStore.getState().openNotice(notice);
 											}}
-											className="omp-pressable flex w-full items-start gap-2.5 px-4 py-2 text-left hover:bg-[var(--omp-selected-bg)]"
+											className="omsk-pressable flex w-full items-start gap-2.5 px-4 py-2 text-left hover:bg-[var(--omsk-selected-bg)]"
 										>
 											<span
 												aria-hidden="true"
@@ -145,20 +145,20 @@ export function NotificationBell({ className }: { className: string }) {
 											<span className="min-w-0 flex-1">
 												<span
 													className={cx(
-														"block truncate text-omp-md",
+														"block truncate text-omsk-md",
 														notice.read
-															? "text-[var(--omp-text-secondary)]"
-															: "font-semibold text-[var(--omp-text)]",
+															? "text-[var(--omsk-text-secondary)]"
+															: "font-semibold text-[var(--omsk-text)]",
 													)}
 												>
 													{notice.title}
 												</span>
 												{notice.body && (
-													<span className="line-clamp-2 text-omp-sm text-[var(--omp-dim)]">
+													<span className="line-clamp-2 text-omsk-sm text-[var(--omsk-dim)]">
 														{notice.body}
 													</span>
 												)}
-												<span className="text-omp-xs text-[var(--omp-dim)]">
+												<span className="text-omsk-xs text-[var(--omsk-dim)]">
 													{formatTimeAgo(new Date(notice.createdAt).toISOString())}
 												</span>
 											</span>
@@ -166,7 +166,7 @@ export function NotificationBell({ className }: { className: string }) {
 												<span
 													role="img"
 													aria-label={t("notices.unreadOne")}
-													className="mt-2 size-1.5 shrink-0 rounded-full bg-(--omp-error)"
+													className="mt-2 size-1.5 shrink-0 rounded-full bg-(--omsk-error)"
 												/>
 											)}
 										</button>

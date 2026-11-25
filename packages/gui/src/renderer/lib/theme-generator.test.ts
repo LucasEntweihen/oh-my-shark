@@ -29,7 +29,7 @@ function hueDegrees(value: Rgba): number {
 	return ((Math.atan2(lab.b, lab.a) * 180) / Math.PI + 360) % 360;
 }
 
-const READABLE_TEXT = ["--omp-text", "--omp-text-secondary", "--omp-muted", "--omp-dim"] as const;
+const READABLE_TEXT = ["--omsk-text", "--omsk-text-secondary", "--omsk-muted", "--omsk-dim"] as const;
 
 describe("generateTheme", () => {
 	it("saves no token changes for a theme left as it is", () => {
@@ -43,29 +43,31 @@ describe("generateTheme", () => {
 	it("turns the accent's family with it and leaves other blues alone", () => {
 		const { tokens } = generateTheme(builtin("dark"), { accent: "#e06c75" });
 
-		expect(tokens["--omp-accent"]).toBe("#e06c75");
+		expect(tokens["--omsk-accent"]).toBe("#e06c75");
 		// Same color, same alpha: the dim and glow variants are the accent at low opacity.
-		expect(tokens["--omp-accent-dim"]).toBe("rgba(224, 108, 117, 0.14)");
+		expect(tokens["--omsk-accent-dim"]).toBe("rgba(224, 108, 117, 0.14)");
 		expect(
-			Math.abs(hueDegrees(color(tokens, "--omp-md-link")) - hueDegrees(color(tokens, "--omp-accent"))),
+			Math.abs(hueDegrees(color(tokens, "--omsk-md-link")) - hueDegrees(color(tokens, "--omsk-accent"))),
 		).toBeLessThan(10);
 		// accent-bright stays the lighter one.
-		expect(toOklab(color(tokens, "--omp-accent-bright")).l).toBeGreaterThan(toOklab(color(tokens, "--omp-accent")).l);
+		expect(toOklab(color(tokens, "--omsk-accent-bright")).l).toBeGreaterThan(
+			toOklab(color(tokens, "--omsk-accent")).l,
+		);
 		// Syntax keywords and the info color are blue in Graphite too, but not part of the accent.
-		expect(tokens["--omp-syntax-keyword"]).toBe(THEMES.dark.tokens["--omp-syntax-keyword"]);
-		expect(tokens["--omp-info"]).toBe(THEMES.dark.tokens["--omp-info"]);
-		expect(tokens["--omp-input-focus-border"]).toBe(THEMES.dark.tokens["--omp-input-focus-border"]);
+		expect(tokens["--omsk-syntax-keyword"]).toBe(THEMES.dark.tokens["--omsk-syntax-keyword"]);
+		expect(tokens["--omsk-info"]).toBe(THEMES.dark.tokens["--omsk-info"]);
+		expect(tokens["--omsk-input-focus-border"]).toBe(THEMES.dark.tokens["--omsk-input-focus-border"]);
 	});
 
 	it("turns the overlays tinted with the accent, not the plain white ones", () => {
 		const accent = parseCssColor("#e5484d")!;
 		const nord = generateTheme(builtin("nord"), { accent: "#e5484d" }).tokens;
-		for (const key of ["--omp-selected-bg", "--omp-input-glow", "--omp-streaming-highlight"] as const) {
+		for (const key of ["--omsk-selected-bg", "--omsk-input-glow", "--omsk-streaming-highlight"] as const) {
 			expect(Math.abs(hueDegrees(color(nord, key)) - hueDegrees(accent)), key).toBeLessThan(10);
 			expect(color(nord, key).alpha, key).toBeCloseTo(color(THEMES.nord.tokens, key).alpha, 3);
 		}
 		const dark = generateTheme(builtin("dark"), { accent: "#e5484d" }).tokens;
-		expect(dark["--omp-selected-bg"]).toBe(THEMES.dark.tokens["--omp-selected-bg"]);
+		expect(dark["--omsk-selected-bg"]).toBe(THEMES.dark.tokens["--omsk-selected-bg"]);
 	});
 
 	it("builds a light background on a light theme and keeps its text readable", () => {
@@ -73,58 +75,58 @@ describe("generateTheme", () => {
 
 		expect(theme.scheme).toBe("light");
 		expect(THEMES[theme.extends].scheme).toBe("light");
-		expect(theme.tokens["--omp-bg-primary"]).toBe("#fdf6e3");
+		expect(theme.tokens["--omsk-bg-primary"]).toBe("#fdf6e3");
 		for (const key of READABLE_TEXT)
-			expect(contrast(theme.tokens, key, "--omp-bg-primary"), key).toBeGreaterThan(4.5);
+			expect(contrast(theme.tokens, key, "--omsk-bg-primary"), key).toBeGreaterThan(4.5);
 	});
 
 	it("lifts derived text a picked background would make hard to read", () => {
 		const { tokens } = generateTheme(builtin("dark"), { background: "#4a4a4a" });
 
 		for (const key of READABLE_TEXT)
-			expect(contrast(tokens, key, "--omp-bg-primary"), key).toBeGreaterThanOrEqual(4.5);
-		for (const key of THEME_SYNTAX) expect(contrast(tokens, key, "--omp-code-bg"), key).toBeGreaterThanOrEqual(4.5);
+			expect(contrast(tokens, key, "--omsk-bg-primary"), key).toBeGreaterThanOrEqual(4.5);
+		for (const key of THEME_SYNTAX) expect(contrast(tokens, key, "--omsk-code-bg"), key).toBeGreaterThanOrEqual(4.5);
 	});
 
 	it("keeps picked colors exactly and flags a pick that is hard to read on", () => {
 		const picks = { text: "#fffbe6", sidebar: "#f0f0f0" };
 		const { tokens } = generateTheme(builtin("dark"), picks);
 
-		expect(tokens["--omp-text"]).toBe("#fffbe6");
-		expect(tokens["--omp-sidebar-bg"]).toBe("#f0f0f0");
+		expect(tokens["--omsk-text"]).toBe("#fffbe6");
+		expect(tokens["--omsk-sidebar-bg"]).toBe("#f0f0f0");
 		expect([...lowContrastComponents(tokens, picks)]).toEqual(["sidebar"]);
 		// White hover overlays would vanish on a light sidebar: they turn dark.
-		expect(tokens["--omp-sidebar-item-hover"]).toBe("rgba(0, 0, 0, 0.05)");
+		expect(tokens["--omsk-sidebar-item-hover"]).toBe("rgba(0, 0, 0, 0.05)");
 	});
 
 	it("keeps the main background's text when a sidebar cannot share it", () => {
 		const { tokens } = generateTheme(builtin("dark"), { sidebar: "#f0f0f0" });
 
-		expect(tokens["--omp-text"]).toBe(THEMES.dark.tokens["--omp-text"]);
-		expect(contrast(tokens, "--omp-muted", "--omp-bg-primary")).toBeGreaterThanOrEqual(4.5);
+		expect(tokens["--omsk-text"]).toBe(THEMES.dark.tokens["--omsk-text"]);
+		expect(contrast(tokens, "--omsk-muted", "--omsk-bg-primary")).toBeGreaterThanOrEqual(4.5);
 	});
 
 	it("moves a title bar drawn in the sidebar color with the sidebar", () => {
-		expect(THEMES.nord.tokens["--omp-titlebar-bg"]).toBe(THEMES.nord.tokens["--omp-sidebar-bg"]);
+		expect(THEMES.nord.tokens["--omsk-titlebar-bg"]).toBe(THEMES.nord.tokens["--omsk-sidebar-bg"]);
 		const { tokens } = generateTheme(builtin("nord"), { sidebar: "#0b2f3a" });
-		expect(tokens["--omp-titlebar-bg"]).toBe("#0b2f3a");
+		expect(tokens["--omsk-titlebar-bg"]).toBe("#0b2f3a");
 
 		const own = generateTheme(builtin("nord"), { sidebar: "#0b2f3a", titlebar: "#202020" });
-		expect(own.tokens["--omp-titlebar-bg"]).toBe("#202020");
+		expect(own.tokens["--omsk-titlebar-bg"]).toBe("#202020");
 	});
 });
 
-const THEME_SYNTAX = Object.keys(THEMES.dark.tokens).filter(key => key.startsWith("--omp-syntax-")) as ThemeTokenKey[];
+const THEME_SYNTAX = Object.keys(THEMES.dark.tokens).filter(key => key.startsWith("--omsk-syntax-")) as ThemeTokenKey[];
 
 describe("surfacesFromAccent", () => {
 	it("tints readable surfaces with the accent's hue, and a gray accent gives gray ones", () => {
 		for (const scheme of ["dark", "light"] as const) {
 			const picks = surfacesFromAccent("#2f9e74", scheme);
 			const { tokens } = generateTheme(builtin(scheme), { accent: "#2f9e74", ...picks });
-			expect(contrast(tokens, "--omp-text", "--omp-bg-primary"), scheme).toBeGreaterThan(7);
-			expect(contrast(tokens, "--omp-text", "--omp-sidebar-bg"), scheme).toBeGreaterThan(7);
+			expect(contrast(tokens, "--omsk-text", "--omsk-bg-primary"), scheme).toBeGreaterThan(7);
+			expect(contrast(tokens, "--omsk-text", "--omsk-sidebar-bg"), scheme).toBeGreaterThan(7);
 			expect(
-				Math.abs(hueDegrees(color(tokens, "--omp-bg-primary")) - hueDegrees(parseCssColor("#2f9e74")!)),
+				Math.abs(hueDegrees(color(tokens, "--omsk-bg-primary")) - hueDegrees(parseCssColor("#2f9e74")!)),
 			).toBeLessThan(15);
 		}
 		const gray = surfacesFromAccent("#888888", "dark");

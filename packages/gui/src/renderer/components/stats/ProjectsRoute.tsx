@@ -14,14 +14,14 @@ function ShareBar({ fraction }: { fraction: number }) {
 	return (
 		<span className="flex w-24 items-center gap-1.5">
 			<span
-				className="h-1.5 flex-1 overflow-hidden rounded-full bg-(--omp-bg-tertiary)" /* surface-ok: progress bar track */
+				className="h-1.5 flex-1 overflow-hidden rounded-full bg-(--omsk-bg-tertiary)" /* surface-ok: progress bar track */
 			>
 				<span
-					className="block h-full rounded-full bg-(--omp-accent)"
+					className="block h-full rounded-full bg-(--omsk-accent)"
 					style={{ width: `${Math.min(100, fraction * 100)}%` }}
 				/>
 			</span>
-			<span className="w-8 text-right text-omp-xs tabular-nums text-(--omp-dim)">
+			<span className="w-8 text-right text-omsk-xs tabular-nums text-(--omsk-dim)">
 				{(fraction * 100).toFixed(0)}%
 			</span>
 		</span>
@@ -50,7 +50,7 @@ export function ProjectsRoute({ range, refreshKey }: { range: StatsRange; refres
 				key: "folder",
 				label: t("stats.col.project"),
 				render: row => (
-					<span className="font-mono text-(--omp-text)">{row.folder || t("stats.projects.unknown")}</span>
+					<span className="font-mono text-(--omsk-text)">{row.folder || t("stats.projects.unknown")}</span>
 				),
 			},
 			{ key: "requests", label: t("stats.col.requests"), align: "right", render: row => compact(row.totalRequests) },

@@ -27,9 +27,9 @@ type Translate = (key: string, params?: Record<string, string | number>) => stri
 export const SIDEBAR_QUOTA_ROWS = 4;
 
 const RING_COLOR = {
-	ok: "var(--omp-text-secondary)",
-	warning: "var(--omp-warning)",
-	critical: "var(--omp-error)",
+	ok: "var(--omsk-text-secondary)",
+	warning: "var(--omsk-warning)",
+	critical: "var(--omsk-error)",
 } as const;
 
 const RING_RADIUS = 6;
@@ -45,7 +45,7 @@ function QuotaRing({ window }: { window: TrayQuotaWindow }) {
 				cy="8"
 				r={RING_RADIUS}
 				fill="none"
-				stroke={window.exhausted ? RING_COLOR.critical : "var(--omp-border)"}
+				stroke={window.exhausted ? RING_COLOR.critical : "var(--omsk-border)"}
 				opacity={window.exhausted ? 0.5 : 1}
 				strokeWidth="2.5"
 			/>
@@ -96,14 +96,16 @@ function QuotaRow({ quota, fetchedAt }: { quota: TrayQuota; fetchedAt: number })
 			title={summary}
 			aria-label={summary}
 			onClick={() => useUiStore.getState().openUsage()}
-			className="omp-pressable flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 rounded-md px-2 py-1 text-left hover:bg-[var(--omp-selected-bg)]"
+			className="omsk-pressable flex w-full flex-wrap items-center gap-x-2 gap-y-0.5 rounded-md px-2 py-1 text-left hover:bg-[var(--omsk-selected-bg)]"
 		>
-			<span className="flex max-w-full min-w-0 flex-[1_0_auto] items-baseline text-omp-sm text-[var(--omp-text-secondary)]">
+			<span className="flex max-w-full min-w-0 flex-[1_0_auto] items-baseline text-omsk-sm text-[var(--omsk-text-secondary)]">
 				{/* The provider keeps its whole name while it fits the row; the account gives way first. */}
 				<span className="max-w-full shrink-0 truncate">{quota.name}</span>
-				{quota.account && <span className="min-w-0 truncate text-[var(--omp-muted)]">&nbsp;· {quota.account}</span>}
+				{quota.account && (
+					<span className="min-w-0 truncate text-[var(--omsk-muted)]">&nbsp;· {quota.account}</span>
+				)}
 			</span>
-			<span className="ml-auto flex shrink-0 items-center gap-2 text-omp-xxs text-[var(--omp-muted)] tabular-nums">
+			<span className="ml-auto flex shrink-0 items-center gap-2 text-omsk-xxs text-[var(--omsk-muted)] tabular-nums">
 				{quota.windows.map(window => (
 					<span key={window.window} data-quota-window={window.window} className="flex items-center gap-[0.2em]">
 						<QuotaRing window={window} />
@@ -139,7 +141,7 @@ export function SidebarQuotas() {
 			data-sidebar-quotas
 			aria-label={t("usage.providerQuotas")}
 			onContextMenu={event => setMenu(anchorFromEvent(event))}
-			className="shrink-0 border-t border-[var(--omp-border-muted)] px-2 py-1.5"
+			className="shrink-0 border-t border-[var(--omsk-border-muted)] px-2 py-1.5"
 		>
 			{top.map(quota => (
 				<QuotaRow key={`${quota.name}\u0000${quota.account ?? ""}`} quota={quota} fetchedAt={fetchedAt} />
@@ -149,7 +151,7 @@ export function SidebarQuotas() {
 					type="button"
 					data-quota-more
 					onClick={() => useUiStore.getState().openUsage()}
-					className="omp-pressable flex w-full items-center rounded-md px-2 py-1 text-left text-omp-xs text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text-secondary)]"
+					className="omsk-pressable flex w-full items-center rounded-md px-2 py-1 text-left text-omsk-xs text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text-secondary)]"
 				>
 					{t("sidebar.quotas.more", { count: more.length })}
 				</button>

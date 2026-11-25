@@ -28,45 +28,45 @@ const BODY_COLLAPSE_LINES = 12;
 
 function checkIcon(conclusion: string | null, status: string) {
 	if (conclusion === "SUCCESS" || conclusion === "NEUTRAL" || conclusion === "SKIPPED") {
-		return <CheckCircle2 size={12} className="shrink-0 text-(--omp-success)" />;
+		return <CheckCircle2 size={12} className="shrink-0 text-(--omsk-success)" />;
 	}
-	if (conclusion) return <XCircle size={12} className="shrink-0 text-(--omp-error)" />;
+	if (conclusion) return <XCircle size={12} className="shrink-0 text-(--omsk-error)" />;
 	if (status === "IN_PROGRESS" || status === "QUEUED")
-		return <Circle size={9} className="shrink-0 fill-current text-(--omp-warning)" />;
-	return <Circle size={12} className="shrink-0 text-(--omp-dim)" />;
+		return <Circle size={9} className="shrink-0 fill-current text-(--omsk-warning)" />;
+	return <Circle size={12} className="shrink-0 text-(--omsk-dim)" />;
 }
 
 function FileRow({ path, additions, deletions }: { path: string; additions: number; deletions: number }) {
 	const t = useT();
 	const expanded = usePrCenterStore(state => state.expandedFiles[path]);
 	return (
-		<div className="rounded-md border border-(--omp-border-muted)">
+		<div className="rounded-md border border-(--omsk-border-muted)">
 			<button
 				type="button"
 				onClick={() => void usePrCenterStore.getState().toggleFile(path)}
-				className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left hover:bg-(--omp-selected-bg)"
+				className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left hover:bg-(--omsk-selected-bg)"
 			>
 				{expanded ? (
 					<ChevronDown size={11} className="shrink-0" />
 				) : (
 					<ChevronRight size={11} className="shrink-0" />
 				)}
-				<span className="min-w-0 flex-1 truncate font-mono text-omp-sm text-(--omp-text)">{path}</span>
-				<span className="shrink-0 text-omp-xs text-(--omp-success)">+{additions}</span>
-				<span className="shrink-0 text-omp-xs text-(--omp-error)">-{deletions}</span>
+				<span className="min-w-0 flex-1 truncate font-mono text-omsk-sm text-(--omsk-text)">{path}</span>
+				<span className="shrink-0 text-omsk-xs text-(--omsk-success)">+{additions}</span>
+				<span className="shrink-0 text-omsk-xs text-(--omsk-error)">-{deletions}</span>
 			</button>
 			{expanded?.phase === "loading" && (
-				<div className="flex items-center gap-2 border-t border-(--omp-border-muted) px-3 py-2 text-omp-sm text-(--omp-dim)">
+				<div className="flex items-center gap-2 border-t border-(--omsk-border-muted) px-3 py-2 text-omsk-sm text-(--omsk-dim)">
 					<Spinner size="sm" /> {t("prCenter.diffLoading")}
 				</div>
 			)}
 			{expanded?.phase === "error" && (
-				<div className="border-t border-(--omp-border-muted) px-3 py-2 text-omp-sm text-(--omp-error)">
+				<div className="border-t border-(--omsk-border-muted) px-3 py-2 text-omsk-sm text-(--omsk-error)">
 					{t("prCenter.diffFailed")}
 				</div>
 			)}
 			{expanded?.phase === "ready" && (
-				<div className="overflow-x-auto border-t border-(--omp-border-muted) bg-(--omp-code-bg) py-1">
+				<div className="overflow-x-auto border-t border-(--omsk-border-muted) bg-(--omsk-code-bg) py-1">
 					<DiffView diff={expanded.diff} filePath={path} />
 				</div>
 			)}
@@ -85,8 +85,8 @@ export function PrDetailPane({ onCreateOpen }: { onCreateOpen: () => void }) {
 	if (selected === null) {
 		return (
 			<div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-				<GitPullRequestDraft size={28} className="text-(--omp-dim)" />
-				<p className="text-omp-md text-(--omp-dim)">{t("prCenter.noSelection")}</p>
+				<GitPullRequestDraft size={28} className="text-(--omsk-dim)" />
+				<p className="text-omsk-md text-(--omsk-dim)">{t("prCenter.noSelection")}</p>
 				<Button variant="secondary" size="sm" onClick={onCreateOpen}>
 					{t("prCenter.create")}
 				</Button>
@@ -96,7 +96,7 @@ export function PrDetailPane({ onCreateOpen }: { onCreateOpen: () => void }) {
 	// A selected PR whose detail read failed must not sit on "Loading…" forever.
 	if (detailLoading || (!detail && !error)) {
 		return (
-			<div className="flex h-full items-center justify-center gap-2 text-omp-md text-(--omp-dim)">
+			<div className="flex h-full items-center justify-center gap-2 text-omsk-md text-(--omsk-dim)">
 				<Spinner size="sm" /> {t("prCenter.loading")}
 			</div>
 		);
@@ -104,7 +104,7 @@ export function PrDetailPane({ onCreateOpen }: { onCreateOpen: () => void }) {
 	if (!detail) {
 		return (
 			<div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-				<p role="alert" className="max-w-sm text-omp-md text-(--omp-error)">
+				<p role="alert" className="max-w-sm text-omsk-md text-(--omsk-error)">
 					{error}
 				</p>
 				<Button
@@ -129,32 +129,32 @@ export function PrDetailPane({ onCreateOpen }: { onCreateOpen: () => void }) {
 		// expansion that belongs to the PR being left behind.
 		<div key={selected} className="flex flex-col gap-4 p-4">
 			{/* Header card */}
-			<div className="flex flex-col gap-2 rounded-lg border border-(--omp-border-muted) bg-transparent p-3">
+			<div className="flex flex-col gap-2 rounded-lg border border-(--omsk-border-muted) bg-transparent p-3">
 				<div className="flex items-start gap-2">
 					{detail.isDraft ? (
-						<GitPullRequestDraft size={14} className="mt-0.5 shrink-0 text-(--omp-muted)" />
+						<GitPullRequestDraft size={14} className="mt-0.5 shrink-0 text-(--omsk-muted)" />
 					) : (
-						<GitPullRequestClosed size={14} className="mt-0.5 shrink-0 text-(--omp-success)" />
+						<GitPullRequestClosed size={14} className="mt-0.5 shrink-0 text-(--omsk-success)" />
 					)}
-					<h2 className="min-w-0 flex-1 text-omp-lg font-medium leading-snug text-(--omp-text)">
-						<span className="text-(--omp-dim)">#{detail.number}</span> {detail.title}
+					<h2 className="min-w-0 flex-1 text-omsk-lg font-medium leading-snug text-(--omsk-text)">
+						<span className="text-(--omsk-dim)">#{detail.number}</span> {detail.title}
 					</h2>
 					{detail.isDraft && (
-						<span className="shrink-0 rounded border border-(--omp-border-muted) px-1.5 py-0.5 text-omp-xs text-(--omp-muted)">
+						<span className="shrink-0 rounded border border-(--omsk-border-muted) px-1.5 py-0.5 text-omsk-xs text-(--omsk-muted)">
 							{t("prCenter.draft")}
 						</span>
 					)}
 				</div>
-				<div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-omp-sm text-(--omp-dim)">
-					<span className="text-(--omp-muted)">@{detail.authorLogin}</span>
+				<div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-omsk-sm text-(--omsk-dim)">
+					<span className="text-(--omsk-muted)">@{detail.authorLogin}</span>
 					<span>·</span>
 					<GitBranch size={10} className="shrink-0" />
 					<span className="font-mono">{detail.headRefName}</span>
 					<span>→</span>
 					<span className="font-mono">{detail.baseRefName}</span>
 					<span>·</span>
-					<span className="text-(--omp-success)">+{detail.additions}</span>
-					<span className="text-(--omp-error)">-{detail.deletions}</span>
+					<span className="text-(--omsk-success)">+{detail.additions}</span>
+					<span className="text-(--omsk-error)">-{detail.deletions}</span>
 					{detail.reviewDecision && (
 						<>
 							<span>·</span>
@@ -179,14 +179,14 @@ export function PrDetailPane({ onCreateOpen }: { onCreateOpen: () => void }) {
 			{/* Body */}
 			{detail.body.trim().length > 0 && (
 				<section>
-					<h3 className="mb-1.5 text-omp-sm font-medium text-(--omp-dim)">{t("prCenter.section.body")}</h3>
-					<div className="rounded-lg border border-(--omp-border-muted) p-3 text-omp-md">
+					<h3 className="mb-1.5 text-omsk-sm font-medium text-(--omsk-dim)">{t("prCenter.section.body")}</h3>
+					<div className="rounded-lg border border-(--omsk-border-muted) p-3 text-omsk-md">
 						<MarkdownRenderer content={shownBody} />
 						{collapsible && (
 							<button
 								type="button"
 								onClick={() => setBodyExpanded(expanded => !expanded)}
-								className="mt-1.5 text-omp-sm text-(--omp-accent) hover:underline"
+								className="mt-1.5 text-omsk-sm text-(--omsk-accent) hover:underline"
 							>
 								{bodyExpanded
 									? t("prCenter.collapse")
@@ -200,15 +200,15 @@ export function PrDetailPane({ onCreateOpen }: { onCreateOpen: () => void }) {
 			{/* Checks */}
 			{detail.checks.length > 0 && (
 				<section>
-					<h3 className="mb-1.5 text-omp-sm font-medium text-(--omp-dim)">
+					<h3 className="mb-1.5 text-omsk-sm font-medium text-(--omsk-dim)">
 						{t("prCenter.section.checks", { count: String(detail.checks.length) })}
 					</h3>
-					<div className="flex flex-col gap-0.5 rounded-lg border border-(--omp-border-muted) p-2">
+					<div className="flex flex-col gap-0.5 rounded-lg border border-(--omsk-border-muted) p-2">
 						{detail.checks.map(check => (
-							<div key={check.name} className="flex items-center gap-2 px-1 py-0.5 text-omp-sm">
+							<div key={check.name} className="flex items-center gap-2 px-1 py-0.5 text-omsk-sm">
 								{checkIcon(check.conclusion, check.status)}
-								<span className="min-w-0 truncate text-(--omp-text)">{check.name}</span>
-								<span className="ml-auto shrink-0 text-omp-xs text-(--omp-dim)">
+								<span className="min-w-0 truncate text-(--omsk-text)">{check.name}</span>
+								<span className="ml-auto shrink-0 text-omsk-xs text-(--omsk-dim)">
 									{check.conclusion ?? check.status}
 								</span>
 							</div>
@@ -219,7 +219,7 @@ export function PrDetailPane({ onCreateOpen }: { onCreateOpen: () => void }) {
 
 			{/* Files */}
 			<section>
-				<h3 className="mb-1.5 text-omp-sm font-medium text-(--omp-dim)">
+				<h3 className="mb-1.5 text-omsk-sm font-medium text-(--omsk-dim)">
 					{t("prCenter.section.files", { count: String(detail.files.length) })}
 				</h3>
 				<div className="flex flex-col gap-1.5">

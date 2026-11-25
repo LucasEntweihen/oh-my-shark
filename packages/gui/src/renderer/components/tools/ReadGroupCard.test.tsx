@@ -61,7 +61,7 @@ async function mount(runningIndicator: RunningIndicator = "spinner"): Promise<vo
 		);
 	});
 	await act(async () => {
-		(container.querySelector(".omp-read-group-header") as unknown as { click: () => void }).click();
+		(container.querySelector(".omsk-read-group-header") as unknown as { click: () => void }).click();
 	});
 }
 
@@ -75,12 +75,12 @@ describe("ReadGroupCard running indicators", () => {
 	it("keeps one group spinner when multiple running reads are expanded", async () => {
 		await mount();
 		expect(container.querySelectorAll(".animate-spin")).toHaveLength(1);
-		expect(container.querySelectorAll(".omp-tool-status-icon")).toHaveLength(2);
+		expect(container.querySelectorAll(".omsk-tool-status-icon")).toHaveLength(2);
 	});
 
 	it("uses only static indicators when the transcript timeline owns animation", async () => {
 		await mount("dot");
 		expect(container.querySelectorAll(".animate-spin, .animate-pulse")).toHaveLength(0);
-		expect(container.querySelectorAll(".omp-tool-status-icon")).toHaveLength(2);
+		expect(container.querySelectorAll(".omsk-tool-status-icon")).toHaveLength(2);
 	});
 });

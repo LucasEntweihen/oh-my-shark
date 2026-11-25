@@ -212,7 +212,7 @@ export function SessionPickerDialog() {
 	const showOptions = !error && !loading && filtered.length > 0;
 
 	const toggleButton =
-		"flex h-5 w-5 shrink-0 items-center justify-center rounded border border-(--omp-border-muted) text-(--omp-dim) transition-colors hover:text-(--omp-text)";
+		"flex h-5 w-5 shrink-0 items-center justify-center rounded border border-(--omsk-border-muted) text-(--omsk-dim) transition-colors hover:text-(--omsk-text)";
 
 	return (
 		<Modal
@@ -225,13 +225,13 @@ export function SessionPickerDialog() {
 			size="picker"
 		>
 			<div className="flex h-full flex-col">
-				<div className="flex items-center gap-2.5 border-b border-(--omp-border-muted) px-3.5 py-2.5">
-					<Search className="shrink-0 text-(--omp-dim)" size={14} />
+				<div className="flex items-center gap-2.5 border-b border-(--omsk-border-muted) px-3.5 py-2.5">
+					<Search className="shrink-0 text-(--omsk-dim)" size={14} />
 					<input
 						aria-activedescendant={filtered.length > 0 ? `${listboxId}-option-${activeIndex}` : undefined}
 						aria-controls={listboxId}
 						aria-label={t("sessionPicker.searchLabel")}
-						className="min-w-0 flex-1 bg-transparent text-omp-md text-(--omp-text) placeholder:text-(--omp-dim) focus:outline-none"
+						className="min-w-0 flex-1 bg-transparent text-omsk-md text-(--omsk-text) placeholder:text-(--omsk-dim) focus:outline-none"
 						onChange={event => setQuery(event.target.value)}
 						onKeyDown={onKeyDown}
 						placeholder={t("sessionPicker.placeholder")}
@@ -241,7 +241,10 @@ export function SessionPickerDialog() {
 					<button
 						aria-label={scope === "local" ? t("sessionPicker.scopeToGlobal") : t("sessionPicker.scopeToLocal")}
 						aria-pressed={scope === "global"}
-						className={cx(toggleButton, scope === "global" && "border-(--omp-border-accent) text-(--omp-accent)")}
+						className={cx(
+							toggleButton,
+							scope === "global" && "border-(--omsk-border-accent) text-(--omsk-accent)",
+						)}
 						onClick={() => void switchScope(scope === "local" ? "global" : "local")}
 						title={scope === "local" ? t("sessionPicker.scopeToGlobal") : t("sessionPicker.scopeToLocal")}
 						type="button"
@@ -260,7 +263,10 @@ export function SessionPickerDialog() {
 					<button
 						aria-label={effectiveShowPath ? t("sessionPicker.hidePaths") : t("sessionPicker.showPaths")}
 						aria-pressed={effectiveShowPath}
-						className={cx(toggleButton, effectiveShowPath && "border-(--omp-border-accent) text-(--omp-accent)")}
+						className={cx(
+							toggleButton,
+							effectiveShowPath && "border-(--omsk-border-accent) text-(--omsk-accent)",
+						)}
 						onClick={() => setShowPath(!effectiveShowPath)}
 						title={effectiveShowPath ? t("sessionPicker.hidePaths") : t("sessionPicker.showPaths")}
 						type="button"
@@ -277,7 +283,7 @@ export function SessionPickerDialog() {
 				>
 					{error ? (
 						<div className="flex flex-col items-center gap-2 py-10 text-center">
-							<p role="alert" className="text-omp-xs text-[var(--omp-error)]">
+							<p role="alert" className="text-omsk-xs text-[var(--omsk-error)]">
 								{error}
 							</p>
 							<Button
@@ -292,10 +298,10 @@ export function SessionPickerDialog() {
 					) : loading ? (
 						<div className="flex items-center justify-center gap-2 py-10">
 							<Spinner size="sm" />
-							<span className="text-omp-xs text-(--omp-dim)">{t("sessionPicker.loading")}</span>
+							<span className="text-omsk-xs text-(--omsk-dim)">{t("sessionPicker.loading")}</span>
 						</div>
 					) : filtered.length === 0 ? (
-						<div className="py-10 text-center text-omp-xs text-(--omp-dim)">
+						<div className="py-10 text-center text-omsk-xs text-(--omsk-dim)">
 							{sessions.length === 0
 								? scope === "local"
 									? t("sessionPicker.emptyLocal")
@@ -311,7 +317,7 @@ export function SessionPickerDialog() {
 								<button
 									aria-selected={isCurrent}
 									className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors ${
-										isActive ? "bg-(--omp-selected-bg)" : "hover:bg-(--omp-bg-tertiary)"
+										isActive ? "bg-(--omsk-selected-bg)" : "hover:bg-(--omsk-bg-tertiary)"
 									}`}
 									data-option-index={index}
 									disabled={switching !== null}
@@ -322,21 +328,21 @@ export function SessionPickerDialog() {
 									role="option"
 									type="button"
 								>
-									<History className="shrink-0 text-(--omp-dim)" size={13} />
+									<History className="shrink-0 text-(--omsk-dim)" size={13} />
 									{session.kind === "chat" && (
 										<MessageCircle
-											className="shrink-0 text-(--omp-muted)"
+											className="shrink-0 text-(--omsk-muted)"
 											size={12}
 											aria-label={t("tabs.kind.chat")}
 										/>
 									)}
 									<span className="min-w-0 flex-1">
 										<span
-											className={`block truncate text-omp-xs ${isCurrent ? "font-semibold text-(--omp-accent)" : "font-medium text-(--omp-text)"}`}
+											className={`block truncate text-omsk-xs ${isCurrent ? "font-semibold text-(--omsk-accent)" : "font-medium text-(--omsk-text)"}`}
 										>
 											{title}
 										</span>
-										<span className="block truncate text-omp-xs text-(--omp-muted)">
+										<span className="block truncate text-omsk-xs text-(--omsk-muted)">
 											{effectiveShowPath && session.cwd ? session.cwd : basename(session.cwd)} ·{" "}
 											{t("sessionPicker.messageCount", { count: session.messageCount })} ·{" "}
 											{formatTimeAgo(session.modified)}
@@ -348,7 +354,7 @@ export function SessionPickerDialog() {
 										</Badge>
 									)}
 									{switching === session.path && <Spinner size="sm" />}
-									{isCurrent && <Check className="shrink-0 text-(--omp-accent)" size={13} />}
+									{isCurrent && <Check className="shrink-0 text-(--omsk-accent)" size={13} />}
 								</button>
 							);
 						})

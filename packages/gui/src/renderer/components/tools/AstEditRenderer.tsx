@@ -82,10 +82,10 @@ function Chip({ children, title, warning }: { children: ReactNode; title?: strin
 		<span
 			title={title}
 			className={cx(
-				"max-w-64 shrink-0 truncate rounded px-1 py-px font-mono text-omp-xxs tabular-nums",
+				"max-w-64 shrink-0 truncate rounded px-1 py-px font-mono text-omsk-xxs tabular-nums",
 				warning
-					? "bg-[var(--omp-warning)]/15 text-[var(--omp-warning)]"
-					: "bg-[var(--omp-bg-tertiary)] text-[var(--omp-muted)]", // surface-ok: tiny count/info pill
+					? "bg-[var(--omsk-warning)]/15 text-[var(--omsk-warning)]"
+					: "bg-[var(--omsk-bg-tertiary)] text-[var(--omsk-muted)]", // surface-ok: tiny count/info pill
 			)}
 		>
 			{children}
@@ -137,9 +137,9 @@ export function AstEditRenderer({ args, result, isError, isPartial, partialResul
 	return (
 		<div className="flex flex-col gap-1.5">
 			{/* Header: pattern preview + rewrite/proposed badges */}
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<FileCode2 size={12} className="shrink-0 text-[var(--omp-md-code)]" />
-				<span className="min-w-0 flex-1 truncate text-[var(--omp-text)]" title={fullPattern || undefined}>
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<FileCode2 size={12} className="shrink-0 text-[var(--omsk-md-code)]" />
+				<span className="min-w-0 flex-1 truncate text-[var(--omsk-text)]" title={fullPattern || undefined}>
 					{pattern || t("tools.astedit.fallback")}
 				</span>
 				{ops.length > 1 && <Chip>{t("tools.astedit.rewrites", { count: ops.length })}</Chip>}
@@ -172,7 +172,7 @@ export function AstEditRenderer({ args, result, isError, isPartial, partialResul
 			{groups.length > 0 && (
 				<div className="flex max-h-72 flex-col gap-1.5 overflow-y-auto">
 					{groups.map((group, gi) => (
-						<div key={gi} className="rounded bg-[var(--omp-code-bg)] py-1 font-mono text-omp-sm leading-[1.45]">
+						<div key={gi} className="rounded bg-[var(--omsk-code-bg)] py-1 font-mono text-omsk-sm leading-[1.45]">
 							{group.rows.map((row, ri) => {
 								if (row.type === "header") {
 									return (
@@ -181,8 +181,8 @@ export function AstEditRenderer({ args, result, isError, isPartial, partialResul
 											className={cx(
 												"truncate px-2",
 												row.text.endsWith("/") || row.depth === 1
-													? "text-[var(--omp-accent)]"
-													: "text-[var(--omp-dim)]",
+													? "text-[var(--omsk-accent)]"
+													: "text-[var(--omsk-dim)]",
 											)}
 										>
 											{row.text}
@@ -191,7 +191,7 @@ export function AstEditRenderer({ args, result, isError, isPartial, partialResul
 								}
 								if (row.type === "context") {
 									return (
-										<div key={ri} className="whitespace-pre-wrap px-2 text-[var(--omp-tool-output)]">
+										<div key={ri} className="whitespace-pre-wrap px-2 text-[var(--omsk-tool-output)]">
 											{row.content}
 										</div>
 									);
@@ -203,8 +203,8 @@ export function AstEditRenderer({ args, result, isError, isPartial, partialResul
 										className={cx(
 											"flex gap-2 px-2",
 											added
-												? "bg-[var(--omp-diff-added)]/10 text-[var(--omp-diff-added)]"
-												: "bg-[var(--omp-diff-removed)]/10 text-[var(--omp-diff-removed)]",
+												? "bg-[var(--omsk-diff-added)]/10 text-[var(--omsk-diff-added)]"
+												: "bg-[var(--omsk-diff-removed)]/10 text-[var(--omsk-diff-removed)]",
 										)}
 									>
 										<span className="w-8 shrink-0 select-none text-right tabular-nums opacity-60">
@@ -222,20 +222,20 @@ export function AstEditRenderer({ args, result, isError, isPartial, partialResul
 
 			{/* Limit-reached note (TUI body line) */}
 			{limitReached && !isPartial && !isError && (
-				<div className="text-omp-sm text-[var(--omp-warning)]">{t("tools.astedit.limitReached")}</div>
+				<div className="text-omsk-sm text-[var(--omsk-warning)]">{t("tools.astedit.limitReached")}</div>
 			)}
 
 			{/* Parse issues: count label + capped bullet list + overflow note */}
 			{parseErrors.length > 0 && !isPartial && !isError && (
-				<div className="rounded bg-[var(--omp-code-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.45]">
-					<div className="text-[var(--omp-warning)]">{parseLabel}</div>
+				<div className="rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.45]">
+					<div className="text-[var(--omsk-warning)]">{parseLabel}</div>
 					{parseErrors.map((err, i) => (
-						<div key={i} className="whitespace-pre-wrap text-[var(--omp-warning)]">
+						<div key={i} className="whitespace-pre-wrap text-[var(--omsk-warning)]">
 							- {err}
 						</div>
 					))}
 					{parseErrorsTotal > parseErrors.length && (
-						<div className="text-[var(--omp-dim)]">
+						<div className="text-[var(--omsk-dim)]">
 							{t("tools.astedit.parseMore", { count: parseErrorsTotal - parseErrors.length })}
 						</div>
 					)}
@@ -243,14 +243,14 @@ export function AstEditRenderer({ args, result, isError, isPartial, partialResul
 			)}
 
 			{/* States */}
-			{isPartial && <div className="text-omp-sm italic text-[var(--omp-dim)]">{t("tools.astedit.editing")}</div>}
+			{isPartial && <div className="text-omsk-sm italic text-[var(--omsk-dim)]">{t("tools.astedit.editing")}</div>}
 			{isError && (
-				<pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded bg-[var(--omp-tool-error-bg)] px-2 py-1.5 font-mono text-omp-sm leading-[1.45] text-[var(--omp-error)]">
+				<pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded bg-[var(--omsk-tool-error-bg)] px-2 py-1.5 font-mono text-omsk-sm leading-[1.45] text-[var(--omsk-error)]">
 					{text || t("tools.astedit.failed")}
 				</pre>
 			)}
 			{!isPartial && !isError && zeroResult && parseErrors.length === 0 && (
-				<div className="text-omp-sm italic text-[var(--omp-dim)]">{t("tools.astedit.noReplacements")}</div>
+				<div className="text-omsk-sm italic text-[var(--omsk-dim)]">{t("tools.astedit.noReplacements")}</div>
 			)}
 		</div>
 	);

@@ -20,14 +20,14 @@ import { useUiStore } from "../../stores/ui";
 import { AsyncSection, Button, Modal } from "../common";
 
 const COLOR_MAP: Record<string, string> = {
-	success: "var(--omp-success)",
-	warning: "var(--omp-warning)",
-	accent: "var(--omp-accent)",
-	error: "var(--omp-error)",
-	info: "var(--omp-link)",
-	muted: "var(--omp-muted)",
-	dim: "var(--omp-dim)",
-	default: "var(--omp-muted)",
+	success: "var(--omsk-success)",
+	warning: "var(--omsk-warning)",
+	accent: "var(--omsk-accent)",
+	error: "var(--omsk-error)",
+	info: "var(--omsk-link)",
+	muted: "var(--omsk-muted)",
+	dim: "var(--omsk-dim)",
+	default: "var(--omsk-muted)",
 };
 
 type ThinkingSelector = ThinkingLevel | "auto";
@@ -167,26 +167,26 @@ function RoleRow({
 				: t("modelRoles.default");
 
 	return (
-		<div className="omp-list-row flex items-center gap-3 rounded-lg border border-[var(--omp-border-muted)] px-3 py-2.5">
+		<div className="omsk-list-row flex items-center gap-3 rounded-lg border border-[var(--omsk-border-muted)] px-3 py-2.5">
 			<div className="flex min-w-0 flex-1 flex-col gap-0.5">
 				<div className="flex items-center gap-2">
 					<Tag size={12} style={{ color }} />
-					<span className="text-omp-lg font-semibold text-[var(--omp-text)]">{role.name}</span>
+					<span className="text-omsk-lg font-semibold text-[var(--omsk-text)]">{role.name}</span>
 					{role.tag && (
 						<span
-							className="rounded px-1.5 py-px text-omp-xxs font-bold tracking-wider"
+							className="rounded px-1.5 py-px text-omsk-xxs font-bold tracking-wider"
 							style={{ backgroundColor: `${color}20`, color }}
 						>
 							{role.tag}
 						</span>
 					)}
 				</div>
-				<span className="text-omp-xs text-[var(--omp-dim)]">
+				<span className="text-omsk-xs text-[var(--omsk-dim)]">
 					{t("modelRoles.source", { source: role.source })}
 					{role.model && <span className="ml-2">→ {role.model}</span>}
 				</span>
 				{candidates.length === 0 && (
-					<span className="text-omp-xs text-[var(--omp-dim)]">{t("modelRoles.noCandidates")}</span>
+					<span className="text-omsk-xs text-[var(--omsk-dim)]">{t("modelRoles.noCandidates")}</span>
 				)}
 			</div>
 			<div className="relative min-w-[180px] max-w-[50%] flex-1" ref={rootRef}>
@@ -195,7 +195,7 @@ function RoleRow({
 					aria-controls={open ? listId : undefined}
 					aria-haspopup="listbox"
 					aria-label={t("modelRoles.select", { role: role.name })}
-					className="flex h-7 w-full items-center gap-1 rounded-md border border-[var(--omp-border-muted)] bg-[var(--omp-input-bg)] px-2 text-left text-omp-sm text-[var(--omp-text)] focus:border-[var(--omp-border-accent)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+					className="flex h-7 w-full items-center gap-1 rounded-md border border-[var(--omsk-border-muted)] bg-[var(--omsk-input-bg)] px-2 text-left text-omsk-sm text-[var(--omsk-text)] focus:border-[var(--omsk-border-accent)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 					disabled={busy || !sidecarReady}
 					onClick={() => {
 						setQuery("");
@@ -206,19 +206,19 @@ function RoleRow({
 					type="button"
 				>
 					<span className="min-w-0 flex-1 truncate font-mono">{currentLabel}</span>
-					<ChevronDown className="shrink-0 text-[var(--omp-dim)]" size={12} />
+					<ChevronDown className="shrink-0 text-[var(--omsk-dim)]" size={12} />
 				</button>
 				{open && (
 					<div
-						className="absolute right-0 z-30 mt-1 max-h-72 w-[min(30rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-[var(--omp-border)] bg-[var(--omp-panel-bg)] p-1 shadow-[var(--omp-shadow-lg)]"
+						className="absolute right-0 z-30 mt-1 max-h-72 w-[min(30rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-[var(--omsk-border)] bg-[var(--omsk-panel-bg)] p-1 shadow-[var(--omsk-shadow-lg)]"
 						id={listId}
 						role="listbox"
 					>
-						<div className="flex items-center gap-1 border-b border-[var(--omp-border-muted)] px-2 py-1">
-							<Search className="shrink-0 text-[var(--omp-dim)]" size={12} />
+						<div className="flex items-center gap-1 border-b border-[var(--omsk-border-muted)] px-2 py-1">
+							<Search className="shrink-0 text-[var(--omsk-dim)]" size={12} />
 							<input
 								aria-label={t("modelRoles.search")}
-								className="min-w-0 flex-1 bg-transparent text-omp-sm text-[var(--omp-text)] outline-none"
+								className="min-w-0 flex-1 bg-transparent text-omsk-sm text-[var(--omsk-text)] outline-none"
 								onChange={event => setQuery(event.target.value)}
 								onKeyDown={event => {
 									if (event.key === "Escape") {
@@ -239,7 +239,7 @@ function RoleRow({
 						</div>
 						<button
 							aria-selected={!role.model}
-							className="flex w-full items-center rounded px-2 py-1.5 text-left text-omp-sm hover:bg-[var(--omp-selected-bg)]"
+							className="flex w-full items-center rounded px-2 py-1.5 text-left text-omsk-sm hover:bg-[var(--omsk-selected-bg)]"
 							disabled={!sidecarReady}
 							onClick={() => {
 								closePicker();
@@ -256,7 +256,7 @@ function RoleRow({
 						{savedOnly && (
 							<button
 								aria-selected
-								className="flex w-full items-center rounded px-2 py-1.5 text-left text-omp-sm hover:bg-[var(--omp-selected-bg)]"
+								className="flex w-full items-center rounded px-2 py-1.5 text-left text-omsk-sm hover:bg-[var(--omsk-selected-bg)]"
 								disabled={!sidecarReady}
 								onClick={() => {
 									closePicker();
@@ -273,7 +273,7 @@ function RoleRow({
 						)}
 						{[...providerGroups].map(([provider, models]) => (
 							<div aria-label={provider} key={provider} role="group">
-								<div className="px-2 pt-2 pb-0.5 text-omp-xxs font-semibold text-[var(--omp-dim)]">
+								<div className="px-2 pt-2 pb-0.5 text-omsk-xxs font-semibold text-[var(--omsk-dim)]">
 									{provider}
 								</div>
 								{models.map(model => {
@@ -282,7 +282,7 @@ function RoleRow({
 										<button
 											key={value}
 											aria-selected={value === selectedKey}
-											className="flex w-full items-center rounded px-2 py-1.5 text-left text-omp-sm hover:bg-[var(--omp-selected-bg)]"
+											className="flex w-full items-center rounded px-2 py-1.5 text-left text-omsk-sm hover:bg-[var(--omsk-selected-bg)]"
 											disabled={!sidecarReady}
 											onClick={() => {
 												closePicker();
@@ -295,7 +295,7 @@ function RoleRow({
 											type="button"
 										>
 											<span className="min-w-0 flex-1 truncate">{model.name}</span>
-											<span className="ml-2 shrink-0 font-mono text-omp-xs text-[var(--omp-dim)]">
+											<span className="ml-2 shrink-0 font-mono text-omsk-xs text-[var(--omsk-dim)]">
 												{model.provider}/{model.id}
 											</span>
 										</button>
@@ -309,7 +309,7 @@ function RoleRow({
 			{currentCandidate && levelOptions.length > 0 && (
 				<select
 					aria-label={t("modelRoles.thinking", { role: role.name })}
-					className="h-7 shrink-0 rounded-md border border-[var(--omp-border-muted)] bg-[var(--omp-input-bg)] px-1.5 text-omp-sm text-[var(--omp-text)] focus:border-[var(--omp-border-accent)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+					className="h-7 shrink-0 rounded-md border border-[var(--omsk-border-muted)] bg-[var(--omsk-input-bg)] px-1.5 text-omsk-sm text-[var(--omsk-text)] focus:border-[var(--omsk-border-accent)] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 					disabled={busy || !sidecarReady}
 					onChange={event =>
 						onChange({
@@ -421,7 +421,7 @@ export function ModelRolesWindow() {
 		<Modal dockable open={open} onClose={close} title={t("modelRoles.title")} size="lg">
 			<div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
 				<div className="flex items-center justify-between">
-					<span className="omp-section-label">{t("modelRoles.header")}</span>
+					<span className="omsk-section-label">{t("modelRoles.header")}</span>
 					<Button
 						size="sm"
 						variant="ghost"
@@ -448,7 +448,7 @@ export function ModelRolesWindow() {
 				>
 					{sections.map(section => (
 						<div key={section.key} className="mb-4 flex flex-col gap-2">
-							<span className="omp-section-label">{t(`modelRoles.section.${section.key}`)}</span>
+							<span className="omsk-section-label">{t(`modelRoles.section.${section.key}`)}</span>
 							{section.roles.map(role => (
 								<RoleRow
 									key={role.id}

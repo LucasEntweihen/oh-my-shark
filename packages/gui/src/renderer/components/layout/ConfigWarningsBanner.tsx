@@ -34,23 +34,26 @@ export function ConfigWarningsBanner() {
 	return (
 		<div
 			role="status"
-			className="flex items-start gap-3 border-b border-[var(--omp-warning)]/30 bg-[var(--omp-warning-dim)] px-4 py-2.5"
+			className="flex items-start gap-3 border-b border-[var(--omsk-warning)]/30 bg-[var(--omsk-warning-dim)] px-4 py-2.5"
 		>
-			<AlertTriangle size={16} className="mt-0.5 shrink-0 text-[var(--omp-warning)]" />
+			<AlertTriangle size={16} className="mt-0.5 shrink-0 text-[var(--omsk-warning)]" />
 			<div className="min-w-0 flex-1">
-				<div className="text-omp-md font-medium text-[var(--omp-warning)]">
+				<div className="text-omsk-md font-medium text-[var(--omsk-warning)]">
 					{multiple ? t("configWarnings.titleMany", { count: warnings.length }) : t("configWarnings.title")}
 				</div>
 				{expanded ? (
 					<ul className="mt-1 space-y-1">
 						{warnings.map(warning => (
-							<li key={warning} className="whitespace-pre-wrap break-words text-omp-sm text-[var(--omp-muted)]">
+							<li
+								key={warning}
+								className="whitespace-pre-wrap break-words text-omsk-sm text-[var(--omsk-muted)]"
+							>
 								{warning}
 							</li>
 						))}
 					</ul>
 				) : (
-					<div className="truncate text-omp-sm text-[var(--omp-muted)]" title={warnings[0]}>
+					<div className="truncate text-omsk-sm text-[var(--omsk-muted)]" title={warnings[0]}>
 						{warnings[0]}
 					</div>
 				)}
@@ -59,7 +62,7 @@ export function ConfigWarningsBanner() {
 				<button
 					type="button"
 					onClick={() => setExpanded(open => !open)}
-					className="omp-pressable flex shrink-0 items-center gap-1 rounded-md border border-[var(--omp-border-muted)] px-2.5 py-1 text-omp-sm font-medium text-[var(--omp-text)] hover:bg-[var(--omp-selected-bg)]"
+					className="omsk-pressable flex shrink-0 items-center gap-1 rounded-md border border-[var(--omsk-border-muted)] px-2.5 py-1 text-omsk-sm font-medium text-[var(--omsk-text)] hover:bg-[var(--omsk-selected-bg)]"
 				>
 					{expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
 					{expanded ? t("configWarnings.showLess") : t("configWarnings.showAll")}
@@ -69,7 +72,7 @@ export function ConfigWarningsBanner() {
 				type="button"
 				onClick={() => useSessionStore.setState({ configWarningsDismissed: key })}
 				aria-label={t("common.close")}
-				className="omp-pressable flex shrink-0 items-center justify-center rounded-md p-1 text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+				className="omsk-pressable flex shrink-0 items-center justify-center rounded-md p-1 text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 			>
 				<X size={14} />
 			</button>

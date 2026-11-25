@@ -58,7 +58,7 @@ export function LongTaskStatus({
 		<button
 			type="button"
 			onClick={onStop}
-			className="omp-pressable h-7 shrink-0 rounded-full px-2.5 text-omp-sm font-medium text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+			className="omsk-pressable h-7 shrink-0 rounded-full px-2.5 text-omsk-sm font-medium text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 		>
 			{stopLabel ?? t("chat.retry.stop")}
 		</button>
@@ -73,27 +73,27 @@ export function LongTaskStatus({
 	if (card) {
 		return (
 			<div
-				className={`omp-task-card relative flex min-w-0 items-center gap-3 overflow-hidden rounded-xl border px-3.5 py-3 ${className ?? ""}`}
+				className={`omsk-task-card relative flex min-w-0 items-center gap-3 overflow-hidden rounded-xl border px-3.5 py-3 ${className ?? ""}`}
 			>
 				{announcement}
 				<span
 					aria-hidden
-					className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--omp-selected-bg)] text-[var(--omp-accent)]"
+					className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--omsk-selected-bg)] text-[var(--omsk-accent)]"
 				>
 					{card.icon}
 				</span>
 				<div aria-hidden className="min-w-0 flex-1">
-					<p className="flex min-w-0 items-baseline gap-2 text-omp-md">
-						<span className="omp-shimmer-text truncate font-medium">{label}</span>
+					<p className="flex min-w-0 items-baseline gap-2 text-omsk-md">
+						<span className="omsk-shimmer-text truncate font-medium">{label}</span>
 						{elapsed && (
-							<span className="shrink-0 text-omp-sm tabular-nums text-[var(--omp-dim)]">{elapsed}</span>
+							<span className="shrink-0 text-omsk-sm tabular-nums text-[var(--omsk-dim)]">{elapsed}</span>
 						)}
 					</p>
-					<p className="mt-0.5 truncate text-omp-sm text-[var(--omp-muted)]">{hint ?? card.detail}</p>
+					<p className="mt-0.5 truncate text-omsk-sm text-[var(--omsk-muted)]">{hint ?? card.detail}</p>
 				</div>
 				{stopButton}
-				<div aria-hidden className="omp-task-card-track">
-					<div className="omp-indeterminate-progress h-full bg-[var(--omp-accent)]" />
+				<div aria-hidden className="omsk-task-card-track">
+					<div className="omsk-indeterminate-progress h-full bg-[var(--omsk-accent)]" />
 				</div>
 			</div>
 		);
@@ -102,20 +102,20 @@ export function LongTaskStatus({
 	return (
 		<div className={`flex min-w-0 flex-col gap-0.5 ${className ?? ""}`}>
 			{announcement}
-			<div className="flex min-w-0 items-center gap-2.5 text-omp-md">
-				<span aria-hidden className="omp-working-dot" />
-				<span aria-hidden className="omp-shimmer-text min-w-0 truncate">
+			<div className="flex min-w-0 items-center gap-2.5 text-omsk-md">
+				<span aria-hidden className="omsk-working-dot" />
+				<span aria-hidden className="omsk-shimmer-text min-w-0 truncate">
 					{label}
 				</span>
 				{elapsed && (
-					<span aria-hidden className="shrink-0 tabular-nums text-[var(--omp-dim)]">
+					<span aria-hidden className="shrink-0 tabular-nums text-[var(--omsk-dim)]">
 						{elapsed}
 					</span>
 				)}
 				{stopButton && <span className="ms-auto">{stopButton}</span>}
 			</div>
 			{hint && (
-				<p aria-hidden className="ps-[18px] text-omp-sm text-[var(--omp-dim)]">
+				<p aria-hidden className="ps-[18px] text-omsk-sm text-[var(--omsk-dim)]">
 					{hint}
 				</p>
 			)}

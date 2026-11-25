@@ -36,7 +36,7 @@ export function resolveTheme(mode: ThemeMode): ResolvedTheme {
 }
 
 /**
- * Removes any inline `--omp-*` token overrides from <html> so the stylesheet
+ * Removes any inline `--omsk-*` token overrides from <html> so the stylesheet
  * themes (theme-dark.css / theme-light.css) take over again.
  */
 export function clearInlineThemeTokens(): void {
@@ -44,7 +44,7 @@ export function clearInlineThemeTokens(): void {
 	const toRemove: string[] = [];
 	for (let i = 0; i < style.length; i++) {
 		const prop = style[i];
-		if (prop?.startsWith("--omp-")) toRemove.push(prop);
+		if (prop?.startsWith("--omsk-")) toRemove.push(prop);
 	}
 	for (const prop of toRemove) style.removeProperty(prop);
 }

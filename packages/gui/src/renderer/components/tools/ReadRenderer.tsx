@@ -65,22 +65,22 @@ export function ReadRenderer({ args, result, isError, isPartial, partialResult }
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 font-mono text-omp-sm">
-				<FileText size={12} className="shrink-0 text-[var(--omp-dim)]" />
+			<div className="flex items-center gap-1.5 font-mono text-omsk-sm">
+				<FileText size={12} className="shrink-0 text-[var(--omsk-dim)]" />
 				<PathLink path={basePath} className="truncate">
-					<span className="text-[var(--omp-text)]">{basename(basePath)}</span>
-					<span className="text-[var(--omp-dim)]"> {dirname(basePath)}</span>
+					<span className="text-[var(--omsk-text)]">{basename(basePath)}</span>
+					<span className="text-[var(--omsk-dim)]"> {dirname(basePath)}</span>
 				</PathLink>
 			</div>
 			{image ? (
 				<ZoomableImage
 					src={image}
 					alt={path || t("tools.image.alt")}
-					className={`${PREVIEW_HEIGHT_LG} rounded-md border border-[var(--omp-border-muted)] object-contain`}
+					className={`${PREVIEW_HEIGHT_LG} rounded-md border border-[var(--omsk-border-muted)] object-contain`}
 				/>
 			) : isError ? (
 				<div
-					className={`${PREVIEW_SCROLL_LG} whitespace-pre-wrap break-words rounded bg-[var(--omp-tool-error-bg)] px-2 py-1.5 font-mono text-omp-sm text-[var(--omp-error)]`}
+					className={`${PREVIEW_SCROLL_LG} whitespace-pre-wrap break-words rounded bg-[var(--omsk-tool-error-bg)] px-2 py-1.5 font-mono text-omsk-sm text-[var(--omsk-error)]`}
 				>
 					{head || t("tools.read.empty")}
 				</div>
@@ -95,13 +95,13 @@ export function ReadRenderer({ args, result, isError, isPartial, partialResult }
 						lineNumbers={display?.lineNumbers?.slice(0, head.split("\n").length)}
 					/>
 					{omitted > 0 && (
-						<div className="text-center font-mono text-omp-xs text-[var(--omp-dim)]">
+						<div className="text-center font-mono text-omsk-xs text-[var(--omsk-dim)]">
 							{t("tools.read.more", { count: omitted, plural: omitted === 1 ? "" : "s" })}
 						</div>
 					)}
 				</>
 			) : (
-				<div className="text-omp-sm italic text-[var(--omp-dim)]">
+				<div className="text-omsk-sm italic text-[var(--omsk-dim)]">
 					{isPartial ? t("tools.read.reading") : t("tools.read.empty")}
 				</div>
 			)}

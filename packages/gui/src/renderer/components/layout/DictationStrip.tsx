@@ -39,16 +39,16 @@ export function DictationStrip({
 		<div
 			role="status"
 			aria-label={t("voice.dictation.region")}
-			className="omp-dictation omp-fade-in"
+			className="omsk-dictation omsk-fade-in"
 			data-phase={view.phase}
 			data-downloading={downloading || undefined}
 			title={downloading ? view.download?.label : undefined}
 		>
-			<span className="omp-dictation-indicator" aria-hidden="true">
+			<span className="omsk-dictation-indicator" aria-hidden="true">
 				{recording ? (
-					<span className="omp-dictation-meter" style={{ "--omp-dictation-level": view.level } as CSSProperties}>
+					<span className="omsk-dictation-meter" style={{ "--omsk-dictation-level": view.level } as CSSProperties}>
 						{METER_WEIGHTS.map((weight, index) => (
-							<span key={index} style={{ "--omp-dictation-weight": weight } as CSSProperties} />
+							<span key={index} style={{ "--omsk-dictation-weight": weight } as CSSProperties} />
 						))}
 					</span>
 				) : downloading ? (
@@ -57,23 +57,23 @@ export function DictationStrip({
 					<Loader2 size={14} className="animate-spin" />
 				)}
 			</span>
-			<span className={live ? "omp-dictation-text omp-dictation-text--live" : "omp-dictation-text"}>
+			<span className={live ? "omsk-dictation-text omsk-dictation-text--live" : "omsk-dictation-text"}>
 				<span dir="ltr">{text}</span>
 			</span>
 			<span className="flex shrink-0 items-center gap-1">
 				{recording && (
-					<button type="button" className="omp-dictation-action" onClick={onDone}>
+					<button type="button" className="omsk-dictation-action" onClick={onDone}>
 						{t("voice.dictation.done")}
 						<kbd>↵</kbd>
 					</button>
 				)}
-				<button type="button" className="omp-dictation-action" onClick={onCancel}>
+				<button type="button" className="omsk-dictation-action" onClick={onCancel}>
 					{recording ? t("voice.dictation.discard") : t("voice.dictation.cancel")}
 					<kbd>esc</kbd>
 				</button>
 			</span>
 			{downloading && (
-				<span className="omp-dictation-progress" aria-hidden="true">
+				<span className="omsk-dictation-progress" aria-hidden="true">
 					<span style={{ width: `${view.download?.percent ?? 0}%` }} />
 				</span>
 			)}

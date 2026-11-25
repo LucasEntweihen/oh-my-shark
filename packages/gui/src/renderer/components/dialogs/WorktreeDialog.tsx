@@ -115,31 +115,31 @@ export function WorktreeDialog() {
 					autoFocus
 				/>
 				{validName && (
-					<p className="text-omp-sm text-(--omp-dim)">
+					<p className="text-omsk-sm text-(--omsk-dim)">
 						{t("worktree.branchPreview", { branch: `omsk/gui/${slug}` })}
 					</p>
 				)}
-				<p className="text-omp-sm text-(--omp-muted)">{t("worktree.baseScope")}</p>
+				<p className="text-omsk-sm text-(--omsk-muted)">{t("worktree.baseScope")}</p>
 				{name && !validName && (
-					<p role="alert" className="text-omp-sm text-(--omp-error)">
+					<p role="alert" className="text-omsk-sm text-(--omsk-error)">
 						{t("worktree.invalidName")}
 					</p>
 				)}
 				{error && (
-					<p role="alert" className="break-words text-omp-sm text-(--omp-error)">
+					<p role="alert" className="break-words text-omsk-sm text-(--omsk-error)">
 						{error}
 					</p>
 				)}
 				<fieldset disabled={creating || created !== null} className="flex flex-col gap-1.5">
-					<legend className="text-omp-sm font-medium text-(--omp-muted)">{t("worktree.baseLabel")}</legend>
+					<legend className="text-omsk-sm font-medium text-(--omsk-muted)">{t("worktree.baseLabel")}</legend>
 					{(["HEAD", "default"] as const).map(value => (
-						<label key={value} className="flex cursor-pointer items-center gap-2 text-omp-md text-(--omp-text)">
+						<label key={value} className="flex cursor-pointer items-center gap-2 text-omsk-md text-(--omsk-text)">
 							<input
 								type="radio"
 								name="worktree-base"
 								checked={baseRef === value}
 								onChange={() => setBaseRef(value)}
-								className="accent-(--omp-accent)"
+								className="accent-(--omsk-accent)"
 							/>
 							{value === "HEAD" ? t("worktree.baseHead") : t("worktree.baseDefault")}
 						</label>

@@ -32,7 +32,7 @@ export function ErrorsRoute({ range, refreshKey }: { range: StatsRange; refreshK
 				key: "time",
 				label: t("stats.col.when"),
 				render: row => (
-					<span className="whitespace-nowrap text-(--omp-muted)">
+					<span className="whitespace-nowrap text-(--omsk-muted)">
 						{new Date(row.timestamp).toLocaleString(getFormattingLocale(), {
 							month: "short",
 							day: "numeric",
@@ -47,8 +47,8 @@ export function ErrorsRoute({ range, refreshKey }: { range: StatsRange; refreshK
 				label: t("stats.col.model"),
 				render: row => (
 					<span>
-						<span className="block font-mono text-(--omp-text)">{row.model}</span>
-						<span className="block text-omp-xs text-(--omp-dim)">{row.provider}</span>
+						<span className="block font-mono text-(--omsk-text)">{row.model}</span>
+						<span className="block text-omsk-xs text-(--omsk-dim)">{row.provider}</span>
 					</span>
 				),
 			},
@@ -61,7 +61,7 @@ export function ErrorsRoute({ range, refreshKey }: { range: StatsRange; refreshK
 				key: "message",
 				label: t("stats.errors.col.message"),
 				render: row => (
-					<span className="block max-w-[420px] break-words font-mono text-omp-xs leading-snug text-(--omp-error)">
+					<span className="block max-w-[420px] break-words font-mono text-omsk-xs leading-snug text-(--omsk-error)">
 						{row.errorMessage ?? t("stats.errors.noMessage")}
 					</span>
 				),

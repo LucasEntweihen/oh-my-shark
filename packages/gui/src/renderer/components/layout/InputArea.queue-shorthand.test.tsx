@@ -582,7 +582,7 @@ describe("InputArea queue shorthand submit", () => {
 
 describe("InputArea follow-up send", () => {
 	const sendButton = () =>
-		document.querySelector("button.omp-send-button:not(.omp-send-button--secondary)") as unknown as TestElement;
+		document.querySelector("button.omsk-send-button:not(.omsk-send-button--secondary)") as unknown as TestElement;
 	/** Press or release the platform's follow-up modifier anywhere in the window. */
 	const holdModifier = async (held: boolean) => {
 		await act(async () => {
@@ -859,7 +859,7 @@ describe("InputArea run settings", () => {
 		if (!fast) throw new Error("fast mode trigger missing");
 		const button = fast as unknown as HTMLElement;
 		expect(button.getAttribute("aria-pressed")).toBe("true");
-		expect(button.className).toContain("text-[var(--omp-accent)]");
+		expect(button.className).toContain("text-[var(--omsk-accent)]");
 	});
 
 	it("lets a nested thinking portal dispatch before the parent menu dismisses", async () => {

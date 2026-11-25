@@ -1,7 +1,7 @@
 /**
  * The window has no native title bar on any platform: the header runs to the top
  * edge and the window's own controls sit over it. This tells the styles which
- * controls to leave room for (`--omp-caption-*` in global.css), and keeps the ones
+ * controls to leave room for (`--omsk-caption-*` in global.css), and keeps the ones
  * Electron draws on Windows and Linux in the header's colors, through every theme.
  */
 export function startWindowChrome(): void {
@@ -32,8 +32,8 @@ export function startWindowChrome(): void {
 	let sent = "";
 	const sync = () => {
 		const style = getComputedStyle(root);
-		const background = style.getPropertyValue("--omp-titlebar-bg").trim();
-		const text = style.getPropertyValue("--omp-titlebar-text").trim();
+		const background = style.getPropertyValue("--omsk-titlebar-bg").trim();
+		const text = style.getPropertyValue("--omsk-titlebar-text").trim();
 		if (!background || !text) return;
 		const colors = { color: toHex(background), symbolColor: toHex(text) };
 		const key = `${colors.color}${colors.symbolColor}`;

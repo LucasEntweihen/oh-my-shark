@@ -37,8 +37,8 @@ export function ToolbarIconButton({
 			disabled={disabled}
 			onClick={onClick}
 			className={cx(
-				"omp-pressable flex size-7 shrink-0 items-center justify-center rounded-md text-(--omp-muted) hover:bg-(--omp-selected-bg) hover:text-(--omp-text) disabled:pointer-events-none disabled:opacity-40",
-				pressed && "bg-(--omp-selected-bg) text-(--omp-text)",
+				"omsk-pressable flex size-7 shrink-0 items-center justify-center rounded-md text-(--omsk-muted) hover:bg-(--omsk-selected-bg) hover:text-(--omsk-text) disabled:pointer-events-none disabled:opacity-40",
+				pressed && "bg-(--omsk-selected-bg) text-(--omsk-text)",
 			)}
 		>
 			{children}
@@ -64,11 +64,11 @@ export function PanelSearch({
 }) {
 	const t = useT();
 	return (
-		<div className={cx("omp-panel-search relative min-w-0 flex-1", className)}>
+		<div className={cx("omsk-panel-search relative min-w-0 flex-1", className)}>
 			<Search
 				aria-hidden="true"
 				size={13}
-				className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-(--omp-dim)"
+				className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-(--omsk-dim)"
 			/>
 			<input
 				aria-label={label}
@@ -83,7 +83,7 @@ export function PanelSearch({
 					}
 				}}
 				className={cx(
-					"h-7 w-full rounded-md border border-transparent bg-(--omp-selected-bg) pl-7.5 text-omp-sm text-(--omp-text) outline-none placeholder:text-(--omp-dim) focus:border-(--omp-input-focus-border) focus:bg-(--omp-input-bg)",
+					"h-7 w-full rounded-md border border-transparent bg-(--omsk-selected-bg) pl-7.5 text-omsk-sm text-(--omsk-text) outline-none placeholder:text-(--omsk-dim) focus:border-(--omsk-input-focus-border) focus:bg-(--omsk-input-bg)",
 					value ? "pr-7" : "pr-2",
 				)}
 			/>
@@ -92,7 +92,7 @@ export function PanelSearch({
 					type="button"
 					aria-label={t("logPanel.clearSearch")}
 					onClick={() => onChange("")}
-					className="absolute top-1/2 right-1.5 flex size-5 -translate-y-1/2 items-center justify-center rounded text-(--omp-dim) hover:text-(--omp-text)"
+					className="absolute top-1/2 right-1.5 flex size-5 -translate-y-1/2 items-center justify-center rounded text-(--omsk-dim) hover:text-(--omsk-text)"
 				>
 					<X size={12} />
 				</button>
@@ -116,22 +116,22 @@ export function PanelEmpty({
 	action?: ReactNode;
 }) {
 	return (
-		<div className="omp-panel-empty flex flex-col items-center gap-2 px-6 py-12 text-center">
+		<div className="omsk-panel-empty flex flex-col items-center gap-2 px-6 py-12 text-center">
 			<span
 				aria-hidden="true"
 				className={cx(
-					"mb-1 flex size-9 items-center justify-center rounded-full bg-(--omp-selected-bg)",
+					"mb-1 flex size-9 items-center justify-center rounded-full bg-(--omsk-selected-bg)",
 					tone === "success"
-						? "text-(--omp-success)"
+						? "text-(--omsk-success)"
 						: tone === "error"
-							? "text-(--omp-error)"
-							: "text-(--omp-muted)",
+							? "text-(--omsk-error)"
+							: "text-(--omsk-muted)",
 				)}
 			>
 				<Icon size={17} strokeWidth={1.75} />
 			</span>
-			<p className="text-omp-md font-medium text-(--omp-text)">{title}</p>
-			{hint && <p className="max-w-72 break-words text-omp-sm leading-relaxed text-(--omp-dim)">{hint}</p>}
+			<p className="text-omsk-md font-medium text-(--omsk-text)">{title}</p>
+			{hint && <p className="max-w-72 break-words text-omsk-sm leading-relaxed text-(--omsk-dim)">{hint}</p>}
 			{action && <div className="mt-1">{action}</div>}
 		</div>
 	);
@@ -147,9 +147,9 @@ export function FileLabel({ path, oldPath, className }: { path: string; oldPath?
 			className={cx("flex min-w-0 items-baseline gap-1.5 overflow-hidden", className)}
 			title={oldPath ? `${oldPath} → ${path}` : path}
 		>
-			<span className="max-w-full shrink-0 truncate text-(--omp-text)">{base}</span>
+			<span className="max-w-full shrink-0 truncate text-(--omsk-text)">{base}</span>
 			{(folder || oldPath) && (
-				<span className="min-w-0 truncate text-omp-xs text-(--omp-dim)">{oldPath ? `${oldPath} →` : folder}</span>
+				<span className="min-w-0 truncate text-omsk-xs text-(--omsk-dim)">{oldPath ? `${oldPath} →` : folder}</span>
 			)}
 		</span>
 	);
@@ -157,9 +157,9 @@ export function FileLabel({ path, oldPath, className }: { path: string; oldPath?
 
 export function DiffStat({ adds, removes, className }: { adds: number; removes: number; className?: string }) {
 	return (
-		<span className={cx("flex shrink-0 items-center gap-1.5 font-mono text-omp-xs tabular-nums", className)}>
-			<span className="text-(--omp-diff-added)">+{adds}</span>
-			<span className="text-(--omp-diff-removed)">−{removes}</span>
+		<span className={cx("flex shrink-0 items-center gap-1.5 font-mono text-omsk-xs tabular-nums", className)}>
+			<span className="text-(--omsk-diff-added)">+{adds}</span>
+			<span className="text-(--omsk-diff-removed)">−{removes}</span>
 		</span>
 	);
 }
@@ -187,12 +187,12 @@ const CHANGE_LETTER: Record<GitChangeKind, string> = {
 };
 
 const CHANGE_COLOR: Record<GitChangeKind, string> = {
-	added: "text-(--omp-diff-added)",
-	untracked: "text-(--omp-diff-added)",
-	modified: "text-(--omp-warning)",
-	deleted: "text-(--omp-diff-removed)",
-	renamed: "text-(--omp-accent)",
-	conflict: "text-(--omp-error)",
+	added: "text-(--omsk-diff-added)",
+	untracked: "text-(--omsk-diff-added)",
+	modified: "text-(--omsk-warning)",
+	deleted: "text-(--omsk-diff-removed)",
+	renamed: "text-(--omsk-accent)",
+	conflict: "text-(--omsk-error)",
 };
 
 export function ChangeBadge({ kind }: { kind: GitChangeKind }) {
@@ -203,7 +203,7 @@ export function ChangeBadge({ kind }: { kind: GitChangeKind }) {
 			role="img"
 			aria-label={label}
 			title={label}
-			className={cx("w-3 shrink-0 text-center font-mono text-omp-xs font-semibold", CHANGE_COLOR[kind])}
+			className={cx("w-3 shrink-0 text-center font-mono text-omsk-xs font-semibold", CHANGE_COLOR[kind])}
 		>
 			{CHANGE_LETTER[kind]}
 		</span>
@@ -234,24 +234,24 @@ export function DiffFileCard({
 	onContextMenu?: (event: MouseEvent<HTMLElement>) => void;
 }) {
 	return (
-		<div className="omp-diff-card" data-expanded={expanded}>
+		<div className="omsk-diff-card" data-expanded={expanded}>
 			<button
 				type="button"
 				aria-expanded={expanded}
 				onClick={onToggle}
 				onContextMenu={onContextMenu}
-				className="omp-diff-card-header flex h-8 w-full min-w-0 items-center gap-2 px-3 text-left text-omp-sm"
+				className="omsk-diff-card-header flex h-8 w-full min-w-0 items-center gap-2 px-3 text-left text-omsk-sm"
 			>
 				<ChevronRight
 					aria-hidden="true"
 					size={13}
-					className={cx("omp-disclosure-chevron shrink-0 text-(--omp-dim)", expanded && "rotate-90")}
+					className={cx("omsk-disclosure-chevron shrink-0 text-(--omsk-dim)", expanded && "rotate-90")}
 				/>
 				{leading}
 				<span className="min-w-0 flex-1">{label}</span>
 				{trailing}
 			</button>
-			{expanded && <div className="omp-diff-card-body">{children}</div>}
+			{expanded && <div className="omsk-diff-card-body">{children}</div>}
 		</div>
 	);
 }
@@ -283,15 +283,15 @@ function toSplitRows(lines: DiffLine[]): { left: DiffLine | null; right: DiffLin
 }
 
 const SPLIT_LINE_CLASS: Record<DiffLine["type"], string> = {
-	add: "bg-[color-mix(in_srgb,var(--omp-diff-added)_10%,transparent)] text-(--omp-diff-added)",
-	remove: "bg-[color-mix(in_srgb,var(--omp-diff-removed)_10%,transparent)] text-(--omp-diff-removed)",
-	context: "text-(--omp-diff-context)",
+	add: "bg-[color-mix(in_srgb,var(--omsk-diff-added)_10%,transparent)] text-(--omsk-diff-added)",
+	remove: "bg-[color-mix(in_srgb,var(--omsk-diff-removed)_10%,transparent)] text-(--omsk-diff-removed)",
+	context: "text-(--omsk-diff-context)",
 };
 
 function SplitDiff({ diff }: { diff: string }) {
 	const rows = useMemo(() => toSplitRows(parseDiff(diff)), [diff]);
 	return (
-		<div className="grid grid-cols-2 divide-x divide-(--omp-border-muted) overflow-x-auto font-mono text-omp-xs leading-[1.4]">
+		<div className="grid grid-cols-2 divide-x divide-(--omsk-border-muted) overflow-x-auto font-mono text-omsk-xs leading-[1.4]">
 			{(["left", "right"] as const).map(side => (
 				<div className="min-w-0 overflow-x-auto" key={side}>
 					{rows.map((row, index) => {

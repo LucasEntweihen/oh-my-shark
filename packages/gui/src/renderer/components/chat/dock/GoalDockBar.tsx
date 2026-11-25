@@ -48,17 +48,17 @@ export function GoalDockBar() {
 	};
 
 	return (
-		<div className="omp-goal-dock flex min-w-0 items-center gap-2 rounded-[14px] border border-[var(--omp-border)] px-3 py-2">
-			<Target aria-hidden="true" className="shrink-0 text-[var(--omp-muted)]" size={16} />
-			<span className="shrink-0 text-omp-lg font-semibold text-[var(--omp-text)]">
+		<div className="omsk-goal-dock flex min-w-0 items-center gap-2 rounded-[14px] border border-[var(--omsk-border)] px-3 py-2">
+			<Target aria-hidden="true" className="shrink-0 text-[var(--omsk-muted)]" size={16} />
+			<span className="shrink-0 text-omsk-lg font-semibold text-[var(--omsk-text)]">
 				{paused ? t("dock.goal.paused") : t("dock.goal.active")}
 			</span>
-			<span className="min-w-0 flex-1 truncate text-omp-lg text-[var(--omp-text)]" title={objective}>
+			<span className="min-w-0 flex-1 truncate text-omsk-lg text-[var(--omsk-text)]" title={objective}>
 				{objective}
 			</span>
 			<button
 				aria-label={paused ? t("modesPanel.goal.resume") : t("modesPanel.goal.pause")}
-				className="omp-goal-dock-action omp-pressable"
+				className="omsk-goal-dock-action omsk-pressable"
 				disabled={busy !== null}
 				onClick={() => void runAction(paused ? "resume" : "pause")}
 				type="button"
@@ -73,7 +73,7 @@ export function GoalDockBar() {
 			</button>
 			<button
 				aria-label={t("dock.goal.edit")}
-				className="omp-goal-dock-action omp-pressable"
+				className="omsk-goal-dock-action omsk-pressable"
 				disabled={busy !== null}
 				onClick={() => openModes("goal")}
 				type="button"
@@ -82,7 +82,7 @@ export function GoalDockBar() {
 			</button>
 			<button
 				aria-label={t("modesPanel.goal.drop")}
-				className="omp-goal-dock-action omp-pressable hover:text-[var(--omp-error)]"
+				className="omsk-goal-dock-action omsk-pressable hover:text-[var(--omsk-error)]"
 				disabled={busy !== null}
 				onClick={() => void runAction("drop")}
 				type="button"

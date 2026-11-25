@@ -47,13 +47,13 @@ function describeRetry(value: unknown): string {
  */
 
 function AgentBadge({ agent }: { agent: string }) {
-	return <span className="shrink-0 font-mono text-omp-xxs text-[var(--omp-dim)]">[{agent}]</span>;
+	return <span className="shrink-0 font-mono text-omsk-xxs text-[var(--omsk-dim)]">[{agent}]</span>;
 }
 
 function StatusBadge({ color, children }: { color: string; children: string }) {
 	return (
 		<span
-			className="shrink-0 rounded px-1 py-px font-mono text-omp-xxs font-semibold"
+			className="shrink-0 rounded px-1 py-px font-mono text-omsk-xxs font-semibold"
 			style={{ background: `color-mix(in srgb, ${color} 15%, transparent)`, color }}
 		>
 			{children}
@@ -85,7 +85,7 @@ function AgentStats({ stats }: { stats: StatOpts }) {
 			: stats.resolvedModel
 		: null;
 	return (
-		<span className="flex min-w-0 items-center gap-1.5 truncate font-mono text-omp-xxs tabular-nums text-[var(--omp-dim)]">
+		<span className="flex min-w-0 items-center gap-1.5 truncate font-mono text-omsk-xxs tabular-nums text-[var(--omsk-dim)]">
 			{stats.toolCount != null && stats.toolCount > 0 && (
 				<span className="flex shrink-0 items-center gap-0.5">
 					{stats.toolCount}
@@ -97,7 +97,7 @@ function AgentStats({ stats }: { stats: StatOpts }) {
 			)}
 			{context && <span className="shrink-0">{context}</span>}
 			{stats.cost != null && stats.cost > 0 && (
-				<span className="shrink-0 text-[var(--omp-warning)]">${stats.cost.toFixed(2)}</span>
+				<span className="shrink-0 text-[var(--omsk-warning)]">${stats.cost.toFixed(2)}</span>
 			)}
 			{model && (
 				<span className="truncate" title={stats.resolvedModel}>
@@ -139,18 +139,18 @@ function YieldLines({ value }: { value: unknown }) {
 	return (
 		<>
 			{visible.map(({ item, labels }, i) => (
-				<div key={i} className="flex gap-1.5 font-mono text-omp-xs leading-[1.5]">
-					<span className="shrink-0 text-[var(--omp-dim)]">└</span>
+				<div key={i} className="flex gap-1.5 font-mono text-omsk-xs leading-[1.5]">
+					<span className="shrink-0 text-[var(--omsk-dim)]">└</span>
 					<span className="min-w-0 truncate" title={yieldPreview(item, t("tools.task.yieldLastTurn"))}>
-						<span className="text-[var(--omp-dim)]">
+						<span className="text-[var(--omsk-dim)]">
 							{t("tools.task.yieldLabel", { suffix: Array.isArray(item.type) ? "+" : "" })}[{labels.join(", ")}]:
 						</span>{" "}
-						<span className="text-[var(--omp-muted)]">{yieldPreview(item, t("tools.task.yieldLastTurn"))}</span>
+						<span className="text-[var(--omsk-muted)]">{yieldPreview(item, t("tools.task.yieldLastTurn"))}</span>
 					</span>
 				</div>
 			))}
 			{typed.length > visible.length && (
-				<div className="pl-3.5 font-mono text-omp-xs text-[var(--omp-dim)]">
+				<div className="pl-3.5 font-mono text-omsk-xs text-[var(--omsk-dim)]">
 					{t("tools.task.moreYields", {
 						count: typed.length - visible.length,
 						plural: typed.length - visible.length === 1 ? "" : "s",
@@ -165,7 +165,7 @@ function YieldLines({ value }: { value: unknown }) {
 function ReviewBlock({ review }: { review: ReviewResult }) {
 	const t = useT();
 	const correct = review.correctness === "correct";
-	const verdictColor = correct ? "var(--omp-success)" : "var(--omp-error)";
+	const verdictColor = correct ? "var(--omsk-success)" : "var(--omsk-error)";
 	const sorted = [...review.findings].sort(
 		(a, b) => (PRIORITY_ORD[a.priority] ?? 3) - (PRIORITY_ORD[b.priority] ?? 3),
 	);
@@ -178,28 +178,28 @@ function ReviewBlock({ review }: { review: ReviewResult }) {
 	const preview = flat.split(/[.!?]/)[0]?.trim();
 	return (
 		<div className="flex flex-col gap-0.5">
-			<div className="flex items-center gap-1.5 text-omp-sm">
+			<div className="flex items-center gap-1.5 text-omsk-sm">
 				{correct ? (
-					<Check size={11} className="shrink-0 text-[var(--omp-success)]" />
+					<Check size={11} className="shrink-0 text-[var(--omsk-success)]" />
 				) : (
-					<X size={11} className="shrink-0 text-[var(--omp-error)]" />
+					<X size={11} className="shrink-0 text-[var(--omsk-error)]" />
 				)}
 				<span className="font-medium" style={{ color: verdictColor }}>
 					{t("tools.task.patchVerdict", {
 						verdict: t(correct ? "tools.task.verdict.correct" : "tools.task.verdict.incorrect"),
 					})}
 				</span>
-				<span className="font-mono text-omp-xs text-[var(--omp-dim)]">
+				<span className="font-mono text-omsk-xs text-[var(--omsk-dim)]">
 					({t("tools.task.confidence", { pct: (review.confidence * 100).toFixed(0) })})
 				</span>
 			</div>
 			{preview && (
-				<div className="truncate pl-4 text-omp-xs text-[var(--omp-dim)]" title={flat}>
+				<div className="truncate pl-4 text-omsk-xs text-[var(--omsk-dim)]" title={flat}>
 					{preview}.
 				</div>
 			)}
-			<div className="flex items-center gap-1.5 pl-4 font-mono text-omp-xs">
-				<span className="text-[var(--omp-dim)]">
+			<div className="flex items-center gap-1.5 pl-4 font-mono text-omsk-xs">
+				<span className="text-[var(--omsk-dim)]">
 					{review.findings.length === 0 ? t("tools.task.findingsNone") : t("tools.task.findings")}
 				</span>
 				{review.findings.length > 0 &&
@@ -210,20 +210,20 @@ function ReviewBlock({ review }: { review: ReviewResult }) {
 					))}
 			</div>
 			{visible.map((finding, i) => (
-				<div key={i} className="flex min-w-0 items-center gap-1.5 pl-4 text-omp-xs leading-[1.5]">
+				<div key={i} className="flex min-w-0 items-center gap-1.5 pl-4 text-omsk-xs leading-[1.5]">
 					<span className="shrink-0 font-mono font-semibold" style={{ color: PRIORITY_COLOR[finding.priority] }}>
 						[{finding.priority}]
 					</span>
-					<span className="min-w-0 truncate text-[var(--omp-text)]" title={finding.title}>
+					<span className="min-w-0 truncate text-[var(--omsk-text)]" title={finding.title}>
 						{finding.title}
 					</span>
-					<span className="shrink-0 font-mono text-omp-xxs text-[var(--omp-dim)]">
+					<span className="shrink-0 font-mono text-omsk-xxs text-[var(--omsk-dim)]">
 						{basename(finding.filePath)}:{finding.lineStart}
 					</span>
 				</div>
 			))}
 			{sorted.length > visible.length && (
-				<div className="pl-4 font-mono text-omp-xs text-[var(--omp-dim)]">
+				<div className="pl-4 font-mono text-omsk-xs text-[var(--omsk-dim)]">
 					{t("tools.task.moreFindings", {
 						count: sorted.length - visible.length,
 						plural: sorted.length - visible.length === 1 ? "" : "s",
@@ -255,18 +255,18 @@ function asTaskDetails(value: unknown): Record<string, unknown> | undefined {
 function NestedTaskTree({ list, depth, ctx }: { list: Record<string, unknown>[]; depth: number; ctx: TreeCtx }) {
 	const t = useT();
 	return (
-		<div className="ml-1.5 flex flex-col gap-1.5 border-l border-[var(--omp-border-muted)] pl-2">
+		<div className="ml-1.5 flex flex-col gap-1.5 border-l border-[var(--omsk-border-muted)] pl-2">
 			{list.map((details, i) => {
 				if (ctx.seen.has(details)) {
 					return (
-						<div key={i} className="font-mono text-omp-xs text-[var(--omp-dim)]">
+						<div key={i} className="font-mono text-omsk-xs text-[var(--omsk-dim)]">
 							{t("tools.task.cycle")}
 						</div>
 					);
 				}
 				if (depth >= MAX_NESTED_DEPTH) {
 					return (
-						<div key={i} className="font-mono text-omp-xs text-[var(--omp-dim)]">
+						<div key={i} className="font-mono text-omsk-xs text-[var(--omsk-dim)]">
 							{t("tools.task.depthLimit")}
 						</div>
 					);
@@ -353,8 +353,12 @@ function ProgressAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; d
 	const review = status === "completed" ? extractReviewResult(normalizeYieldData(yieldValue)) : undefined;
 	const nested = nestedSnapshots(row);
 
-	const dotColor = running ? "var(--omp-accent)" : status === "completed" ? "var(--omp-success)" : "var(--omp-error)";
-	const nameColor = status === "completed" ? "text-[var(--omp-text)]" : "text-[var(--omp-accent)]";
+	const dotColor = running
+		? "var(--omsk-accent)"
+		: status === "completed"
+			? "var(--omsk-success)"
+			: "var(--omsk-error)";
+	const nameColor = status === "completed" ? "text-[var(--omsk-text)]" : "text-[var(--omsk-accent)]";
 	const elapsed = currentToolStartMs != null ? ctx.now - currentToolStartMs : 0;
 	const retryRemainingMs =
 		retryState != null
@@ -363,26 +367,26 @@ function ProgressAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; d
 
 	return (
 		<div className="flex flex-col gap-0.5">
-			<div className="flex min-w-0 items-center gap-1.5 text-omp-sm">
+			<div className="flex min-w-0 items-center gap-1.5 text-omsk-sm">
 				<span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: dotColor }} />
 				<span className={cx("shrink-0 font-mono font-semibold", nameColor)}>{id}</span>
 				{description && (
-					<span className="min-w-0 truncate text-[var(--omp-muted)]" title={description}>
+					<span className="min-w-0 truncate text-[var(--omsk-muted)]" title={description}>
 						: {description}
 					</span>
 				)}
 				{agent && agent !== "task" && <AgentBadge agent={agent} />}
 				{retryState && status === "running" ? (
-					<StatusBadge color="var(--omp-warning)">{t("tools.task.badge.retrying")}</StatusBadge>
+					<StatusBadge color="var(--omsk-warning)">{t("tools.task.badge.retrying")}</StatusBadge>
 				) : retryFailure && (status === "failed" || status === "aborted") ? (
-					<StatusBadge color="var(--omp-error)">{t("tools.task.badge.rateLimited")}</StatusBadge>
+					<StatusBadge color="var(--omsk-error)">{t("tools.task.badge.rateLimited")}</StatusBadge>
 				) : status === "failed" ? (
-					<StatusBadge color="var(--omp-error)">{t("subagent.status.failed")}</StatusBadge>
+					<StatusBadge color="var(--omsk-error)">{t("subagent.status.failed")}</StatusBadge>
 				) : status === "aborted" ? (
-					<StatusBadge color="var(--omp-error)">{t("subagent.status.cancelled")}</StatusBadge>
+					<StatusBadge color="var(--omsk-error)">{t("subagent.status.cancelled")}</StatusBadge>
 				) : null}
 				{status === "running" && !description && assignment && (
-					<span className="min-w-0 truncate text-[var(--omp-dim)]" title={assignment}>
+					<span className="min-w-0 truncate text-[var(--omsk-dim)]" title={assignment}>
 						{assignment}
 					</span>
 				)}
@@ -400,7 +404,7 @@ function ProgressAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; d
 				)}
 				{status === "running" && completionPercent != null && (
 					<span
-						className="shrink-0 text-omp-xxs tabular-nums text-[var(--omp-dim)]"
+						className="shrink-0 text-omsk-xxs tabular-nums text-[var(--omsk-dim)]"
 						title={t("tools.task.completion")}
 					>
 						{completionPercent}%
@@ -409,33 +413,33 @@ function ProgressAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; d
 			</div>
 
 			{assignment && !(status === "running" && !description) && (
-				<div className="truncate pl-3 text-omp-xs text-[var(--omp-dim)]" title={assignment}>
+				<div className="truncate pl-3 text-omsk-xs text-[var(--omsk-dim)]" title={assignment}>
 					{assignment}
 				</div>
 			)}
 
 			{status === "running" &&
 				(currentTool ? (
-					<div className="flex min-w-0 items-center gap-1.5 pl-1 font-mono text-omp-xs leading-[1.5]">
-						<span className="shrink-0 text-[var(--omp-accent)]">└</span>
+					<div className="flex min-w-0 items-center gap-1.5 pl-1 font-mono text-omsk-xs leading-[1.5]">
+						<span className="shrink-0 text-[var(--omsk-accent)]">└</span>
 						<span
-							className="min-w-0 truncate text-[var(--omp-muted)]"
+							className="min-w-0 truncate text-[var(--omsk-muted)]"
 							title={toolDetail ? `${currentTool}: ${toolDetail}` : currentTool}
 						>
 							{currentTool}
-							{toolDetail && <span className="text-[var(--omp-dim)]">: {toolDetail}</span>}
+							{toolDetail && <span className="text-[var(--omsk-dim)]">: {toolDetail}</span>}
 						</span>
 						{elapsed > 5000 && (
-							<span className="shrink-0 text-[var(--omp-warning)] tabular-nums">
+							<span className="shrink-0 text-[var(--omsk-warning)] tabular-nums">
 								· {formatDuration(elapsed)}
 							</span>
 						)}
 					</div>
 				) : (
 					recentTool && (
-						<div className="flex min-w-0 items-center gap-1.5 pl-1 font-mono text-omp-xs leading-[1.5]">
-							<span className="shrink-0 text-[var(--omp-dim)]">└</span>
-							<span className="min-w-0 truncate text-[var(--omp-dim)]">
+						<div className="flex min-w-0 items-center gap-1.5 pl-1 font-mono text-omsk-xs leading-[1.5]">
+							<span className="shrink-0 text-[var(--omsk-dim)]">└</span>
+							<span className="min-w-0 truncate text-[var(--omsk-dim)]">
 								{asString(recentTool.tool)}
 								{(asString(row.lastIntent) ?? asString(recentTool.args)) && (
 									<span>: {asString(row.lastIntent) ?? asString(recentTool.args)}</span>
@@ -446,9 +450,9 @@ function ProgressAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; d
 				))}
 
 			{retryState && status === "running" && (
-				<div className="flex min-w-0 items-center gap-1.5 pl-1 font-mono text-omp-xs leading-[1.5]">
-					<span className="shrink-0 text-[var(--omp-warning)]">└</span>
-					<span className="min-w-0 truncate text-[var(--omp-warning)]" title={asString(retryState.errorMessage)}>
+				<div className="flex min-w-0 items-center gap-1.5 pl-1 font-mono text-omsk-xs leading-[1.5]">
+					<span className="shrink-0 text-[var(--omsk-warning)]">└</span>
+					<span className="min-w-0 truncate text-[var(--omsk-warning)]" title={asString(retryState.errorMessage)}>
 						{t(retryRemainingMs > 0 ? "tools.task.retryWait" : "tools.task.retryNow", {
 							attempt: asNumber(retryState.attempt) ?? 0,
 							max: asNumber(retryState.maxAttempts) ?? 0,
@@ -459,9 +463,9 @@ function ProgressAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; d
 				</div>
 			)}
 			{retryFailure && status !== "running" && (
-				<div className="flex min-w-0 items-center gap-1.5 pl-1 font-mono text-omp-xs leading-[1.5]">
-					<span className="shrink-0 text-[var(--omp-error)]">└</span>
-					<span className="min-w-0 truncate text-[var(--omp-error)]" title={asString(retryFailure.errorMessage)}>
+				<div className="flex min-w-0 items-center gap-1.5 pl-1 font-mono text-omsk-xs leading-[1.5]">
+					<span className="shrink-0 text-[var(--omsk-error)]">└</span>
+					<span className="min-w-0 truncate text-[var(--omsk-error)]" title={asString(retryFailure.errorMessage)}>
 						{t("tools.task.retryGaveUp", {
 							count: asNumber(retryFailure.attempt) ?? 0,
 							plural: (asNumber(retryFailure.attempt) ?? 0) === 1 ? "" : "s",
@@ -515,12 +519,12 @@ function ResultAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; dep
 					: "failed";
 	const statusColor =
 		statusKey === "done"
-			? "var(--omp-success)"
+			? "var(--omsk-success)"
 			: statusKey === "failed"
-				? "var(--omp-error)"
+				? "var(--omsk-error)"
 				: statusKey === "cancelled"
-					? "var(--omp-error)"
-					: "var(--omp-warning)";
+					? "var(--omsk-error)"
+					: "var(--omsk-warning)";
 	const statusLabel =
 		statusKey === "cancelled"
 			? t("subagent.status.cancelled")
@@ -536,25 +540,25 @@ function ResultAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; dep
 
 	return (
 		<div className="flex flex-col gap-0.5">
-			<div className="flex min-w-0 items-center gap-1.5 text-omp-sm">
+			<div className="flex min-w-0 items-center gap-1.5 text-omsk-sm">
 				<span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: statusColor }} />
 				<span
 					className={cx(
 						"shrink-0 font-mono font-semibold",
-						success && !needsWarning ? "text-[var(--omp-text)]" : "text-[var(--omp-accent)]",
+						success && !needsWarning ? "text-[var(--omsk-text)]" : "text-[var(--omsk-accent)]",
 					)}
 				>
 					{id}
 				</span>
 				{description && (
-					<span className="min-w-0 truncate text-[var(--omp-muted)]" title={description}>
+					<span className="min-w-0 truncate text-[var(--omsk-muted)]" title={description}>
 						: {description}
 					</span>
 				)}
 				{agent && agent !== "task" && <AgentBadge agent={agent} />}
 				<StatusBadge color={statusColor}>{statusLabel}</StatusBadge>
 				{retryFailure && (aborted || !success) && (
-					<StatusBadge color="var(--omp-error)">{t("tools.task.badge.rateLimited")}</StatusBadge>
+					<StatusBadge color="var(--omsk-error)">{t("tools.task.badge.rateLimited")}</StatusBadge>
 				)}
 				<AgentStats
 					stats={{
@@ -565,26 +569,26 @@ function ResultAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; dep
 						resolvedModel: asString(row.resolvedModel),
 					}}
 				/>
-				<span className="shrink-0 font-mono text-omp-xxs text-[var(--omp-dim)] tabular-nums">
+				<span className="shrink-0 font-mono text-omsk-xxs text-[var(--omsk-dim)] tabular-nums">
 					· {formatDuration(asNumber(row.durationMs) ?? 0)}
 				</span>
 				{row.truncated === true && (
-					<span className="shrink-0 font-mono text-omp-xxs text-[var(--omp-warning)]">
+					<span className="shrink-0 font-mono text-omsk-xxs text-[var(--omsk-warning)]">
 						[{t("tools.task.badge.truncated")}]
 					</span>
 				)}
 			</div>
 
 			{assignment && (
-				<div className="truncate pl-3 text-omp-xs text-[var(--omp-dim)]" title={assignment}>
+				<div className="truncate pl-3 text-omsk-xs text-[var(--omsk-dim)]" title={assignment}>
 					{assignment}
 				</div>
 			)}
 
 			{aborted && asString(row.abortReason) && (
-				<div className="flex min-w-0 items-center gap-1.5 pl-1 text-omp-xs">
-					<X size={10} className="shrink-0 text-[var(--omp-error)]" />
-					<span className="min-w-0 truncate text-[var(--omp-dim)]" title={asString(row.abortReason)}>
+				<div className="flex min-w-0 items-center gap-1.5 pl-1 text-omsk-xs">
+					<X size={10} className="shrink-0 text-[var(--omsk-error)]" />
+					<span className="min-w-0 truncate text-[var(--omsk-dim)]" title={asString(row.abortReason)}>
 						{asString(row.abortReason)}
 					</span>
 				</div>
@@ -602,7 +606,10 @@ function ResultAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; dep
 			)}
 
 			{missingYieldWarning && (
-				<div className="truncate pl-3 font-mono text-omp-xs text-[var(--omp-warning)]" title={missingYieldWarning}>
+				<div
+					className="truncate pl-3 font-mono text-omsk-xs text-[var(--omsk-warning)]"
+					title={missingYieldWarning}
+				>
 					{missingYieldWarning}
 				</div>
 			)}
@@ -610,12 +617,18 @@ function ResultAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; dep
 			{nested.length > 0 && <NestedTaskTree ctx={ctx} depth={depth} list={nested} />}
 
 			{!aborted && (asNumber(row.exitCode) ?? 0) === 0 && asString(row.patchPath) && (
-				<div className="truncate pl-3 font-mono text-omp-xs text-[var(--omp-dim)]" title={asString(row.patchPath)}>
+				<div
+					className="truncate pl-3 font-mono text-omsk-xs text-[var(--omsk-dim)]"
+					title={asString(row.patchPath)}
+				>
 					{t("tools.task.patch", { path: asString(row.patchPath) ?? "" })}
 				</div>
 			)}
 			{!aborted && (asNumber(row.exitCode) ?? 0) === 0 && !asString(row.patchPath) && asString(row.branchName) && (
-				<div className="truncate pl-3 font-mono text-omp-xs text-[var(--omp-dim)]" title={asString(row.branchName)}>
+				<div
+					className="truncate pl-3 font-mono text-omsk-xs text-[var(--omsk-dim)]"
+					title={asString(row.branchName)}
+				>
 					{t("tools.task.branch", { name: asString(row.branchName) ?? "" })}
 				</div>
 			)}
@@ -623,8 +636,8 @@ function ResultAgentRow({ row, depth, ctx }: { row: Record<string, unknown>; dep
 			{error && (!success || mergeFailed) && (!aborted || error !== asString(row.abortReason)) && (
 				<div
 					className={cx(
-						"truncate pl-3 text-omp-xs",
-						mergeFailed ? "text-[var(--omp-warning)]" : "text-[var(--omp-error)]",
+						"truncate pl-3 text-omsk-xs",
+						mergeFailed ? "text-[var(--omsk-warning)]" : "text-[var(--omsk-error)]",
 					)}
 					title={error}
 				>
@@ -640,12 +653,12 @@ function ResultOutputPreview({ text }: { text: string }) {
 	const t = useT();
 	const { head, omitted } = headLines(text, OUTPUT_PREVIEW_LINES);
 	return (
-		<div className="rounded bg-[var(--omp-code-bg)] px-2 py-1">
-			<pre className="max-h-24 overflow-auto whitespace-pre-wrap font-mono text-omp-xs leading-[1.45] text-[var(--omp-tool-output)]">
+		<div className="rounded bg-[var(--omsk-code-bg)] px-2 py-1">
+			<pre className="max-h-24 overflow-auto whitespace-pre-wrap font-mono text-omsk-xs leading-[1.45] text-[var(--omsk-tool-output)]">
 				{head}
 			</pre>
 			{omitted > 0 && (
-				<div className="font-mono text-omp-xs text-[var(--omp-dim)]">
+				<div className="font-mono text-omsk-xs text-[var(--omsk-dim)]">
 					{t("tools.read.more", { count: omitted, plural: omitted === 1 ? "" : "s" })}
 				</div>
 			)}
@@ -675,7 +688,7 @@ export function TaskRenderer({ args, result, isError, isPartial, partialResult }
 		: isPartial
 			? t("subagent.status.started")
 			: t("subagent.status.completed");
-	const statusColor = isError ? "var(--omp-error)" : isPartial ? "var(--omp-accent)" : "var(--omp-success)";
+	const statusColor = isError ? "var(--omsk-error)" : isPartial ? "var(--omsk-accent)" : "var(--omsk-success)";
 
 	const effective = isPartial && partialResult != null ? partialResult : result;
 	const details = resultDetails(result) ?? resultDetails(partialResult);
@@ -715,25 +728,25 @@ export function TaskRenderer({ args, result, isError, isPartial, partialResult }
 	const summaryParts: ReactNode[] = [];
 	if (abortedCount > 0)
 		summaryParts.push(
-			<span key="aborted" className="text-[var(--omp-error)]">
+			<span key="aborted" className="text-[var(--omsk-error)]">
 				{t("tools.task.footer.aborted", { count: abortedCount })}
 			</span>,
 		);
 	if (successCount > 0)
 		summaryParts.push(
-			<span key="succeeded" className="text-[var(--omp-success)]">
+			<span key="succeeded" className="text-[var(--omsk-success)]">
 				{t("tools.task.footer.succeeded", { count: successCount })}
 			</span>,
 		);
 	if (mergeFailedCount > 0)
 		summaryParts.push(
-			<span key="merge" className="text-[var(--omp-warning)]">
+			<span key="merge" className="text-[var(--omsk-warning)]">
 				{t("tools.task.footer.mergeFailed", { count: mergeFailedCount })}
 			</span>,
 		);
 	if (failCount > 0)
 		summaryParts.push(
-			<span key="failed" className="text-[var(--omp-error)]">
+			<span key="failed" className="text-[var(--omsk-error)]">
 				{t("tools.task.footer.failed", { count: failCount })}
 			</span>,
 		);
@@ -763,31 +776,31 @@ export function TaskRenderer({ args, result, isError, isPartial, partialResult }
 
 	return (
 		<div className="flex flex-col gap-1.5">
-			<div className="flex items-center gap-1.5 text-omp-sm">
-				<Bot size={12} className="shrink-0 text-[var(--omp-status-subagents)]" />
-				{name && <span className="font-mono font-semibold text-[var(--omp-text)]">{name}</span>}
-				<span className="rounded bg-[var(--omp-status-subagents)]/15 px-1 py-px font-mono text-omp-xxs font-medium text-[var(--omp-status-subagents)]">
+			<div className="flex items-center gap-1.5 text-omsk-sm">
+				<Bot size={12} className="shrink-0 text-[var(--omsk-status-subagents)]" />
+				{name && <span className="font-mono font-semibold text-[var(--omsk-text)]">{name}</span>}
+				<span className="rounded bg-[var(--omsk-status-subagents)]/15 px-1 py-px font-mono text-omsk-xxs font-medium text-[var(--omsk-status-subagents)]">
 					{agent}
 				</span>
 				<span
-					className={cx("ml-auto flex items-center gap-1 text-omp-xs font-medium")}
+					className={cx("ml-auto flex items-center gap-1 text-omsk-xs font-medium")}
 					style={{ color: statusColor }}
 				>
 					<span className="h-1.5 w-1.5 rounded-full" style={{ background: statusColor }} />
 					{statusLabel}
 				</span>
 			</div>
-			{description && <div className="text-omp-sm text-[var(--omp-muted)]">{description}</div>}
+			{description && <div className="text-omsk-sm text-[var(--omsk-muted)]">{description}</div>}
 			{taskText && (
-				<div className="max-h-32 overflow-auto whitespace-pre-wrap rounded bg-[var(--omp-code-bg)] px-2 py-1.5 text-omp-sm leading-[1.45] text-[var(--omp-tool-output)]">
+				<div className="max-h-32 overflow-auto whitespace-pre-wrap rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 text-omsk-sm leading-[1.45] text-[var(--omsk-tool-output)]">
 					{taskText}
 				</div>
 			)}
 			{steps.length > 0 && (
-				<ol className="flex max-h-48 flex-col gap-1.5 overflow-auto rounded bg-[var(--omp-code-bg)] px-2 py-1.5 text-omp-sm leading-[1.45] text-[var(--omp-tool-output)]">
+				<ol className="flex max-h-48 flex-col gap-1.5 overflow-auto rounded bg-[var(--omsk-code-bg)] px-2 py-1.5 text-omsk-sm leading-[1.45] text-[var(--omsk-tool-output)]">
 					{steps.map((step, index) => (
 						<li className="flex gap-2" key={`${index}-${step.slice(0, 24)}`}>
-							<span className="shrink-0 font-medium text-[var(--omp-dim)] tabular-nums">
+							<span className="shrink-0 font-medium text-[var(--omsk-dim)] tabular-nums">
 								{t("tools.task.step", { n: index + 1 })}
 							</span>
 							<span className="min-w-0 whitespace-pre-wrap">{step}</span>
@@ -817,7 +830,7 @@ export function TaskRenderer({ args, result, isError, isPartial, partialResult }
 			)}
 
 			{hasResults && (
-				<div className="font-mono text-omp-xs text-[var(--omp-dim)]">
+				<div className="font-mono text-omsk-xs text-[var(--omsk-dim)]">
 					[
 					{summaryParts.map((part, i) => (
 						<span key={i}>
@@ -830,22 +843,22 @@ export function TaskRenderer({ args, result, isError, isPartial, partialResult }
 			)}
 
 			{trailingLines.map((line, i) => (
-				<div key={i} className="font-mono text-omp-xs text-[var(--omp-dim)]">
+				<div key={i} className="font-mono text-omsk-xs text-[var(--omsk-dim)]">
 					{line}
 				</div>
 			))}
 
 			{!hasResults && progress.length === 0 && !text.trim() && details != null && (
-				<div className="text-omp-sm text-[var(--omp-dim)]">{t("tools.task.noResults")}</div>
+				<div className="text-omsk-sm text-[var(--omsk-dim)]">{t("tools.task.noResults")}</div>
 			)}
 
 			{details == null && text && (
 				<pre
 					className={cx(
-						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omp-sm leading-[1.45]",
+						"max-h-40 overflow-auto whitespace-pre-wrap rounded px-2 py-1.5 font-mono text-omsk-sm leading-[1.45]",
 						isError
-							? "bg-[var(--omp-tool-error-bg)] text-[var(--omp-error)]"
-							: "bg-[var(--omp-code-bg)] text-[var(--omp-tool-output)]",
+							? "bg-[var(--omsk-tool-error-bg)] text-[var(--omsk-error)]"
+							: "bg-[var(--omsk-code-bg)] text-[var(--omsk-tool-output)]",
 					)}
 				>
 					{text}

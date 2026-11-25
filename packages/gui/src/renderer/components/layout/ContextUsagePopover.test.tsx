@@ -119,7 +119,7 @@ describe("ContextUsagePopover", () => {
 
 		await act(async () => trigger.click());
 		expect(getContextReport).toHaveBeenCalledTimes(1);
-		const dialog = document.querySelector("#omp-context-usage-popover");
+		const dialog = document.querySelector("#omsk-context-usage-popover");
 		expect(dialog?.textContent).toContain("Context window");
 		expect(dialog?.textContent).toContain("Messages~8.1k");
 		// Shares of a window that does not exist would be invented numbers.
@@ -142,14 +142,14 @@ describe("ContextUsagePopover", () => {
 		expect(trigger.getAttribute("aria-label")).toBe("Show context usage, 16% used");
 		// The trigger is a compact ring with the share used; the popover carries the figures.
 		expect(trigger.textContent).toBe("16% of 1.0M");
-		expect(document.querySelector("#omp-context-usage-popover")).toBeNull();
+		expect(document.querySelector("#omsk-context-usage-popover")).toBeNull();
 
 		await act(async () => trigger.click());
 		expect(getContextReport).toHaveBeenCalledTimes(1);
 		// A pinned popover must not pose as a modal: App.tsx suppresses every
 		// non-overlay-safe chord (⌘N, ⌘W, ⇧Tab) while [role=dialog] is in the tree.
 		expect(document.querySelector('[role="dialog"]')).toBeNull();
-		const dialog = document.querySelector("#omp-context-usage-popover");
+		const dialog = document.querySelector("#omsk-context-usage-popover");
 		expect(dialog?.textContent).toContain("Context used 16%");
 		expect(dialog?.textContent).toContain("~161.9k / 1.0M");
 		const rows = [...(dialog?.querySelectorAll("li") ?? [])].map(row => row.textContent);
@@ -186,7 +186,7 @@ describe("ContextUsagePopover", () => {
 		await act(async () => {
 			container.querySelector("button")?.dispatchEvent(new Event("mouseover", { bubbles: true }));
 		});
-		expect(document.querySelector("#omp-context-usage-popover")).not.toBeNull();
+		expect(document.querySelector("#omsk-context-usage-popover")).not.toBeNull();
 		expect(getContextReport).toHaveBeenCalledTimes(1);
 	});
 
@@ -200,32 +200,32 @@ describe("ContextUsagePopover", () => {
 		const trigger = container.querySelector("button") as unknown as HTMLButtonElement;
 
 		await act(async () => trigger.click());
-		expect(document.querySelector("#omp-context-usage-popover")).not.toBeNull();
+		expect(document.querySelector("#omsk-context-usage-popover")).not.toBeNull();
 		await act(async () => trigger.click());
 		// The exit animation holds the element mounted for one more phase, so
 		// "closed" is the honest assertion here: released ARIA state, the popover
 		// hidden from assistive tech, and no unmount until the animation ends.
 		expect(trigger.getAttribute("aria-expanded")).toBe("false");
-		expect(document.querySelector("#omp-context-usage-popover")?.getAttribute("aria-hidden")).toBe("true");
+		expect(document.querySelector("#omsk-context-usage-popover")?.getAttribute("aria-hidden")).toBe("true");
 		await settleExit();
-		expect(document.querySelector("#omp-context-usage-popover")).toBeNull();
+		expect(document.querySelector("#omsk-context-usage-popover")).toBeNull();
 
 		await act(async () => trigger.click());
 		const escapeEvent = new Event("keydown", { bubbles: true, cancelable: true });
 		Object.defineProperty(escapeEvent, "key", { value: "Escape" });
 		await act(async () => document.dispatchEvent(escapeEvent));
-		expect(document.querySelector("#omp-context-usage-popover")?.getAttribute("aria-hidden")).toBe("true");
+		expect(document.querySelector("#omsk-context-usage-popover")?.getAttribute("aria-hidden")).toBe("true");
 		await settleExit();
-		expect(document.querySelector("#omp-context-usage-popover")).toBeNull();
+		expect(document.querySelector("#omsk-context-usage-popover")).toBeNull();
 		// App.tsx aborts the active turn on an unclaimed Escape, so the popover has
 		// to claim the keypress it consumed.
 		expect(escapeEvent.defaultPrevented).toBe(true);
 
 		await act(async () => trigger.click());
 		await act(async () => document.dispatchEvent(new Event("pointerdown", { bubbles: true })));
-		expect(document.querySelector("#omp-context-usage-popover")?.getAttribute("aria-hidden")).toBe("true");
+		expect(document.querySelector("#omsk-context-usage-popover")?.getAttribute("aria-hidden")).toBe("true");
 		await settleExit();
-		expect(document.querySelector("#omp-context-usage-popover")).toBeNull();
+		expect(document.querySelector("#omsk-context-usage-popover")).toBeNull();
 	});
 
 	it("keeps the current total visible when the detailed report is unavailable", async () => {
@@ -238,7 +238,7 @@ describe("ContextUsagePopover", () => {
 		await mount();
 
 		await act(async () => (container.querySelector("button") as unknown as HTMLButtonElement).click());
-		const dialog = document.querySelector("#omp-context-usage-popover");
+		const dialog = document.querySelector("#omsk-context-usage-popover");
 		expect(dialog?.textContent).toContain("Context used 64%");
 		expect(dialog?.textContent).toContain("~173.7k / 272.0k");
 		expect(dialog?.textContent).toContain("The detailed breakdown is temporarily unavailable.");

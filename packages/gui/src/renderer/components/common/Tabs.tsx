@@ -49,7 +49,7 @@ export function Tabs({ tabs, activeId, onChange, compact, className, ariaLabel }
 	return (
 		<div
 			aria-label={ariaLabel}
-			className={`omp-tabs relative flex items-center gap-0.5 border-b border-(--omp-border-muted) ${className ?? ""}`.trim()}
+			className={`omsk-tabs relative flex items-center gap-0.5 border-b border-(--omsk-border-muted) ${className ?? ""}`.trim()}
 			onKeyDown={onKeyDown}
 			ref={listRef}
 			role="tablist"
@@ -60,12 +60,12 @@ export function Tabs({ tabs, activeId, onChange, compact, className, ariaLabel }
 				return (
 					<button
 						aria-selected={active}
-						className={`relative -mb-px shrink-0 border-b-2 font-medium whitespace-nowrap transition-colors duration-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--omp-border-accent) disabled:cursor-not-allowed disabled:opacity-70 ${
-							compact ? "px-2 py-1 text-omp-sm" : "px-3 py-1.5 text-omp-xs"
+						className={`relative -mb-px shrink-0 border-b-2 font-medium whitespace-nowrap transition-colors duration-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--omsk-border-accent) disabled:cursor-not-allowed disabled:opacity-70 ${
+							compact ? "px-2 py-1 text-omsk-sm" : "px-3 py-1.5 text-omsk-xs"
 						} ${
 							active
-								? "border-(--omp-accent) text-(--omp-text)"
-								: "border-transparent text-(--omp-muted) hover:text-(--omp-text)"
+								? "border-(--omsk-accent) text-(--omsk-text)"
+								: "border-transparent text-(--omsk-muted) hover:text-(--omsk-text)"
 						}`.trim()}
 						data-tab-id={tab.id}
 						disabled={tab.disabled}
@@ -77,7 +77,7 @@ export function Tabs({ tabs, activeId, onChange, compact, className, ariaLabel }
 					>
 						{tab.label}
 						{tab.badge !== undefined && (
-							<span className="ml-1.5 rounded-full border border-(--omp-border-muted) bg-transparent px-1.5 py-px text-omp-xxs tabular-nums text-(--omp-muted)">
+							<span className="ml-1.5 rounded-full border border-(--omsk-border-muted) bg-transparent px-1.5 py-px text-omsk-xxs tabular-nums text-(--omsk-muted)">
 								{tab.badge}
 							</span>
 						)}

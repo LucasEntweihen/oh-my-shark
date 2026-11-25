@@ -37,13 +37,13 @@ import {
 
 function nodeBorderClass(agent: SubagentSnapshot): string {
 	if (isLiveSubagentStatus(agent.status)) {
-		return "border-[color-mix(in_srgb,var(--omp-link)_35%,transparent)]";
+		return "border-[color-mix(in_srgb,var(--omsk-link)_35%,transparent)]";
 	}
 	switch (agent.status) {
 		case "failed":
-			return "border-[color-mix(in_srgb,var(--omp-error)_35%,transparent)]";
+			return "border-[color-mix(in_srgb,var(--omsk-error)_35%,transparent)]";
 		default:
-			return "border-(--omp-border-muted)";
+			return "border-(--omsk-border-muted)";
 	}
 }
 
@@ -79,20 +79,20 @@ const DagAgentNode = memo(function DagAgentNode({
 		<button
 			aria-pressed={selected}
 			className={cx(
-				"absolute flex flex-col rounded-md border px-2 py-1.5 text-left transition-colors duration-150 hover:bg-(--omp-bg-tertiary)",
+				"absolute flex flex-col rounded-md border px-2 py-1.5 text-left transition-colors duration-150 hover:bg-(--omsk-bg-tertiary)",
 				nodeBorderClass(agent),
 				(agent.status === "completed" || agent.status === "cancelled") && "opacity-70",
-				selected && "ring-1 ring-(--omp-link)",
+				selected && "ring-1 ring-(--omsk-link)",
 			)}
 			onClick={onSelect}
 			style={{ left: x, top: y, width: DAG_NODE_WIDTH, height: DAG_NODE_HEIGHT }}
 			type="button"
 		>
 			<div className="flex items-center gap-1.5">
-				<Bot className="shrink-0 text-(--omp-status-subagents)" size={12} />
-				<span className="min-w-0 flex-1 truncate text-omp-sm font-medium text-(--omp-text)">
+				<Bot className="shrink-0 text-(--omsk-status-subagents)" size={12} />
+				<span className="min-w-0 flex-1 truncate text-omsk-sm font-medium text-(--omsk-text)">
 					{subagentPrimaryLabel(agent, 36)}
-					{agent.index > 0 && <span className="ml-1 text-omp-xxs text-(--omp-dim)">#{agent.index + 1}</span>}
+					{agent.index > 0 && <span className="ml-1 text-omsk-xxs text-(--omsk-dim)">#{agent.index + 1}</span>}
 				</span>
 				<Badge dot={meta.live} pulse={meta.live} variant={meta.variant}>
 					{t(meta.labelKey)}
@@ -101,16 +101,16 @@ const DagAgentNode = memo(function DagAgentNode({
 			<div className="mt-1 flex items-center gap-1.5 pl-[18px]">
 				<span
 					className={cx(
-						"min-w-0 flex-1 truncate text-omp-xxs",
+						"min-w-0 flex-1 truncate text-omsk-xxs",
 						isLiveSubagentStatus(agent.status) && agent.progress?.description
-							? "text-(--omp-muted) italic"
-							: "text-(--omp-dim)",
+							? "text-(--omsk-muted) italic"
+							: "text-(--omsk-dim)",
 					)}
 				>
 					{line ?? ""}
 				</span>
 				{elapsed !== null && (
-					<span className="shrink-0 text-omp-xxs tabular-nums text-(--omp-dim)">{formatElapsed(elapsed)}</span>
+					<span className="shrink-0 text-omsk-xxs tabular-nums text-(--omsk-dim)">{formatElapsed(elapsed)}</span>
 				)}
 			</div>
 		</button>
@@ -121,14 +121,14 @@ function MainNode({ x, y }: { x: number; y: number }) {
 	const t = useT();
 	return (
 		<div
-			className="absolute flex flex-col justify-center rounded-md border border-dashed border-(--omp-border-muted) bg-transparent px-2 py-1.5"
+			className="absolute flex flex-col justify-center rounded-md border border-dashed border-(--omsk-border-muted) bg-transparent px-2 py-1.5"
 			style={{ left: x, top: y, width: DAG_NODE_WIDTH, height: DAG_NODE_HEIGHT }}
 		>
 			<div className="flex items-center gap-1.5">
-				<Terminal className="shrink-0 text-(--omp-dim)" size={12} />
-				<span className="truncate text-omp-sm font-medium text-(--omp-muted)">{t("dag.main")}</span>
+				<Terminal className="shrink-0 text-(--omsk-dim)" size={12} />
+				<span className="truncate text-omsk-sm font-medium text-(--omsk-muted)">{t("dag.main")}</span>
 			</div>
-			<div className="truncate pl-[18px] text-omp-xxs text-(--omp-dim)">{t("dag.mainSub")}</div>
+			<div className="truncate pl-[18px] text-omsk-xxs text-(--omsk-dim)">{t("dag.mainSub")}</div>
 		</div>
 	);
 }
@@ -172,7 +172,7 @@ export function SubagentDag({
 
 	if (agents.length === 0 && loadError) {
 		return (
-			<div className="flex flex-col items-center gap-2 px-3 py-8 text-center text-omp-sm leading-relaxed text-(--omp-error)">
+			<div className="flex flex-col items-center gap-2 px-3 py-8 text-center text-omsk-sm leading-relaxed text-(--omsk-error)">
 				<p role="alert">
 					{t("subagent.loadFailed")}
 					<br />
@@ -187,7 +187,7 @@ export function SubagentDag({
 
 	if (agents.length === 0) {
 		return (
-			<div className="px-3 py-8 text-center text-omp-sm leading-relaxed text-(--omp-dim)">
+			<div className="px-3 py-8 text-center text-omsk-sm leading-relaxed text-(--omsk-dim)">
 				{t("subagent.empty")}
 				<br />
 				{t("subagent.emptyHint")}
@@ -211,7 +211,7 @@ export function SubagentDag({
 								fill="none"
 								key={edge.id}
 								markerEnd="url(#subagent-dag-arrow)"
-								stroke={edge.childId === selectedId ? "var(--omp-link)" : "var(--omp-border-muted)"}
+								stroke={edge.childId === selectedId ? "var(--omsk-link)" : "var(--omsk-border-muted)"}
 								strokeWidth={edge.childId === selectedId ? 2 : 1.25}
 							/>
 						))}
@@ -238,10 +238,10 @@ export function SubagentDag({
 				</div>
 			</div>
 			{selected ? (
-				<div className="flex max-h-[45%] shrink-0 flex-col border-t border-(--omp-border-muted)">
+				<div className="flex max-h-[45%] shrink-0 flex-col border-t border-(--omsk-border-muted)">
 					<div className="flex items-center gap-2 px-3 pt-1.5">
-						<Bot className="shrink-0 text-(--omp-status-subagents)" size={13} />
-						<span className="min-w-0 flex-1 truncate text-omp-xs font-medium text-(--omp-text)">
+						<Bot className="shrink-0 text-(--omsk-status-subagents)" size={13} />
+						<span className="min-w-0 flex-1 truncate text-omsk-xs font-medium text-(--omsk-text)">
 							{subagentPrimaryLabel(selected)}
 						</span>
 						<Badge
@@ -253,7 +253,7 @@ export function SubagentDag({
 						</Badge>
 						<button
 							aria-label={t("dag.closeTranscript")}
-							className="shrink-0 text-(--omp-dim) transition-colors hover:text-(--omp-text)"
+							className="shrink-0 text-(--omsk-dim) transition-colors hover:text-(--omsk-text)"
 							onClick={() => setSelectedId(null)}
 							type="button"
 						>
@@ -261,17 +261,19 @@ export function SubagentDag({
 						</button>
 					</div>
 					{selected.description && (
-						<div className="truncate px-3 pb-1 text-omp-xs text-(--omp-dim)">{selected.description}</div>
+						<div className="truncate px-3 pb-1 text-omsk-xs text-(--omsk-dim)">{selected.description}</div>
 					)}
 					<div className="min-h-0 flex-1 overflow-y-auto">
 						<SubagentTranscript agent={selected} />
 					</div>
 				</div>
 			) : (
-				<div className="shrink-0 space-y-0.5 border-t border-(--omp-border-muted) px-3 py-1.5">
-					<div className="text-omp-xs text-(--omp-dim)">{onOpen ? t("agents.openHint") : t("dag.clickNode")}</div>
+				<div className="shrink-0 space-y-0.5 border-t border-(--omsk-border-muted) px-3 py-1.5">
+					<div className="text-omsk-xs text-(--omsk-dim)">
+						{onOpen ? t("agents.openHint") : t("dag.clickNode")}
+					</div>
 					{layout.unresolved.length > 0 && (
-						<div className="text-omp-xxs text-(--omp-dim) italic">
+						<div className="text-omsk-xxs text-(--omsk-dim) italic">
 							{t("dag.unresolved", {
 								count: layout.unresolved.length,
 								plural: layout.unresolved.length === 1 ? "agent" : "agents",

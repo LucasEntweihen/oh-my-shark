@@ -438,7 +438,7 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 			mounted,
 		});
 		liveAppendRef.current = lastAppended;
-		for (const key of claims) slots.get(key)?.classList.add("omp-row-arrive");
+		for (const key of claims) slots.get(key)?.classList.add("omsk-row-arrive");
 	});
 
 	// The row the reader is looking at, plus how far it sits from the top of the
@@ -767,7 +767,7 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 
 	return (
 		<>
-			<div className="omp-transcript-editorial relative min-h-0 flex-1 bg-transparent">
+			<div className="omsk-transcript-editorial relative min-h-0 flex-1 bg-transparent">
 				{findOpen && (
 					<TranscriptFindBar
 						current={findCurrent}
@@ -791,27 +791,27 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 					onPointerCancel={endScrollGesture}
 					onKeyDown={handleScrollKeyDown}
 					tabIndex={0}
-					className="omp-transcript-scroll h-full overflow-y-auto overscroll-contain"
+					className="omsk-transcript-scroll h-full overflow-y-auto overscroll-contain"
 				>
 					{readOnly === null && <TranscriptQuoteAction tabId={tabId} transcriptRef={parentRef} />}
 					{switchPending && (
 						<div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px overflow-hidden">
-							<div className="omp-indeterminate-progress h-full bg-[var(--omp-accent)]" />
+							<div className="omsk-indeterminate-progress h-full bg-[var(--omsk-accent)]" />
 						</div>
 					)}
 					{awaitingTranscript && rows.length === 0 && !switchPending && <TranscriptLoading />}
 					{!awaitingTranscript && rows.length === 0 && !isStreaming && !switchPending && readOnly === null && (
-						<div className="omp-empty-canvas flex min-h-full flex-col justify-center pt-4 pb-10">
-							<div className="omp-empty-logo mb-4 flex h-13 w-13 items-center justify-center rounded-2xl border border-[var(--omp-border-accent)]/35 bg-[var(--omp-selected-bg)] p-1 shadow-[0_0_28px_-8px_var(--omp-accent-glow)]">
+						<div className="omsk-empty-canvas flex min-h-full flex-col justify-center pt-4 pb-10">
+							<div className="omsk-empty-logo mb-4 flex h-13 w-13 items-center justify-center rounded-2xl border border-[var(--omsk-border-accent)]/35 bg-[var(--omsk-selected-bg)] p-1 shadow-[0_0_28px_-8px_var(--omsk-accent-glow)]">
 								<OmskLogo size={42} />
 							</div>
-							<h1 className="font-display text-omp-display font-semibold leading-tight tracking-[-0.025em] text-[var(--omp-text)]">
+							<h1 className="font-display text-omsk-display font-semibold leading-tight tracking-[-0.025em] text-[var(--omsk-text)]">
 								{isChat ? t("chat.empty.title.chat") : t("chat.empty.title")}
 							</h1>
-							<p className="mt-1.5 max-w-2xl text-omp-xl leading-relaxed text-[var(--omp-muted)]">
+							<p className="mt-1.5 max-w-2xl text-omsk-xl leading-relaxed text-[var(--omsk-muted)]">
 								{isChat ? t("chat.empty.subtitle.chat") : t("chat.empty.subtitle")}
 							</p>
-							<div className="omp-starter-grid mt-6 grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+							<div className="omsk-starter-grid mt-6 grid grid-cols-2 gap-3 max-sm:grid-cols-1">
 								{starters.map(({ icon: Icon, title, prompt }) => (
 									<button
 										key={title}
@@ -821,14 +821,16 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 												new CustomEvent("omp:fill-composer", { detail: { text: prompt, tabId } }),
 											)
 										}
-										className="omp-starter-card omp-lift group flex min-h-20 items-start gap-3.5 rounded-2xl border border-[var(--omp-border)] p-4 text-left shadow-[var(--omp-shadow-sm)] hover:border-[var(--omp-border-accent)]"
+										className="omsk-starter-card omsk-lift group flex min-h-20 items-start gap-3.5 rounded-2xl border border-[var(--omsk-border)] p-4 text-left shadow-[var(--omsk-shadow-sm)] hover:border-[var(--omsk-border-accent)]"
 									>
-										<span className="omp-starter-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--omp-border-accent)]/30 bg-[var(--omp-selected-bg)] text-[var(--omp-accent)] transition-transform duration-150 ease-out group-hover:scale-105">
+										<span className="omsk-starter-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--omsk-border-accent)]/30 bg-[var(--omsk-selected-bg)] text-[var(--omsk-accent)] transition-transform duration-150 ease-out group-hover:scale-105">
 											<Icon size={17} strokeWidth={1.65} />
 										</span>
 										<span className="min-w-0 flex-1">
-											<span className="block text-omp-lg font-semibold text-[var(--omp-text)]">{title}</span>
-											<span className="mt-1 block text-omp-lg leading-snug text-[var(--omp-muted)]">
+											<span className="block text-omsk-lg font-semibold text-[var(--omsk-text)]">
+												{title}
+											</span>
+											<span className="mt-1 block text-omsk-lg leading-snug text-[var(--omsk-muted)]">
 												{prompt}
 											</span>
 										</span>
@@ -839,7 +841,7 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 					)}
 					<div
 						ref={canvasRef}
-						className="omp-transcript-canvas"
+						className="omsk-transcript-canvas"
 						style={{ height: totalSize, position: "relative", width: "100%" }}
 					>
 						{virtualizer.getVirtualItems().map(item => {
@@ -852,7 +854,7 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 									data-index={item.index}
 									data-row-key={rowKey}
 									data-transcript-kind={row.kind}
-									className={rowKey === foundKey ? "omp-row-found" : undefined}
+									className={rowKey === foundKey ? "omsk-row-found" : undefined}
 									ref={virtualizer.measureElement}
 									style={{
 										position: "absolute",
@@ -862,7 +864,7 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 										transform: `translateY(${item.start}px)`,
 									}}
 								>
-									<div className="omp-transcript-row w-full">
+									<div className="omsk-transcript-row w-full">
 										{row.kind === "message" ? (
 											<MessageBubble
 												message={row.message}
@@ -893,7 +895,7 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 											<button
 												type="button"
 												onClick={() => setPreCompactionOpen(true)}
-												className="omp-history-expander omp-pressable ml-(--omp-editorial-inset) mr-(--omp-editorial-edge) my-2 flex items-center gap-2 rounded-lg border border-[var(--omp-border)] px-3 py-1.5 text-omp-sm font-medium text-[var(--omp-muted)] hover:bg-[var(--omp-bg-tertiary)] hover:text-[var(--omp-text)]"
+												className="omsk-history-expander omsk-pressable ml-(--omsk-editorial-inset) mr-(--omsk-editorial-edge) my-2 flex items-center gap-2 rounded-lg border border-[var(--omsk-border)] px-3 py-1.5 text-omsk-sm font-medium text-[var(--omsk-muted)] hover:bg-[var(--omsk-bg-tertiary)] hover:text-[var(--omsk-text)]"
 											>
 												{t("chat.compaction.showEarlier", { count: row.count })}
 											</button>
@@ -906,7 +908,7 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 						})}
 					</div>
 					{footer && (
-						<div className="omp-composer-shell" ref={footerRef}>
+						<div className="omsk-composer-shell" ref={footerRef}>
 							{footer}
 						</div>
 					)}
@@ -916,7 +918,7 @@ function SessionTranscript({ footer }: { footer?: ReactNode }) {
 					onClick={jumpToLatest}
 					aria-label={t("chat.jumpToLatest")}
 					className={cx(
-						"absolute bottom-5 left-1/2 flex h-9 -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--omp-border)] bg-[var(--omp-bg-elevated)] px-4 text-omp-md font-medium text-[var(--omp-text)] shadow-[var(--omp-shadow-md)] transition-all hover:bg-[var(--omp-selected-bg)]",
+						"absolute bottom-5 left-1/2 flex h-9 -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--omsk-border)] bg-[var(--omsk-bg-elevated)] px-4 text-omsk-md font-medium text-[var(--omsk-text)] shadow-[var(--omsk-shadow-md)] transition-all hover:bg-[var(--omsk-selected-bg)]",
 						pinned ? "pointer-events-none translate-y-12 opacity-0" : "translate-y-0 opacity-100",
 					)}
 				>
@@ -943,7 +945,7 @@ function ProcessGroup({
 	row: Extract<HistoryRow, { kind: "process" }>;
 }) {
 	return (
-		<div className="ps-(--omp-editorial-inset) pe-(--omp-editorial-edge) py-2">
+		<div className="ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge) py-2">
 			<ExecutionGroup
 				expanded={expanded}
 				failureCount={row.failedEvents}
@@ -951,7 +953,7 @@ function ProcessGroup({
 				stepCount={row.stepCount}
 				toolCallIds={row.toolCallIds}
 			>
-				<div className="omp-process-group">
+				<div className="omsk-process-group">
 					{row.messages.map((message, index) => (
 						<MessageBubble
 							compact
@@ -1013,7 +1015,7 @@ export function StreamingRows({
 	const hasThinking = isRenderableMessageText(streamingThinking);
 	const hasProcess = hasThinking || toolCalls.length > 0 || liveTools.length > 0;
 	const compactChrome = transcriptDetail === "compact" ? !hasText : !hasText && !hasThinking;
-	const turnClass = compactChrome ? "omp-assistant-turn--compact" : "omp-assistant-turn";
+	const turnClass = compactChrome ? "omsk-assistant-turn--compact" : "omsk-assistant-turn";
 
 	// Live read grouping (same predicate as the finalized path): consecutive
 	// collapsible reads fold into one ReadGroupCard even mid-turn. Compact
@@ -1091,8 +1093,8 @@ export function StreamingRows({
 
 	if (transcriptDetail === "full") {
 		return (
-			<div className={cx("omp-streaming-turn group flex px-6", turnClass)}>
-				<div className="omp-transcript-content min-w-0">
+			<div className={cx("omsk-streaming-turn group flex px-6", turnClass)}>
+				<div className="omsk-transcript-content min-w-0">
 					{/* streamingMessage.content only fills at message_end; mid-stream the
 				    thinking deltas accumulate in the streamingThinking buffer, which
 				    ThinkingBlock reads itself when live. */}
@@ -1105,8 +1107,8 @@ export function StreamingRows({
 	}
 
 	return (
-		<div className={cx("omp-streaming-turn group flex px-6", turnClass)}>
-			<div className="omp-transcript-content min-w-0">
+		<div className={cx("omsk-streaming-turn group flex px-6", turnClass)}>
+			<div className="omsk-transcript-content min-w-0">
 				{hasProcess ? (
 					<ExecutionGroup
 						expanded={expanded}
@@ -1115,7 +1117,7 @@ export function StreamingRows({
 						stepCount={toolCalls.length + liveTools.length + (hasThinking ? 1 : 0)}
 						toolCallIds={allCards.map(card => card.id)}
 					>
-						<div className="omp-process-group omp-process-group--live">
+						<div className="omsk-process-group omsk-process-group--live">
 							{hasThinking ? <ThinkingBlock live /> : null}
 							{toolCalls.length + liveTools.length > 0 ? <div>{toolCards}</div> : null}
 						</div>
@@ -1187,21 +1189,24 @@ export function TurnStatusRow() {
 					: t("chat.retry.inflight");
 		const detail = retryInfo.errorMessage && retryInfo.errorMessage !== shownError ? retryInfo.errorMessage : null;
 		return (
-			<div className="omp-status-turn ps-(--omp-editorial-inset) pe-(--omp-editorial-edge)">
+			<div className="omsk-status-turn ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge)">
 				<span aria-atomic="true" aria-live="polite" className="sr-only" role="status">
 					{t("chat.retry.announcement", { attempt: retryInfo.attempt, maxAttempts: retryInfo.maxAttempts })}
 				</span>
-				<div className="omp-retry-card flex min-w-0 items-start gap-3 rounded-xl border px-3.5 py-2.5">
-					<RotateCw aria-hidden size={14} className="mt-0.5 shrink-0 animate-spin text-[var(--omp-warning)]" />
+				<div className="omsk-retry-card flex min-w-0 items-start gap-3 rounded-xl border px-3.5 py-2.5">
+					<RotateCw aria-hidden size={14} className="mt-0.5 shrink-0 animate-spin text-[var(--omsk-warning)]" />
 					<div className="min-w-0 flex-1">
-						<p className="text-omp-md text-[var(--omp-text)]">
+						<p className="text-omsk-md text-[var(--omsk-text)]">
 							{when}
-							<span className="ms-2 text-omp-sm tabular-nums text-[var(--omp-dim)]">
+							<span className="ms-2 text-omsk-sm tabular-nums text-[var(--omsk-dim)]">
 								{t("chat.retry.attempt", { attempt: retryInfo.attempt, maxAttempts: retryInfo.maxAttempts })}
 							</span>
 						</p>
 						{detail && (
-							<p className="mt-0.5 line-clamp-2 break-words text-omp-sm text-[var(--omp-muted)]" title={detail}>
+							<p
+								className="mt-0.5 line-clamp-2 break-words text-omsk-sm text-[var(--omsk-muted)]"
+								title={detail}
+							>
 								{describeProviderError(detail)}
 							</p>
 						)}
@@ -1209,7 +1214,7 @@ export function TurnStatusRow() {
 					<button
 						type="button"
 						onClick={stop}
-						className="omp-pressable -my-0.5 h-7 shrink-0 rounded-full px-2.5 text-omp-sm font-medium text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+						className="omsk-pressable -my-0.5 h-7 shrink-0 rounded-full px-2.5 text-omsk-sm font-medium text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 					>
 						{t("chat.retry.stop")}
 					</button>
@@ -1220,7 +1225,7 @@ export function TurnStatusRow() {
 
 	if (!compactionInfo && manualMaintenance) {
 		return (
-			<div className="omp-status-turn ps-(--omp-editorial-inset) pe-(--omp-editorial-edge)">
+			<div className="omsk-status-turn ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge)">
 				<LongTaskStatus
 					card={{
 						icon: manualMaintenance.kind === "compact" ? <Layers size={15} /> : <Handshake size={15} />,
@@ -1269,25 +1274,25 @@ export function TurnStatusRow() {
 	}
 
 	return (
-		<div className="omp-status-turn flex flex-col gap-1 ps-(--omp-editorial-inset) pe-(--omp-editorial-edge)">
+		<div className="omsk-status-turn flex flex-col gap-1 ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge)">
 			<span aria-atomic="true" aria-live="polite" className="sr-only" role="status">
 				{announcement}
 			</span>
-			<div className="flex items-center gap-2.5 text-omp-md">
-				<span aria-hidden className="omp-working-dot" />
-				<span className="omp-shimmer-text">{label}</span>
-				{elapsed && <span className="tabular-nums text-[var(--omp-dim)]">{elapsed}</span>}
+			<div className="flex items-center gap-2.5 text-omsk-md">
+				<span aria-hidden className="omsk-working-dot" />
+				<span className="omsk-shimmer-text">{label}</span>
+				{elapsed && <span className="tabular-nums text-[var(--omsk-dim)]">{elapsed}</span>}
 			</div>
 			{hint && (
-				<div className="flex items-center gap-2 ps-[18px] text-omp-sm">
-					<span className={hint.tone === "warning" ? "text-[var(--omp-warning)]" : "text-[var(--omp-dim)]"}>
+				<div className="flex items-center gap-2 ps-[18px] text-omsk-sm">
+					<span className={hint.tone === "warning" ? "text-[var(--omsk-warning)]" : "text-[var(--omsk-dim)]"}>
 						{hint.text}
 					</span>
 					{hint.stop && (
 						<button
 							type="button"
 							onClick={stop}
-							className="omp-pressable h-6 shrink-0 rounded-full px-2 font-medium text-[var(--omp-muted)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-text)]"
+							className="omsk-pressable h-6 shrink-0 rounded-full px-2 font-medium text-[var(--omsk-muted)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-text)]"
 						>
 							{t("chat.retry.stop")}
 						</button>
@@ -1307,18 +1312,18 @@ function TurnChangesRow({ summary }: { summary: TurnChangeSummary }) {
 	const t = useT();
 	const openChanges = useUiStore(s => s.openChanges);
 	return (
-		<div className="ps-(--omp-editorial-inset) pe-(--omp-editorial-edge) pt-1 pb-4">
+		<div className="ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge) pt-1 pb-4">
 			<button
 				type="button"
 				onClick={() => openChanges("current")}
-				className="omp-turn-changes omp-pressable group/changes flex h-9 max-w-full items-center gap-2.5 rounded-xl px-3 text-omp-sm"
+				className="omsk-turn-changes omsk-pressable group/changes flex h-9 max-w-full items-center gap-2.5 rounded-xl px-3 text-omsk-sm"
 			>
-				<FileDiff aria-hidden size={14} className="shrink-0 text-[var(--omp-dim)]" />
-				<span className="truncate font-medium text-[var(--omp-text)]">
+				<FileDiff aria-hidden size={14} className="shrink-0 text-[var(--omsk-dim)]" />
+				<span className="truncate font-medium text-[var(--omsk-text)]">
 					{t("chat.turnChanges.files", { count: summary.files, plural: summary.files === 1 ? "" : "s" })}
 				</span>
 				{summary.adds + summary.removes > 0 && <DiffStat adds={summary.adds} removes={summary.removes} />}
-				<span className="ms-1 flex shrink-0 items-center gap-0.5 text-[var(--omp-muted)] group-hover/changes:text-[var(--omp-text)]">
+				<span className="ms-1 flex shrink-0 items-center gap-0.5 text-[var(--omsk-muted)] group-hover/changes:text-[var(--omsk-text)]">
 					{t("chat.turnChanges.review")}
 					<ChevronRight aria-hidden size={13} />
 				</span>
@@ -1357,13 +1362,13 @@ function QueuedMessageBubble({ item, lane }: { item: RpcQueuedMessage; lane: Que
 	};
 
 	return (
-		<div className="omp-queued-turn group flex justify-end ps-(--omp-editorial-inset) pe-(--omp-editorial-edge) py-1.5">
-			<div className="omp-transcript-content omp-queued-bubble flex items-start gap-2 rounded-xl border border-dashed border-[var(--omp-border)] px-3.5 py-2.5">
+		<div className="omsk-queued-turn group flex justify-end ps-(--omsk-editorial-inset) pe-(--omsk-editorial-edge) py-1.5">
+			<div className="omsk-transcript-content omsk-queued-bubble flex items-start gap-2 rounded-xl border border-dashed border-[var(--omsk-border)] px-3.5 py-2.5">
 				<div className="min-w-0 flex-1">
-					<div className="mb-0.5 text-omp-xs font-semibold text-[var(--omp-dim)]">
+					<div className="mb-0.5 text-omsk-xs font-semibold text-[var(--omsk-dim)]">
 						{t(lane === "steering" ? "pendingBubble.steering" : "pendingBubble.followUp")}
 					</div>
-					<div className="whitespace-pre-wrap break-words text-omp-lg leading-snug text-[var(--omp-muted)]">
+					<div className="whitespace-pre-wrap break-words text-omsk-lg leading-snug text-[var(--omsk-muted)]">
 						{item.text || "…"}
 					</div>
 				</div>
@@ -1372,7 +1377,7 @@ function QueuedMessageBubble({ item, lane }: { item: RpcQueuedMessage; lane: Que
 					onClick={() => void remove()}
 					disabled={removing}
 					title={t("pendingBubble.remove")}
-					className="omp-pressable -mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--omp-dim)] hover:bg-[var(--omp-selected-bg)] hover:text-[var(--omp-error)] disabled:opacity-50"
+					className="omsk-pressable -mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[var(--omsk-dim)] hover:bg-[var(--omsk-selected-bg)] hover:text-[var(--omsk-error)] disabled:opacity-50"
 				>
 					<X size={13} />
 				</button>
@@ -1398,56 +1403,58 @@ function TodoSnapshotCard({ entry }: { entry: TodoSnapshot }) {
 	const cleared = total === 0;
 
 	return (
-		<div className="ml-(--omp-editorial-inset) mr-(--omp-editorial-edge) my-1.5">
+		<div className="ml-(--omsk-editorial-inset) mr-(--omsk-editorial-edge) my-1.5">
 			<button
 				aria-expanded={expanded}
-				className="omp-pressable flex items-center gap-1.5 rounded-lg border border-[var(--omp-border-muted)] px-2.5 py-1 text-omp-sm text-[var(--omp-muted)] hover:text-[var(--omp-text)]"
+				className="omsk-pressable flex items-center gap-1.5 rounded-lg border border-[var(--omsk-border-muted)] px-2.5 py-1 text-omsk-sm text-[var(--omsk-muted)] hover:text-[var(--omsk-text)]"
 				disabled={cleared}
 				onClick={() => setExpanded(value => !value)}
 				type="button"
 			>
 				<ChevronRight
-					className="omp-disclosure-chevron shrink-0 text-[var(--omp-dim)]"
+					className="omsk-disclosure-chevron shrink-0 text-[var(--omsk-dim)]"
 					size={11}
 					style={{ transform: expanded ? "rotate(90deg)" : undefined }}
 				/>
-				<ListTodo className="shrink-0 text-[var(--omp-dim)]" size={12} />
+				<ListTodo className="shrink-0 text-[var(--omsk-dim)]" size={12} />
 				<span className="font-medium">{cleared ? t("todoSnapshot.cleared") : t("todoSnapshot.title")}</span>
 				{!cleared && (
-					<span className="tabular-nums text-[var(--omp-dim)]">{t("todoSnapshot.progress", { done, total })}</span>
+					<span className="tabular-nums text-[var(--omsk-dim)]">
+						{t("todoSnapshot.progress", { done, total })}
+					</span>
 				)}
 			</button>
 			{expanded && !cleared && (
-				<div className="mt-1 ml-1 space-y-1 border-l border-[var(--omp-border-muted)] pl-3">
+				<div className="mt-1 ml-1 space-y-1 border-l border-[var(--omsk-border-muted)] pl-3">
 					{entry.phases.map((phase, phaseIndex) => (
 						<div key={`${phase.name}-${phaseIndex}`}>
 							{entry.phases.length > 1 && (
-								<div className="py-0.5 text-omp-xs font-semibold text-[var(--omp-dim)]">{phase.name}</div>
+								<div className="py-0.5 text-omsk-xs font-semibold text-[var(--omsk-dim)]">{phase.name}</div>
 							)}
 							{phase.tasks.map((task, taskIndex) => (
 								<div
 									key={`${task.content}-${taskIndex}`}
-									className="flex items-center gap-1.5 py-0.5 text-omp-sm"
+									className="flex items-center gap-1.5 py-0.5 text-omsk-sm"
 								>
 									<span
 										aria-hidden
 										className={cx(
 											"h-1.5 w-1.5 shrink-0 rounded-full",
 											task.status === "completed"
-												? "bg-[var(--omp-success)]"
+												? "bg-[var(--omsk-success)]"
 												: task.status === "in_progress"
-													? "bg-[var(--omp-link)]"
+													? "bg-[var(--omsk-link)]"
 													: task.status === "abandoned"
-														? "bg-[var(--omp-error)]"
-														: "bg-[var(--omp-border)]",
+														? "bg-[var(--omsk-error)]"
+														: "bg-[var(--omsk-border)]",
 										)}
 									/>
 									<span
 										className={cx(
 											"min-w-0 flex-1 truncate",
 											task.status === "completed" || task.status === "abandoned"
-												? "text-[var(--omp-dim)] line-through"
-												: "text-[var(--omp-muted)]",
+												? "text-[var(--omsk-dim)] line-through"
+												: "text-[var(--omsk-muted)]",
 										)}
 										title={task.content}
 									>

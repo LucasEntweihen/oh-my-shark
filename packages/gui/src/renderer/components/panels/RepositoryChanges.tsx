@@ -186,7 +186,7 @@ export function RepositoryChanges({ split = false }: { split?: boolean }) {
 			{/* The scope note is reference, not chrome: assistive tech reads it, sighted users get it on hover. */}
 			<p className="sr-only">{t("diffPanel.repositoryScope")}</p>
 			<div className="flex h-9 shrink-0 items-center gap-2 pr-2 pl-3" title={t("diffPanel.repositoryScope")}>
-				<span className="min-w-0 flex-1 truncate text-omp-sm text-(--omp-muted)">
+				<span className="min-w-0 flex-1 truncate text-omsk-sm text-(--omsk-muted)">
 					{changes?.isRepo && fileCount > 0
 						? t("diffPanel.filesChanged", { count: fileCount, plural: fileCount === 1 ? "" : "s" })
 						: t("diffPanel.mode.repository")}
@@ -205,7 +205,7 @@ export function RepositoryChanges({ split = false }: { split?: boolean }) {
 			{error && (
 				<p
 					role="alert"
-					className="mx-3 mb-2 break-words rounded-md bg-(--omp-tool-error-bg) px-2.5 py-1.5 text-omp-sm text-(--omp-error)"
+					className="mx-3 mb-2 break-words rounded-md bg-(--omsk-tool-error-bg) px-2.5 py-1.5 text-omsk-sm text-(--omsk-error)"
 				>
 					{error}
 				</p>
@@ -216,13 +216,13 @@ export function RepositoryChanges({ split = false }: { split?: boolean }) {
 				</div>
 			)}
 			{changes?.truncated && (
-				<p role="status" className="px-3 pb-2 text-omp-xs text-(--omp-warning)">
+				<p role="status" className="px-3 pb-2 text-omsk-xs text-(--omsk-warning)">
 					{t("diffPanel.listLimited")}
 				</p>
 			)}
 			<div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-3">
 				{loading && !changes ? (
-					<p className="px-3 py-2 text-omp-sm text-(--omp-dim)">{t("common.loading")}</p>
+					<p className="px-3 py-2 text-omsk-sm text-(--omsk-dim)">{t("common.loading")}</p>
 				) : changes && !changes.isRepo ? (
 					<PanelEmpty icon={FolderX} title={t("diffPanel.notRepoTitle")} hint={t("diffPanel.notRepo")} />
 				) : changes?.files.length === 0 ? (
@@ -233,7 +233,7 @@ export function RepositoryChanges({ split = false }: { split?: boolean }) {
 						hint={t("diffPanel.cleanHint")}
 					/>
 				) : changes && files.length === 0 ? (
-					<p className="px-3 py-6 text-center text-omp-sm text-(--omp-dim)">{t("diffPanel.noMatch")}</p>
+					<p className="px-3 py-6 text-center text-omsk-sm text-(--omsk-dim)">{t("diffPanel.noMatch")}</p>
 				) : (
 					files.map(file => {
 						const entry = diffs.get(file.path);
@@ -255,22 +255,22 @@ export function RepositoryChanges({ split = false }: { split?: boolean }) {
 									}
 								>
 									{!entry || entry.state === "loading" ? (
-										<p className="px-4 py-2 text-omp-sm text-(--omp-dim)">{t("common.loading")}</p>
+										<p className="px-4 py-2 text-omsk-sm text-(--omsk-dim)">{t("common.loading")}</p>
 									) : entry.state === "error" ? (
-										<p role="alert" className="break-words px-4 py-2 text-omp-sm text-(--omp-error)">
+										<p role="alert" className="break-words px-4 py-2 text-omsk-sm text-(--omsk-error)">
 											{entry.error}
 										</p>
 									) : entry.diff.kind === "text" ? (
 										<>
 											<DiffBody diff={entry.diff.diff} filePath={entry.diff.path} split={split} />
 											{entry.diff.truncated && (
-												<p className="px-4 py-1.5 text-omp-xs text-(--omp-warning)">
+												<p className="px-4 py-1.5 text-omsk-xs text-(--omsk-warning)">
 													{t("diffPanel.previewLimited")}
 												</p>
 											)}
 										</>
 									) : (
-										<p className="px-4 py-2 text-omp-sm text-(--omp-dim)">
+										<p className="px-4 py-2 text-omsk-sm text-(--omsk-dim)">
 											{t(`diffPanel.kind.${entry.diff.kind}`)}
 										</p>
 									)}

@@ -62,31 +62,31 @@ function ProjectPreview({
 	const sources = overview?.sources.filter(source => source.state !== "old") ?? [];
 	const summary = overview?.summary.trim() || overview?.notes[0]?.text || overview?.lessons[0]?.text;
 	return (
-		<article className="omp-card min-w-0 p-3" ref={card}>
+		<article className="omsk-card min-w-0 p-3" ref={card}>
 			<h3>
 				<button
-					className="group flex w-full min-w-0 items-center gap-2 rounded-md py-1 text-left text-omp-md font-medium hover:text-(--omp-accent)"
+					className="group flex w-full min-w-0 items-center gap-2 rounded-md py-1 text-left text-omsk-md font-medium hover:text-(--omsk-accent)"
 					onClick={() => onOpen(project.cwd)}
 					title={project.cwd}
 					type="button"
 				>
-					<FolderOpen aria-hidden size={15} className="shrink-0 text-(--omp-muted)" />
+					<FolderOpen aria-hidden size={15} className="shrink-0 text-(--omsk-muted)" />
 					<span className="min-w-0 flex-1 truncate">{project.label}</span>
-					<ChevronRight aria-hidden size={14} className="shrink-0 text-(--omp-muted)" />
+					<ChevronRight aria-hidden size={14} className="shrink-0 text-(--omsk-muted)" />
 				</button>
 			</h3>
 			{error ? (
-				<p className="line-clamp-2 pt-1 text-omp-xs text-(--omp-warning)" title={error}>
+				<p className="line-clamp-2 pt-1 text-omsk-xs text-(--omsk-warning)" title={error}>
 					{error}
 				</p>
 			) : overview ? (
 				showSources ? (
 					<>
-						<p className="pt-1 text-omp-xs text-(--omp-muted)">
+						<p className="pt-1 text-omsk-xs text-(--omsk-muted)">
 							{t("memory.project.sourceCount", { count: sources.length })}
 						</p>
 						{sources.length > 0 && (
-							<ul className="mt-1 space-y-0.5 text-omp-sm">
+							<ul className="mt-1 space-y-0.5 text-omsk-sm">
 								{sources.slice(0, 3).map(source => (
 									<li className="truncate" key={source.threadId}>
 										{source.title?.trim() || t("search.untitled")}
@@ -96,14 +96,14 @@ function ProjectPreview({
 						)}
 					</>
 				) : summary ? (
-					<div className="mt-1 max-h-24 overflow-hidden text-omp-sm text-(--omp-muted)">
+					<div className="mt-1 max-h-24 overflow-hidden text-omsk-sm text-(--omsk-muted)">
 						<MarkdownRenderer content={summary.slice(0, 750)} />
 					</div>
 				) : (
-					<p className="pt-1 text-omp-xs text-(--omp-muted)">{t("memory.status.empty")}</p>
+					<p className="pt-1 text-omsk-xs text-(--omsk-muted)">{t("memory.status.empty")}</p>
 				)
 			) : (
-				<span className="flex min-h-6 items-center text-(--omp-muted)">{seen && <Spinner size="sm" />}</span>
+				<span className="flex min-h-6 items-center text-(--omsk-muted)">{seen && <Spinner size="sm" />}</span>
 			)}
 		</article>
 	);
@@ -127,9 +127,9 @@ export function MemoryAcrossProjects({
 	const t = useT();
 	return (
 		<div className="mx-auto max-w-5xl space-y-3 px-5 py-4">
-			<p className="text-omp-sm text-(--omp-muted)">{t("memory.project.allHint")}</p>
+			<p className="text-omsk-sm text-(--omsk-muted)">{t("memory.project.allHint")}</p>
 			{error && (
-				<div role="alert" className="flex flex-wrap items-center gap-2 text-omp-sm text-(--omp-warning)">
+				<div role="alert" className="flex flex-wrap items-center gap-2 text-omsk-sm text-(--omsk-warning)">
 					<span>{error}</span>
 					<Button onClick={onRetry} size="sm">
 						{t("common.retry")}
@@ -138,7 +138,7 @@ export function MemoryAcrossProjects({
 			)}
 			{loading && projects.length === 0 ? <Spinner size="sm" /> : null}
 			{!loading && !error && projects.length === 0 ? (
-				<p className="text-omp-sm text-(--omp-muted)">{t("memory.project.allEmpty")}</p>
+				<p className="text-omsk-sm text-(--omsk-muted)">{t("memory.project.allEmpty")}</p>
 			) : null}
 			<div className="grid gap-2 sm:grid-cols-2">
 				{projects.map(project => (

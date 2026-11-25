@@ -91,15 +91,15 @@ export function runDotClass(run: TaskRun): string {
 	const { variant } = runOutcome(run);
 	switch (variant) {
 		case "success":
-			return "bg-(--omp-success)";
+			return "bg-(--omsk-success)";
 		case "error":
-			return "bg-(--omp-error)";
+			return "bg-(--omsk-error)";
 		case "warning":
-			return "bg-(--omp-warning)";
+			return "bg-(--omsk-warning)";
 		case "info":
-			return "bg-(--omp-link)";
+			return "bg-(--omsk-link)";
 		default:
-			return "bg-(--omp-border-strong)";
+			return "bg-(--omsk-border-strong)";
 	}
 }
 

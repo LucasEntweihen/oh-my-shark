@@ -74,18 +74,18 @@ function shellOptions(): Promise<EnumerableOption[]> {
 
 function SettingStatus({ dirty, saving, saved }: { dirty: boolean; saving: boolean; saved: boolean }) {
 	const t = useT();
-	if (saving) return <span className="shrink-0 text-omp-xs text-(--omp-muted)">{t("common.saving")}</span>;
+	if (saving) return <span className="shrink-0 text-omsk-xs text-(--omsk-muted)">{t("common.saving")}</span>;
 	if (dirty) {
 		return (
-			<span className="flex shrink-0 items-center gap-1 text-omp-xs text-(--omp-warning)">
-				<span className="size-1.5 rounded-full bg-(--omp-warning)" />
+			<span className="flex shrink-0 items-center gap-1 text-omsk-xs text-(--omsk-warning)">
+				<span className="size-1.5 rounded-full bg-(--omsk-warning)" />
 				{t("common.unsaved")}
 			</span>
 		);
 	}
 	if (saved) {
 		return (
-			<span className="flex shrink-0 items-center gap-0.5 text-omp-xs text-(--omp-success)">
+			<span className="flex shrink-0 items-center gap-0.5 text-omsk-xs text-(--omsk-success)">
 				<Check size={10} />
 				{t("common.saved")}
 			</span>
@@ -122,7 +122,7 @@ function draftFor(entry: SettingEntry, value: unknown): string {
 }
 
 const SELECT_CLASS =
-	"w-full rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-2.5 py-1.5 text-omp-md leading-[1.45] text-(--omp-text) transition-colors duration-100 hover:border-(--omp-border-strong) focus:border-(--omp-input-focus-border) focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
+	"w-full rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-2.5 py-1.5 text-omsk-md leading-[1.45] text-(--omsk-text) transition-colors duration-100 hover:border-(--omsk-border-strong) focus:border-(--omsk-input-focus-border) focus:outline-none disabled:cursor-not-allowed disabled:opacity-50";
 
 /** String settings holding a prompt: a one-line field is too narrow to read or write one. */
 const PROMPT_SETTINGS = new Set(["chat.systemPrompt"]);
@@ -305,7 +305,7 @@ function SchemaSettingRow({
 		entry.restartRequired === true ? (
 			<span
 				title={t("settings.restartRequired.hint")}
-				className="shrink-0 rounded border border-[var(--omp-warning)]/40 px-1 py-px text-omp-xxs font-medium text-[var(--omp-warning)]"
+				className="shrink-0 rounded border border-[var(--omsk-warning)]/40 px-1 py-px text-omsk-xxs font-medium text-[var(--omsk-warning)]"
 			>
 				{t("settings.restartRequired.badge")}
 			</span>
@@ -319,7 +319,7 @@ function SchemaSettingRow({
 			return (
 				<Toggle
 					badge={restartBadge}
-					className="omp-settings-row"
+					className="omsk-settings-row"
 					checked={value === true}
 					description={description}
 					disabled={saving}
@@ -370,9 +370,9 @@ function SchemaSettingRow({
 				typeof value === "object" &&
 				!Array.isArray(value);
 			return (
-				<div className="omp-settings-row transition-colors">
+				<div className="omsk-settings-row transition-colors">
 					<div className="flex items-center gap-2">
-						<span className="text-omp-md font-medium text-(--omp-text)" title={entry.path}>
+						<span className="text-omsk-md font-medium text-(--omsk-text)" title={entry.path}>
 							{label}
 						</span>
 
@@ -380,11 +380,11 @@ function SchemaSettingRow({
 						{status}
 					</div>
 					{description && (
-						<span className="mt-0.5 block text-omp-sm leading-snug text-(--omp-muted)">{description}</span>
+						<span className="mt-0.5 block text-omsk-sm leading-snug text-(--omsk-muted)">{description}</span>
 					)}
 					{masked ? (
-						<div className="mt-2 flex items-center justify-between rounded-md border border-(--omp-border-muted) px-2.5 py-2">
-							<span className="text-omp-md text-(--omp-muted)">••••••••</span>
+						<div className="mt-2 flex items-center justify-between rounded-md border border-(--omsk-border-muted) px-2.5 py-2">
+							<span className="text-omsk-md text-(--omsk-muted)">••••••••</span>
 							<Button onClick={() => setRevealed(true)} size="sm" type="button" variant="ghost">
 								<Eye size={12} className="mr-1 inline" />
 								{t("common.reveal")}
@@ -478,9 +478,9 @@ function SchemaSettingRow({
 		// Prompts get a full-width multi-line editor below the label, applied explicitly.
 		if (entry.type === "string" && PROMPT_SETTINGS.has(entry.path)) {
 			return (
-				<div className="omp-settings-row transition-colors">
+				<div className="omsk-settings-row transition-colors">
 					<div className="flex items-center gap-2">
-						<span className="text-omp-md font-medium text-(--omp-text)" title={entry.path}>
+						<span className="text-omsk-md font-medium text-(--omsk-text)" title={entry.path}>
 							{label}
 						</span>
 
@@ -488,7 +488,7 @@ function SchemaSettingRow({
 						{status}
 					</div>
 					{description && (
-						<span className="mt-0.5 block text-omp-sm leading-snug text-(--omp-muted)">{description}</span>
+						<span className="mt-0.5 block text-omsk-sm leading-snug text-(--omsk-muted)">{description}</span>
 					)}
 					<TextArea
 						compact
@@ -642,7 +642,7 @@ function SchemaSettingRow({
 						{entry.secret === true && (
 							<button
 								aria-label={masked ? t("common.revealValue") : t("common.hideValue")}
-								className="absolute top-1/2 right-2 -translate-y-1/2 text-(--omp-dim) hover:text-(--omp-text)"
+								className="absolute top-1/2 right-2 -translate-y-1/2 text-(--omsk-dim) hover:text-(--omsk-text)"
 								onClick={() => setRevealed(!revealed)}
 								type="button"
 							>
@@ -655,10 +655,10 @@ function SchemaSettingRow({
 		}
 
 		return (
-			<div className="settings-field-row omp-settings-row transition-colors">
+			<div className="settings-field-row omsk-settings-row transition-colors">
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2">
-						<span className="text-omp-md font-medium text-(--omp-text)" title={entry.path}>
+						<span className="text-omsk-md font-medium text-(--omsk-text)" title={entry.path}>
 							{label}
 						</span>
 
@@ -666,7 +666,7 @@ function SchemaSettingRow({
 						{status}
 					</div>
 					{description && (
-						<span className="mt-0.5 block text-omp-sm leading-snug text-(--omp-muted)">{description}</span>
+						<span className="mt-0.5 block text-omsk-sm leading-snug text-(--omsk-muted)">{description}</span>
 					)}
 				</div>
 				<div className="settings-field-control">{control}</div>
@@ -699,12 +699,12 @@ function SchemaSettingRow({
 				</div>
 			)}
 			{error && (
-				<p role="alert" className="pb-2 text-omp-xs text-(--omp-error)">
+				<p role="alert" className="pb-2 text-omsk-xs text-(--omsk-error)">
 					{error}
 				</p>
 			)}
 			{restartPending && !overriddenSave && (
-				<p className="mx-2 mb-2 flex items-center gap-1.5 text-omp-xs text-(--omp-warning)" role="status">
+				<p className="mx-2 mb-2 flex items-center gap-1.5 text-omsk-xs text-(--omsk-warning)" role="status">
 					<RotateCw aria-hidden size={11} />
 					{t("settings.effect.restartPending")}
 				</p>
@@ -717,14 +717,14 @@ function SchemaSettingRow({
 				{overrideLayer && provenance && (
 					<details
 						className={cx(
-							"mb-2 rounded-md px-2 py-1.5 text-omp-xs",
+							"mb-2 rounded-md px-2 py-1.5 text-omsk-xs",
 							overriddenSave
-								? "border border-[var(--omp-warning)]/40 bg-[var(--omp-warning)]/8 text-(--omp-text)"
-								: "text-(--omp-muted)",
+								? "border border-[var(--omsk-warning)]/40 bg-[var(--omsk-warning)]/8 text-(--omsk-text)"
+								: "text-(--omsk-muted)",
 						)}
 					>
 						<summary className="cursor-pointer">
-							<AlertTriangle aria-hidden className="mx-1 inline align-[-1px] text-(--omp-warning)" size={11} />
+							<AlertTriangle aria-hidden className="mx-1 inline align-[-1px] text-(--omsk-warning)" size={11} />
 							{overriddenSave
 								? t("settings.effect.overriddenAfterSave", {
 										source: t(`settings.effect.source.${overrideLayer}`),
@@ -732,7 +732,7 @@ function SchemaSettingRow({
 									})
 								: t("settings.effect.overridden", { source: t(`settings.effect.source.${overrideLayer}`) })}
 						</summary>
-						<div className="mt-1.5 space-y-1 pl-4 text-(--omp-dim)">
+						<div className="mt-1.5 space-y-1 pl-4 text-(--omsk-dim)">
 							<p>
 								{t("settings.source.label")}:{" "}
 								{provenance.layers.map(layer => t(`settings.source.${layer}`)).join(" → ")}

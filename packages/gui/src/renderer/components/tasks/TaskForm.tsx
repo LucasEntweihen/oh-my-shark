@@ -108,7 +108,7 @@ function localParts(ms: number): { date: string; time: string } {
 
 /** Sized and styled like the shared `Input`, so a row of controls lines up. */
 const SELECT_CLASS =
-	"rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-3 py-[9px] text-omp-lg leading-[1.45] text-(--omp-text) shadow-(--omp-shadow-sm) transition-[border-color,box-shadow] duration-150 hover:border-(--omp-border-strong) focus:border-(--omp-input-focus-border) focus:shadow-[0_0_0_3px_var(--omp-input-glow)] focus:outline-none";
+	"rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-3 py-[9px] text-omsk-lg leading-[1.45] text-(--omsk-text) shadow-(--omsk-shadow-sm) transition-[border-color,box-shadow] duration-150 hover:border-(--omsk-border-strong) focus:border-(--omsk-input-focus-border) focus:shadow-[0_0_0_3px_var(--omsk-input-glow)] focus:outline-none";
 
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const MINUTE_STEPS = Array.from({ length: 12 }, (_, step) => step * 5);
@@ -135,7 +135,7 @@ function TimeSelect({ value, onChange }: { value: string; onChange: (value: stri
 					</option>
 				))}
 			</select>
-			<span className="text-omp-lg text-(--omp-muted)">:</span>
+			<span className="text-omsk-lg text-(--omsk-muted)">:</span>
 			<select
 				aria-label={t("tasks.form.minute")}
 				className={cx(SELECT_CLASS, "tabular-nums")}
@@ -188,17 +188,17 @@ function Segmented<T extends string>({
 	return (
 		<div
 			aria-label={label}
-			className="inline-flex rounded-lg border border-(--omp-border-muted) p-0.5"
+			className="inline-flex rounded-lg border border-(--omsk-border-muted) p-0.5"
 			role="radiogroup"
 		>
 			{options.map(option => (
 				<button
 					aria-checked={option.id === value}
 					className={cx(
-						"rounded-md px-3 py-1 text-omp-md font-medium transition-[background-color,color,box-shadow] duration-150",
+						"rounded-md px-3 py-1 text-omsk-md font-medium transition-[background-color,color,box-shadow] duration-150",
 						option.id === value
-							? "bg-(--omp-selected-bg) text-(--omp-text) shadow-(--omp-shadow-sm)"
-							: "text-(--omp-muted) hover:text-(--omp-text)",
+							? "bg-(--omsk-selected-bg) text-(--omsk-text) shadow-(--omsk-shadow-sm)"
+							: "text-(--omsk-muted) hover:text-(--omsk-text)",
 					)}
 					key={option.id}
 					onClick={() => onChange(option.id)}
@@ -215,8 +215,8 @@ function Segmented<T extends string>({
 function FieldLabel({ children, error }: { children: ReactNode; error?: string }) {
 	return (
 		<div className="mb-1.5 flex items-baseline justify-between gap-3">
-			<span className="text-omp-md font-medium text-(--omp-text-secondary)">{children}</span>
-			{error && <span className="omp-fade-in text-omp-sm text-(--omp-error)">{error}</span>}
+			<span className="text-omsk-md font-medium text-(--omsk-text-secondary)">{children}</span>
+			{error && <span className="omsk-fade-in text-omsk-sm text-(--omsk-error)">{error}</span>}
 		</div>
 	);
 }
@@ -284,7 +284,7 @@ function ScheduleField({
 							))}
 						</select>
 						{preset.kind === "hourly" && (
-							<label className="flex items-center gap-2 text-omp-md text-(--omp-muted)">
+							<label className="flex items-center gap-2 text-omsk-md text-(--omsk-muted)">
 								{t("tasks.form.atMinute")}
 								<input
 									className={cx(SELECT_CLASS, "w-20 tabular-nums")}
@@ -334,7 +334,7 @@ function ScheduleField({
 				)}
 				{interval && schedule.kind === "interval" && (
 					<>
-						<span className="text-omp-md text-(--omp-muted)">{t("tasks.form.every")}</span>
+						<span className="text-omsk-md text-(--omsk-muted)">{t("tasks.form.every")}</span>
 						<input
 							aria-label={t("tasks.form.every")}
 							className={cx(SELECT_CLASS, "w-20 tabular-nums")}
@@ -373,13 +373,13 @@ function ScheduleField({
 				)}
 				{schedule.kind === "once" && <OnceField at={schedule.at} onChange={at => onChange({ kind: "once", at })} />}
 			</div>
-			<p className="mt-2 text-omp-sm text-(--omp-dim)">
+			<p className="mt-2 text-omsk-sm text-(--omsk-dim)">
 				{next.length > 0 ? (
 					<>
-						<span className="text-(--omp-muted)">{scheduleLabel(t, schedule)}</span>
+						<span className="text-(--omsk-muted)">{scheduleLabel(t, schedule)}</span>
 						{" · "}
 						{t("tasks.form.nextRuns", { times: next.map(at => formatClock(at)).join(", ") })}
-						{schedule.kind === "cron" && <span className="ml-1.5 text-(--omp-dim)">({schedule.tz})</span>}
+						{schedule.kind === "cron" && <span className="ml-1.5 text-(--omsk-dim)">({schedule.tz})</span>}
 					</>
 				) : (
 					t("tasks.form.noUpcoming")
@@ -417,27 +417,29 @@ function DepthField({
 						<button
 							aria-checked={active}
 							className={cx(
-								"omp-pressable flex flex-col gap-1 rounded-xl border px-3 py-2.5 text-left transition-[border-color,background-color,box-shadow] duration-150",
+								"omsk-pressable flex flex-col gap-1 rounded-xl border px-3 py-2.5 text-left transition-[border-color,background-color,box-shadow] duration-150",
 								active
-									? "border-(--omp-accent) bg-(--omp-selected-bg) shadow-[0_0_0_3px_var(--omp-input-glow)]"
-									: "border-(--omp-border-muted) hover:border-(--omp-border-strong)",
+									? "border-(--omsk-accent) bg-(--omsk-selected-bg) shadow-[0_0_0_3px_var(--omsk-input-glow)]"
+									: "border-(--omsk-border-muted) hover:border-(--omsk-border-strong)",
 							)}
 							key={id}
 							onClick={() => onChange(id === "research" ? { kind: id, rounds } : { kind: id })}
 							role="radio"
 							type="button"
 						>
-							<span className="flex items-center gap-1.5 text-omp-md font-medium text-(--omp-text)">
-								<Icon size={14} className="text-(--omp-muted)" />
+							<span className="flex items-center gap-1.5 text-omsk-md font-medium text-(--omsk-text)">
+								<Icon size={14} className="text-(--omsk-muted)" />
 								{t(`tasks.depth.${id}`)}
 							</span>
-							<span className="text-omp-sm leading-snug text-(--omp-dim)">{t(`tasks.depth.${id}.detail`)}</span>
+							<span className="text-omsk-sm leading-snug text-(--omsk-dim)">
+								{t(`tasks.depth.${id}.detail`)}
+							</span>
 						</button>
 					);
 				})}
 			</div>
 			{value.kind === "research" && (
-				<label className="mt-2 flex items-center gap-2 text-omp-md text-(--omp-muted)">
+				<label className="mt-2 flex items-center gap-2 text-omsk-md text-(--omsk-muted)">
 					{t("tasks.form.rounds")}
 					<input
 						className={cx(SELECT_CLASS, "w-20 tabular-nums")}
@@ -475,21 +477,23 @@ function AccessField({ value, onChange }: { value: TaskToolPolicy; onChange: (va
 						<button
 							aria-checked={active}
 							className={cx(
-								"omp-pressable flex flex-col gap-1 rounded-xl border px-3 py-2.5 text-left transition-[border-color,background-color,box-shadow] duration-150",
+								"omsk-pressable flex flex-col gap-1 rounded-xl border px-3 py-2.5 text-left transition-[border-color,background-color,box-shadow] duration-150",
 								active
-									? "border-(--omp-accent) bg-(--omp-selected-bg) shadow-[0_0_0_3px_var(--omp-input-glow)]"
-									: "border-(--omp-border-muted) hover:border-(--omp-border-strong)",
+									? "border-(--omsk-accent) bg-(--omsk-selected-bg) shadow-[0_0_0_3px_var(--omsk-input-glow)]"
+									: "border-(--omsk-border-muted) hover:border-(--omsk-border-strong)",
 							)}
 							key={id}
 							onClick={() => onChange(id)}
 							role="radio"
 							type="button"
 						>
-							<span className="flex items-center gap-1.5 text-omp-md font-medium text-(--omp-text)">
-								<Icon size={14} className={id === "full" ? "text-(--omp-warning)" : "text-(--omp-muted)"} />
+							<span className="flex items-center gap-1.5 text-omsk-md font-medium text-(--omsk-text)">
+								<Icon size={14} className={id === "full" ? "text-(--omsk-warning)" : "text-(--omsk-muted)"} />
 								{t(`tasks.access.${id}`)}
 							</span>
-							<span className="text-omp-sm leading-snug text-(--omp-dim)">{t(`tasks.access.${id}.detail`)}</span>
+							<span className="text-omsk-sm leading-snug text-(--omsk-dim)">
+								{t(`tasks.access.${id}.detail`)}
+							</span>
 						</button>
 					);
 				})}
@@ -590,18 +594,18 @@ export function TaskForm({
 			<div>
 				<button
 					aria-expanded={advanced}
-					className="flex items-center gap-1 text-omp-md font-medium text-(--omp-muted) hover:text-(--omp-text)"
+					className="flex items-center gap-1 text-omsk-md font-medium text-(--omsk-muted) hover:text-(--omsk-text)"
 					onClick={() => setAdvanced(open => !open)}
 					type="button"
 				>
 					<ChevronRight
 						size={14}
-						className={cx("omp-disclosure-chevron transition-transform duration-150", advanced && "rotate-90")}
+						className={cx("omsk-disclosure-chevron transition-transform duration-150", advanced && "rotate-90")}
 					/>
 					{t("tasks.form.advanced")}
 				</button>
 				{advanced && (
-					<div className="omp-fade-up mt-3 grid gap-4 sm:grid-cols-2">
+					<div className="omsk-fade-up mt-3 grid gap-4 sm:grid-cols-2">
 						<Input
 							error={problemText("timeout_invalid")}
 							label={t("tasks.form.timeout")}
@@ -612,7 +616,7 @@ export function TaskForm({
 							value={Math.round(draft.timeoutMs / 60_000)}
 						/>
 						<label className="block">
-							<span className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)">
+							<span className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)">
 								{t("tasks.form.notify")}
 							</span>
 							<select
@@ -647,10 +651,10 @@ export function TaskForm({
 								value={draft.verify?.command ?? ""}
 							/>
 						</div>
-						<label className="flex items-center gap-2 text-omp-md text-(--omp-text) sm:col-span-2">
+						<label className="flex items-center gap-2 text-omsk-md text-(--omsk-text) sm:col-span-2">
 							<input
 								checked={draft.startPaused}
-								className="size-4 accent-(--omp-accent)"
+								className="size-4 accent-(--omsk-accent)"
 								onChange={event => patch({ startPaused: event.target.checked })}
 								type="checkbox"
 							/>
@@ -660,7 +664,7 @@ export function TaskForm({
 				)}
 			</div>
 			{has("too_many_enabled") && (
-				<p className="omp-fade-in rounded-lg border border-[color-mix(in_srgb,var(--omp-warning)_35%,transparent)] px-3 py-2 text-omp-md text-(--omp-warning)">
+				<p className="omsk-fade-in rounded-lg border border-[color-mix(in_srgb,var(--omsk-warning)_35%,transparent)] px-3 py-2 text-omsk-md text-(--omsk-warning)">
 					{t("tasks.problem.too_many_enabled")}
 				</p>
 			)}

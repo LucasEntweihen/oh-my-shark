@@ -51,8 +51,8 @@ function SplitPane({
 }) {
 	const titles = useTitles();
 	return (
-		<div className="omp-docked-master-detail flex h-full min-h-0">
-			<aside className="flex w-80 shrink-0 flex-col border-r border-(--omp-border-muted)">
+		<div className="omsk-docked-master-detail flex h-full min-h-0">
+			<aside className="flex w-80 shrink-0 flex-col border-r border-(--omsk-border-muted)">
 				{header}
 				<div className="min-h-0 flex-1 overflow-y-auto p-2">
 					{runs.map(run => (
@@ -102,18 +102,18 @@ export function RunsView() {
 				selected ? (
 					<RunDetail run={selected} taskTitle={titles.get(selected.taskId)} />
 				) : (
-					<p className="text-omp-md text-(--omp-dim)">{t("tasks.runs.noMatch")}</p>
+					<p className="text-omsk-md text-(--omsk-dim)">{t("tasks.runs.noMatch")}</p>
 				)
 			}
 			header={
-				<div className="flex shrink-0 gap-1 border-b border-(--omp-border-muted) px-2 py-2">
+				<div className="flex shrink-0 gap-1 border-b border-(--omsk-border-muted) px-2 py-2">
 					{(["all", "attention", "running"] as const).map(id => (
 						<button
 							className={cx(
-								"flex items-center gap-1.5 rounded-md px-2.5 py-1 text-omp-sm font-medium transition-colors duration-150",
+								"flex items-center gap-1.5 rounded-md px-2.5 py-1 text-omsk-sm font-medium transition-colors duration-150",
 								filter === id
-									? "bg-(--omp-selected-bg) text-(--omp-text)"
-									: "text-(--omp-muted) hover:text-(--omp-text)",
+									? "bg-(--omsk-selected-bg) text-(--omsk-text)"
+									: "text-(--omsk-muted) hover:text-(--omsk-text)",
 							)}
 							key={id}
 							onClick={() => setFilter(id)}
@@ -124,7 +124,7 @@ export function RunsView() {
 								<span
 									className={cx(
 										"tabular-nums",
-										id === "attention" ? "text-(--omp-warning)" : "text-(--omp-link)",
+										id === "attention" ? "text-(--omsk-warning)" : "text-(--omsk-link)",
 									)}
 								>
 									{counts[id]}
@@ -158,7 +158,7 @@ function ReviewActions({ run }: { run: TaskRun }) {
 	const editsFiles = run.worktree !== undefined;
 
 	return (
-		<div className="omp-fade-in shrink-0 border-t border-(--omp-border-muted) px-6 py-3">
+		<div className="omsk-fade-in shrink-0 border-t border-(--omsk-border-muted) px-6 py-3">
 			{rejecting ? (
 				<div className="flex flex-col gap-2">
 					<TextArea
@@ -186,7 +186,7 @@ function ReviewActions({ run }: { run: TaskRun }) {
 				</div>
 			) : (
 				<div className="flex flex-wrap items-center justify-between gap-3">
-					<p className="text-omp-sm text-(--omp-dim)">
+					<p className="text-omsk-sm text-(--omsk-dim)">
 						{t(editsFiles ? "tasks.review.hintWorktree" : "tasks.review.hint")}
 					</p>
 					<div className="flex gap-2">

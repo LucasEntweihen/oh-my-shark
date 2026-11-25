@@ -249,21 +249,21 @@ export function SshSettingsPage() {
 		<div className="flex min-h-0 flex-1 flex-col">
 			<SettingsPageIntro className="mb-5" description={t("ssh.subtitle")} />
 
-			<div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-(--omp-border-muted) px-3 py-2.5 text-omp-xs text-(--omp-muted)">
+			<div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-(--omsk-border-muted) px-3 py-2.5 text-omsk-xs text-(--omsk-muted)">
 				<span className="flex items-center gap-1.5">
 					{data?.openSshAvailable ? (
-						<CheckCircle2 className="text-(--omp-success)" size={12} />
+						<CheckCircle2 className="text-(--omsk-success)" size={12} />
 					) : (
-						<XCircle className="text-(--omp-error)" size={12} />
+						<XCircle className="text-(--omsk-error)" size={12} />
 					)}
 					{data?.openSshAvailable ? t("ssh.ready.available") : t("ssh.ready.missing")}
 				</span>
 				<span className="flex items-center gap-1.5">
-					<CheckCircle2 className="text-(--omp-success)" size={12} />{" "}
+					<CheckCircle2 className="text-(--omsk-success)" size={12} />{" "}
 					{t("ssh.ready.hosts", { count: data?.hosts.length ?? 0 })}
 				</span>
 				<span className="flex items-center gap-1.5">
-					<CheckCircle2 className="text-(--omp-success)" size={12} />{" "}
+					<CheckCircle2 className="text-(--omsk-success)" size={12} />{" "}
 					{t("ssh.ready.reachable", { count: reachable })}
 				</span>
 				<Button
@@ -290,46 +290,46 @@ export function SshSettingsPage() {
 			</div>
 
 			{error && (
-				<div className="mb-3 rounded-lg border border-(--omp-error) bg-transparent px-3 py-2 text-omp-sm text-(--omp-error)">
+				<div className="mb-3 rounded-lg border border-(--omsk-error) bg-transparent px-3 py-2 text-omsk-sm text-(--omsk-error)">
 					{error}
 				</div>
 			)}
 
-			<div className="ssh-master-detail overflow-hidden rounded-lg border border-(--omp-border-muted)">
+			<div className="ssh-master-detail overflow-hidden rounded-lg border border-(--omsk-border-muted)">
 				<section className="ssh-list-pane min-w-0 overflow-x-auto">
-					<div className="grid grid-cols-[minmax(100px,.7fr)_minmax(180px,1.4fr)_70px_110px_80px] gap-3 border-b border-(--omp-border-muted) px-3 py-2 text-omp-xxs font-semibold text-(--omp-dim)">
+					<div className="grid grid-cols-[minmax(100px,.7fr)_minmax(180px,1.4fr)_70px_110px_80px] gap-3 border-b border-(--omsk-border-muted) px-3 py-2 text-omsk-xxs font-semibold text-(--omsk-dim)">
 						<span>{t("ssh.columns.alias")}</span>
 						<span>{t("ssh.columns.target")}</span>
 						<span>{t("ssh.columns.scope")}</span>
 						<span>{t("ssh.columns.platform")}</span>
 						<span>{t("ssh.columns.health")}</span>
 					</div>
-					<div className="divide-y divide-(--omp-border-muted)">
+					<div className="divide-y divide-(--omsk-border-muted)">
 						{data?.hosts.map(host => {
 							const health = hostHealth(host, tests[host.name]);
 							const failed = health === "failed";
 							const healthy = health === "healthy";
 							return (
 								<button
-									className={`grid w-full grid-cols-[minmax(100px,.7fr)_minmax(180px,1.4fr)_70px_110px_80px] items-center gap-3 px-3 py-3 text-left hover:bg-(--omp-bg-tertiary) ${selected?.name === host.name && selected.scope === host.scope ? "bg-(--omp-selected-bg)" : ""}`}
+									className={`grid w-full grid-cols-[minmax(100px,.7fr)_minmax(180px,1.4fr)_70px_110px_80px] items-center gap-3 px-3 py-3 text-left hover:bg-(--omsk-bg-tertiary) ${selected?.name === host.name && selected.scope === host.scope ? "bg-(--omsk-selected-bg)" : ""}`}
 									key={`${host.scope}:${host.name}:${host.source}`}
 									onClick={() => chooseHost(host)}
 									type="button"
 								>
 									<span className="flex min-w-0 items-center gap-2">
-										<Server className="shrink-0 text-(--omp-dim)" size={13} />
-										<span className="truncate text-omp-sm font-medium text-(--omp-text)">{host.name}</span>
+										<Server className="shrink-0 text-(--omsk-dim)" size={13} />
+										<span className="truncate text-omsk-sm font-medium text-(--omsk-text)">{host.name}</span>
 									</span>
-									<span className="truncate font-mono text-omp-xxs text-(--omp-muted)">
+									<span className="truncate font-mono text-omsk-xxs text-(--omsk-muted)">
 										{targetText(host)}
 									</span>
-									<span className="text-omp-xxs capitalize text-(--omp-muted)">{host.scope}</span>
-									<span className="truncate text-omp-xxs text-(--omp-muted)">{platformText(host)}</span>
+									<span className="text-omsk-xxs capitalize text-(--omsk-muted)">{host.scope}</span>
+									<span className="truncate text-omsk-xxs text-(--omsk-muted)">{platformText(host)}</span>
 									<span
-										className={`flex items-center gap-1.5 text-omp-xxs ${failed ? "text-(--omp-error)" : healthy ? "text-(--omp-success)" : "text-(--omp-dim)"}`}
+										className={`flex items-center gap-1.5 text-omsk-xxs ${failed ? "text-(--omsk-error)" : healthy ? "text-(--omsk-success)" : "text-(--omsk-dim)"}`}
 									>
 										<span
-											className={`size-1.5 rounded-full ${failed ? "bg-(--omp-error)" : healthy ? "bg-(--omp-success)" : "bg-(--omp-dim)"}`}
+											className={`size-1.5 rounded-full ${failed ? "bg-(--omsk-error)" : healthy ? "bg-(--omsk-success)" : "bg-(--omsk-dim)"}`}
 										/>
 										{failed
 											? t("ssh.health.failed")
@@ -347,9 +347,9 @@ export function SshSettingsPage() {
 						)}
 						{!loading && !loadError && (data?.hosts.length ?? 0) === 0 && (
 							<div className="flex h-56 flex-col items-center justify-center gap-2 text-center">
-								<Server className="text-(--omp-dim)" size={24} />
-								<div className="text-omp-md font-medium text-(--omp-text)">{t("ssh.empty.title")}</div>
-								<div className="text-omp-xs text-(--omp-dim)">{t("ssh.empty.description")}</div>
+								<Server className="text-(--omsk-dim)" size={24} />
+								<div className="text-omsk-md font-medium text-(--omsk-text)">{t("ssh.empty.title")}</div>
+								<div className="text-omsk-xs text-(--omsk-dim)">{t("ssh.empty.description")}</div>
 								<Button
 									disabled={!sidecarReady}
 									icon={<Plus size={12} />}
@@ -365,22 +365,22 @@ export function SshSettingsPage() {
 				</section>
 
 				<aside className="ssh-detail-pane min-w-0 overflow-y-auto p-3">
-					<div className="mb-4 flex items-center gap-2 border-b border-(--omp-border-muted) pb-3">
+					<div className="mb-4 flex items-center gap-2 border-b border-(--omsk-border-muted) pb-3">
 						<div
-							className={`size-2 shrink-0 rounded-full ${detailHealth === "failed" ? "bg-(--omp-error)" : detailHealth === "healthy" ? "bg-(--omp-success)" : "bg-(--omp-dim)"}`}
+							className={`size-2 shrink-0 rounded-full ${detailHealth === "failed" ? "bg-(--omsk-error)" : detailHealth === "healthy" ? "bg-(--omsk-success)" : "bg-(--omsk-dim)"}`}
 						/>
 						<div className="min-w-0 flex-1">
-							<h3 className="truncate text-omp-md font-semibold text-(--omp-text)">
+							<h3 className="truncate text-omsk-md font-semibold text-(--omsk-text)">
 								{creating ? t("ssh.newHost") : draft.name || t("ssh.selectHost")}
 							</h3>
 							{!creating && selected && (
-								<p className="mt-0.5 truncate font-mono text-omp-xxs text-(--omp-dim)">
+								<p className="mt-0.5 truncate font-mono text-omsk-xxs text-(--omsk-dim)">
 									{targetText(selected)}
 								</p>
 							)}
 						</div>
 						<span
-							className={`shrink-0 text-omp-xxs ${detailHealth === "failed" ? "text-(--omp-error)" : detailHealth === "healthy" ? "text-(--omp-success)" : "text-(--omp-dim)"}`}
+							className={`shrink-0 text-omsk-xxs ${detailHealth === "failed" ? "text-(--omsk-error)" : detailHealth === "healthy" ? "text-(--omsk-success)" : "text-(--omsk-dim)"}`}
 						>
 							{tested ? t("ssh.connected") : t(`ssh.health.${detailHealth}`)}
 						</span>
@@ -416,11 +416,11 @@ export function SshSettingsPage() {
 							/>
 						</div>
 						<label className="block">
-							<span className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)">
+							<span className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)">
 								{t("ssh.form.scope")}
 							</span>
 							<select
-								className="h-9 w-full rounded-lg border border-(--omp-input-border) bg-(--omp-input-bg) px-3 text-omp-md text-(--omp-text)"
+								className="h-9 w-full rounded-lg border border-(--omsk-input-border) bg-(--omsk-input-bg) px-3 text-omsk-md text-(--omsk-text)"
 								onChange={event =>
 									setDraft(current => ({ ...current, scope: event.target.value as "user" | "project" }))
 								}
@@ -431,12 +431,12 @@ export function SshSettingsPage() {
 							</select>
 						</label>
 						<div>
-							<span className="mb-1.5 block text-omp-md font-medium text-(--omp-text-secondary)">
+							<span className="mb-1.5 block text-omsk-md font-medium text-(--omsk-text-secondary)">
 								{t("ssh.form.key")}
 							</span>
 							<div className="flex gap-2">
 								<Input
-									className="font-mono text-omp-sm"
+									className="font-mono text-omsk-sm"
 									onChange={event => setDraft(current => ({ ...current, keyPath: event.target.value }))}
 									placeholder="~/.ssh/id_ed25519"
 									value={draft.keyPath ?? ""}
@@ -457,15 +457,17 @@ export function SshSettingsPage() {
 							value={draft.description ?? ""}
 						/>
 						<button
-							className="flex w-full items-start justify-between gap-3 rounded-lg border border-(--omp-border-muted) px-3 py-2.5 text-left"
+							className="flex w-full items-start justify-between gap-3 rounded-lg border border-(--omsk-border-muted) px-3 py-2.5 text-left"
 							onClick={() => setDraft(current => ({ ...current, compat: !current.compat }))}
 							role="switch"
 							aria-checked={draft.compat === true}
 							type="button"
 						>
 							<span>
-								<span className="block text-omp-sm font-medium text-(--omp-text)">{t("ssh.form.compat")}</span>
-								<span className="mt-0.5 block text-omp-xxs leading-relaxed text-(--omp-dim)">
+								<span className="block text-omsk-sm font-medium text-(--omsk-text)">
+									{t("ssh.form.compat")}
+								</span>
+								<span className="mt-0.5 block text-omsk-xxs leading-relaxed text-(--omsk-dim)">
 									{t("ssh.form.compatDesc")}
 								</span>
 							</span>
@@ -473,7 +475,7 @@ export function SshSettingsPage() {
 						</button>
 					</div>
 
-					<div className="mt-4 flex items-center justify-end gap-2 border-t border-(--omp-border-muted) pt-3">
+					<div className="mt-4 flex items-center justify-end gap-2 border-t border-(--omsk-border-muted) pt-3">
 						{selected?.editable && !creating && (
 							<Button
 								aria-label={t("ssh.delete")}
@@ -507,15 +509,15 @@ export function SshSettingsPage() {
 
 					{tests[draft.name] && (
 						<div
-							className={`mt-3 rounded-lg border bg-transparent px-3 py-2 ${tests[draft.name].ok ? "border-(--omp-success)" : "border-(--omp-error)"}`}
+							className={`mt-3 rounded-lg border bg-transparent px-3 py-2 ${tests[draft.name].ok ? "border-(--omsk-success)" : "border-(--omsk-error)"}`}
 						>
 							<div
-								className={`flex items-center gap-2 text-omp-xs font-medium ${tests[draft.name].ok ? "text-(--omp-success)" : "text-(--omp-error)"}`}
+								className={`flex items-center gap-2 text-omsk-xs font-medium ${tests[draft.name].ok ? "text-(--omsk-success)" : "text-(--omsk-error)"}`}
 							>
 								{tests[draft.name].ok ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
 								{tests[draft.name].ok ? t("ssh.test.success") : t("ssh.test.failed")}
 							</div>
-							<p className="mt-1 text-omp-xxs leading-relaxed text-(--omp-muted)">
+							<p className="mt-1 text-omsk-xxs leading-relaxed text-(--omsk-muted)">
 								{tests[draft.name].ok
 									? [tests[draft.name].os, tests[draft.name].shell, tests[draft.name].transferShell]
 											.filter(Boolean)
