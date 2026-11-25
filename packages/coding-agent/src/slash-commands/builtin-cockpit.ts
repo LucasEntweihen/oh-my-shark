@@ -71,18 +71,12 @@ export function formatCockpitHelp(): string {
 }
 
 function persistSettingSafe(settings: Settings | undefined, id: string, value: unknown): void {
-	if (!settings) return;
+	if (!settings || typeof settings.writeValue !== "function") return;
 	const setting = lookupSetting(id);
+	if (!setting) return;
 	try {
-		if (setting && typeof settings.writeValue === "function") {
-			setting.assertWritable(value);
-			setting.set(settings, value as never);
-			return;
-		}
-		const fallbackSettings = settings as { set?: (key: string, val: unknown) => void };
-		if (typeof fallbackSettings.set === "function") {
-			fallbackSettings.set(id, value);
-		}
+		setting.assertWritable(value);
+		setting.set(settings, value as never);
 	} catch {
 		// Non-blocking: ignore invalid setting persistence while keeping live cockpit updated
 	}
@@ -113,11 +107,8 @@ export async function handleCockpitCommand(
 		// Non-blocking fallback
 	}
 
-	const sub = parseSubcommand(parsed.args);
-	const action = sub.verb || "view";
-
-	// Sync live data from Git workspace (force only for view/sync so rapid settings toggles stay instant)
-	cockpit.syncFromWorkspaceGit(cwd, action === "view" || action === "sync");
+	// Sync live data from Git workspace (fills real diff/branch when no active transaction)
+	cockpit.syncFromWorkspaceGit(cwd, true);
 
 	// Sync live data from Mente em Teia only if initialized for this workspace
 	try {
@@ -128,6 +119,9 @@ export async function handleCockpitCommand(
 	} catch {
 		// Non-blocking fallback
 	}
+
+	const sub = parseSubcommand(parsed.args);
+	const action = sub.verb || "view";
 
 	switch (action) {
 		case "cycle": {
@@ -253,10 +247,10 @@ export async function handleCockpitCommand(
 			const graph = cockpit.getMemoryGraph();
 			await runtime.output(
 				`🔄 Deep Sea Cockpit sincronizado com sucesso!\n` +
-					`  • Alterações: +${changes.totalAdded} / -${changes.totalRemoved} linhas (${changes.modifiedCount} arquivos, ${changes.checkpointsCount} checkpoints)\n` +
-					`  • Arquivos recentes rastreados: ${files.length}\n` +
-					`  • Nós na Mente em Teia: ${graph.nodes.length} nós, ${graph.edges.length} arestas\n` +
-					`  • Eventos registrados: ${cockpit.getRecentEvents().length}`,
+				`  • Alterações: +${changes.totalAdded} / -${changes.totalRemoved} linhas (${changes.modifiedCount} arquivos, ${changes.checkpointsCount} checkpoints)\n` +
+				`  • Arquivos recentes rastreados: ${files.length}\n` +
+				`  • Nós na Mente em Teia: ${graph.nodes.length} nós, ${graph.edges.length} arestas\n` +
+				`  • Eventos registrados: ${cockpit.getRecentEvents().length}`,
 			);
 			return commandConsumed();
 		}
@@ -295,8 +289,8 @@ export async function handleDiffCommand(
 			detailed.length > 0
 				? detailed.map(file => `  • ${file.path} (+${file.linesAdded} / -${file.linesRemoved}) [${file.status}]`)
 				: cockpit
-						.getRecentFiles()
-						.map(file => `  • ${file.path} (+${file.linesAdded} / -${file.linesRemoved}) [git]`);
+					.getRecentFiles()
+					.map(file => `  • ${file.path} (+${file.linesAdded} / -${file.linesRemoved}) [git]`);
 
 		const lines: string[] = [
 			"🔮 Live Diff & Changes Monitor:",

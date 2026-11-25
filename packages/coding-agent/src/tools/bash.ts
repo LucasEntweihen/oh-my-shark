@@ -571,17 +571,17 @@ function normalizeReady(ready: ServiceReady | undefined): ServiceReady | undefin
 	return { log, host, port, timeout };
 }
 
-export interface BashToolOptions {}
+export interface BashToolOptions { }
 
 type ManagedBashJobCompletion =
 	| {
-			kind: "completed";
-			result: AgentToolResult<BashToolDetails>;
-	  }
+		kind: "completed";
+		result: AgentToolResult<BashToolDetails>;
+	}
 	| {
-			kind: "failed";
-			error: unknown;
-	  };
+		kind: "failed";
+		error: unknown;
+	};
 
 interface ManagedBashJobHandle {
 	jobId: string;
@@ -925,7 +925,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 		args.pty === true ? "exclusive" : "shared";
 	readonly strict = true;
 
-	constructor(private readonly session: ToolSession) {}
+	constructor(private readonly session: ToolSession) { }
 
 	/**
 	 * URL filesystem for one embedded-shell run: this session's context, cancelled by the run's own
@@ -1197,9 +1197,9 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 			saveArtifact: result.artifactError
 				? undefined
 				: async (full: string) => {
-						inlineArtifactId ??= result.artifactId ?? (await saveBashOriginalArtifact(this.session, full));
-						return inlineArtifactId;
-					},
+					inlineArtifactId ??= result.artifactId ?? (await saveBashOriginalArtifact(this.session, full));
+					return inlineArtifactId;
+				},
 		};
 
 		if (isTimeout) {
@@ -1418,16 +1418,16 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 				const notifier =
 					options.notify && this.session.openAsyncNotify
 						? new OutputNotifier(
-								options.notify,
-								outputTap,
-								this.session.openAsyncNotify({
-									id: jobId,
-									type: "bash",
-									command: options.command,
-									pattern: options.notify.source,
-									running: () => manager.getJob(jobId)?.status === "running",
-								}),
-							)
+							options.notify,
+							outputTap,
+							this.session.openAsyncNotify({
+								id: jobId,
+								type: "bash",
+								command: options.command,
+								pattern: options.notify.source,
+								running: () => manager.getJob(jobId)?.status === "running",
+							}),
+						)
 						: undefined;
 				// A cancelled job reports nothing more, even while its command is still shutting down.
 				if (notifier) runSignal.addEventListener("abort", () => notifier.stop(), { once: true });
@@ -1468,12 +1468,12 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 						},
 						onTrace: cfgDisplayShellVisualization.get(this.session.settings)
 							? trace => {
-									liveTrace = trace;
-									void report(latestText, {
-										output: latestText,
-										async: { state: "running", jobId, type: "bash" },
-									});
-								}
+								liveTrace = trace;
+								void report(latestText, {
+									output: latestText,
+									async: { state: "running", jobId, type: "bash" },
+								});
+							}
 							: undefined,
 						onMinimizedSave: originalText => saveBashOriginalArtifact(this.session, originalText),
 						streams,
@@ -1965,21 +1965,21 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 		// the executeBash branch so a cold `.envrc` can't outlast a short call.
 		const backendPreflight = bridgeTerminalAvailable
 			? await applyDirenvPreflight(
-					// The client's shell knows no internal URL.
-					await hostCommandUrls(
-						command,
-						urlBacking(this.#urlFilesystem(signal, { tier: approvalTier })),
-						this.session.settings.getShellConfig().shell,
-					),
-					commandCwd,
-					{
-						callerEnv: sessionEnv,
-						signal,
-						timeoutMs: cfgBashDirenvLoadTimeoutMs.get(this.session.settings),
-						callerTimeoutMs: timeoutMs,
-						direnvSetting: cfgBashDirenv.get(this.session.settings),
-					},
-				)
+				// The client's shell knows no internal URL.
+				await hostCommandUrls(
+					command,
+					urlBacking(this.#urlFilesystem(signal, { tier: approvalTier })),
+					this.session.settings.getShellConfig().shell,
+				),
+				commandCwd,
+				{
+					callerEnv: sessionEnv,
+					signal,
+					timeoutMs: cfgBashDirenvLoadTimeoutMs.get(this.session.settings),
+					callerTimeoutMs: timeoutMs,
+					direnvSetting: cfgBashDirenv.get(this.session.settings),
+				},
+			)
 			: undefined;
 
 		// Route through the client terminal when the client advertises the terminal capability.
@@ -2120,7 +2120,7 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 				let lastPolledOutput: ClientBridgeTerminalOutput = { output: "", truncated: false };
 
 				// Poll until the process exits, times out, or the caller aborts.
-				for (;;) {
+				for (; ;) {
 					if (!bridge.outcome) {
 						// The sleep settles within one tick even when an outcome wakes us first.
 						const tick = Promise.withResolvers<void>();
@@ -2277,64 +2277,64 @@ export class BashTool implements AgentTool<BashToolSchema, BashToolDetails> {
 		let trace: ShellTrace | undefined;
 		const emitFrame = onUpdate
 			? () =>
-					onUpdate({
-						content: [{ type: "text", text: preview }],
-						details: {
-							...(replies.length > 0 ? { replies: [...replies] } : {}),
-							...(trace ? { trace } : {}),
-						},
-					})
+				onUpdate({
+					content: [{ type: "text", text: preview }],
+					details: {
+						...(replies.length > 0 ? { replies: [...replies] } : {}),
+						...(trace ? { trace } : {}),
+					},
+				})
 			: undefined;
 		const result: BashResult | BashInteractiveResult = interactiveUi
 			? await this.#runOnTerminal(interactiveUi, {
-					command,
-					hostCwd,
-					urlCwd: virtualCwd,
-					sessionId,
-					sessionEnv,
-					timeoutMs,
-					signal,
-					mounts: await shellMounts(sessionResolveContext(this.session, { signal }), approvalTier),
-				})
+				command,
+				hostCwd,
+				urlCwd: virtualCwd,
+				sessionId,
+				sessionEnv,
+				timeoutMs,
+				signal,
+				mounts: await shellMounts(sessionResolveContext(this.session, { signal }), approvalTier),
+			})
 			: // executeBash runs its OWN direnv preflight internally — pass the RAW
-				// command here so the unset prefix is not applied twice.
-				await executeBash(command, {
-					cwd: commandCwd,
-					env: sessionEnv,
-					sessionKey: sessionId,
-					minimize: !nativeShapingOff(this.session),
-					isSessionCurrent: () => (this.session.getSessionId?.() ?? undefined) === sessionId,
-					timeout: timeoutMs ?? 0,
-					signal,
-					gitGuard: cfgBashGitGuard.get(this.session.settings),
-					ovnfs: ovnfsCommand(this.session.settings),
-					filesystem: this.#urlFilesystem(signal, {
-						tier: approvalTier,
-						onReply: text => {
-							replies.push(text);
-							emitFrame?.();
-						},
-						onWrite: noticeUrlWrites(pendingNotices),
-						toolCallId,
-					}).shellFilesystem(),
-					speech: sessionShellSpeech(this.session),
-					allocateArtifact: this.session.allocateOutputArtifact,
-					// Stream the sink's own inline view rather than re-buffering chunks.
-					onPreview: emitFrame
-						? text => {
-								preview = text;
-								emitFrame();
-							}
+			// command here so the unset prefix is not applied twice.
+			await executeBash(command, {
+				cwd: commandCwd,
+				env: sessionEnv,
+				sessionKey: sessionId,
+				minimize: !nativeShapingOff(this.session),
+				isSessionCurrent: () => (this.session.getSessionId?.() ?? undefined) === sessionId,
+				timeout: timeoutMs ?? 0,
+				signal,
+				gitGuard: cfgBashGitGuard.get(this.session.settings),
+				ovnfs: ovnfsCommand(this.session.settings),
+				filesystem: this.#urlFilesystem(signal, {
+					tier: approvalTier,
+					onReply: text => {
+						replies.push(text);
+						emitFrame?.();
+					},
+					onWrite: noticeUrlWrites(pendingNotices),
+					toolCallId,
+				}).shellFilesystem(),
+				speech: sessionShellSpeech(this.session),
+				allocateArtifact: this.session.allocateOutputArtifact,
+				// Stream the sink's own inline view rather than re-buffering chunks.
+				onPreview: emitFrame
+					? text => {
+						preview = text;
+						emitFrame();
+					}
+					: undefined,
+				onTrace:
+					emitFrame && cfgDisplayShellVisualization.get(this.session.settings)
+						? next => {
+							trace = next;
+							emitFrame();
+						}
 						: undefined,
-					onTrace:
-						emitFrame && cfgDisplayShellVisualization.get(this.session.settings)
-							? next => {
-									trace = next;
-									emitFrame();
-								}
-							: undefined,
-					onMinimizedSave: originalText => saveBashOriginalArtifact(this.session, originalText),
-				});
+				onMinimizedSave: originalText => saveBashOriginalArtifact(this.session, originalText),
+			});
 		const wallTimeMs = performance.now() - wallTimeStart;
 		if (result.cancelled) {
 			// A cancelled result is either a timeout (the command's deadline fired)

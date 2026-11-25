@@ -1,5 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { DeepSeaCockpit, type MemoryGraphData, type RecentFileItem, stripAnsi } from "./deep-sea-command";
+import {
+	DeepSeaCockpit,
+	type MemoryGraphData,
+	type RecentFileItem,
+	stripAnsi,
+} from "./deep-sea-command";
 
 describe("Subagent 4: Lower Panels & Shortcuts Engine", () => {
 	it("TDD 4.1: should render horizontal shortcut bar and dispatch actions", () => {

@@ -832,6 +832,11 @@ export function getAntigravityCliDir(): string {
 	return dirs.rootSubdir("antigravity-cli", "data");
 }
 
+/** Get the managed Antigravity SDK directory (~/.omsk/antigravity-sdk): Python venv, worker state, and session checkpoints. */
+export function getAntigravitySdkDir(): string {
+	return dirs.rootSubdir("antigravity-sdk", "data");
+}
+
 /** Get the puppeteer sandbox directory (~/.omp/puppeteer). */
 export function getPuppeteerDir(): string {
 	return dirs.rootSubdir("puppeteer", "cache");

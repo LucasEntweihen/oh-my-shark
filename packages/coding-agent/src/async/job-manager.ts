@@ -985,14 +985,14 @@ export class AsyncJobManager implements AsyncJobManagerApi {
 		const deadline =
 			options?.timeoutMs === undefined ? Number.POSITIVE_INFINITY : Date.now() + Math.max(0, options.timeoutMs);
 		const awaited = new Set<string>();
-		for (;;) {
+		for (; ;) {
 			const pending = this.#filterJobs(this.#jobs.values(), { ownerId }).filter(
 				job => !awaited.has(job.id) && (options?.excludeSuppressed !== true || !this.isDeliverySuppressed(job.id)),
 			);
 			if (pending.length === 0) return true;
 			for (const job of pending) awaited.add(job.id);
 			const settled = await this.#waitForDeliveryPromise(
-				Promise.all(pending.map(job => job.promise)).then(() => {}),
+				Promise.all(pending.map(job => job.promise)).then(() => { }),
 				deadline,
 			);
 			if (!settled) return false;
@@ -1019,7 +1019,7 @@ export class AsyncJobManager implements AsyncJobManagerApi {
 		const pendingJobIds = this.#filterJobs(this.#jobs.values(), { ownerId })
 			.filter(job => job.status === "running" || job.status === "cancelled")
 			.map(job => job.id);
-		const completion = this.waitForOwnerJobs(ownerId).then(() => {});
+		const completion = this.waitForOwnerJobs(ownerId).then(() => { });
 		return { settled: false, pendingJobIds, completion };
 	}
 
@@ -1271,10 +1271,10 @@ export class AsyncJobManager implements AsyncJobManagerApi {
 	 * sink), or stops retrying (job already evicted from `#jobs`).
 	 */
 	async #waitForJobDeliverySettled(jobId: string): Promise<void> {
-		for (;;) {
+		for (; ;) {
 			const inFlight = this.#inFlightDeliveries.find(delivery => delivery.jobId === jobId);
 			if (inFlight) {
-				await inFlight.promise?.catch(() => {});
+				await inFlight.promise?.catch(() => { });
 				continue;
 			}
 			const queued = this.#deliveries.find(delivery => delivery.jobId === jobId);
@@ -1454,17 +1454,17 @@ export class AsyncJobManager implements AsyncJobManagerApi {
 			ownerId: job?.ownerId,
 			jobSnapshot: job
 				? {
-						type: job.type,
-						status: job.status,
-						startTime: job.startTime,
-						endTime: job.endTime,
-						label: job.label,
-						intent: job.intent,
-						structured: job.structured,
-						agentId: job.agentId,
-						agentOutputPublished: job.agentOutputPublished,
-						latestDetails: job.latestDetails,
-					}
+					type: job.type,
+					status: job.status,
+					startTime: job.startTime,
+					endTime: job.endTime,
+					label: job.label,
+					intent: job.intent,
+					structured: job.structured,
+					agentId: job.agentId,
+					agentOutputPublished: job.agentOutputPublished,
+					latestDetails: job.latestDetails,
+				}
 				: undefined,
 		});
 		this.#ensureDeliveryLoop();

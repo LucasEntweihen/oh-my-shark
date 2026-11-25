@@ -1,5 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { DeepSeaCockpit, stripAnsi } from "./deep-sea-command";
+import {
+	DeepSeaCockpit,
+	stripAnsi,
+} from "./deep-sea-command";
 
 describe("Subagent 5: Runtime Status, Layout & System Integration Engine", () => {
 	it("TDD 5.1: should render bottom status bar with agent state, steps, progress bar, and shortcuts", () => {

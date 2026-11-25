@@ -459,14 +459,14 @@ export interface SystemPromptToolMetadata {
 
 export type SystemPromptToolMetadataProjection =
 	| {
-			mode: "compact";
-			toolNames: readonly string[];
-			overrides?: Partial<Record<string, Partial<SystemPromptToolMetadata>>>;
-	  }
+		mode: "compact";
+		toolNames: readonly string[];
+		overrides?: Partial<Record<string, Partial<SystemPromptToolMetadata>>>;
+	}
 	| {
-			mode: "full";
-			overrides?: Partial<Record<string, Partial<SystemPromptToolMetadata>>>;
-	  };
+		mode: "full";
+		overrides?: Partial<Record<string, Partial<SystemPromptToolMetadata>>>;
+	};
 
 export function buildSystemPromptToolMetadata(
 	tools: Map<string, AgentTool>,
@@ -910,8 +910,8 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 				? await Promise.resolve(providedWorkspaceTree)
 				: includeWorkspaceTree
 					? await logger.time("buildWorkspaceTree", () =>
-							buildWorkspaceTree(resolvedCwd, { timeoutMs: SYSTEM_PROMPT_PREP_TIMEOUT_MS }),
-						)
+						buildWorkspaceTree(resolvedCwd, { timeoutMs: SYSTEM_PROMPT_PREP_TIMEOUT_MS }),
+					)
 					: { rootPath: resolvedCwd, rendered: "", truncated: false, totalLines: 0, agentsMdFiles: [] };
 		if (additionalRootsForTree.length === 0 || !includeWorkspaceTree) return primary;
 		const extraTrees = await Promise.all(
@@ -943,8 +943,8 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 		personality === "none"
 			? Promise.resolve("")
 			: logger
-					.time("loadPersonalityOverride", loadPersonalityOverride)
-					.then(override => override ?? bundledPersonality);
+				.time("loadPersonalityOverride", loadPersonalityOverride)
+				.then(override => override ?? bundledPersonality);
 
 	const [
 		resolvedCustomPrompt,
@@ -1044,16 +1044,16 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 	const toolInventory = toolListMode
 		? ""
 		: renderToolInventory(
-				inventoryToolNames.map(name => {
-					const meta = tools?.get(name);
-					return {
-						name: toolPromptNames.get(name) ?? name,
-						description: meta?.description ?? "",
-						parameters: meta?.parameters ?? ({ type: "object" } as TSchema),
-						examples: meta?.examples,
-					};
-				}),
-			);
+			inventoryToolNames.map(name => {
+				const meta = tools?.get(name);
+				return {
+					name: toolPromptNames.get(name) ?? name,
+					description: meta?.description ?? "",
+					parameters: meta?.parameters ?? ({ type: "object" } as TSchema),
+					examples: meta?.examples,
+				};
+			}),
+		);
 
 	// Filter skills for the rendered system prompt:
 	// - require an active tool that declares `skill://` read capability (any tool
@@ -1064,7 +1064,7 @@ export async function buildSystemPrompt(options: BuildSystemPromptOptions = {}):
 		tools === undefined
 			? toolNames.includes("read")
 			: toolNames.some(name => toolReadsSkillUris(tools.get(name))) ||
-				xdevTools.some(entry => toolReadsSkillUris(tools.get(entry.name)));
+			xdevTools.some(entry => toolReadsSkillUris(tools.get(entry.name)));
 	const hasSkillUriAccess = hasSkillReader && skills.length > 0;
 	const schemeHost: SchemeHost = {
 		skillUriAccess: hasSkillUriAccess,

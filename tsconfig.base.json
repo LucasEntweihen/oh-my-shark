@@ -2,7 +2,11 @@
 	"compilerOptions": {
 		"target": "ES2024",
 		"module": "ESNext",
-		"lib": ["ES2024", "ESNext.Disposable", "DOM.AsyncIterable"],
+		"lib": [
+			"ES2024",
+			"ESNext.Disposable",
+			"DOM.AsyncIterable"
+		],
 		"moduleResolution": "Bundler",
 		"moduleDetection": "force",
 		"strict": true,
@@ -15,10 +19,18 @@
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
-		"types": ["bun", "assets"],
-		"typeRoots": ["./types", "./node_modules/@types"],
+		"types": [
+			"bun",
+			"assets"
+		],
+		"typeRoots": [
+			"./types",
+			"./node_modules/@types"
+		],
 		"paths": {
-			"@ohms/*": ["./packages/*/src/index.ts"]
+			"@ohms/*": [
+				"./packages/*/src/index.ts"
+			]
 		}
 	}
 }
