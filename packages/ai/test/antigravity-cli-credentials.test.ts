@@ -155,7 +155,7 @@ describe("Antigravity CLI credential ownership", () => {
 		const directory = await fs.mkdtemp(path.join(os.tmpdir(), "agy-broker-"));
 		directories.push(directory);
 		const before = process.env.SSH_TTY;
-		expect(agyCredentialEnv()).toEqual({ SSH_TTY: "omp-agy-file-auth" });
+		expect(agyCredentialEnv()).toEqual({ SSH_TTY: "omsk-agy-file-auth" });
 		expect(process.env.SSH_TTY).toBe(before);
 		await stageAgyCredentials(JSON.stringify({ ...JSON.parse(apiKey), refreshToken: "__remote__" }), directory);
 		const contents = await fs.readFile(path.join(directory, "antigravity-cli", "antigravity-oauth-token"), "utf8");

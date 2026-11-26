@@ -967,3 +967,42 @@ describe("AgyHost quota retry notices", () => {
 		expect(fake.closed).toBe(false);
 	});
 });
+
+describe("AgyHost turn timeout watchdogs", () => {
+	it("fails with StreamTimeoutError when prompt stalls before any chunk arrives", async () => {
+		const { host, started, clock } = await fixture({
+			firstEventTimeoutMs: 2_500,
+			idleTimeoutMs: 5_000,
+		});
+		const run = step(host, [user("hi")]);
+		const fake = await started.next();
+		await fake.prompts.next();
+		expect([...clock.timers.values()].some(timer => timer.ms === 2_500)).toBe(true);
+		clock.fire(2_500);
+		await expect(run.done).rejects.toBeInstanceOf(AIError.StreamTimeoutError);
+		expect(fake.closed).toBe(true);
+	});
+
+	it("resets the idle watchdog on thought and message chunks and completes normally", async () => {
+		const { host, started, clock } = await fixture({
+			firstEventTimeoutMs: 2_500,
+			idleTimeoutMs: 5_000,
+		});
+		const run = step(host, [user("hi")]);
+		const fake = await started.next();
+		const prompt = await fake.prompts.next();
+		expect([...clock.timers.values()].some(timer => timer.ms === 2_500)).toBe(true);
+		fake.thought("reasoning...");
+		expect([...clock.timers.values()].some(timer => timer.ms === 2_500)).toBe(false);
+		expect([...clock.timers.values()].some(timer => timer.ms === 5_000)).toBe(true);
+		fake.text("done");
+		prompt.response.resolve({ stopReason: "end_turn" });
+		await run.done;
+		expect(clock.timers.size).toBe(0);
+		expect(run.writer.output.content).toEqual([
+			{ type: "thinking", thinking: "reasoning..." },
+			{ type: "text", text: "done" },
+		]);
+		expect(fake.closed).toBe(false);
+	});
+});

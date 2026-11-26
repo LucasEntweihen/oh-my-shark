@@ -176,7 +176,7 @@ export function agyCredentialVersion(apiKey: string): string {
  * writes of the user's global keychain, including during login and refresh.
  */
 export function agyCredentialEnv(): Record<string, string> {
-	return { SSH_TTY: "omp-agy-file-auth" };
+	return { SSH_TTY: "omsk-agy-file-auth" };
 }
 
 /**

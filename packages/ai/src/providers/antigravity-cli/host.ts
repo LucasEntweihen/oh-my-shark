@@ -15,6 +15,7 @@ import {
 	type SessionConfigOption,
 	type SessionNotification,
 } from "@oh-my-pi/pi-utils/acp";
+import * as AIError from "../../error";
 import { ProviderHttpError } from "../../error/classes";
 import type {
 	AntigravityCliCheckpoint,
@@ -51,7 +52,11 @@ import toolResultImageReferenceTemplate from "./tool-result-image-reference.md" 
 
 const AGENT_NAME = "bridge";
 const STARTUP_TIMEOUT_MS = 60_000;
+const FIRST_EVENT_TIMEOUT_MS = 120_000;
+const IDLE_TIMEOUT_MS = 120_000;
 const ANNOUNCEMENT_TIMEOUT_MS = 2_000;
+const MAX_STDERR_LINES = 12;
+const MAX_STDERR_LINE_CHARS = 240;
 // Leave enough time to force-stop a process that never acknowledges cancellation.
 const HOLD_LIMIT_MS = 165_000;
 const CANCEL_TIMEOUT_MS = 5_000;
@@ -94,6 +99,8 @@ export interface AgyTransport {
 	connection: AgyConnection;
 	exited: Promise<number>;
 	close(): void;
+	/** Optional bounded tail of recent stderr lines for exit diagnostics. */
+	stderrTail?: () => readonly string[];
 }
 
 /** Arguments for the production transport or an isolated test transport. */
@@ -121,6 +128,8 @@ export interface AgyHostOptions {
 	cancelTimeoutMs?: number;
 	announcementTimeoutMs?: number;
 	startupTimeoutMs?: number;
+	firstEventTimeoutMs?: number;
+	idleTimeoutMs?: number;
 	schedule?: AgyScheduler;
 }
 
@@ -185,6 +194,7 @@ export class AgyHost implements ProviderSessionState {
 	#pending: PendingCall | undefined;
 	#step: ActiveStep | undefined;
 	#turn: Turn | undefined;
+	#turnTimer: AgyTimer | undefined;
 	readonly #turns = new Set<Turn>();
 	#loading: object | undefined;
 	#contextTokens = 0;
@@ -202,6 +212,8 @@ export class AgyHost implements ProviderSessionState {
 			cancelTimeoutMs: options.cancelTimeoutMs ?? CANCEL_TIMEOUT_MS,
 			announcementTimeoutMs: options.announcementTimeoutMs ?? ANNOUNCEMENT_TIMEOUT_MS,
 			startupTimeoutMs: options.startupTimeoutMs ?? STARTUP_TIMEOUT_MS,
+			firstEventTimeoutMs: options.firstEventTimeoutMs ?? FIRST_EVENT_TIMEOUT_MS,
+			idleTimeoutMs: options.idleTimeoutMs ?? IDLE_TIMEOUT_MS,
 			schedule: options.schedule ?? scheduleTimer,
 		};
 		if (
@@ -354,6 +366,7 @@ export class AgyHost implements ProviderSessionState {
 						if (this.#pending !== pending || !pending || pending.state !== "parked")
 							throw new Error("Antigravity CLI tool continuation was interrupted");
 						this.#releasePending()?.settle(toMcpOutput(plan.toolResult));
+						this.#armTurnTimer(this.#options.idleTimeoutMs);
 					}
 				}
 			} else {
@@ -468,7 +481,11 @@ export class AgyHost implements ProviderSessionState {
 		void transport.exited.then(
 			code => {
 				this.#exits.delete(transport.exited);
-				if (this.#process === agy) this.#fail(new Error(`Antigravity CLI exited with code ${code}`));
+				if (this.#process === agy) {
+					const tail = transport.stderrTail?.() ?? [];
+					const detail = tail.length > 0 ? `: ${tail.slice(-4).join(" | ")}` : "";
+					this.#fail(new Error(`Antigravity CLI exited with code ${code}${detail}`));
+				}
 			},
 			() => {
 				if (this.#process === agy) this.#fail(new Error("Antigravity CLI process exit failed"));
@@ -486,6 +503,7 @@ export class AgyHost implements ProviderSessionState {
 	}
 
 	#stopProcess(): void {
+		this.#clearTurnTimer();
 		const agy = this.#process;
 		this.#process = undefined;
 		if (this.#turn || this.#pending) this.#ledger = undefined;
@@ -603,9 +621,26 @@ export class AgyHost implements ProviderSessionState {
 			void this.#requireProcess()
 				.connection.prompt({ sessionId: conversation.id, prompt: blocks })
 				.then(turn.response.resolve, turn.response.reject);
+			this.#armTurnTimer(this.#options.firstEventTimeoutMs);
 		} catch (error) {
 			turn.response.reject(error);
 		}
+	}
+
+	#armTurnTimer(delayMs: number): void {
+		this.#clearTurnTimer();
+		if (delayMs <= 0 || !Number.isFinite(delayMs)) return;
+		const turn = this.#turn;
+		if (!turn || turn.cancelling) return;
+		this.#turnTimer = this.#options.schedule(delayMs, () => {
+			if (this.#turn !== turn || turn.cancelling) return;
+			this.#fail(new AIError.StreamTimeoutError("Antigravity CLI timed out waiting for model response"));
+		});
+	}
+
+	#clearTurnTimer(): void {
+		this.#turnTimer?.cancel();
+		this.#turnTimer = undefined;
 	}
 
 	#releasePending(): PendingCall | undefined {
@@ -709,6 +744,7 @@ export class AgyHost implements ProviderSessionState {
 			expiry: this.#options.schedule(this.#options.holdLimitMs, () => this.#detach(pending)),
 		};
 		this.#pending = pending;
+		this.#clearTurnTimer();
 		this.#releaseHeld(step.writer);
 		step.writer.toolCall({ type: "toolCall", id, name, arguments: args });
 		step.writer.usage(this.#contextTokens);
@@ -748,6 +784,7 @@ export class AgyHost implements ProviderSessionState {
 			case "agent_message_chunk":
 			case "agent_thought_chunk": {
 				if (update.content.type !== "text") return;
+				if (!this.#pending) this.#armTurnTimer(this.#options.idleTimeoutMs);
 				this.#stream(
 					update.sessionUpdate === "agent_message_chunk" ? "text" : "thinking",
 					update.content.text,
@@ -756,9 +793,11 @@ export class AgyHost implements ProviderSessionState {
 				return;
 			}
 			case "usage_update":
+				if (!this.#pending) this.#armTurnTimer(this.#options.idleTimeoutMs);
 				this.#contextTokens = update.used;
 				return;
 			case "tool_call": {
+				if (!this.#pending) this.#armTurnTimer(this.#options.idleTimeoutMs);
 				const name = MCP_TOOL_NAME.exec(update.title)?.[1];
 				if (!name) return;
 				const waiter = [...this.#announcementWaiters].find(candidate => candidate.name === name);
@@ -809,6 +848,7 @@ export class AgyHost implements ProviderSessionState {
 	#turnEnded(turn: Turn, response: PromptResponse): void {
 		if (this.#turn !== turn || turn.cancelling) return;
 		this.#turn = undefined;
+		this.#clearTurnTimer();
 		const step = this.#step;
 		if (!step || step.writer.done || this.#pending) {
 			this.#fail(new Error("Antigravity CLI ended a turn while its tool was still parked"));
@@ -893,10 +933,16 @@ async function startTransport(options: AgyTransportOptions): Promise<AgyTranspor
 				cwd: options.cwd,
 				stdin: "pipe",
 				stdout: "pipe",
-				stderr: "ignore",
+				stderr: "pipe",
 				env: { ...Bun.env, ...agyCredentialEnv(), AGY_CLI_DISABLE_AUTO_UPDATE: "1" },
 			},
 		);
+		const stderrLines: string[] = [];
+		void drainStderrLines(child.stderr, line => {
+			stderrLines.push(line);
+			if (stderrLines.length > MAX_STDERR_LINES) stderrLines.shift();
+			logger.debug("Antigravity CLI stderr", { line });
+		});
 		let closed = false;
 		const close = () => {
 			if (closed) return;
@@ -927,7 +973,7 @@ async function startTransport(options: AgyTransportOptions): Promise<AgyTranspor
 				}),
 				ndJsonStream(input, child.stdout),
 			);
-			return { connection, exited: child.exited, close };
+			return { connection, exited: child.exited, close, stderrTail: () => [...stderrLines] };
 		} catch (error) {
 			close();
 			throw error;
@@ -1082,6 +1128,29 @@ function mapAgyError(error: unknown): Error {
 		return new Error("Antigravity CLI is not signed in. Run /login and choose Antigravity CLI.");
 	}
 	return error instanceof Error ? error : new Error(String(error));
+}
+
+async function drainStderrLines(stream: ReadableStream<Uint8Array>, onLine: (line: string) => void): Promise<void> {
+	const decoder = new TextDecoder();
+	let pending = "";
+	try {
+		for await (const chunk of stream) {
+			pending += decoder.decode(chunk, { stream: true });
+			for (let newline = pending.indexOf("\n"); newline >= 0; newline = pending.indexOf("\n")) {
+				const raw = pending.slice(0, newline).trim();
+				pending = pending.slice(newline + 1);
+				if (raw) {
+					onLine(raw.length > MAX_STDERR_LINE_CHARS ? `${raw.slice(0, MAX_STDERR_LINE_CHARS)}...` : raw);
+				}
+			}
+		}
+		const tail = (pending + decoder.decode()).trim();
+		if (tail) {
+			onLine(tail.length > MAX_STDERR_LINE_CHARS ? `${tail.slice(0, MAX_STDERR_LINE_CHARS)}...` : tail);
+		}
+	} catch {
+		// Stream closes when the subprocess exits or is killed.
+	}
 }
 
 function scheduleTimer(delayMs: number, callback: () => void): AgyTimer {
