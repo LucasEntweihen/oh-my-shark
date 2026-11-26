@@ -34,7 +34,7 @@ const setAutoCompaction = vi.fn(async () => ok());
 const getState = vi.fn(async () => ok({}));
 (window as unknown as { omsk: unknown }).omp = {
 	rpc: { getSettings, setSetting, setAutoCompaction, getState },
-	events: { onConfigUpdate: () => () => { } },
+	events: { onConfigUpdate: () => () => {} },
 };
 
 const { createRoot } = await import("react-dom/client");
@@ -83,8 +83,8 @@ async function openPopover(): Promise<void> {
 
 const radio = (name: string) =>
 	[...document.querySelectorAll("[role='radio']")].find(node => node.textContent?.includes(name)) as unknown as
-	| HTMLElement
-	| undefined;
+		| HTMLElement
+		| undefined;
 
 afterEach(async () => {
 	await act(async () => root?.unmount());

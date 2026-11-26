@@ -208,13 +208,13 @@ export class SchedulerHost {
 			request.toolName === SCHEDULE_TASK_TOOL
 				? runScheduleTool(request.arguments, { ...shared, createTask: draft => scheduler.createTask(draft) })
 				: runManageTasksTool(request.arguments, {
-					...shared,
-					tasks: () => scheduler.snapshot().tasks,
-					updateTask: (id, config) => scheduler.updateTask(id, config),
-					setTaskEnabled: (id, enabled) => scheduler.setTaskEnabled(id, enabled),
-					// A run already going finishes; nothing starts after it.
-					archiveTask: id => scheduler.archiveTask(id, false),
-				});
+						...shared,
+						tasks: () => scheduler.snapshot().tasks,
+						updateTask: (id, config) => scheduler.updateTask(id, config),
+						setTaskEnabled: (id, enabled) => scheduler.setTaskEnabled(id, enabled),
+						// A run already going finishes; nothing starts after it.
+						archiveTask: id => scheduler.archiveTask(id, false),
+					});
 		void run
 			.then(result => {
 				if (result) reply(result.text, result.isError, result.details);

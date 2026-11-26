@@ -18,11 +18,7 @@ export const LOGO: readonly string[] = [
 export const LOGO_WIDTH = 14;
 
 /** The `OMSK` wordmark in half-blocks, set beside the shark logo from its second row. */
-export const WORDMARK: readonly string[] = [
-	"▄▀▀▄ █▀▄▀▄ █▀▀ █ ▄▀ ",
-	"█  █ █ █ █ ▀▀█ █▀▄  ",
-	"▀▄▄▀ █   █ ▄▄▀ █  ▀▄",
-];
+export const WORDMARK: readonly string[] = ["▄▀▀▄ █▀▄▀▄ █▀▀ █ ▄▀ ", "█  █ █ █ █ ▀▀█ █▀▄  ", "▀▄▄▀ █   █ ▄▄▀ █  ▀▄"];
 
 /** Columns of {@link WORDMARK}. */
 export const WORDMARK_WIDTH = 20;

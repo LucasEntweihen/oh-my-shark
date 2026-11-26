@@ -103,7 +103,6 @@ test("Antigravity Flash fails over when headers arrive without a first SSE event
 test("Antigravity aborts cleanly when stream stalls mid-thinking past streamIdleTimeoutMs", async () => {
 	const encoder = new TextEncoder();
 	const streamStall = Promise.withResolvers<void>();
-	let bodyCancelled = false;
 
 	const fetchMock: FetchImpl = async input => {
 		const endpoint = endpointFromInput(input);
@@ -123,7 +122,6 @@ test("Antigravity aborts cleanly when stream stalls mid-thinking past streamIdle
 					},
 					cancel() {
 						streamStall.resolve();
-						bodyCancelled = true;
 					},
 				}),
 				{ status: 200, headers: { "content-type": "text/event-stream" } },

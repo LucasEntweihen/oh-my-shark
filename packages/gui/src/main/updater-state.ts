@@ -33,7 +33,7 @@ export function selectMacInstaller(
 			try {
 				const pathname = new URL(file.url, "https://updates.invalid").pathname;
 				name = decodeURIComponent(pathname.slice(pathname.lastIndexOf("/") + 1));
-			} catch { }
+			} catch {}
 			if (name === expectedName) return { name: expectedName, sha512: file.sha512, size: file.size };
 		}
 	}
@@ -114,7 +114,7 @@ export async function sha512FileBase64(filePath: string): Promise<string> {
 	const buffer = new Uint8Array(HASH_CHUNK_BYTES);
 	try {
 		let position = 0;
-		for (; ;) {
+		for (;;) {
 			const { bytesRead } = await file.read(buffer, 0, buffer.length, position);
 			if (bytesRead === 0) break;
 			hash.update(buffer.subarray(0, bytesRead));

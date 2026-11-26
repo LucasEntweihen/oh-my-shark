@@ -36,7 +36,11 @@ interface ThemeItem {
 }
 
 const CURATED: readonly ThemeItem[] = [
-	{ value: "auto", label: "Match terminal", detail: "Abyssal Shark in dark terminals, Coastal Reef in light terminals" },
+	{
+		value: "auto",
+		label: "Match terminal",
+		detail: "Abyssal Shark in dark terminals, Coastal Reef in light terminals",
+	},
 	{ value: "theme:dark", label: "Abyssal Shark", detail: "Default dark oceanic shark theme" },
 	{ value: "theme:light", label: "Coastal Reef", detail: "Default light oceanic theme" },
 	{ value: "theme:titanium", label: "Titanium", detail: "High-contrast slate dark theme" },
