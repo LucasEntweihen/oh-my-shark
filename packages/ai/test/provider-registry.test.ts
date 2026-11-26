@@ -62,7 +62,8 @@ describe("provider registry auth surface", () => {
 
 	test("login list contains loginable providers and excludes env-only model providers", () => {
 		const ids = getOAuthProviders().map(provider => provider.id);
-		expect(ids).toContain("google-antigravity");
+		expect(ids).toContain("antigravity-cli");
+		expect(ids).not.toContain("google-antigravity");
 		expect(ids).toContain("antigravity-cli");
 		expect(ids).toContain("zenmux");
 		expect(ids).toContain("kagi");

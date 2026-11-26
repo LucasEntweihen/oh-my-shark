@@ -296,11 +296,12 @@ describe("Antigravity OAuth login", () => {
 		expect(credentials).toMatchObject({ access: "access-token", refresh: "refresh-token", projectId: "project-123" });
 	});
 
-	it("is active in the OAuth login list without a disabled or risk-warning gate", () => {
-		expect(providerPauseReason("google-antigravity")).toBeUndefined();
-		expect(loginRiskWarning("google-antigravity")).toBeUndefined();
+	it("is paused in the OAuth login list with disabled and risk-warning gates while antigravity-cli remains active", () => {
+		expect(providerPauseReason("google-antigravity")).toContain("paused");
+		expect(loginRiskWarning("google-antigravity")).toBeTruthy();
 		expect(PASTE_CODE_LOGIN_PROVIDERS.has("google-antigravity")).toBe(true);
-		expect(getOAuthProviders().some(provider => provider.id === "google-antigravity")).toBe(true);
+		expect(getOAuthProviders().some(provider => provider.id === "google-antigravity")).toBe(false);
+		expect(getOAuthProviders().some(provider => provider.id === "antigravity-cli")).toBe(true);
 	});
 
 	it("accepts object-shaped cloudaicompanionProject and default paid-tier onboarding", async () => {

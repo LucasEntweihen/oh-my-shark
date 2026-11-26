@@ -1,5 +1,7 @@
 auth "google-antigravity" {
 	name "Google Antigravity (Gemini, Claude, GPT-OSS)"
+	disabled "Google Antigravity direct OAuth is paused due to Google's Terms of Service restrictions on third-party sign-in. Use antigravity-cli (official agy ACP), GEMINI_API_KEY (google), or google-vertex instead."
+	login-warning "Direct Google Antigravity OAuth is not supported for third-party agents. Use google (GEMINI_API_KEY), google-vertex, or antigravity-cli."
 	login "oauth-code" {
 		// Antigravity uses different Google OAuth credentials for its additional models.
 		client-id "MTA3MTAwNjA2MDU5MS10bWhzc2luMmgyMWxjcmUyMzV2dG9sb2poNGc0MDNlcC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbQ==" encoding="base64"
