@@ -2,12 +2,12 @@
  * Terminal look of the welcome card (`omp.welcome`, `src/ui/welcome/welcome.tsx`).
  *
  * Content keeps a column clear on each side and centers in the full width:
- * - the gradient logo with the bold `omp` wordmark beside it and the dim
- *   version under the wordmark — the logo alone when the lockup does not fit,
- *   nothing below four columns; centered as one block;
+ * - the gradient shark logo with the bold `OMSK` wordmark beside it and the dim
+ *   version (plus byline when space allows) under the wordmark — the logo alone
+ *   when the lockup does not fit, nothing below four columns; centered as one block;
  * - after the version, the widest form of any self-update activity that
  *   still fits (bar and percent, then just the percent);
- * - from 50 columns, a blank row and the tip, `Tip:` in the label color and
+ * - from 50 columns, a blank row and the tip, `◈ Tip:` in the label color and
  *   the body muted, italic, wrapped to at most 72 columns, each row centered.
  *
  * While the intro runs the logo follows the terminal clock.
@@ -17,6 +17,7 @@ import { type Block, defineRolePainter, EMPTY_BLOCK, type PaintContext } from "@
 import { replaceTabs, spaces, visibleWidth, wrap } from "@oh-my-pi/pi-tui/text/width";
 import type { ColorDepth } from "@oh-my-pi/pi-tui/theme/color";
 import type { Theme } from "@oh-my-pi/pi-tui/theme/contract";
+import { PRODUCT_BYLINE } from "@oh-my-pi/pi-utils/dirs";
 import type { TspText } from "@oh-my-pi/pi-wire";
 import { INTRO_MS, introLogo, LOGO_WIDTH, WORDMARK, WORDMARK_WIDTH } from "../../welcome/logo";
 import { updatePercent, updateTone, type VersionUpdate, type WelcomeLook } from "../../welcome/welcome";
@@ -31,7 +32,7 @@ const UPDATE_BAR = 10;
 const TIP_MEASURE = 72;
 /** Narrowest terminal that shows the tip. */
 const TIP_MIN_COLUMNS = 50;
-const TIP_LABEL = "Tip: ";
+const TIP_LABEL = "◈ Tip: ";
 /** Text of the `[NEW]` tag and one hue turn of its rainbow. */
 const NEW_TAG = "NEW!";
 const NEW_GLOW_MS = 1500;
@@ -116,11 +117,14 @@ function paintWelcome(node: UiNode, cx: PaintContext): Block {
 	// Reading the clock only while the intro runs keeps the resting card still.
 	const elapsed = look.introStart === null ? INTRO_MS : cx.reduceMotion ? INTRO_MS : cx.now(true) - look.introStart;
 	const logo = introLogo(Math.max(0, elapsed) / INTRO_MS, depth);
-	const version = theme.style("dim", `v${look.version}`);
+	const versionText = `v${look.version}`;
+	const bylineText = `${versionText} · ${PRODUCT_BYLINE}`;
+	const useByline = !look.update && room >= LOGO_WIDTH + LOCKUP_GAP + visibleWidth(bylineText);
+	const version = theme.style("dim", useByline ? bylineText : versionText);
 	const hasLockup = room >= LOGO_WIDTH + LOCKUP_GAP + Math.max(WORDMARK_WIDTH, visibleWidth(version));
 	let art: readonly string[] = [];
 	if (hasLockup) {
-		const beside = ["", ...WORDMARK.map(row => theme.style("text strong", row)), version];
+		const beside = ["", ...WORDMARK.map(row => theme.style("accent strong", row)), version];
 		art = logo.map((row, index) => `${row}${spaces(LOCKUP_GAP)}${beside[index] ?? ""}`);
 	} else if (room >= LOGO_WIDTH) art = logo;
 	const rows = centered(art, width);

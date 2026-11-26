@@ -1,31 +1,41 @@
 /**
- * The omp brand mark for terminals: a block-grid logo painted with a diagonal
- * pink → violet → cyan gradient, the half-block `omp` wordmark, and the
- * intro animation (the gradient sweeping round while a highlight crosses it).
+ * The OMSK brand mark for terminals: a block-grid shark emblem painted with a
+ * diagonal deep-ocean → electric-cyan → bioluminescent-teal gradient, the
+ * half-block `OMSK` wordmark, and the intro animation.
  */
 import type { ColorDepth } from "@oh-my-pi/pi-tui/theme/color";
 
-/** The block-grid logo. */
-export const LOGO: readonly string[] = ["████████████", "   ██  ██   ", "   ██  ██   ", "   ▒▒  ██   ", "       ██   "];
-
-/** Columns of {@link LOGO}. */
-export const LOGO_WIDTH = 12;
-
-/** The `omp` wordmark in half-blocks, set beside the logo from its second row (the `p` descends a row). */
-export const WORDMARK: readonly string[] = ["▄▀▀▄ █▀▄▀▄ █▀▀▄", "▀▄▄▀ █ █ █ █▄▄▀", "           █"];
-
-/** Columns of {@link WORDMARK}. */
-export const WORDMARK_WIDTH = 15;
-
-/** Gradient stops along the diagonal (truecolor). */
-const STOPS: readonly (readonly [number, number, number])[] = [
-	[248, 79, 204],
-	[147, 98, 244],
-	[0, 219, 228],
+/** The block-grid shark logo. */
+export const LOGO: readonly string[] = [
+	"     ▄█▄      ",
+	"   ▄█████▄  ▄ ",
+	"▄▄███████████▌",
+	" ▀▀█████████▀ ",
+	"    ▀███▀     ",
 ];
 
-/** The gradient on the 256-color palette. */
-const RAMP_256 = [206, 170, 134, 99, 69, 74, 44];
+/** Columns of {@link LOGO}. */
+export const LOGO_WIDTH = 14;
+
+/** The `OMSK` wordmark in half-blocks, set beside the shark logo from its second row. */
+export const WORDMARK: readonly string[] = [
+	"▄▀▀▄ █▀▄▀▄ █▀▀ █ ▄▀ ",
+	"█  █ █ █ █ ▀▀█ █▀▄  ",
+	"▀▄▄▀ █   █ ▄▄▀ █  ▀▄",
+];
+
+/** Columns of {@link WORDMARK}. */
+export const WORDMARK_WIDTH = 20;
+
+/** Deep-ocean bioluminescent gradient stops along the diagonal (truecolor). */
+const STOPS: readonly (readonly [number, number, number])[] = [
+	[11, 98, 196],
+	[0, 212, 255],
+	[127, 255, 212],
+];
+
+/** The ocean gradient on the 256-color palette. */
+const RAMP_256 = [25, 27, 33, 39, 45, 51, 87, 123];
 
 /** Half-width of the highlight band along the diagonal. */
 const SHINE_HALF_WIDTH = 0.18;

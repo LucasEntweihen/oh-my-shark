@@ -1,7 +1,7 @@
 /** @jsxImportSource @oh-my-pi/pi-tui */
 /**
- * The welcome card (`omp.welcome`): the lockup — the omp mark beside the
- * `omp` wordmark with the version (and any self-update activity) under it —
+ * The welcome card (`omp.welcome`): the lockup — the OMSK shark mark beside
+ * the `OMSK` wordmark with the version (and any self-update activity) under it —
  * and the session's tip.
  *
  * Terminal look (`src/ui/styles/welcome/welcome.ts`): the gradient logo and
@@ -79,12 +79,12 @@ export function Welcome(props: WelcomeProps): JSXNode {
 	return (
 		<card role="omp.welcome" term={look}>
 			<row key="lockup" role="omp.welcome.lockup" align="center" gap="md">
-				<image key="logo" role="omp.welcome.logo" builtin="omp" alt="omp" w={128} />
+				<image key="logo" role="omp.welcome.logo" builtin="omp" alt="ohmyshark" w={128} />
 				<col key="mark" role="omp.welcome.mark">
 					<text
 						key="omp.welcome.wordmark"
 						role="omp.welcome.wordmark"
-						spans={[{ t: "omp", s: "strong" }]}
+						spans={[{ t: "OMSK", s: "strong" }]}
 						wrap="none"
 					/>
 					<text

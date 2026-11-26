@@ -42,13 +42,13 @@ export function SplashView(props: {
 		>
 			<spacer key="top" grow={1} />
 			<row key="lockup" role="omp.welcome.lockup" align="center" gap="md">
-				<image key="logo" role="omp.welcome.logo" builtin="omp" alt="omp" w={128} />
+				<image key="logo" role="omp.welcome.logo" builtin="omp" alt="ohmyshark" w={128} />
 				<col key="mark" role="omp.welcome.mark">
 					<text
 						key="omp.welcome.wordmark"
 						role="omp.welcome.wordmark"
 						wrap="none"
-						spans={[{ s: "strong", t: "omp" }]}
+						spans={[{ s: "strong", t: "OMSK" }]}
 					/>
 					<text
 						key="omp.welcome.version"
