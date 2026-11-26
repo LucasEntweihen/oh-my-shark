@@ -36,9 +36,10 @@ interface ThemeItem {
 }
 
 const CURATED: readonly ThemeItem[] = [
-	{ value: "auto", label: "Match terminal", detail: "Titanium in dark terminals, Light in light terminals" },
-	{ value: "theme:titanium", label: "Titanium", detail: "Default dark theme" },
-	{ value: "theme:light", label: "Light", detail: "Default light theme" },
+	{ value: "auto", label: "Match terminal", detail: "Abyssal Shark in dark terminals, Coastal Reef in light terminals" },
+	{ value: "theme:dark", label: "Abyssal Shark", detail: "Default dark oceanic shark theme" },
+	{ value: "theme:light", label: "Coastal Reef", detail: "Default light oceanic theme" },
+	{ value: "theme:titanium", label: "Titanium", detail: "High-contrast slate dark theme" },
 	{ value: "colorblind", label: "Colorblind colors", detail: "Adjust red/green contrast" },
 	{ value: "ansi", label: "ANSI-safe", detail: "ASCII glyphs with the dark terminal theme" },
 	{ value: "browse", label: "Browse all…", detail: "Show every built-in and custom theme" },

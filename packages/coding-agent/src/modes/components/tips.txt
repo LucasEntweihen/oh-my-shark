@@ -4,7 +4,7 @@ Use /tan to fork the current conversation into a background agent
 Ctrl+D can be used to exit, but with your draft saved!
 Find out which model you emotionally abuse the most with `omsk stats`
 Try task isolation to create CoW worktrees
-Need a cheap nested model call? Use `completion(x...)`. Have a big batch of tasks? Ask clanker to use it!
+Need a cheap nested model call? Use `completion(x...)`. Have a big batch of tasks? Let omsk fan it out!
 Spaghetti code? Try complaining with /omfg
 Did you know? Each kitty/tmux/cmux/zellij/wezterm split keeps its own session — `omsk -c` resumes the right one
 Drop the word `ultrathink` in your message for harder multi-step reasoning — watch it glow rainbow as you type
@@ -25,3 +25,4 @@ Turn on `/advisor` to attach a second model that reviews every turn and quietly 
 Try starting your prompt with a ->, and writing a list (1. Do X, 2. Do Y)
 Press shift+tab to cycle through reasoning effort levels
 Lint/type errors piling up? `omsk cleanse` (or /cleanse right here) hunts project diagnostics and fixes them with parallel subagents — esc cancels
+[NEW] Customize your shark composer border and Abyssal Shark theme anytime via `/settings`
