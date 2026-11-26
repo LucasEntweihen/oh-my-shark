@@ -18,8 +18,8 @@ describe("fg / bg", () => {
 	});
 
 	it("resets only the background after a background", () => {
-		expect(dark.bg("selectedBg", "x")).toBe("\x1b[48;2;49;54;63mx\x1b[49m");
-		expect(dark.bgFill("selectedBg", "a\x1b[0mb")).toBe("\x1b[48;2;49;54;63ma\x1b[0m\x1b[48;2;49;54;63mb\x1b[49m");
+		expect(dark.bg("selectedBg", "x")).toBe("\x1b[48;2;16;40;63mx\x1b[49m");
+		expect(dark.bgFill("selectedBg", "a\x1b[0mb")).toBe("\x1b[48;2;16;40;63ma\x1b[0m\x1b[48;2;16;40;63mb\x1b[49m");
 	});
 
 	it("throws for unknown keys", () => {
@@ -34,7 +34,7 @@ describe("fg / bg", () => {
 	});
 
 	it("paints terminal.ansi slots, or the terminal's own slot when the theme has none", () => {
-		expect(dark.palette(5, "x")).toBe("\x1b[38;2;188;63;188mx\x1b[39m");
+		expect(dark.palette(5, "x")).toBe("\x1b[38;2;129;140;248mx\x1b[39m");
 		const json: ThemeJson = structuredClone(builtinThemes().dark!);
 		delete json.terminal;
 		expect(createTheme(json).palette(5, "x")).toBe("\x1b[38;5;5mx\x1b[39m");
@@ -84,7 +84,7 @@ describe("style tokens", () => {
 		expect(dark.style("strong accent em", "x")).toBe(
 			`${dark.fgSgr("accent")}\x1b[1m\x1b[3mx\x1b[23m\x1b[22m\x1b[39m`,
 		);
-		expect(dark.style("selectedBg accent", "x")).toBe(`\x1b[48;2;49;54;63m${dark.fgSgr("accent")}x\x1b[39m\x1b[49m`);
+		expect(dark.style("selectedBg accent", "x")).toBe(`\x1b[48;2;16;40;63m${dark.fgSgr("accent")}x\x1b[39m\x1b[49m`);
 	});
 
 	it("treats dim as the theme color", () => {

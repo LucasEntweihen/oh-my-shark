@@ -378,12 +378,12 @@ describe("colorful", () => {
 		const fg = (source: string, colorful: boolean): string =>
 			cellGrid(renderMarkdown(source, 40, { theme, colorful }))[0]!.find(cell => cell.ch !== " " && cell.ch !== "│")!
 				.fg;
-		expect(fg("# h", true)).toBe("#bc3fbc");
-		expect(fg("## h", true)).toBe("#e5e510");
-		expect(fg("#### h", true)).toBe("#2472c8");
-		expect(fg("**b**", true)).toBe("#bc3fbc");
-		expect(fg("`c`", true)).toBe("#0dbc79");
-		expect(fg("# h", false)).toBe("#febc38");
+		expect(fg("# h", true)).toBe("#818cf8");
+		expect(fg("## h", true)).toBe("#ffb454");
+		expect(fg("#### h", true)).toBe("#0ea5e9");
+		expect(fg("**b**", true)).toBe("#818cf8");
+		expect(fg("`c`", true)).toBe("#2dd4bf");
+		expect(fg("# h", false)).toBe("#38bdf8");
 		expect(fg("**b**", false)).toBe("");
 	});
 });

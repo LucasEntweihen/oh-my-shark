@@ -53,8 +53,8 @@ describe("built-in themes", () => {
 		expect(dark.name).toBe("dark");
 		expect(dark.dark).toBe(true);
 		expect(light.dark).toBe(false);
-		expect(dark.fg("accent", "x")).toBe("\x1b[38;2;254;188;56mx\x1b[39m");
-		expect(light.fg("muted", "x")).toBe("\x1b[38;2;108;108;108mx\x1b[39m");
+		expect(dark.fg("accent", "x")).toBe("\x1b[38;2;0;229;255mx\x1b[39m");
+		expect(light.fg("muted", "x")).toBe("\x1b[38;2;71;85;105mx\x1b[39m");
 	});
 
 	it("resolves every bundled palette", () => {
@@ -92,7 +92,7 @@ describe("custom themes", () => {
 		const json = darkJson();
 		json.colors.accent = "#010203";
 		await writeCustom("dark", json);
-		expect((await loadTheme("dark")).fg("accent", "x")).toBe("\x1b[38;2;254;188;56mx\x1b[39m");
+		expect((await loadTheme("dark")).fg("accent", "x")).toBe("\x1b[38;2;0;229;255mx\x1b[39m");
 	});
 
 	it("reports unknown themes", async () => {
