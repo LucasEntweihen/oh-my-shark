@@ -31,7 +31,12 @@ import { normalizeSystemPrompts } from "../utils";
 import { AssistantMessageEventStream } from "../utils/event-stream";
 import { extractGoogleValidationUrl, formatGoogleValidationRequiredMessage } from "../utils/google-validation";
 import type { RawHttpRequestDump } from "../utils/http-inspector";
-import { armPreResponseTimeout, getStreamFirstEventTimeoutMs, iterateWithIdleTimeout } from "../utils/idle-iterator";
+import {
+	armPreResponseTimeout,
+	getStreamFirstEventTimeoutMs,
+	getStreamIdleTimeoutMs,
+	iterateWithIdleTimeout,
+} from "../utils/idle-iterator";
 import { notifyProviderResponse } from "../utils/provider-response";
 // Refresh is the sole responsibility of AuthStorage (broker-aware, single-flighted);
 // the stream provider trusts the access token threaded through `options.apiKey`.
@@ -329,6 +334,8 @@ const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 const DEFAULT_FIRST_EVENT_TIMEOUT_MS = 300_000;
 const FIRST_EVENT_TIMEOUT_ERROR = "Cloud Code Assist stream timed out while waiting for the first event";
+const DEFAULT_IDLE_TIMEOUT_MS = 120_000;
+const IDLE_TIMEOUT_ERROR = "Cloud Code Assist stream timed out due to inactivity";
 const RATE_LIMIT_BUDGET_MS = 5 * 60 * 1000;
 const CLAUDE_THINKING_BETA_HEADER = "interleaved-thinking-2025-05-14";
 const GOOGLE_GEMINI_REFRESH_SKEW_MS = 60_000;
@@ -639,6 +646,9 @@ export const streamGoogleGeminiCli: StreamFunction<"google-gemini-cli"> = (
 					undefined,
 					model.compat.streamFirstEventTimeoutMs ?? DEFAULT_FIRST_EVENT_TIMEOUT_MS,
 				);
+			const idleTimeoutMs =
+				options?.streamIdleTimeoutMs ??
+				getStreamIdleTimeoutMs(undefined, model.compat.streamIdleTimeoutMs ?? DEFAULT_IDLE_TIMEOUT_MS);
 			const callerSignal = options?.signal;
 			const toolNames = new Set(context.tools?.map(t => t.name) ?? []);
 			const isFlashLeakModel = model.compat.flashStreamLeakWorkaround;
@@ -806,10 +816,12 @@ export const streamGoogleGeminiCli: StreamFunction<"google-gemini-cli"> = (
 					),
 					{
 						firstItemTimeoutMs: firstEventTimeoutMs,
-						errorMessage: FIRST_EVENT_TIMEOUT_ERROR,
+						idleTimeoutMs,
+						errorMessage: IDLE_TIMEOUT_ERROR,
 						firstItemErrorMessage: FIRST_EVENT_TIMEOUT_ERROR,
 						onFirstItemTimeout: () =>
 							responseAbortController.abort(new AIError.StreamTimeoutError(FIRST_EVENT_TIMEOUT_ERROR)),
+						onTimeout: () => responseAbortController.abort(new AIError.StreamTimeoutError(IDLE_TIMEOUT_ERROR)),
 						abortSignal: options?.signal,
 					},
 				);

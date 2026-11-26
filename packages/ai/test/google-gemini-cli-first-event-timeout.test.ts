@@ -99,3 +99,49 @@ test("Antigravity Flash fails over when headers arrive without a first SSE event
 	expect(result.stopReason).toBe("stop");
 	expect(result.content).toEqual([{ type: "text", text: "Recovered after stall." }]);
 });
+
+test("Antigravity aborts cleanly when stream stalls mid-thinking past streamIdleTimeoutMs", async () => {
+	const encoder = new TextEncoder();
+	const streamStall = Promise.withResolvers<void>();
+	let bodyCancelled = false;
+
+	const fetchMock: FetchImpl = async input => {
+		const endpoint = endpointFromInput(input);
+		return responseWithUrl(
+			new Response(
+				new ReadableStream<Uint8Array>({
+					start(controller) {
+						const thinkingChunk = `data: ${JSON.stringify({
+							response: {
+								candidates: [{ content: { parts: [{ text: "deep thought...", thought: true }] } }],
+							},
+						})}\n\n`;
+						controller.enqueue(encoder.encode(thinkingChunk));
+					},
+					pull() {
+						return streamStall.promise;
+					},
+					cancel() {
+						streamStall.resolve();
+						bodyCancelled = true;
+					},
+				}),
+				{ status: 200, headers: { "content-type": "text/event-stream" } },
+			),
+			endpoint,
+		);
+	};
+
+	const stream = streamGoogleGeminiCli(antigravityModel, context, {
+		apiKey: JSON.stringify({ token: "token", projectId: "proj-123" }),
+		antigravityEndpointMode: "production",
+		streamFirstEventTimeoutMs: 5_000,
+		streamIdleTimeoutMs: 50,
+		fetch: fetchMock,
+	});
+	const result = await stream.result();
+	streamStall.resolve();
+
+	expect(result.stopReason).toBe("error");
+	expect(result.errorMessage).toContain("inactivity");
+});
