@@ -71,7 +71,7 @@ const HISTORICAL_IMAGE_PLACEHOLDER = "(image omitted from history)";
 /**
  * Per-result UTF-8 cap, marker included: the Kiro service's hard limit
  * (aws/amazon-q-developer-cli `chat/consts.rs`: "Actual service limit is
- * 800_000"). A safety net only; normal result size is OMP's tool-output policy.
+ * 800_000"). A safety net only; normal result size is OMSK's tool-output policy.
  */
 const TOOL_RESULT_MAX_BYTES = 800_000;
 /** Size a tool result shrinks to when the request is over budget (kiro-cli's `max_message_length` fallback). */

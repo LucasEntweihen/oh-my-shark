@@ -1,5 +1,5 @@
 /**
- * Emits one omp assistant message (a "step") from agy's ACP events: thinking
+ * Emits one omsk assistant message (a "step") from agy's ACP events: thinking
  * and text deltas, at most one tool call, then a terminal `done` or `error`.
  */
 import type { PromptResponse } from "@oh-my-pi/pi-utils/acp";

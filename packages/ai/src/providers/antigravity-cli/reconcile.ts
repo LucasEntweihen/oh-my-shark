@@ -1,4 +1,4 @@
-/** Maps omp's per-step transcript onto one stateful agy turn. */
+/** Maps omsk's per-step transcript onto one stateful agy turn. */
 import { createHash } from "node:crypto";
 import { prompt, stableStringifyJson } from "@oh-my-pi/pi-utils";
 import type { ContentBlock } from "@oh-my-pi/pi-utils/acp";

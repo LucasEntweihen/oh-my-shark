@@ -682,13 +682,13 @@ export function getTestTempDir(prefix: string): string {
 
 /**
  * Get the logs directory (~/.omsk/logs). `bun test` processes get
- * `<tmpdir>/omp-test-logs-<uid>` instead, so suites never write into the
+ * `<tmpdir>/omsk-test-logs-<uid>` instead, so suites never write into the
  * developer's real logs; the uid suffix (as for the test session-owners dir)
  * keeps users of a shared `/tmp` from owning each other's directory.
  */
 export function getLogsDir(): string {
 	if (isBunTestRuntime()) {
-		return getTestTempDir("omp-test-logs");
+		return getTestTempDir("omsk-test-logs");
 	}
 	return dirs.rootSubdir("logs", "state");
 }

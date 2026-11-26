@@ -259,7 +259,7 @@ export function decodeTspReply(body: string): TspReply | null {
 
 /** What the program advertises in its `hello` query. */
 export interface TspHelloOptions {
-	/** Program name. Default `omp`. */
+	/** Program name. Default `omsk`. */
 	readonly app?: string;
 	readonly ver?: string;
 	/** Program features. Default `edit`, `undo`, `send`. */
@@ -271,7 +271,7 @@ export function encodeHelloQuery(options: TspHelloOptions = {}): string {
 	const query: TspQuery = {
 		q: "hello",
 		v: [TSP_VERSION],
-		app: options.app ?? "omp",
+		app: options.app ?? "omsk",
 		features: options.features ?? ["edit", "undo", "send"],
 		...(options.ver === undefined ? {} : { ver: options.ver }),
 	};

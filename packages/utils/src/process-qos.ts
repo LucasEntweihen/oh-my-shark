@@ -1,16 +1,16 @@
 /**
- * Scheduling class of omp's main thread on macOS.
+ * Scheduling class of omsk's main thread on macOS.
  *
  * macOS schedules a thread by its QoS class. A process started by an app (a
  * terminal, a terminal's session daemon) rather than by Launch Services
  * takes the app's type but not its role, and macOS runs every thread of a
  * role-less app at most in the default class: the class compilers run in.
- * Asking for a higher class changes nothing, so on a busy machine omp's JS
+ * Asking for a higher class changes nothing, so on a busy machine omsk's JS
  * thread shares cores with the build, and startup, typing and redraws crawl.
  *
  * {@link raiseInteractiveQos} puts the calling thread in the user-initiated
  * class and gives the process the default app role, which has no cap.
- * Neither reaches child processes: a build omp runs starts role-less and
+ * Neither reaches child processes: a build omsk runs starts role-less and
  * capped as before.
  */
 import { dlopen, FFIType, ptr } from "bun:ffi";

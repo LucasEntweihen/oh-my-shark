@@ -93,10 +93,10 @@ export function sendNotification(message: string | TerminalNotification, target:
 // C0/C1 controls cannot ride in an OSC payload as text; such payloads go base64.
 const OSC99_UNSAFE = /[\x00-\x1f\x7f\x80-\x9f]/u;
 const OSC99_MAX_PAYLOAD_BYTES = 2048;
-const OSC99_APP_NAME = "omp";
+const OSC99_APP_NAME = "omsk";
 // Kitty matches notification ids across its whole process, so ids carry a
-// per-process prefix: two omp sessions in one kitty must not replace each other's.
-const OSC99_ID_PREFIX = `omp-${crypto.randomUUID().slice(0, 8)}`;
+// per-process prefix: two omsk sessions in one kitty must not replace each other's.
+const OSC99_ID_PREFIX = `omsk-${crypto.randomUUID().slice(0, 8)}`;
 let nextOsc99Id = 1;
 
 function base64(value: string): string {

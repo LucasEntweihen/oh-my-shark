@@ -21,7 +21,7 @@ let sqliteLockShimInstalled: boolean | undefined;
  *
  * SQLite's POSIX record locks belong to the process, so any close of another
  * descriptor of a database or its `-shm` released them, including Bun's own file
- * APIs and the bash tool's builtins; a peer omp then unlinked the WAL under the live
+ * APIs and the bash tool's builtins; a peer omsk then unlinked the WAL under the live
  * connection (issue #15586). Call before the process opens its first database: a
  * connection opened earlier keeps POSIX locks. Returns whether the shim is active; a
  * Linux build where it cannot be installed (Bun's SQLite layout changed) logs a warning
@@ -414,7 +414,7 @@ function repairHeaderPageCount(copyPath: string): boolean {
  * Dispose the result to close the handle and delete the copy.
  */
 export function openQuarantinedStoreForSalvage(backupPath: string): SalvageSource {
-	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "omp-salvage-"));
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "omsk-salvage-"));
 	let db: Database | undefined;
 	const cleanup = (): void => {
 		try {

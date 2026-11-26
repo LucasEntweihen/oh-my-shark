@@ -1,5 +1,5 @@
 /**
- * One stateful agy ACP conversation across omp's per-step stream calls.
+ * One stateful agy ACP conversation across omsk's per-step stream calls.
  * MCP tool calls park between steps. A deadline cancels and drains the ACP
  * prompt before releasing its MCP response; the actual late result is sent
  * only in a subsequent prompt. Failed drains kill the process and reseed.
@@ -146,7 +146,7 @@ interface Conversation {
 	id: string;
 	systemKey: string;
 	loaded: boolean;
-	/** omp model id the conversation was last configured for. */
+	/** omsk model id the conversation was last configured for. */
 	model?: string;
 	/** `model` value last sent to agy; differs from `model` for effort-suffixed rosters. */
 	agyModel?: string;
@@ -837,7 +837,7 @@ export class AgyHost implements ProviderSessionState {
 
 	/**
 	 * agy <1.5.14 retries quota failures itself and only reports each attempt as message text.
-	 * Stop its retry loop and surface a 429 so omp can rotate credentials or fall back.
+	 * Stop its retry loop and surface a 429 so omsk can rotate credentials or fall back.
 	 */
 	#rateLimited(detail: string): void {
 		const error = rateLimitError(detail);
@@ -1005,7 +1005,7 @@ function modelValues(options: SessionConfigOption[] | null | undefined): string[
 }
 
 /**
- * agy's `model` value for an omp model. Depending on sign-in, agy advertises
+ * agy's `model` value for an omsk model. Depending on sign-in, agy advertises
  * either bare ids with a separate `thought_level` or only effort-suffixed ids
  * such as `gemini-4-hydrogen-high` (#19638). The bare id is kept when agy offers
  * it; otherwise the requested effort's suffix, then the model's default level's,
@@ -1060,7 +1060,7 @@ function quotaNotice(notice: RegExp, text: string): string | undefined {
 	return detail && QUOTA_EXHAUSTED.test(detail) ? detail : undefined;
 }
 
-/** The 429 that lets omp rotate credentials or fall back on an exhausted agy account. */
+/** The 429 that lets omsk rotate credentials or fall back on an exhausted agy account. */
 function rateLimitError(detail: string): ProviderHttpError {
 	return new ProviderHttpError(`Antigravity CLI rate limited: ${detail}`, 429, { code: "RESOURCE_EXHAUSTED" });
 }

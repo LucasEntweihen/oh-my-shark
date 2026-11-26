@@ -2,7 +2,7 @@
  * Tool-batch ordering for Cursor exec frames.
  *
  * Cursor dispatches every exec frame of a step without waiting for earlier
- * results, and the provider answers them concurrently. omp's agent loop runs a
+ * results, and the provider answers them concurrently. omsk's agent loop runs a
  * file mutation alone: it waits for the calls issued before it, and the calls
  * issued after it wait for it. {@link CursorExecOrder} applies that rule to
  * exec frames in arrival order. A native StrReplace or Write spans two frames

@@ -1,7 +1,7 @@
 /**
  * agy 1.5.9's native consumer credential format (cli/backend/auth token storage).
  * Only host-owned --gemini-dir directories are read/written here. The encrypted
- * omp credential store remains the durable owner of exported OAuth grants.
+ * omsk credential store remains the durable owner of exported OAuth grants.
  */
 import { createHash, randomUUID } from "node:crypto";
 import * as fs from "node:fs/promises";
@@ -169,7 +169,7 @@ export function agyCredentialVersion(apiKey: string): string {
 }
 
 /**
- * Apply ONLY to agy's subprocess, never omp or host-executed tools.
+ * Apply ONLY to agy's subprocess, never omsk or host-executed tools.
  * agy has no file-storage flag. Its native sshDetector checks SSH_TTY for a
  * nonempty value (it does not open the path), selecting file-only storage for
  * the process lifetime. This explicit headless marker prevents both reads and

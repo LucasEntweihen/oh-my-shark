@@ -10,7 +10,7 @@
  * daemon started as a launchd job without `MaterializeDatalessFiles` passes
  * the off policy to every shell and to omp.
  *
- * {@link materializeDatalessFiles} turns it on for omp and every process it
+ * {@link materializeDatalessFiles} turns it on for omsk and every process it
  * spawns afterwards.
  */
 import { dlopen, FFIType } from "bun:ffi";

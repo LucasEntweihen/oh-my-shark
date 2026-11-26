@@ -766,7 +766,7 @@ function spawnInternal<In extends InMask = InMask>(
 	const { timeout = -1, signal, stderr, detached, subreaper = false, ...rest } = opts ?? {};
 	const useSubreaper = subreaper && process.platform === "linux";
 	// Bun.spawn's own default is the startup environment, which misses values
-	// omp loads from its `.env` files into `Bun.env` afterwards.
+	// omsk loads from its `.env` files into `Bun.env` afterwards.
 	const commandEnv = rest.env ?? Bun.env;
 	const child = Bun.spawn(useSubreaper ? [process.execPath, "-e", LINUX_SUBREAPER_SCRIPT] : cmd, {
 		stdin: "ignore",

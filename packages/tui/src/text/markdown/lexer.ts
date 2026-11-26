@@ -1,5 +1,5 @@
 /**
- * Markdown → tokens: GFM via the shared marked lexer plus omp's dialect —
+ * Markdown → tokens: GFM via the shared marked lexer plus omsk's dialect —
  * LaTeX math (inline `$…$`/`\(…\)`, own-line `$$`/`\[` blocks, bare math
  * environments), rules drawn with any box/dash character, strict `~~`
  * strikethrough and autolinks only at a word boundary.

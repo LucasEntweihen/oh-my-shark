@@ -1,6 +1,6 @@
 /**
  * The theme file format: the JSON users write under the custom themes
- * directory and the built-in palettes ship in. Unchanged from the format omp
+ * directory and the built-in palettes ship in. Unchanged from the format omsk
  * has always read, so existing custom themes keep loading.
  */
 

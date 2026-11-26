@@ -729,7 +729,7 @@ export const streamFactoryDroid: StreamFunction<"factory-droid-agent"> = (
 			const registry = resolveFactoryDroidPolicy(model);
 			const wire = registry?.wire ?? "openai-completions";
 			const scope = scopeToAccount(model, registry, wire, options?.oauthIdentity, harnessToken);
-			// The proxy expects v4-shaped ids; the OMP session id is a UUIDv7-style
+			// The proxy expects v4-shaped ids; the OMSK session id is a UUIDv7-style
 			// timestamp id, so it maps through a deterministic v4 shape that stays
 			// stable per session.
 			const requestId = crypto.randomUUID();

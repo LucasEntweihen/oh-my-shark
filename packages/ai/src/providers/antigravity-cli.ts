@@ -1,5 +1,5 @@
 /**
- * Antigravity CLI provider: one stateful ACP conversation spans multiple omp
+ * Antigravity CLI provider: one stateful ACP conversation spans multiple omsk
  * stream calls. An MCP request parks at each tool boundary until the next
  * stream call supplies its result. Authentication is staged into an isolated
  * agy credential directory; inference always runs through the official CLI.

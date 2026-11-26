@@ -1,12 +1,12 @@
 /**
  * Centralized logger for omp.
  *
- * Default: rotating `~/.omp/logs/omp.<DATE>.<PID>.log`, no console output (writing
+ * Default: rotating `~/.omsk/logs/omp.<DATE>.<PID>.log`, no console output (writing
  * to stdout/stderr would corrupt the TUI). Long-running headless services
  * (the auth broker, etc.) call {@link setTransports} to swap in a console
  * transport so a process supervisor (pm2, journald, k8s) captures the logs.
  *
- * Each entry includes `process.pid` so concurrent omp instances stay
+ * Each entry includes `process.pid` so concurrent omsk instances stay
  * traceable, and the fields of the enclosing {@link withContext} (a session's
  * `sessionId`) so sessions sharing one process stay apart. The file is created
  * on the first record written. Records are batched — one write per second or
@@ -172,11 +172,11 @@ function dispatchToSinks(event: LogEvent): void {
 	}
 }
 
-const PROCESS_LOG_PATTERN = /^omp\.(\d{4}-\d{2}-\d{2})\.(\d+)\.log(?:\.(\d+))?$/;
+const PROCESS_LOG_PATTERN = /^(?:omsk|omsk)\.(\d{4}-\d{2}-\d{2})\.(\d+)\.log(?:\.(\d+))?$/;
 /** Per-process audit files written by earlier releases; current sinks track rotations in memory. */
-const PROCESS_AUDIT_PATTERN = /^\.omp\.(\d+)-audit\.json$/;
+const PROCESS_AUDIT_PATTERN = /^\.(?:omsk|omsk)\.(\d+)-audit\.json$/;
 /** Shared daily logs (plain, size-rolled, or gzipped) written by the winston-era logger. */
-const LEGACY_LOG_PATTERN = /^omp\.(\d{4}-\d{2}-\d{2})\.log(?:\.\d+)?(?:\.gz)?$/;
+const LEGACY_LOG_PATTERN = /^omsk\.(\d{4}-\d{2}-\d{2})\.log(?:\.\d+)?(?:\.gz)?$/;
 /** Hash-named audit files written by winston-daily-rotate-file. */
 const LEGACY_AUDIT_PATTERN = /^\.[0-9a-f]{8,}-audit\.json$/;
 const RETAINED_STALE_LOGS_PER_PROCESS_DAY = 1;
@@ -442,7 +442,7 @@ function makeFileTransport(dir?: string): RotatingFileSink {
 	// The sink opens (and creates) its file on the first batch written.
 	return new RotatingFileSink({
 		directory: logsDir,
-		filenamePrefix: "omp",
+		filenamePrefix: "omsk",
 		filenameSuffix: String(process.pid),
 		maxBytes: 10 * 1024 * 1024,
 		maxFiles: 5,
@@ -458,11 +458,11 @@ const IMMEDIATE_FLUSH_RANK = LOG_LEVEL_RANK.warn;
 
 /**
  * Rank of the most verbose level the local transports (file and console)
- * write: `OMP_LOG_LEVEL` (error|warn|info|debug, case-insensitive), default
+ * write: `OMSK_LOG_LEVEL` (error|warn|info|debug, case-insensitive), default
  * `debug` (everything).
  */
 function resolveLevelRank(): number {
-	const requested = process.env.OMP_LOG_LEVEL?.trim().toLowerCase();
+	const requested = (process.env.OMSK_LOG_LEVEL ?? process.env.OMP_LOG_LEVEL)?.trim().toLowerCase();
 	return requested && Object.hasOwn(LOG_LEVEL_RANK, requested)
 		? LOG_LEVEL_RANK[requested as LogLevel]
 		: LOG_LEVEL_RANK.debug;

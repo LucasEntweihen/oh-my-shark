@@ -2895,7 +2895,7 @@ function sendShellStreamExitFromResult(
 	}
 }
 
-/** Frames that mutate files: omp runs `edit`, `write` and `delete` alone. */
+/** Frames that mutate files: omsk runs `edit`, `write` and `delete` alone. */
 const EXCLUSIVE_EXEC_CASES: Partial<Record<NonNullable<ExecServerMessage["message"]["case"]>, true>> = {
 	writeArgs: true,
 	deleteArgs: true,
@@ -6436,7 +6436,7 @@ function resolveCursorRecordReplays(
 /**
  * Cursor AgentService reconstructs the model prompt from `requestContext.rules`,
  * not from the client-supplied `rootPromptMessagesJson` system blobs. Map each
- * OMP system-prompt entry to a global CursorRule so always-apply rules survive
+ * OMSK system-prompt entry to a global CursorRule so always-apply rules survive
  * that reconstruction. The server only does this while the root carries no
  * history; later turns rely on {@link buildCursorRulesEntryJson}.
  */

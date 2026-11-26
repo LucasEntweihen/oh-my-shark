@@ -1,7 +1,7 @@
 /**
  * Diffs as styled terminal rows.
  *
- * omp's compact diff text numbers every line: `+12|added`, `-12|removed`,
+ * omsk's compact diff text numbers every line: `+12|added`, `-12|removed`,
  * ` 12|context` (legacy `+12 added` too), with blank or `…` rows between
  * regions and any other row (a `@@` header) drawn as a dim note. Rows get a
  * `-12│` gutter (a number repeated from the row above is blanked), removed
@@ -125,7 +125,7 @@ function highlightContext(
 	return out;
 }
 
-/** omp compact diff text as styled rows, one per diff line (unwrapped; see `wrapDiffRow`). */
+/** omsk compact diff text as styled rows, one per diff line (unwrapped; see `wrapDiffRow`). */
 export function renderDiff(text: string, options: DiffRenderOptions): string[] {
 	const { theme } = options;
 	const lines = sanitizeText(text).split("\n");
@@ -215,7 +215,7 @@ export function wrapDiffRow(row: string, width: number): string[] {
 // ─── Hunks ──────────────────────────────────────────────────────────────────
 
 /**
- * Hunks of omp compact diff text. A blank or `…` row, or a jump in line
+ * Hunks of omsk compact diff text. A blank or `…` row, or a jump in line
  * numbers, starts a new hunk. Removed rows carry old numbers, added rows new
  * ones, context rows old ones; the other side follows from the running
  * offset. Runs without a change (far anchor lines) are dropped.
@@ -281,7 +281,7 @@ export function parseUnifiedDiff(text: string): TspDiffHunk[] {
 	return hunks;
 }
 
-/** Hunks as omp compact diff text (removed rows numbered old, added and context rows by their side), `…` between hunks. */
+/** Hunks as omsk compact diff text (removed rows numbered old, added and context rows by their side), `…` between hunks. */
 export function compactDiffText(hunks: readonly TspDiffHunk[]): string {
 	const out: string[] = [];
 	for (const hunk of hunks) {

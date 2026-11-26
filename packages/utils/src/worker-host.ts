@@ -4,7 +4,7 @@ import { stripWindowsExtendedLengthPathPrefix } from "./path";
 export const WORKER_HOST_SELECTOR_PREFIX = "__omp_worker_";
 
 /**
- * Selector of a shell process: `omp __omp_worker_shell_process [options] -- <command>` runs one
+ * Selector of a shell process: `omsk __omp_worker_shell_process [options] -- <command>` runs one
  * command in the embedded shell as a process of its own (a named service, a pty command). The
  * command is always the last argument, which is what a process listing shows for it.
  */

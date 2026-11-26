@@ -373,7 +373,7 @@ export interface OpenAICodexTurnRequestDiagnostics {
 	canAppendBeforeRequest: boolean;
 }
 
-/** Raw provider usage plus the normalized buckets OMP displays for the latest Codex turn. */
+/** Raw provider usage plus the normalized buckets OMSK displays for the latest Codex turn. */
 export interface OpenAICodexTurnUsageDiagnostics {
 	rawInputTokens: number;
 	rawCachedTokens: number;

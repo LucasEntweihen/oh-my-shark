@@ -217,7 +217,7 @@ function filterChildShellEnvInternal(
 		}
 		if (runtimeLaunchEnvValues || projectEnvNamesLoadedByOmp.has(key)) {
 			// Strong provenance: the launch environment is known and this name is
-			// absent from it, or OMP itself injected the value — either way it came
+			// absent from it, or OMSK itself injected the value — either way it came
 			// from a project dotenv file, not the parent shell.
 			const value = result[key];
 			if (value !== undefined) onDotenvValue?.(value);
@@ -300,8 +300,8 @@ for (const key of Object.keys(Bun.env)) {
 }
 
 /**
- * `OTEL_*` values from OMP's own (non-project) dotenv files: the agent dir,
- * config root, and home `.env`. Those files configure OMP's exporter (endpoint,
+ * `OTEL_*` values from OMSK's own (non-project) dotenv files: the agent dir,
+ * config root, and home `.env`. Those files configure OMSK's exporter (endpoint,
  * auth headers, GenAI content capture), so the values are kept here instead of
  * in `Bun.env`/`process.env`: no child process or in-process extension
  * inherits them. Read through {@link $otelEnv}; {@link withOmpOtelEnv} exposes
@@ -322,7 +322,7 @@ function foldOtelEnvName(name: string, platform: NodeJS.Platform): string {
 }
 
 /**
- * @internal Loader seam, exported for tests only. Claims an `OTEL_*` entry from one of OMP's own dotenv files: the value is
+ * @internal Loader seam, exported for tests only. Claims an `OTEL_*` entry from one of OMSK's own dotenv files: the value is
  * kept in a private map, never in the process environment. Returns `false` for
  * any other name, which the caller handles as usual.
  *
@@ -344,9 +344,9 @@ export function claimOmpOtelEnvFileEntry(
 }
 
 /**
- * `OTEL_*` lookup for OMP's own telemetry: the live environment wins (a shell
- * export or project `.env`), then OMP's own `.env` files. Use this instead of
- * `process.env` for any `OTEL_*` setting OMP reads itself.
+ * `OTEL_*` lookup for OMSK's own telemetry: the live environment wins (a shell
+ * export or project `.env`), then OMSK's own `.env` files. Use this instead of
+ * `process.env` for any `OTEL_*` setting OMSK reads itself.
  */
 export function $otelEnv(name: string): string | undefined {
 	const live = Bun.env[name];
@@ -355,7 +355,7 @@ export function $otelEnv(name: string): string | undefined {
 }
 
 /**
- * Runs `fn` with OMP's `.env`-sourced `OTEL_*` values temporarily present in
+ * Runs `fn` with OMSK's `.env`-sourced `OTEL_*` values temporarily present in
  * `process.env` (only for names with no live value), then removes them again in
  * a `finally`. For code that reads the environment itself, such as the
  * OpenTelemetry SDK constructors.

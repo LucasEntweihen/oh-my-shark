@@ -23,7 +23,7 @@ export interface MultiplexerNotificationRequest {
 }
 
 /** Title for CLI notifications that carry none of their own. */
-const DEFAULT_TITLE = "omp";
+const DEFAULT_TITLE = "omsk";
 
 function titleAndBody(message: string | TerminalNotification): { title: string; body: string } {
 	if (typeof message === "string") return { title: DEFAULT_TITLE, body: message };
