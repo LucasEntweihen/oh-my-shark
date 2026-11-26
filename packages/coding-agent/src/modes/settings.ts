@@ -128,7 +128,7 @@ effect(cfgColorBlindMode, setColorBlindMode);
 export const cfgComposerShape = register({
 	id: "composer.shape",
 	type: "string",
-	default: "band",
+	default: "shark",
 	ui: {
 		tab: "appearance",
 		group: "Composer",

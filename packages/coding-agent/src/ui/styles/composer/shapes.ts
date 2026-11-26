@@ -111,6 +111,7 @@ const shapes = new Map<string, ComposerShape>();
 
 /** Ids of the built-in shapes (extensions cannot replace them). */
 const BUILTIN_SHAPE_IDS: Readonly<Record<string, true>> = {
+	shark: true,
 	band: true,
 	box: true,
 	claude: true,
@@ -183,6 +184,44 @@ function rightCells(cx: ComposerRowContext): number {
 	return Math.max(1, cx.paddingX + 1 - cx.overflow);
 }
 
+/** Oceanic shark-fin frame: abyssal crest status bar, dorsal-fin prompt gutter, wave-capped footer. */
+const shark: ComposerShape = {
+	id: "shark",
+	label: "Shark Fin (Default)",
+	description: "Abyssal crest status bar with dorsal-fin prompt gutter",
+	statusAttachment: "top-border",
+	bottomBar: "none",
+	sideBorders: true,
+	gutter: "◢ ",
+	paddingX: 2,
+	sideWidth: paddingX => paddingX + 1,
+	top(cx) {
+		const { box: g, width, status } = cx;
+		const left = cx.border(`${g.topLeft}${g.horizontal}`) + cx.accent("◢ ");
+		const right = cx.accent(" ◣") + cx.border(`${g.horizontal}${g.topRight}`);
+		const fill = Math.max(0, width - 8);
+		if (!status || fill <= 0) {
+			const plainFill = Math.max(0, width - 8);
+			return left + cx.border(g.horizontal.repeat(plainFill)) + right;
+		}
+		const content = status.width <= fill ? status.content : truncate(status.content, Math.max(0, fill - 1));
+		const used = status.width <= fill ? status.width : visibleWidth(content);
+		return left + content + cx.border(g.horizontal.repeat(Math.max(0, fill - used))) + right;
+	},
+	row(cx) {
+		const { box: g, paddingX } = cx;
+		const cells = rightCells(cx);
+		const gutter = cx.first && cx.gutter ? cx.accent(cx.gutter) : cx.gutter;
+		if (cx.last) {
+			const left = cx.border(`${g.bottomLeft}≈${" ".repeat(Math.max(0, paddingX - 1))}`);
+			const right = cx.border(`${" ".repeat(Math.max(0, cells - 2))}${cells >= 2 ? "≈" : ""}${g.bottomRight}`);
+			return [`${left}${gutter}${cx.text}${cx.pad}${right}`];
+		}
+		const left = cx.border(`${g.vertical}${" ".repeat(paddingX)}`);
+		return [`${left}${gutter}${cx.text}${cx.pad}${cx.border(`${" ".repeat(cells - 1)}${g.vertical}`)}`];
+	},
+};
+
 /** The classic frame: rounded box, status in the top border, the last row merged into the bottom border. */
 const box: ComposerShape = {
 	id: "box",
@@ -221,7 +260,7 @@ const box: ComposerShape = {
 /** The status as a band above the input, the prompt as a corner gutter. */
 const band: ComposerShape = {
 	id: "band",
-	label: "Status Band (Default)",
+	label: "Status Band",
 	description: "Flush soft-capped status band above a curved prompt, no frame",
 	statusAttachment: "top-band",
 	bottomBar: "none",
@@ -333,4 +372,4 @@ const rail: ComposerShape = {
 };
 
 // Picker order: the default first.
-for (const shape of [band, box, claude, pi, borderless, rule, field, rail]) registerComposerShape(shape);
+for (const shape of [shark, band, box, claude, pi, borderless, rule, field, rail]) registerComposerShape(shape);

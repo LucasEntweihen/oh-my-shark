@@ -254,7 +254,7 @@ export function SettingsWindow(props: {
 	/** The shape the open composer-shape menu highlights. */
 	const previewedShape = (): string => {
 		const open = editing();
-		return open?.kind === "menu" && open.row === "composer.shape" ? open.option : "band";
+		return open?.kind === "menu" && open.row === "composer.shape" ? open.option : "shark";
 	};
 	const liveStatus = context.composerPreviewStatus;
 	/** The shape preview's status line: the live one placed for the previewed shape, an unnamed session titled as a stand-in. */

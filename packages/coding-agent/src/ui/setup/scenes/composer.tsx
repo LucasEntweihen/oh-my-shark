@@ -13,7 +13,7 @@ import { type Choice, ChoiceList, ChoiceModel, keyLabel } from "./choice";
 import { actionKeyId } from "../../keys/hints";
 
 /** Shapes in the order the scene lists them. */
-const SHAPE_ORDER = ["band", "box", "claude", "pi", "borderless", "rule", "field", "rail"] as const;
+const SHAPE_ORDER = ["shark", "band", "box", "claude", "pi", "borderless", "rule", "field", "rail"] as const;
 
 /** Columns the native preview is rendered at. */
 const NATIVE_PREVIEW_COLS = 80;
@@ -30,7 +30,7 @@ export const composerScene: SetupScene = {
 			const shape = composerShape(id);
 			return { value: id, label: `${index + 1} ${shape.label ?? id}`, detail: shape.description ?? "" };
 		});
-		const configured = choices.some(choice => choice.value === host.composerShape) ? host.composerShape : "band";
+		const configured = choices.some(choice => choice.value === host.composerShape) ? host.composerShape : "shark";
 		const model = new ChoiceModel<string>({
 			context,
 			choices,

@@ -43,7 +43,7 @@ function createContext(options: { terminalProgress?: boolean } = {}) {
 			ctx.ui,
 			text => text,
 			text => text,
-			"Working…",
+			"Hunting…",
 		);
 		vi.spyOn(working, "stop");
 		workingLoaders.push(working);

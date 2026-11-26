@@ -11,7 +11,7 @@ import { sessionAccentHex } from "../../ui/status/accent";
 import type { WorkingKind } from "../types";
 
 /** The turn row's label until something more specific is set. */
-export const DEFAULT_WORKING_MESSAGE = "Working…";
+export const DEFAULT_WORKING_MESSAGE = "Hunting…";
 
 /** What the working rows read from the app. */
 export interface WorkingHost {
