@@ -1,5 +1,5 @@
 /**
- * omp's WebKit host process: the ABKit engine directory's `ABHost`, started
+ * omsk's WebKit host process: the ABKit engine directory's `ABHost`, started
  * with no arguments (every profile ephemeral) and driven over its standard
  * streams. Requests go to its stdin and answers come from its stdout in the
  * framing and JSON protocol of the Tern daemon (`../tern/wire.ts`), so the
@@ -35,7 +35,7 @@ const DRAIN_MS = 250;
  */
 const GREETING_TIMEOUT_MS = 60_000;
 
-/** omp's WebKit host cannot run here: it did not start, or could not open its first tab. An open falls back to Chromium. */
+/** omsk's WebKit host cannot run here: it did not start, or could not open its first tab. An open falls back to Chromium. */
 export class WebKitUnavailableError extends ToolError {}
 
 /** A host child process as the wire client's byte stream: frames to its stdin, frames from its stdout. */
@@ -65,7 +65,7 @@ class HostProcessTransport implements TernTransport {
 			stdout: "pipe",
 			stderr: "pipe",
 		});
-		// A host nobody closed must not hold omp open; it exits with omp's end of its stdin.
+		// A host nobody closed must not hold omsk open; it exits with omsk's end of its stdin.
 		child.unref();
 		this.#child = child;
 		const drained = (async () => {
@@ -206,7 +206,7 @@ export class WebKitHost {
 	async show(block: number, title: string): Promise<void> {
 		const viewerPath = this.#viewerPath;
 		if (viewerPath === undefined || !this.canShow) {
-			throw new ToolError("omp's WebKit browser cannot show a window here: its engine ships no viewer.");
+			throw new ToolError("omsk's WebKit browser cannot show a window here: its engine ships no viewer.");
 		}
 		this.#viewer ??= WebKitViewer.launch(viewerPath, {
 			input: (source, events) => this.#userInputFrom(source, events),

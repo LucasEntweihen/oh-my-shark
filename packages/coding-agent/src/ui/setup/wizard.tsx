@@ -266,8 +266,8 @@ function SceneFrame(props: {
 		<col key="scene" role="omp.setup.scene" grow={1} term={term}>
 			<row key="head" role="omp.setup.head" align="center">
 				<row key="brand" role="omp.setup.brand" align="center">
-					<image key="logo" role="omp.setup.mark" builtin="omp" alt="omp" w={22} />
-					<text key="name" role="omp.setup.brand.name" wrap="none" spans={[{ s: "strong", t: "omp" }]} />
+					<image key="logo" role="omp.setup.mark" builtin="omsk" alt="omsk" w={22} />
+					<text key="name" role="omp.setup.brand.name" wrap="none" spans={[{ s: "strong", t: "omsk" }]} />
 					<text key="label" role="omp.setup.brand.label" wrap="none" spans={[{ s: "muted", t: "Setup" }]} />
 				</row>
 				<row key="steps" role="omp.setup.steps" align="center">
@@ -372,7 +372,7 @@ function Outro(props: { readonly model: SetupWizardModel; readonly host: SetupHo
 	return (
 		<col key="outro" role="omp.setup.outro" grow={1} align="center" actions={{ click: "continue" }} term={term}>
 			<spacer key="top" grow={1} />
-			<image key="logo" role="omp.setup.outro.mark" builtin="omp" alt="omp" w={72} />
+			<image key="logo" role="omp.setup.outro.mark" builtin="omsk" alt="omsk" w={72} />
 			<text key="title" role="omp.setup.outro.title" wrap="none" spans={[{ s: "strong", t: "You're all set" }]} />
 			{current ? (
 				<text
@@ -387,7 +387,7 @@ function Outro(props: { readonly model: SetupWizardModel; readonly host: SetupHo
 					]}
 				/>
 			) : null}
-			<text key="status" role="omp.setup.outro.status" wrap="none" spans={[{ s: "muted", t: "Starting omp…" }]} />
+			<text key="status" role="omp.setup.outro.status" wrap="none" spans={[{ s: "muted", t: "Starting omsk…" }]} />
 			<progress key="progress" role="omp.setup.outro.progress" value={null} />
 			<spacer key="bottom" grow={1} />
 		</col>

@@ -1,5 +1,5 @@
 /**
- * WebKit mode: omp's own browser engine, ABKit (a patched WPE WebKit), whose
+ * WebKit mode: omsk's own browser engine, ABKit (a patched WPE WebKit), whose
  * host executable runs headless web views and answers Tern's browser protocol
  * over its standard streams (`host.ts`). The engine directory is installed as
  * `~/.o2/lib/abkit`, where Tern looks for it too, and holds the host as
@@ -25,7 +25,7 @@ const VIEWER_NAME = "ABView";
 /** Platforms whose released engines ship {@link VIEWER_NAME} (ABKit's `docs/installing.md`): only there can a downloaded engine show a window. */
 export const VIEWER_PLATFORMS: readonly NodeJS.Platform[] = ["darwin"];
 
-/** Browser kind selecting omp's own WebKit host process. */
+/** Browser kind selecting omsk's own WebKit host process. */
 export interface WebKitKind {
 	kind: "webkit";
 	/** Absolute path of the host executable. */
@@ -74,7 +74,7 @@ function viewerOf(executable: string): string | undefined {
 }
 
 /**
- * Resolve omp's WebKit browser kind, or null when the backend is off or its
+ * Resolve omsk's WebKit browser kind, or null when the backend is off or its
  * host executable is not installed. The executable comes from the first of
  * `PI_BROWSER_WEBKIT_PATH` and the `browser.webkitPath` setting that is set,
  * else from where the engine is installed ({@link getWebKitHostPath}): a

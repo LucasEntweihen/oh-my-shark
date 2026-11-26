@@ -300,7 +300,7 @@ export async function shutdownTtsClient(): Promise<void> {
 	await ttsClient.terminate();
 }
 
-/** `omp --smoke-test` probe: start the TTS worker under the daemon, ping it, and let the daemon stop it. */
+/** `omsk --smoke-test` probe: start the TTS worker under the daemon, ping it, and let the daemon stop it. */
 export async function smokeTestTtsWorker({
 	timeoutMs = SMOKE_TEST_TIMEOUT_MS,
 }: {

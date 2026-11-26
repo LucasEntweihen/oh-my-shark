@@ -84,13 +84,13 @@ interface MCPServerConfigBase {
 	 * `./request-id`.
 	 *
 	 * OMP-specific, so only the OMP-owned discovery providers parse it (native,
-	 * standalone `mcp.json`, OMP plugins). Providers that translate another
+	 * standalone `mcp.json`, OMSK plugins). Providers that translate another
 	 * tool's config do not, since the key is not part of those formats.
 	 */
 	requestIdFormat?: MCPRequestIdFormat;
 	/**
 	 * Include server-provided instructions in the system prompt (default: true).
-	 * OMP-specific: only native config, standalone `mcp.json`, and OMP plugins
+	 * OMP-specific: only native config, standalone `mcp.json`, and OMSK plugins
 	 * parse this option; providers for other tools' formats ignore it.
 	 */
 	instructions?: boolean;

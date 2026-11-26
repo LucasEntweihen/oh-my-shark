@@ -495,7 +495,7 @@ export interface SessionState {
 	thinkingLevel?: ThinkingLevel;
 	/** The user's thinking selector: `auto` while auto mode picks the effort, else `thinkingLevel`. */
 	configuredThinkingLevel?: ConfiguredThinkingLevel;
-	/** Selectors the active model accepts, as omp's thinking selector lists them: `off`, `auto`, then its efforts. */
+	/** Selectors the active model accepts, as omsk's thinking selector lists them: `off`, `auto`, then its efforts. */
 	thinkingLevels?: ConfiguredThinkingLevel[];
 	isStreaming?: boolean;
 	isCompacting?: boolean;
@@ -606,7 +606,7 @@ export interface ModelPickerRole {
 	auto?: boolean;
 }
 
-/** One row of omp's session model picker. */
+/** One row of omsk's session model picker. */
 export interface ModelPickerRow {
 	provider: string;
 	id: string;
@@ -1134,12 +1134,12 @@ export type PromptStatus = "completed" | "aborted" | "error";
 /** Failure detail of a `prompt_result` with `status: "error"`. */
 export interface PromptError {
 	message: string;
-	/** Transient: resubmitting later may succeed (omp's own retries are exhausted). */
+	/** Transient: resubmitting later may succeed (omsk's own retries are exhausted). */
 	retryable: boolean;
 	provider?: string;
 	model?: string;
 	httpStatus?: number;
-	/** `cost_cap`: the session reached `session.maxCost` (`--max-cost`) and omp did not send the next request. */
+	/** `cost_cap`: the session reached `session.maxCost` (`--max-cost`) and omsk did not send the next request. */
 	code?: "cost_cap";
 }
 
@@ -1837,7 +1837,7 @@ export interface GetModelPickerParams {
 }
 
 export interface SetThinkingLevelParams {
-	/** `auto` lets omp pick the effort per turn. */
+	/** `auto` lets omsk pick the effort per turn. */
 	level: ConfiguredThinkingLevel;
 }
 

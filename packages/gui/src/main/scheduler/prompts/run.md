@@ -1,4 +1,4 @@
-This is a scheduled run of an omp task. Nobody is watching it: do not ask questions and do not wait for an answer. A tool call that needs approval is refused automatically; when that happens, carry on without it and say in your report what you could not do.
+This is a scheduled run of an omsk task. Nobody is watching it: do not ask questions and do not wait for an answer. A tool call that needs approval is refused automatically; when that happens, carry on without it and say in your report what you could not do.
 
 # Task: {{title}}
 

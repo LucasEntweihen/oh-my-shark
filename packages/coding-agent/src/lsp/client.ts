@@ -87,7 +87,7 @@ const invalidatedClientKeys = new Set<string>();
 const clientReloadBarriers = new Map<string, Promise<unknown>>();
 const fileOperationLocks = new Map<string, Promise<void>>();
 /**
- * URIs whose server overlay OMP has intentionally advanced ahead of the on-disk
+ * URIs whose server overlay OMSK has intentionally advanced ahead of the on-disk
  * file for an in-flight write/edit: the writethrough syncs the new (and possibly
  * formatted) text to the language server before committing it to disk, so while
  * a write is pending the file on disk is *older* than the overlay. Refcounted by
@@ -106,7 +106,7 @@ let idleTimeoutMs: number | null = null;
 let idleCheckInterval: NodeJS.Timeout | null = null;
 const IDLE_CHECK_INTERVAL_MS = 60 * 1000;
 
-// Shared server mode: language servers hosted by the omp daemon's `lsp` module, one
+// Shared server mode: language servers hosted by the omsk daemon's `lsp` module, one
 // per attached client; a released server lingers for reuse until its idle policy stops it.
 // The newest hold decides; with none it is off, so embedders and tests that drive
 // getOrCreateClient directly never touch the daemon. Each process-binding SDK
@@ -1855,7 +1855,7 @@ function documentSignature(content: string): number | bigint {
 }
 
 /**
- * Mark a file whose server overlay OMP has advanced ahead of disk for an in-flight
+ * Mark a file whose server overlay OMSK has advanced ahead of disk for an in-flight
  * write. While marked, {@link reconcileFileFromDisk} skips reading disk back into
  * the server, because the on-disk file is the *stale* side until the write commits.
  * Every call MUST be balanced by {@link endPendingDiskWrite}.
@@ -1878,7 +1878,7 @@ export function endPendingDiskWrite(filePath: string): void {
 }
 
 /**
- * Open documents no OMP operation has used for this long are closed before the next
+ * Open documents no OMSK operation has used for this long are closed before the next
  * document opens. A server keeps the project of every open document loaded, and a
  * TypeScript server drops a project whose documents are all closed when it handles
  * the next open.
@@ -1886,7 +1886,7 @@ export function endPendingDiskWrite(filePath: string): void {
 const OPEN_FILE_IDLE_MS = 5 * 60 * 1000;
 
 /**
- * Close documents no OMP operation has used within {@link OPEN_FILE_IDLE_MS}. Overlays
+ * Close documents no OMSK operation has used within {@link OPEN_FILE_IDLE_MS}. Overlays
  * ahead of disk and documents mid-open, sync or refresh stay open. Each close is queued
  * before the caller's didOpen and is written even if the caller aborts first, so the
  * server always sees the close a later reopen assumes. Its drain is bounded by `signal`,
@@ -1914,7 +1914,7 @@ function closeIdleFiles(client: LspClient, signal?: AbortSignal): void {
 }
 
 /**
- * Track a document the server just opened at `version`. A document OMP closed
+ * Track a document the server just opened at `version`. A document OMSK closed
  * (for idleness, or to reopen it for diagnostics) is marked reopened, so diagnostics
  * waits treat the empty publish that cleared its earlier life as provisional.
  */
@@ -2008,7 +2008,7 @@ export async function ensureFileOpen(client: LspClient, filePath: string, signal
  * Reconcile an already-open document with current disk contents before a semantic query.
  *
  * {@link ensureFileOpen} opens an untracked file but no-ops when the URI is already
- * open, so an external edit — one not routed through OMP's write/edit tools, which
+ * open, so an external edit — one not routed through OMSK's write/edit tools, which
  * announce their changes via {@link notifyWorkspaceWatchedFiles}/{@link refreshFile} —
  * leaves the server holding the pre-edit document while callers compute query
  * positions from disk. This reads the file and, when its contents diverge from the
@@ -2019,7 +2019,7 @@ export async function ensureFileOpen(client: LspClient, filePath: string, signal
  * Returns `true` when the caller should wait for fresh diagnostics because the stale
  * ones were dropped: a `didChange` was pushed for a reconciled overlay, or a document
  * closed for idleness was reopened.
- * A file with an in-flight OMP write ({@link beginPendingDiskWrite}) is skipped
+ * A file with an in-flight OMSK write ({@link beginPendingDiskWrite}) is skipped
  * entirely: its overlay leads disk, so reading disk back would revert the server
  * to pre-write content.
  */
@@ -2067,7 +2067,7 @@ async function syncOpenFileFromDisk(
 	unreadable: UnreadableOpenFile,
 	signal?: AbortSignal,
 ): Promise<boolean> {
-	// An in-flight OMP write has already synced newer (possibly formatted) text to
+	// An in-flight OMSK write has already synced newer (possibly formatted) text to
 	// the server ahead of committing it to disk; the on-disk file is the stale side,
 	// so reconciling from it would clobber the overlay. Leave it to the write.
 	if (pendingDiskWrites.has(uri)) {
@@ -2101,7 +2101,7 @@ async function syncOpenFileFromDisk(
 			throwIfAborted(signal);
 		} catch (err) {
 			if (!isEnoent(err) && (unreadable === "throw" || signal?.aborted)) throw err;
-			// Deleted (or unreadable) outside OMP; a write that started meanwhile owns the overlay instead.
+			// Deleted (or unreadable) outside OMSK; a write that started meanwhile owns the overlay instead.
 			if (!pendingDiskWrites.has(uri)) await closeDocument(client, uri, signal);
 			return;
 		}
@@ -2147,13 +2147,13 @@ async function syncOpenFileFromDisk(
  * Reconciles every document the client holds open against disk.
  *
  * A project-wide request answers with ranges for every file it touches. An
- * already-open consumer that was edited outside OMP keeps a stale overlay, so
+ * already-open consumer that was edited outside OMSK keeps a stale overlay, so
  * the server's ranges still point at the old text — applying them to the
  * current disk text writes the new identifier into the wrong lines while the
  * request reports success (#15772). Reconciling only the requested target
  * leaves those consumers stale, so sync all open documents first.
  *
- * Files with an in-flight OMP write are skipped (their overlay leads disk),
+ * Files with an in-flight OMSK write are skipped (their overlay leads disk),
  * unchanged files send nothing, and `excludeUri` is left for the caller to
  * sync. The sweep is not a use of each document, so idle ones still close.
  * `unreadable: "close"` closes a document whose file can no longer be read,
@@ -2346,7 +2346,7 @@ export async function notifyWorkspaceWatchedFiles(
 				.filter((_change, index) => served[index])
 				.map(change => {
 					const uri = fileToUri(change.filePath);
-					// Keep a report echoing the open document's version only while OMP's own
+					// Keep a report echoing the open document's version only while OMSK's own
 					// write is in flight: the writethrough synced the overlay before writing, so
 					// the report already answers the new disk text, and a publish that beat this
 					// notification must not be lost. Any other write (the ACP bridge, for one)
@@ -2392,7 +2392,7 @@ export async function refreshFile(client: LspClient, filePath: string, signal?: 
 /**
  * Close and reopen a document from disk. A push server need not republish diagnostics
  * for an identical-text didChange (clangd does not), but recomputes them on open, picking
- * up changed dependencies whether or not OMP has them open. A save follows the open for
+ * up changed dependencies whether or not OMSK has them open. A save follows the open for
  * servers that validate on save.
  */
 export async function reopenFile(client: LspClient, filePath: string, signal?: AbortSignal): Promise<void> {
@@ -2403,7 +2403,7 @@ export async function reopenFile(client: LspClient, filePath: string, signal?: A
  * Make clangd rebuild an open document from disk and publish its diagnostics. Resolves
  * `true` when it sent the rebuild, so the report for the document's current version is
  * final only once clangd's build status settles (see `waitForRebuiltDiagnostics`); `false`
- * when it opened the document instead, or left it to an in-flight OMP write.
+ * when it opened the document instead, or left it to an in-flight OMSK write.
  */
 export async function rebuildFile(client: LspClient, filePath: string, signal?: AbortSignal): Promise<boolean> {
 	return await refreshDocument(client, filePath, "rebuild", signal);
@@ -2438,7 +2438,7 @@ async function refreshDocument(
 	let rebuilt = false;
 	const refreshPromise = (async () => {
 		throwIfAborted(signal);
-		// A pending OMP write's overlay leads disk; reopening or rebuilding from disk would revert it.
+		// A pending OMSK write's overlay leads disk; reopening or rebuilding from disk would revert it.
 		const fromDisk = purpose === "reopen" || purpose === "rebuild";
 		if (fromDisk && pendingDiskWrites.has(uri)) return;
 		// Drop cached diagnostics for this URI before asking the server to recompute.

@@ -1,4 +1,4 @@
-Work in terminals in the omp app's Terminal panel, where the user watches: read their terminals, run long-lived commands, and drive shell sessions on this machine or over SSH.
+Work in terminals in the omsk app's Terminal panel, where the user watches: read their terminals, run long-lived commands, and drive shell sessions on this machine or over SSH.
 
 <instruction>
 - `list`: every terminal with its id, kind, state, and directory: the user's shells (`shell`), interactive `bash` calls (`command`), commands you started (`background`), and your sessions (`session`, with the SSH host and `root` when they apply).

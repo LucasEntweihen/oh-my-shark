@@ -129,7 +129,7 @@ async function readBunLockResolution(name: string): Promise<string | undefined> 
 
 /**
  * Pre-install state of `node_modules/<name>`, restored by rollback. A linked
- * package (`omp plugin link`) is kept as its link target: copying the link
+ * package (`omsk plugin link`) is kept as its link target: copying the link
  * would recreate an ordinary symlink, which EPERMs on Windows outside
  * developer mode, while `bun install` replaces the link without writing
  * through it.
@@ -147,7 +147,7 @@ type PluginPackageSnapshot =
 interface RuntimePackageJson {
 	name?: unknown;
 	version: string;
-	omp?: PluginManifest;
+	omsk?: PluginManifest;
 	pi?: PluginManifest;
 }
 // =============================================================================
@@ -643,7 +643,7 @@ export class PluginManager {
 			}
 
 			const pkgPath = path.join(getPluginsNodeModules(), actualName, "package.json");
-			let pkg: { name: string; version: string; omp?: PluginManifest; pi?: PluginManifest };
+			let pkg: { name: string; version: string; omsk?: PluginManifest; pi?: PluginManifest };
 			try {
 				pkg = await Bun.file(pkgPath).json();
 			} catch (err) {
@@ -837,7 +837,7 @@ export class PluginManager {
 
 	/**
 	 * Resolve a plugin from the active project plugin root
-	 * (`<anchor>/.omp/plugins`). Project npm/link/marketplace installs all record
+	 * (`<anchor>/.omsk/plugins`). Project npm/link/marketplace installs all record
 	 * their runtime state and `node_modules` symlink there — invisible to the
 	 * user-root lookup — so this reads the project's own `package.json`
 	 * dependencies plus `omp-plugins.lock.json`, and resolves the package from
@@ -900,7 +900,7 @@ export class PluginManager {
 		const absolutePath = path.resolve(this.#cwd, localPath);
 
 		const pkgFilePath = path.join(absolutePath, "package.json");
-		let pkg: { name?: string; version: string; omp?: PluginManifest; pi?: PluginManifest };
+		let pkg: { name?: string; version: string; omsk?: PluginManifest; pi?: PluginManifest };
 		try {
 			pkg = await Bun.file(pkgFilePath).json();
 		} catch (err) {
@@ -1105,7 +1105,7 @@ export class PluginManager {
 			const pluginPkgPath = path.join(pluginPath, "package.json");
 			const fromDependencies = name in deps;
 
-			let pluginPkg: { version: string; description?: string; omp?: PluginManifest; pi?: PluginManifest };
+			let pluginPkg: { version: string; description?: string; omsk?: PluginManifest; pi?: PluginManifest };
 			try {
 				pluginPkg = await Bun.file(pluginPkgPath).json();
 			} catch (err) {
@@ -1153,7 +1153,7 @@ export class PluginManager {
 					status: fixed ? "ok" : "error",
 					message: fixed
 						? `Reconciled version drift: node_modules now matches lock v${recordedVersion}`
-						: `Version drift: lock records v${recordedVersion} but node_modules has v${pluginPkg.version} (run \`omp plugin install ${name} --force\`)`,
+						: `Version drift: lock records v${recordedVersion} but node_modules has v${pluginPkg.version} (run \`omsk plugin install ${name} --force\`)`,
 					fixed,
 				});
 				if (fixed) {
@@ -1173,7 +1173,7 @@ export class PluginManager {
 				status: hasManifest ? "ok" : "warning",
 				message: hasManifest
 					? `v${pluginPkg.version}${pluginPkg.description ? ` - ${pluginPkg.description}` : ""}`
-					: `v${pluginPkg.version} - No omp/pi manifest (not an omp plugin)`,
+					: `v${pluginPkg.version} - No omp/pi manifest (not an omsk plugin)`,
 			});
 
 			// Check tools path exists if specified

@@ -1,6 +1,6 @@
 /** @jsxImportSource @oh-my-pi/pi-tui */
 /**
- * The startup splash: the omp lockup over a starfield, "Press ⏎ to begin".
+ * The startup splash: the omsk lockup over a starfield, "Press ⏎ to begin".
  * The setup wizard opens on it; first launches show it alone before the
  * app. Natively it is the lockup and the hint; the terminal draws the
  * animated backdrop (`../styles/setup/splash.ts`).
@@ -42,7 +42,7 @@ export function SplashView(props: {
 		>
 			<spacer key="top" grow={1} />
 			<row key="lockup" role="omp.welcome.lockup" align="center" gap="md">
-				<image key="logo" role="omp.welcome.logo" builtin="omp" alt="ohmyshark" w={128} />
+				<image key="logo" role="omp.welcome.logo" builtin="omsk" alt="ohmyshark" w={128} />
 				<col key="mark" role="omp.welcome.mark">
 					<text
 						key="omp.welcome.wordmark"

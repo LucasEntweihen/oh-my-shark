@@ -1,6 +1,6 @@
 /** @jsxImportSource @oh-my-pi/pi-tui */
 /**
- * `omp stream`'s console: the link status and channel, the viewer URL,
+ * `omsk stream`'s console: the link status and channel, the viewer URL,
  * audience and attached panes, the event log (chat, link and pane events;
  * the newest at the bottom), the chat input and the key hints.
  *

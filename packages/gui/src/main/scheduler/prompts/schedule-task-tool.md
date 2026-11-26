@@ -1,4 +1,4 @@
-Schedule a task: work omp should repeat on a schedule (or do once, later) without the user starting it, such as "every weekday at 9, check the CI dashboard and summarize failures". Use it only when the user asks for recurring or later work. The task is created as soon as you call this; the result tells you when it first runs, or what to fix.
+Schedule a task: work omsk should repeat on a schedule (or do once, later) without the user starting it, such as "every weekday at 9, check the CI dashboard and summarize failures". Use it only when the user asks for recurring or later work. The task is created as soon as you call this; the result tells you when it first runs, or what to fix.
 
 Write `prompt` as complete instructions for a fresh session with no memory of this conversation: say what to look at, what to do, and what a good result is. Pick exactly one schedule:
 

@@ -1,8 +1,8 @@
 /**
- * omp-side access to disassembler databases hosted by the omp daemon's `disasm` module.
+ * omp-side access to disassembler databases hosted by the omsk daemon's `disasm` module.
  *
- * Every open database is one global-scope `disasm` unit keyed `<backend>:<id>`, so `omp ps`
- * lists, stops, and tails it, and every omp process shares it. This module opens units on demand
+ * Every open database is one global-scope `disasm` unit keyed `<backend>:<id>`, so `omsk ps`
+ * lists, stops, and tails it, and every omsk process shares it. This module opens units on demand
  * (the daemon closes the least recently used idle one beyond `disassembler.maxOpen`), attaches a
  * tunnel to each, and forwards NDJSON requests over it.
  */
@@ -118,7 +118,7 @@ class HostConnection {
 	}
 
 	#goneError(): HostGoneError {
-		return new HostGoneError(`${unitLabel(this.#key)} ${this.#key} closed; see \`omp ps logs ${this.#unitId}\``);
+		return new HostGoneError(`${unitLabel(this.#key)} ${this.#key} closed; see \`omsk ps logs ${this.#unitId}\``);
 	}
 
 	#onLine(line: string): void {
@@ -145,13 +145,13 @@ class HostConnection {
 }
 
 /**
- * An open disassembler database as seen from this omp process: a tunnel to its daemon unit plus the
+ * An open disassembler database as seen from this omsk process: a tunnel to its daemon unit plus the
  * last reported {@link HostStatus}. Shared by every agent in the process.
  */
 export class DisasmDatabase {
 	/** Unit key `<backend>:<id>`. */
 	readonly name: string;
-	/** Daemon unit id (`omp ps` row, `omp ps logs <id>`). */
+	/** Daemon unit id (`omsk ps` row, `omsk ps logs <id>`). */
 	readonly unitId: string;
 	readonly #conn: HostConnection;
 	#status: HostStatus;
@@ -237,7 +237,7 @@ export class DisasmDatabase {
 	}
 
 	/**
-	 * Run one worker request, queued behind requests from every omp process.
+	 * Run one worker request, queued behind requests from every omsk process.
 	 * `timeoutMs` covers the queue wait; an abort cancels this request only (see `DisasmWorker.request`).
 	 */
 	async request<T>(method: HostCallMethod, params: object, options: WorkerRequestOptions = {}): Promise<T> {
@@ -349,7 +349,7 @@ async function openDatabase(
 		const db = await attachOpen();
 		if (db) return db;
 	}
-	throw new ToolError(`${unitLabel(key)} ${key} exited right after starting; see \`omp ps\``);
+	throw new ToolError(`${unitLabel(key)} ${key} exited right after starting; see \`omsk ps\``);
 }
 
 /** Options for {@link acquireDatabase}. */
@@ -403,7 +403,7 @@ export async function acquireDatabase(
 		const unit = await openingUnit(key);
 		const age = unit ? ` for ${Math.round((Date.now() - unit.startedAt) / 60_000)}m` : "";
 		const where = unit ? ` in unit \`${unit.id}\`` : "";
-		const stop = unit ? `, or stop it with \`omp ps stop ${unit.id}\`` : "";
+		const stop = unit ? `, or stop it with \`omsk ps stop ${unit.id}\`` : "";
 		throw new ToolError(
 			`${label} is still analyzing ${databaseRef(loc)} (opening${age}); the analysis continues${where}. Retry later${stop}`,
 		);
@@ -439,7 +439,7 @@ export async function findDatabaseHandle(handle: DatabaseHandle): Promise<Disasm
 	return db;
 }
 
-/** Every database the daemon hosts for `backend`, including ones other omp processes opened. */
+/** Every database the daemon hosts for `backend`, including ones other omsk processes opened. */
 export async function listDatabases(backend: DisasmBackendId): Promise<DisasmDatabase[]> {
 	const daemon = await daemonClient();
 	const { units } = await daemon.request({ op: "list", kind: DISASM_UNIT_KIND, scope: GLOBAL_SCOPE });
@@ -452,7 +452,7 @@ export async function listDatabases(backend: DisasmBackendId): Promise<DisasmDat
 
 /**
  * Save every attached database with unsaved changes and drop this process's tunnels; the units
- * keep running for other omp processes until the daemon's idle policy closes them. Failures are logged.
+ * keep running for other omsk processes until the daemon's idle policy closes them. Failures are logged.
  */
 export async function releaseDatabases(): Promise<void> {
 	const dbs = [...handles.values()];

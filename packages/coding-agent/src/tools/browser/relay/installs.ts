@@ -22,14 +22,14 @@ import { refreshRelayNativeHost } from "./native-host-manifest";
 import { isOlderOmpVersion, type PanelInstall, RELAY_RECHECK_PATH } from "./protocol";
 
 /**
- * The files this omp writes: its version and extension build. A source checkout changes the build, not the version.
+ * The files this omsk writes: its version and extension build. A source checkout changes the build, not the version.
  * Builds carry the build id beside the embedded asset, so only a source checkout calls `load` here.
  */
 async function installStamp(load: () => Promise<RelayExtensionBundle>): Promise<string> {
 	return `${VERSION}+${embeddedRelayExtensionBuild ?? (await load()).build}`;
 }
 
-/** Managed extension directory and the last asset version omp wrote there. */
+/** Managed extension directory and the last asset version omsk wrote there. */
 export interface RelayInstall {
 	dir: string;
 	ompVersion: string | null;
@@ -39,7 +39,7 @@ export interface RelayInstall {
 /** Shared install records plus the version that last synchronized the registry. */
 export interface RelayInstallRegistry {
 	installs: RelayInstall[];
-	/** `<omp version>+<extension build>` of the last complete sync; startup syncs again when it differs. */
+	/** `<omsk version>+<extension build>` of the last complete sync; startup syncs again when it differs. */
 	lastSynced?: string;
 }
 
@@ -136,7 +136,7 @@ export async function readRelayInstallRegistry(
 	};
 }
 
-/** The omp version stamped in an install's manifest: null when the file is absent, "" when unstamped or unparsable. */
+/** The omsk version stamped in an install's manifest: null when the file is absent, "" when unstamped or unparsable. */
 async function readManifestVersion(file: string): Promise<string | null> {
 	try {
 		const data: unknown = await Bun.file(file).json();
@@ -227,7 +227,7 @@ export interface RelayInstallSyncOptions extends RelayInstallLocations {
 	mode?: "explicit" | "startup" | "relay";
 }
 
-/** Reconcile every known install with this omp's assets without recreating missing directories. */
+/** Reconcile every known install with this omsk's assets without recreating missing directories. */
 export async function syncRelayInstalls(options: RelayInstallSyncOptions = {}): Promise<RelayInstallSyncResult[]> {
 	const { registryFile, defaultDir, relayUrl } = resolveLocations(options);
 	const initial = await readRelayInstallRegistry(registryFile);

@@ -67,7 +67,7 @@ class Connection {
 		this.#ready.promise.catch(() => {});
 		this.#conn = net.createConnection({ path: socket });
 		this.#conn.unref();
-		this.#conn.on("connect", () => this.#conn.write(frame({ hello: { client: "omp" } })));
+		this.#conn.on("connect", () => this.#conn.write(frame({ hello: { client: "omsk" } })));
 		this.#conn.on("data", (chunk: Buffer) => this.#receive(chunk));
 		this.#conn.on("error", err => this.#close(err));
 		this.#conn.on("close", () => this.#close(new Error(`ovnfs at ${socket} closed the connection`)));

@@ -172,7 +172,7 @@ export class AppFrame {
 		this.shell.setHome(this.composer.field);
 		await this.shell.start({
 			theme: currentTheme,
-			// Tern draws omp's session (its composer, omp roles) for this role.
+			// Tern draws omsk's session (its composer, omsk roles) for this role.
 			role: "omp.session",
 			...(options.title ? { title: options.title } : {}),
 			version: this.welcome.version.peek(),
@@ -186,7 +186,7 @@ export class AppFrame {
 			...(this.#terminal?.clock ? { clock: this.#terminal.clock } : {}),
 		});
 		if (options.clearHistory) this.shell.host?.replayHistory();
-		// Tern draws omp's icons with its own Nerd Font: a native surface always uses those symbols.
+		// Tern draws omsk's icons with its own Nerd Font: a native surface always uses those symbols.
 		if (this.shell.native()) await setSymbolPreset("nerd");
 	}
 
@@ -423,7 +423,7 @@ export class AppFrame {
 				{/* A waiting tool approval shares the composer's column, over the editor that takes its typing. */}
 				{dock.slot("approval").view}
 				{() => this.editorArea() ?? this.composer.node}
-				{/* Tern draws omp's composer with its own bar: the terminal status bar is the terminal's. */}
+				{/* Tern draws omsk's composer with its own bar: the terminal status bar is the terminal's. */}
 				{() => (this.shell.native() ? undefined : this.#statusPanel())}
 			</col>
 		));

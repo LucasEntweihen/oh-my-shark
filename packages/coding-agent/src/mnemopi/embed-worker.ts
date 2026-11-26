@@ -1,5 +1,5 @@
 /**
- * Mnemopi local-embeddings worker: a child of the omp daemon's `infer` module,
+ * Mnemopi local-embeddings worker: a child of the omsk daemon's `infer` module,
  * re-entered through the agent CLI's hidden `__omp_worker_mnemopi_embed`
  * selector, speaking LF-delimited JSON over stdin/stdout. The whole point of
  * this module is that `loadFastembed()` — and therefore `onnxruntime-node`'s

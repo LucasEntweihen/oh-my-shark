@@ -2,9 +2,9 @@
  * Allowlist anonymizer for session JSONL files.
  *
  * Every field is exported by an explicit rule in {@link FIELD_RULES}: usage, timing, models, ids,
- * tool names, and other metadata omp writes are kept; turn contents become size-annotated markers;
+ * tool names, and other metadata omsk writes are kept; turn contents become size-annotated markers;
  * paths become mock paths; shell commands keep program names and flags. A field without a rule —
- * and every payload omp does not define (extension/MCP data, non-built-in tool details or args,
+ * and every payload omsk does not define (extension/MCP data, non-built-in tool details or args,
  * `eval` display output) — becomes an opaque marker under a tokenized key. Nothing is kept because
  * of how a value looks.
  *
@@ -27,7 +27,7 @@ export const ANONYMIZED_REVIEW_NOTE =
 	"Turn contents and error text are redacted and paths/literals replaced; metadata such as model names is kept — review before sharing.";
 
 /**
- * Export rule for a field omp writes. Numbers, booleans, and null under any rule except `opaque`
+ * Export rule for a field omsk writes. Numbers, booleans, and null under any rule except `opaque`
  * and `label` are kept (counts, sizes, timings, flags).
  * - `num`: numeric/flag field; a string there is redacted.
  * - `time`: ISO timestamp or epoch ms.
@@ -37,9 +37,9 @@ export const ANONYMIZED_REVIEW_NOTE =
  * - `path`/`cmd`: mock paths / shell rewrite. `text`: redaction marker. `label`: placeholder.
  * - `error`: redacted except a leading HTTP status.
  * - `tool`/`name`/`customType`: code-chosen identifiers kept; MCP (user-configured) names tokenized.
- * - `content`: string or content blocks. `struct`: nested omp structure.
+ * - `content`: string or content blocks. `struct`: nested omsk structure.
  * - `args`/`details`/`data`: tool-call args, tool-result details, custom-entry data — walked only
- *   for built-in tools / omp's own entries, otherwise opaque.
+ *   for built-in tools / omsk's own entries, otherwise opaque.
  * - `runtime`: the build stamp; version and commit kept, branch/diff/label tokenized.
  * - `judgment`: a journaled judge query; probabilities and counts kept, the state hash,
  *   question ids, and choice labels tokenized.
@@ -81,7 +81,7 @@ function fields(rule: Rule, keys: readonly string[]): Record<string, Rule> {
 	return Object.fromEntries(keys.map(key => [key, rule]));
 }
 
-/** Every field omp writes in session records, messages, content blocks, and built-in tool details. */
+/** Every field omsk writes in session records, messages, content blocks, and built-in tool details. */
 const FIELD_RULES: Record<string, Rule> = {
 	...fields("num", [
 		"version",
@@ -844,7 +844,7 @@ const SHELL_COMMANDS = new Set([
 	"sh",
 	"zsh",
 	"nu",
-	"omp",
+	"omsk",
 	"gcc",
 	"clang",
 	"dotnet",
@@ -1118,7 +1118,7 @@ const ENV_NAMES = new Set([
 	"NO_PROXY",
 ]);
 
-/** URI schemes kept verbatim: standard web/file schemes and omp's built-in internal schemes. */
+/** URI schemes kept verbatim: standard web/file schemes and omsk's built-in internal schemes. */
 const KNOWN_SCHEMES = new Set([
 	"http",
 	"https",
@@ -1138,7 +1138,7 @@ const KNOWN_SCHEMES = new Set([
 	"mcp",
 	"memory",
 	"mr",
-	"omp",
+	"omsk",
 	"pr",
 	"proc",
 	"rule",
@@ -1546,7 +1546,7 @@ export class SessionAnonymizer {
 					? this.#struct(value, true)
 					: this.#opaque(value);
 			case "data":
-				// omp's execution log mirrors the tool call; every other custom entry is extension state.
+				// omsk's execution log mirrors the tool call; every other custom entry is extension state.
 				return parent.type === "custom" && parent.customType === "tool_execution_start" && isObject(value)
 					? this.#executionLog(value)
 					: this.#opaque(value);
@@ -1580,7 +1580,7 @@ export class SessionAnonymizer {
 					parent.type === "custom_message";
 				return this.#contentBlock(value, untrusted);
 			}
-			// Only structural rules descend; a scalar field holding an object is not omp's shape.
+			// Only structural rules descend; a scalar field holding an object is not omsk's shape.
 			const descends = rule === "struct" || rule === "enum" || rule === "id" || rule === "path" || rule === "tool";
 			if (rule === "transforms") {
 				// Provider input transformations address transcript slots (`messages.3.content.0`), not files.
@@ -1615,7 +1615,7 @@ export class SessionAnonymizer {
 							.map(part => this.#string("agent", part.trim(), key, fromTool))
 							.join(",");
 			case "id":
-				// Machine-minted ids omp writes stay joinable with provider logs; tool-written and named
+				// Machine-minted ids omsk writes stay joinable with provider logs; tool-written and named
 				// ids (subagent names) are mapped like the `agent://` segment they mirror.
 				return !fromTool && RANDOM_ID.test(value) ? value : this.segment(value);
 			case "path":
@@ -1647,7 +1647,7 @@ export class SessionAnonymizer {
 			case "customType":
 				return /^[a-z][a-z0-9_:.-]{0,63}$/.test(value) ? value : this.placeholder(value);
 			default:
-				// `num`, `text`, `content`: a string here is turn content (or not omp's shape).
+				// `num`, `text`, `content`: a string here is turn content (or not omsk's shape).
 				return this.redactText(value);
 		}
 	}

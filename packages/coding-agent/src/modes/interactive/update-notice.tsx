@@ -10,7 +10,7 @@ import { bold } from "@oh-my-pi/pi-tui/theme/theme";
 import { AnsiText } from "../../ui/transcript/ansi-text";
 import { Notice } from "../../ui/transcript/messages/notices";
 
-const UPDATE_COMMAND = "omp update";
+const UPDATE_COMMAND = "omsk update";
 
 export function UpdateNotice(props: { readonly version: string }): JSXNode {
 	const prefix = `New version ${props.version} is available. Run: `;

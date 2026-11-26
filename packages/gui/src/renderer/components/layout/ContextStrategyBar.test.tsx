@@ -32,7 +32,7 @@ const setSetting = vi.fn(async (path: string, value: unknown) => {
 });
 const setAutoCompaction = vi.fn(async () => ok());
 const getState = vi.fn(async () => ok({}));
-(window as unknown as { omp: unknown }).omp = {
+(window as unknown as { omsk: unknown }).omp = {
 	rpc: { getSettings, setSetting, setAutoCompaction, getState },
 	events: { onConfigUpdate: () => () => { } },
 };

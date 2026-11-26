@@ -1,8 +1,8 @@
 /**
- * Built-in MCP transforms: what omp does, unasked, to MCP servers it recognizes.
+ * Built-in MCP transforms: what omsk does, unasked, to MCP servers it recognizes.
  *
  * {@link BUILTIN_MCP_TRANSFORMS} is the whole policy, one entry per recognized
- * server. The only kind so far is `drop`: a server whose job one of omp's own
+ * server. The only kind so far is `drop`: a server whose job one of omsk's own
  * tools already does is left unconnected. `loadAllMCPConfigs` decides drops from
  * a server's config, before it starts, and reports them so `/mcp list` and the
  * extensions dashboard can say why a configured server is not running.

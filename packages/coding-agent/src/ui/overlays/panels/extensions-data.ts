@@ -230,8 +230,8 @@ function pathParts(filePath: string): string[] {
 function projectHint(ext: Extension): string | undefined {
 	if (ext.source.level !== "project") return undefined;
 	const parts = pathParts(ext.path);
-	const omp = parts.lastIndexOf(".omp");
-	const parent = omp > 0 ? parts[omp - 1] : undefined;
+	const omsk = parts.lastIndexOf(".omp");
+	const parent = omsk > 0 ? parts[omsk - 1] : undefined;
 	return parent && parent !== "." ? parent : undefined;
 }
 

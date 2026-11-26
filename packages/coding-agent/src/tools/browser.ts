@@ -127,7 +127,7 @@ const browserSchema = type({
 	"name?": type("string").describe("tab id (default 'main')"),
 	"url?": type("string").describe("url to open"),
 	"app?": type("string").describe(
-		"browser to drive: 'relay' (the user's Chrome), 'tern' (Tern picture-in-picture), 'webkit', 'chromium' (managed), 'own' (omp's own browser: WebKit if installed, else Chromium), 'auto' (default choice without the relay), a CDP endpoint URL to attach to, or an executable path to spawn",
+		"browser to drive: 'relay' (the user's Chrome), 'tern' (Tern picture-in-picture), 'webkit', 'chromium' (managed), 'own' (omsk's own browser: WebKit if installed, else Chromium), 'auto' (default choice without the relay), a CDP endpoint URL to attach to, or an executable path to spawn",
 	),
 	"argv?": type("string[]").describe("extra cli args when app is an executable path"),
 	"target?": type("string").describe(
@@ -152,7 +152,7 @@ const browserSchema = type({
 	"all?": type("boolean").describe("release every managed tab this agent opened"),
 	"kill?": type("boolean").describe("also kill spawned-app browsers"),
 	"persist?": type("boolean").describe(
-		"keep tab live across turn settle and idle close; on a relay tab omp opened, keep it open after the session ends",
+		"keep tab live across turn settle and idle close; on a relay tab omsk opened, keep it open after the session ends",
 	),
 });
 
@@ -174,13 +174,13 @@ interface BrowserPreludeDetails {
  * path or CDP URL, or a keyword: `relay`, `tern`, `webkit`, `chromium`, `own`),
  * the relay, `browser.cdpUrl`, Tern (inside a Tern pane; `target` selects it
  * over the `browser.tern` setting to adopt a block; `headed` does not opt out),
- * a cmux surface, then omp's own browser ({@link ownBrowserKind}). `app: "auto"`
+ * a cmux surface, then omsk's own browser ({@link ownBrowserKind}). `app: "auto"`
  * is that chain without the relay. Tern and cmux are automatic only while no
- * other omp owns the terminal, and none of the user's own surfaces (relay, Tern,
+ * other omsk owns the terminal, and none of the user's own surfaces (relay, Tern,
  * cmux) is automatic for a subagent. With `PI_BROWSER_RELAY=only` (a session
  * started from the extension's side panel) every open, a subagent's included,
  * goes to the relay, and any `app` but `"relay"` throws. `app: "tern"` and `app: "webkit"` are explicit:
- * they throw when Tern or omp's WebKit host is unavailable.
+ * they throw when Tern or omsk's WebKit host is unavailable.
  */
 export function resolveBrowserKind(
 	params: BrowserParams,
@@ -191,7 +191,7 @@ export function resolveBrowserKind(
 	if (isRelayOnly(env)) {
 		if (app !== undefined && app !== "relay") {
 			throw new ToolError(
-				`This session drives the user's Chrome through the omp extension and has no other browser; app: ${JSON.stringify(app)} is unavailable. Omit app or pass app: "relay".`,
+				`This session drives the user's Chrome through the omsk extension and has no other browser; app: ${JSON.stringify(app)} is unavailable. Omit app or pass app: "relay".`,
 			);
 		}
 		const relayKind = resolveRelayKind(
@@ -237,7 +237,7 @@ export function resolveBrowserKind(
 		);
 		if (!webkitKind) {
 			throw new ToolError(
-				`app: "webkit" requires omp's WebKit engine, and none is installed: its host executable must be ${getWebKitHostPath()}, or be named by PI_BROWSER_WEBKIT_PATH or the browser.webkitPath setting, with PI_BROWSER_WEBKIT not set to 0.`,
+				`app: "webkit" requires omsk's WebKit engine, and none is installed: its host executable must be ${getWebKitHostPath()}, or be named by PI_BROWSER_WEBKIT_PATH or the browser.webkitPath setting, with PI_BROWSER_WEBKIT not set to 0.`,
 			);
 		}
 		return webkitKind;
@@ -263,8 +263,8 @@ export function resolveBrowserKind(
 	if (configuredCdpUrl) {
 		return { kind: "connected", cdpUrl: configuredCdpUrl.replace(/\/+$/, "") };
 	}
-	// Tern and cmux show the tab beside the omp drawn in that terminal. An omp started from that
-	// session's commands (`omp -p` from its bash tool, a script an eval cell runs) inherited the
+	// Tern and cmux show the tab beside the omsk drawn in that terminal. An omsk started from that
+	// session's commands (`omsk -p` from its bash tool, a script an eval cell runs) inherited the
 	// pane env, and its tabs would float over the other session's work. A subagent has no pane of
 	// its own either: its tabs would pile up over the parent's, so it skips both even when
 	// PI_BROWSER_TERN=1 or PI_BROWSER_CMUX=1 forces them for the parent.
@@ -285,7 +285,7 @@ export function resolveBrowserKind(
 }
 
 /**
- * omp's own browser, where an open ends when nothing else takes it: its
+ * omsk's own browser, where an open ends when nothing else takes it: its
  * WebKit host when that backend is on (`browser.webkit`,
  * `PI_BROWSER_WEBKIT`; `app: "chromium"` opts one open out) and its
  * executable is installed (`PI_BROWSER_WEBKIT_PATH`, `browser.webkitPath`,
@@ -311,7 +311,7 @@ function ownBrowserKind(
 	return webkit;
 }
 
-/** The Chromium browser an open launches when no attach/app mode applies and omp's WebKit host does not take it. */
+/** The Chromium browser an open launches when no attach/app mode applies and omsk's WebKit host does not take it. */
 function chromiumKind(
 	params: BrowserParams,
 	session: ToolSession,
@@ -332,7 +332,7 @@ export function createBrowserPrelude(session: ToolSession): HostEvalPreludeDefin
 	return createBrowserPreludeDefinition(session, {
 		invoke: (parameters: unknown, context: EvalPreludeContext) => invokeBrowser(session, parameters, context),
 		status: describeBrowserCall,
-		// The documentation promises omp's own browser for an open without `app`; while
+		// The documentation promises omsk's own browser for an open without `app`; while
 		// the relay takes that open, the prompt says so: the only browser in relay-only
 		// mode, otherwise naming where `app: "auto"` goes instead.
 		get relay(): BrowserRelayGuidance | undefined {
@@ -517,13 +517,13 @@ function puppeteerViewport(viewport: EmulationViewport): Viewport {
  * cannot host it, and saying so in the result:
  * - A Tern PiP (not forced with `app: "tern"`) that Tern cannot show — no
  *   window, an unsupported platform, a refused or failed connection — goes to
- *   omp's own browser, as an open outside Tern would. Adopting a Tern block
+ *   omsk's own browser, as an open outside Tern would. Adopting a Tern block
  *   (`target`) never falls back: no other browser has that page.
- * - omp's WebKit host (not forced with `app: "webkit"`) that cannot start,
+ * - omsk's WebKit host (not forced with `app: "webkit"`) that cannot start,
  *   cannot open its first tab, or could not be downloaded
  *   ({@link installWebKitForOpen}) goes to managed Chromium.
  * - A cmux surface (always an automatic choice) that fails to open goes to
- *   omp's own browser.
+ *   omsk's own browser.
  *
  * A tab that already fell back keeps its browser.
  */
@@ -577,13 +577,13 @@ async function openBrowser(
 			failures.push({ backend: "webkit", reason: chromiumOnly });
 			kind = chromiumKind(params, session);
 		}
-		const opened = kind.kind === "webkit" ? "omp's WebKit browser" : "Chromium";
+		const opened = kind.kind === "webkit" ? "omsk's WebKit browser" : "Chromium";
 		const notes = failures.map(failure =>
 			failure.backend === "tern"
 				? `Tern cannot show a browser here (${failure.reason}); opened ${opened} instead. Pass app: "own" to skip Tern, or app: "tern" to require it.`
 				: failure.backend === "cmux"
 					? `cmux could not open a browser surface here (${failure.reason}); opened ${opened} instead. Pass app: "own" to skip cmux.`
-					: `omp's WebKit browser could not take this open (${failure.reason}); opened Chromium instead. Pass app: "chromium" to skip it, or app: "webkit" to require it.`,
+					: `omsk's WebKit browser could not take this open (${failure.reason}); opened Chromium instead. Pass app: "chromium" to skip it, or app: "webkit" to require it.`,
 		);
 		const remainingMs = Math.max(1, timeoutMs - (performance.now() - startedAt));
 		try {
@@ -622,12 +622,12 @@ async function openBrowser(
 const failedWebKitUpdates = new Set<string>();
 
 /**
- * Download omp's WebKit engine into its default location
+ * Download omsk's WebKit engine into its default location
  * ({@link webKitEngineToInstall}) before an open that needs it. A missing
  * engine is downloaded for an open with `app: "webkit"`, or one that otherwise
  * ends at managed Chromium (headless, or visible where released engines ship a
  * viewer) while Chromium itself would first be downloaded: with no browser
- * installed, omp's own engine comes before Chrome for Testing. An installed
+ * installed, omsk's own engine comes before Chrome for Testing. An installed
  * engine is updated to ABKit's newest build before an open that would run it,
  * checked once per process. Like Chrome's download, it runs before the open's
  * deadline starts.
@@ -641,7 +641,7 @@ async function installWebKitForOpen(
 	params: BrowserParams,
 	signal?: AbortSignal,
 ): Promise<string | undefined> {
-	// The relay is the only browser: nothing omp runs itself needs installing (an explicit app throws at resolve).
+	// The relay is the only browser: nothing omsk runs itself needs installing (an explicit app throws at resolve).
 	if (isRelayOnly()) return undefined;
 	const explicit = params.app === "webkit";
 	const pending = await webKitEngineToInstall({
@@ -658,7 +658,7 @@ async function installWebKitForOpen(
 		} catch (error) {
 			if (signal?.aborted) throw error;
 			failedWebKitUpdates.add(engineDir);
-			logger.warn("Could not update omp's WebKit engine; running the installed one", {
+			logger.warn("Could not update omsk's WebKit engine; running the installed one", {
 				engineDir,
 				error: error instanceof Error ? error.message : String(error),
 			});
@@ -678,7 +678,7 @@ async function installWebKitForOpen(
 		if (signal?.aborted) throw error;
 		const cause = error instanceof Error ? error.message : String(error);
 		if (explicit)
-			throw new ToolError(`app: "webkit" requires omp's WebKit engine, which could not be downloaded: ${cause}`);
+			throw new ToolError(`app: "webkit" requires omsk's WebKit engine, which could not be downloaded: ${cause}`);
 		return `its engine could not be downloaded: ${cause}`;
 	}
 }
@@ -706,13 +706,13 @@ async function openOnKind(
 	// Chrome's extension debugger API exposes no Security domain, so the relay cannot honor the override.
 	if (params.insecure && kind.kind === "relay") {
 		throw new ToolError(
-			'insecure is not supported through the Chrome relay: the extension debugger API does not expose the CDP Security domain. Pass app: "chromium" to use omp\'s Chromium instead.',
+			'insecure is not supported through the Chrome relay: the extension debugger API does not expose the CDP Security domain. Pass app: "chromium" to use omsk\'s Chromium instead.',
 		);
 	}
 	// Chrome never lets an extension choose where downloads go. Refused here, before an existing tab is closed to reopen.
 	if (params.downloads !== undefined && kind.kind === "relay") {
 		throw new ToolError(
-			"The omp browser relay cannot choose where Chrome saves downloads: open the tab without `downloads`, and tab.waitForDownload() and tab.downloads() report where Chrome saved each file.",
+			"The omsk browser relay cannot choose where Chrome saves downloads: open the tab without `downloads`, and tab.waitForDownload() and tab.downloads() report where Chrome saved each file.",
 		);
 	}
 
@@ -863,7 +863,7 @@ async function listTargets(
 	const kind = resolveBrowserKind({ ...params, target: params.target ?? "" }, session);
 	if (kind.kind !== "tern" && kind.kind !== "relay" && kind.kind !== "connected") {
 		throw new ToolError(
-			`No pages to adopt here (the browser would be ${describeKind(kind)}): targets exist only inside a Tern pane (its browser blocks), with the omp relay (app: "relay" or the browser.relay setting), or at a CDP endpoint (app: "http://127.0.0.1:9222" or the browser.cdpUrl setting).`,
+			`No pages to adopt here (the browser would be ${describeKind(kind)}): targets exist only inside a Tern pane (its browser blocks), with the omsk relay (app: "relay" or the browser.relay setting), or at a CDP endpoint (app: "http://127.0.0.1:9222" or the browser.cdpUrl setting).`,
 		);
 	}
 	details.browser = kind.kind;
@@ -1011,8 +1011,8 @@ function describeBrowser(tab: TabSession): string {
 	}
 	if (tab.backend === "webkit") {
 		return tab.browser.webkit.isShown(tab.ternTab.block)
-			? "omp's WebKit browser (in a window)"
-			: "omp's headless WebKit browser";
+			? "omsk's WebKit browser (in a window)"
+			: "omsk's headless WebKit browser";
 	}
 	const handle = tab.browser;
 	if (!("browser" in handle)) {
@@ -1021,8 +1021,8 @@ function describeBrowser(tab: TabSession): string {
 	switch (handle.kind.kind) {
 		case "headless":
 			return handle.kind.headless
-				? `omp's headless Chromium${handle.sharedDaemon ? " (shared)" : ""}`
-				: `omp's Chromium (in a window${handle.sharedDaemon ? ", shared" : ""})`;
+				? `omsk's headless Chromium${handle.sharedDaemon ? " (shared)" : ""}`
+				: `omsk's Chromium (in a window${handle.sharedDaemon ? ", shared" : ""})`;
 		case "spawned":
 			return `spawned ${handle.kind.path} (pid ${handle.pid ?? "?"})`;
 		case "connected":
@@ -1057,7 +1057,7 @@ function ternNotes(tab: TernTabSession, requested: { width: number; height: numb
 		notes.push(
 			adopted
 				? `Not on screen: the user is viewing another Tern tab or session. Block ${adopted.block} shows once they switch to the tab holding it; tell them where it is.`
-				: `Not on screen: the user hid pictures in picture (⌃⌥⌘P), or this Tern shows them only in the tab holding this omp pane (block ${tab.browser.kind.pane}); tell them where it is.`,
+				: `Not on screen: the user hid pictures in picture (⌃⌥⌘P), or this Tern shows them only in the tab holding this omsk pane (block ${tab.browser.kind.pane}); tell them where it is.`,
 		);
 	}
 	return notes;
@@ -1078,6 +1078,6 @@ function describeKind(kind: BrowserKind): string {
 		case "tern":
 			return `tern:pane ${kind.pane}`;
 		case "webkit":
-			return "omp's headless WebKit";
+			return "omsk's headless WebKit";
 	}
 }

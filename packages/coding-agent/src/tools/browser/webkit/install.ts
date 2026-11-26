@@ -1,10 +1,10 @@
 /**
- * Downloads omp's WebKit engine, ABKit, from Stencil's build service (product
+ * Downloads omsk's WebKit engine, ABKit, from Stencil's build service (product
  * `abkit`, its newest {@link ABKIT_CHANNEL} build) into an engine directory,
  * normally `~/.o2/lib/abkit` ({@link webKitEngineToInstall}): when it holds no
  * engine, and to update one older than that build, asked once per process. An
  * engine another app manages (Tern: `cli/managed-install.ts`) is that app's to
- * update, and a local build is its builder's; omp runs them as they are.
+ * update, and a local build is its builder's; omsk runs them as they are.
  *
  * The answered archive (`abkit-<version>-<platform>.tar.gz`, `.zip` on
  * Windows) is checked against the answer's size and SHA-256 while it streams,
@@ -15,7 +15,7 @@
  * Windows), replaced by rename. A host runs from its version's real path and
  * finds its helpers there, so an update never waits for running hosts; a
  * version nothing runs from any more is deleted at a later check. An OS lock
- * makes concurrent omp processes install once.
+ * makes concurrent omsk processes install once.
  *
  * @example
  * // ~/.o2/lib/abkit -> ~/.o2/lib/abkit-versions/0.1.2
@@ -51,7 +51,7 @@ import { withDownload } from "../../../downloads/activity";
 import { hostExecutableAt, hostExecutableName, type ResolveWebKitKindOptions } from "./kind";
 
 /**
- * The ABKit channel omp follows: it installs that channel's newest build
+ * The ABKit channel omsk follows: it installs that channel's newest build
  * (each `v<version>` tag of stencil-hq/abkit publishes one) and updates an
  * older engine to it.
  */
@@ -61,7 +61,7 @@ const ABKIT_CHANNEL: UpdateChannel = "stable";
 const UPDATE_CHECK_TIMEOUT_MS = 5_000;
 
 /**
- * The file in an engine directory naming its version: the release version omp
+ * The file in an engine directory naming its version: the release version omsk
  * installed, or `dev` from ABKit's `install-engine.sh` for a local build.
  */
 export const ENGINE_VERSION_FILE = "VERSION";
@@ -80,7 +80,7 @@ export interface InstallWebKitEngineOptions {
 	fetchImpl?: Fetch;
 }
 
-/** A default engine directory omp should install ABKit into ({@link webKitEngineToInstall}). */
+/** A default engine directory omsk should install ABKit into ({@link webKitEngineToInstall}). */
 export interface WebKitEngineInstall {
 	engineDir: string;
 	/**
@@ -91,7 +91,7 @@ export interface WebKitEngineInstall {
 }
 
 /**
- * The default engine directory (`~/.o2/lib/abkit`) when omp should install or
+ * The default engine directory (`~/.o2/lib/abkit`) when omsk should install or
  * update ABKit there, or null: only while the backend is on (as
  * `resolveWebKitKind` decides) and neither `PI_BROWSER_WEBKIT_PATH` nor the
  * `browser.webkitPath` setting names another location (a configured engine is
@@ -117,7 +117,7 @@ export async function webKitEngineToInstall(
 
 /**
  * The version the engine in `engineDir` names in its {@link ENGINE_VERSION_FILE},
- * or undefined when it names none (installed before omp recorded one).
+ * or undefined when it names none (installed before omsk recorded one).
  *
  * Throws when the file exists but cannot be read.
  */
@@ -130,7 +130,7 @@ async function engineVersion(engineDir: string): Promise<string | undefined> {
 	}
 }
 
-/** Whether an engine's version is not a release, such as a local build's `dev`: omp never replaces it. */
+/** Whether an engine's version is not a release, such as a local build's `dev`: omsk never replaces it. */
 function isLocalBuild(version: string | undefined): boolean {
 	return version !== undefined && !isBuildVersion(version);
 }
@@ -164,16 +164,16 @@ const current = new Set<string>();
  * Bring `engineDir` to ABKit's newest {@link ABKIT_CHANNEL} build and resolve
  * to its host executable: download it when the directory holds no engine, or
  * an engine naming no version or an older release, and point `engineDir` at
- * it; keep a current or newer one (another omp's update), a local build, or
+ * it; keep a current or newer one (another omsk's update), a local build, or
  * an engine another app manages. Each directory is checked once per process;
  * concurrent calls share the check. The check of an installed engine waits
  * {@link UPDATE_CHECK_TIMEOUT_MS} for the build service and keeps the engine
  * when it does not answer, and is skipped while another process installs or
- * updates it: an open never waits on another omp's download.
+ * updates it: an open never waits on another omsk's download.
  *
  * Throws when no engine is installed and the build service does not answer or
  * publishes no ABKit build for this host (the message names the target), an
- * outdated plain engine folder (installed before omp kept versions) is in use
+ * outdated plain engine folder (installed before omsk kept versions) is in use
  * (its hosts find their helpers through that very path: it is replaced by a
  * process that finds it idle), the download fails or does not match the
  * answer, or the archive holds no `abkit/` host executable. Nothing is left
@@ -208,7 +208,7 @@ async function install(engineDir: string, options: InstallWebKitEngineOptions): 
 			retryDelayMs: 100,
 		});
 	}
-	// Another omp is installing or updating it, which can take a whole download: the engine there runs now.
+	// Another omsk is installing or updating it, which can take a whole download: the engine there runs now.
 	const lock = tryAcquireFileLock(lockPath);
 	if (lock === null) return installed;
 	try {
@@ -249,7 +249,7 @@ async function installLocked(engineDir: string, options: InstallWebKitEngineOpti
 	}
 	const linkedTo = await linkTarget(engineDir);
 	if (installed !== null) {
-		// Current, or newer: another omp may have updated it while this one waited for the lock.
+		// Current, or newer: another omsk may have updated it while this one waited for the lock.
 		if (version !== undefined && compareVersions(version, build.version) >= 0) {
 			if (linkedTo !== undefined) await sweepVersions(versionsDir, linkedTo);
 			return installed;
@@ -263,7 +263,7 @@ async function installLocked(engineDir: string, options: InstallWebKitEngineOpti
 	}
 	const target = path.join(versionsDir, build.version);
 	if (hostExecutableAt(target, process.platform) === null) {
-		logger.warn(installed === null ? "Downloading omp's WebKit engine" : "Updating omp's WebKit engine", {
+		logger.warn(installed === null ? "Downloading omsk's WebKit engine" : "Updating omsk's WebKit engine", {
 			version: build.version,
 			file: build.file.name,
 			engineDir,
@@ -339,7 +339,7 @@ async function linkTarget(engineDir: string): Promise<string | undefined> {
  * beside it and renamed over the old one, so a reader finds one engine or the
  * other. A junction cannot be renamed over another (Windows): the old one is
  * removed first, and put back when the new one cannot be renamed in. A plain
- * folder there (an engine installed before omp kept
+ * folder there (an engine installed before omsk kept
  * versions, idle, or a partial copy) is moved aside and deleted once the link
  * is in; it is put back when the link cannot be.
  */

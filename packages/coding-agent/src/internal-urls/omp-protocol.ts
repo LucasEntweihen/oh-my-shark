@@ -1,11 +1,11 @@
 /**
- * Protocol handler for omp:// URLs.
+ * Protocol handler for omsk:// URLs.
  *
  * Serves statically embedded documentation files bundled at build time.
  *
  * URL forms:
- * - omp:// - Lists all available documentation files
- * - omp://<file>.md - Reads a specific documentation file
+ * - omsk:// - Lists all available documentation files
+ * - omsk://<file>.md - Reads a specific documentation file
  */
 import * as path from "node:path";
 import { resolveContainedPath, resolveContainedPathSync } from "../discovery/contained-path";
@@ -43,12 +43,12 @@ function docFileFor(url: InternalUrl): string | undefined {
 }
 
 /**
- * Handler for omp:// URLs.
+ * Handler for omsk:// URLs.
  *
  * Resolves documentation file names to their content, or lists available docs.
  */
 export class OmpProtocolHandler implements ProtocolHandler {
-	readonly scheme = "omp";
+	readonly scheme = "omsk";
 	readonly spec: SchemeSpec = { backing: "virtual", selectors: "lines", immutable: true, linkable: true };
 
 	/** Always advertised: harness docs are embedded in every build. */
@@ -58,7 +58,7 @@ export class OmpProtocolHandler implements ProtocolHandler {
 
 	async resolve(url: InternalUrl): Promise<InternalResource> {
 		const filename = ompDocFilename(url);
-		// The docs root (`omp://`, `omp://docs`) names no doc. The grammar also
+		// The docs root (`omsk://`, `omsk://docs`) names no doc. The grammar also
 		// rejects absolute paths and `..` traversal.
 		const docPath = ompDocRel(url);
 
@@ -80,7 +80,7 @@ export class OmpProtocolHandler implements ProtocolHandler {
 			return entries;
 		}
 		const resource = await this.#readDoc(docPath, ompDocFilename(url), url);
-		return [{ url: `omp://${docPath}`, content: resource.content }];
+		return [{ url: `omsk://${docPath}`, content: resource.content }];
 	}
 
 	async complete(): Promise<UrlCompletion[]> {
@@ -88,7 +88,7 @@ export class OmpProtocolHandler implements ProtocolHandler {
 	}
 
 	/**
-	 * File a doc is read from in a source checkout, so `omp://` links open it.
+	 * File a doc is read from in a source checkout, so `omsk://` links open it.
 	 * The shipped corpus is embedded, so most installs have nothing to link and
 	 * the URL stays plain text rather than being materialized on the fly.
 	 */
@@ -120,7 +120,7 @@ export class OmpProtocolHandler implements ProtocolHandler {
 			throw new Error("No documentation files found");
 		}
 
-		const listing = filenames.map(f => `- [${f}](omp://${f})`).join("\n");
+		const listing = filenames.map(f => `- [${f}](omsk://${f})`).join("\n");
 		const content = `# Documentation\n\n${filenames.length} files available:\n\n${listing}\n`;
 
 		return {
@@ -141,7 +141,7 @@ export class OmpProtocolHandler implements ProtocolHandler {
 			const suffix =
 				suggestions.length > 0
 					? `\nDid you mean: ${suggestions.join(", ")}`
-					: "\nUse omp:// to list available files.";
+					: "\nUse omsk:// to list available files.";
 			throw new Error(`Documentation file not found: ${filename}${suffix}`);
 		}
 

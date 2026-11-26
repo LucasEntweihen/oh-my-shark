@@ -1740,7 +1740,7 @@ export class ExtensionUiController {
 			this.ctx.showWarning(message);
 		} else {
 			// `notify` is shared by every extension: an info notice gets its own line so it neither
-			// overwrites nor is overwritten by another extension's notice or omp's own status.
+			// overwrites nor is overwritten by another extension's notice or omsk's own status.
 			this.ctx.showStatus(message, { collapse: false });
 		}
 	}

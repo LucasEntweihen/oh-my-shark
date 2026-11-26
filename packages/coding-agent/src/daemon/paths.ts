@@ -1,4 +1,4 @@
-/** Filesystem layout of the single per-user omp daemon. */
+/** Filesystem layout of the single per-user omsk daemon. */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { ipcEndpoint } from "@oh-my-pi/pi-natives";

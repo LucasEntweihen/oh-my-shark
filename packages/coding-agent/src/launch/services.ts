@@ -1,4 +1,4 @@
-/** Session-owned named services: `proc` units of the omp daemon in the session's project scope. */
+/** Session-owned named services: `proc` units of the omsk daemon in the session's project scope. */
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { TERMINAL_STATES } from "../cli/ps-model";
@@ -83,7 +83,7 @@ async function sessionScope(session: ToolSession): Promise<UnitScope> {
 	return projectScope(await canonicalProjectDir(session.cwd));
 }
 
-/** Directory of the daemon-side files omp keeps for one named service in one project. */
+/** Directory of the daemon-side files omsk keeps for one named service in one project. */
 function serviceFilesDir(scope: UnitScope, name: string): string {
 	const scopeHash = Bun.hash
 		.wyhash(scope.kind === "project" ? scope.dir : scope.kind)
@@ -343,7 +343,7 @@ export async function startService(
 	if (params.notify) compileNotifyPattern(params.notify);
 	const scope = await sessionScope(session);
 	const shell = session.settings.getShellConfig();
-	// The service is a shell process: the bash tool's shell, with omp's utilities and the mounts
+	// The service is a shell process: the bash tool's shell, with omsk's utilities and the mounts
 	// its script makes. A URL directory is entered by that shell; the process starts on the host.
 	const urlCwd = params.cwd !== undefined && isUrlPath(params.cwd) ? params.cwd : undefined;
 	const source = params.seed ? await writeServiceSeed(scope, params.name, params.seed) : undefined;
@@ -457,7 +457,7 @@ export async function modeService(
 	// Detaching relaunches the service, which would start the shared Chrome on an
 	// unprepared profile and reopen its previous pages.
 	if (mode === "detached" && isSharedBrowserUnit((await request(session, { op: "describe", unit: ref }, signal)).unit))
-		throw new Error(`${name} is omp's project-shared browser and cannot be detached`);
+		throw new Error(`${name} is omsk's project-shared browser and cannot be detached`);
 	// A session-held service lives on a lease and `mode` takes none: hold one first, or the
 	// daemon's idle policy (idleMs 0) stops the service the moment it turns session-held.
 	const lease =

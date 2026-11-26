@@ -1,6 +1,6 @@
 /** @jsxImportSource @oh-my-pi/pi-tui */
 /**
- * `omp ps` as a live monitor: a head (title, counts, the scope control,
+ * `omsk ps` as a live monitor: a head (title, counts, the scope control,
  * freshness, quit), one section per unit scope with a selectable process
  * list, the transient status, and an action bar that mirrors the keys. Info
  * and logs replace the list.
@@ -188,7 +188,7 @@ function table(model: PsTopModel): JSXNode {
 		const hint: TspSpan[] = [
 			{
 				s: "muted",
-				t: model.board()?.daemon ? "The omp daemon runs nothing here. " : "The omp daemon is not running. ",
+				t: model.board()?.daemon ? "The omsk daemon runs nothing here. " : "The omsk daemon is not running. ",
 			},
 			{ s: "muted", t: all ? "Nothing runs anywhere." : "Show every scope with " },
 		];

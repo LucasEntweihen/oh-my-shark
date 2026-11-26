@@ -1,6 +1,6 @@
 /**
  * Daemon `speech` module: one warm STT or TTS worker process per
- * `stt:<device>:<dtype>` / `tts:<device>:<dtype>` key, shared by every omp
+ * `stt:<device>:<dtype>` / `tts:<device>:<dtype>` key, shared by every omsk
  * session. The worker speaks the frame protocol of `speech-frames.ts` on
  * stdin/stdout; this module multiplexes client tunnels onto it by namespacing
  * request and stream ids per tunnel, routes replies and audio back to the

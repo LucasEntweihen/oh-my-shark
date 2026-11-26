@@ -63,7 +63,7 @@ export interface ScrollOptions {
 	selector?: string;
 }
 
-/** A browser element handle with omp's additional interaction methods. */
+/** A browser element handle with omsk's additional interaction methods. */
 export type InteractionHandle = ElementHandle & {
 	dblclick(): Promise<void>;
 	check(): Promise<void>;
@@ -1814,7 +1814,7 @@ async function deliverToInput(
 	if (route === "paths") {
 		const staged = await staging.stage(sources, signal);
 		// Chrome expands a folder for a `webkitdirectory` input only on the front tab, as when a person picks one; a
-		// tab omp opened in the background is brought forward for this upload alone.
+		// tab omsk opened in the background is brought forward for this upload alone.
 		if (sources.some(source => source.directory)) {
 			await untilAborted(signal, () => input.frame.page().bringToFront());
 		}
@@ -2249,7 +2249,7 @@ export async function clickAt(
 
 /**
  * Click at viewport coordinates, one press and release per click. puppeteer's `mouse.click` keeps sending its
- * steps after the call gave up, so a click on a page that answers late landed after omp reported it failed;
+ * steps after the call gave up, so a click on a page that answers late landed after omsk reported it failed;
  * here an aborted click sends no further press. `firstDown` runs once the first press is acknowledged, and its
  * release waits for it.
  */

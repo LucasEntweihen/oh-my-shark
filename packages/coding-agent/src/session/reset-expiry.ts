@@ -1,6 +1,6 @@
 /**
  * How soon an account's saved rate-limit resets expire, and whether anything
- * will spend them first. Shared by `omp usage` and the TUI status line so both
+ * will spend them first. Shared by `omsk usage` and the TUI status line so both
  * warn about the accounts the salvage planners would act on.
  */
 import type {
@@ -47,7 +47,7 @@ import {
 
 const SOON_MS = 7 * 24 * 3_600_000;
 const IMMINENT_MS = 24 * 3_600_000;
-/** The TUI warns about a saved reset only in its final hours; the status line and `omp usage` flag it from 24h out. */
+/** The TUI warns about a saved reset only in its final hours; the status line and `omsk usage` flag it from 24h out. */
 const NOTICE_LEAD_MS = 6 * 3_600_000;
 const NOTICE_LABEL_MAX = 80;
 
@@ -153,7 +153,7 @@ function spendableNow(
 }
 
 /**
- * What an open interactive omp session does with an account's soonest expiring saved
+ * What an open interactive omsk session does with an account's soonest expiring saved
  * reset, from the consent of the window that governs it: `auto` spends it by its
  * last five minutes if the provider still allows it then, `ask` prompts first,
  * `off` leaves it. `eligibleNow` is the salvage planner's answer for this report

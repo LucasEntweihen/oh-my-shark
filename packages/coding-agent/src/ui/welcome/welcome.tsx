@@ -79,7 +79,7 @@ export function Welcome(props: WelcomeProps): JSXNode {
 	return (
 		<card role="omp.welcome" term={look}>
 			<row key="lockup" role="omp.welcome.lockup" align="center" gap="md">
-				<image key="logo" role="omp.welcome.logo" builtin="omp" alt="ohmyshark" w={128} />
+				<image key="logo" role="omp.welcome.logo" builtin="omsk" alt="ohmyshark" w={128} />
 				<col key="mark" role="omp.welcome.mark">
 					<text
 						key="omp.welcome.wordmark"

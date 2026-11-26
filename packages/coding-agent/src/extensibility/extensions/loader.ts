@@ -73,7 +73,7 @@ const LINK_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]+$/;
 /** `todo.backend` ids: safe to print and to type in a config file. */
 const TODO_BACKEND_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
-/** Standard schemes an extension may not claim: web, file and mail links. omp's internal URLs are refused too. */
+/** Standard schemes an extension may not claim: web, file and mail links. omsk's internal URLs are refused too. */
 const STANDARD_LINK_SCHEMES: Readonly<Record<string, true>> = {
 	about: true,
 	blob: true,
@@ -382,7 +382,7 @@ class ConcreteExtensionAPI implements ExtensionAPI, IExtensionRuntime {
 			);
 		}
 		if (id === NATIVE_TODO_BACKEND) {
-			throw new Error(`Todo backend id "${id}" is reserved for omp's own todo list`);
+			throw new Error(`Todo backend id "${id}" is reserved for omsk's own todo list`);
 		}
 		for (const field of ["label", "description"] as const) {
 			const text = definition[field];
@@ -791,7 +791,7 @@ export async function discoverExtensionPaths(
 
 	const ambient = options.ambient !== false;
 	if (ambient) {
-		// 1. Discover extension modules via capability API (native .omp/.pi only).
+		// 1. Discover extension modules via capability API (native .omsk/.pi only).
 		// Scope the load to the native provider — the extension-module capability
 		// also has claude/codex/gemini/opencode providers, and their items were
 		// discarded here anyway (see #4198). The provider filter skips the walk

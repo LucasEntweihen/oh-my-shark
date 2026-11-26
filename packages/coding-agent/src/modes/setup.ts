@@ -63,7 +63,7 @@ const TERMINAL_ONLY_SCENES: Record<string, true> = {
 
 /** Scenes whose question only applies on some installs. */
 const SCENE_APPLIES: Record<string, () => boolean | Promise<boolean>> = {
-	// A terminal serving Glyph Protocol draws omp's icons without a Nerd Font.
+	// A terminal serving Glyph Protocol draws omsk's icons without a Nerd Font.
 	"glyph-mode": () => !terminalIdentity().glyphs,
 	// Self-update is not offered in a source checkout or a package-manager install.
 	"auto-update": () => canSelfUpdate(),

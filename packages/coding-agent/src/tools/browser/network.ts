@@ -46,7 +46,7 @@ export interface NetworkRouteDescription {
 
 /** Byte counts associated with one browser request. */
 export interface NetworkRequestSizes {
-	/** Request body bytes (0 for none); left out where the backend cannot see request bodies (omp's WebKit host). */
+	/** Request body bytes (0 for none); left out where the backend cannot see request bodies (omsk's WebKit host). */
 	requestBody?: number;
 	/**
 	 * The response body's declared `Content-Length` (its size on the wire); without one, the size of the body once
@@ -68,7 +68,7 @@ export interface NetworkRequestRecord {
 	/** Requested URL. */
 	url: string;
 	/**
-	 * Puppeteer resource type. omp's WebKit host names none and omp derives it from the request: there `fetch` stands
+	 * Puppeteer resource type. omsk's WebKit host names none and omsk derives it from the request: there `fetch` stands
 	 * for `xhr` too, and `document`/`subdocument` only for a frame's navigation.
 	 */
 	resourceType: string;

@@ -1,5 +1,5 @@
 /**
- * The relay extension's files as omp installs them, and the checks that let a
+ * The relay extension's files as omsk installs them, and the checks that let a
  * relay rewrite an installed copy in place (extension self-update).
  */
 import * as fs from "node:fs/promises";
@@ -27,7 +27,7 @@ const GENERATED_EXTENSION = path.join(import.meta.dir, "extension.generated.json
 let loading: Promise<RelayExtensionBundle> | undefined;
 
 /**
- * The extension this omp installs: loaded lazily from the embedded zstd asset in
+ * The extension this omsk installs: loaded lazily from the embedded zstd asset in
  * binaries and bundles, or read from `extension.generated.json` in a source
  * checkout. Coalesces concurrent loads without pinning the ~2 MiB bundle after
  * callers finish.
@@ -46,7 +46,7 @@ export function loadRelayExtension(): Promise<RelayExtensionBundle> {
 				.catch((error: unknown) => {
 					if (!isEnoent(error)) throw error;
 					throw new Error(
-						`This omp checkout has not built the omp extension (${GENERATED_EXTENSION} is missing). Run \`bun run gen:relay-extension\` at the repository root.`,
+						`This omsk checkout has not built the omsk extension (${GENERATED_EXTENSION} is missing). Run \`bun run gen:relay-extension\` at the repository root.`,
 					);
 				});
 	loading = pending;
@@ -63,7 +63,7 @@ type ExtensionFiles = Record<string, string | Buffer> & {
 };
 
 /**
- * The extension files `omp browser-relay install` writes, stamped with the installing omp's version.
+ * The extension files `omsk browser-relay install` writes, stamped with the installing omsk's version.
  *
  * @throws Error when the extension is missing (see {@link loadRelayExtension}) or lacks its manifest or service worker.
  */
@@ -75,7 +75,7 @@ export async function relayExtensionFiles(
 	const manifest = assets["manifest.json"];
 	const script = assets["background.js"];
 	if (typeof manifest !== "string" || typeof script !== "string")
-		throw new Error("The omp extension lacks manifest.json or background.js");
+		throw new Error("The omsk extension lacks manifest.json or background.js");
 	const files: ExtensionFiles = {
 		"manifest.json": stampRelayExtensionManifest(manifest, ompVersion),
 		"background.js": stampRelayExtensionScript(script, ompVersion, build),
@@ -88,7 +88,7 @@ export async function relayExtensionFiles(
 	return files;
 }
 
-/** Where `omp browser-relay install` puts the extension without `--dir` (~/.omp/browser-relay/extension). */
+/** Where `omsk browser-relay install` puts the extension without `--dir` (~/.omsk/browser-relay/extension). */
 export function defaultRelayExtensionDir(): string {
 	return path.join(getBrowserRelayDir(), "extension");
 }
@@ -185,7 +185,7 @@ export async function installedRelayExtensionStamp(dir: string): Promise<RelayEx
 	}
 }
 
-/** The omp version stamped in `dir`'s manifest; "" when it has none or cannot be read. */
+/** The omsk version stamped in `dir`'s manifest; "" when it has none or cannot be read. */
 export async function installedRelayExtensionVersion(dir: string): Promise<string> {
 	try {
 		const manifest: unknown = await Bun.file(path.join(dir, "manifest.json")).json();

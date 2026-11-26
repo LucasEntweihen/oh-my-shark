@@ -71,9 +71,9 @@ export default class Toks extends Command {
 	};
 
 	static examples = [
-		"omp toks README.md",
-		'omp toks "The quick brown fox jumps over the lazy dog"',
-		"omp toks src/main.ts --json",
+		"omsk toks README.md",
+		'omsk toks "The quick brown fox jumps over the lazy dog"',
+		"omsk toks src/main.ts --json",
 	];
 
 	async run(): Promise<void> {

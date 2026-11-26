@@ -57,7 +57,7 @@ export function modelRoleOf(role: string | undefined): string | undefined {
 		: role;
 }
 
-/** Client other than the terminal that started a session: `chrome` is the omp extension's side panel. */
+/** Client other than the terminal that started a session: `chrome` is the omsk extension's side panel. */
 export type SessionOrigin = "chrome";
 
 /** `value` as a {@link SessionOrigin}; anything else (absent, unknown client) is the terminal's. */
@@ -123,7 +123,7 @@ export interface SessionEntryBase {
 	parentId: string | null;
 	timestamp: string;
 	/**
-	 * omp build that wrote this entry, set on every entry this session's process authors. Copies
+	 * omsk build that wrote this entry, set on every entry this session's process authors. Copies
 	 * (forks, branches, collab replicas) keep the original writer. Absent on older entries.
 	 */
 	runtime?: RuntimeIdentity;

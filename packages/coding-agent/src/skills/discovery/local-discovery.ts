@@ -19,7 +19,7 @@ export interface DiscoveredSkillPath {
 
 const PROJECT_SKILL_SUBDIRS = [
 	".ohms/skills",
-	".omp/skills",
+	".omsk/skills",
 	".claude/skills",
 	".agents/skills",
 	".agent/skills",
@@ -30,8 +30,8 @@ const PROJECT_SKILL_SUBDIRS = [
 const USER_SKILL_SUBDIRS = [
 	".ohms/skills/installed",
 	".ohms/agent/skills",
-	".omp/skills/installed",
-	".omp/agent/skills",
+	".omsk/skills/installed",
+	".omsk/agent/skills",
 	".claude/skills",
 	".codex/skills",
 	".agents/skills",

@@ -524,7 +524,7 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 						const client = await getOrCreateClient(serverConfig, this.session.cwd, undefined, signal);
 						// Sync open dependencies, then make the server compute the target's
 						// diagnostics against current disk state. A report cached from an earlier
-						// call cannot be trusted: a dependency OMP never opened may have changed.
+						// call cannot be trusted: a dependency OMSK never opened may have changed.
 						await reconcileOpenFilesFromDisk(client, signal, uri);
 						const minVersion = client.diagnosticsVersion;
 						// Set when clangd was asked to rebuild: its report is final only once its
@@ -1247,7 +1247,7 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 						nonProviders.push(workspaceServerName);
 						continue;
 					}
-					// Results point into every open document, so sync those edited outside OMP first.
+					// Results point into every open document, so sync those edited outside OMSK first.
 					await reconcileOpenFilesFromDisk(workspaceClient, signal, undefined, "close");
 					const workspaceResult = (await sendRequest(
 						workspaceClient,
@@ -1333,7 +1333,7 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 
 		if (action === "reload" && (isWorkspace || !resolvedFile)) {
 			// `reload *` is the user's explicit request to re-read config from
-			// disk. Drop the per-cwd cache entry so `.omp/lsp.json`, root markers,
+			// disk. Drop the per-cwd cache entry so `.omsk/lsp.json`, root markers,
 			// and plugin configs added after the first LSP call become visible —
 			// otherwise `getConfig` returns the first observation for the rest of
 			// the process lifetime (#3546).
@@ -1482,7 +1482,7 @@ export class LspTool implements AgentTool<typeof lspSchema, LspToolDetails, Them
 			}
 
 			// Answers that span files are computed from every open document, and one
-			// edited outside OMP still holds its stale overlay: references and
+			// edited outside OMSK still holds its stale overlay: references and
 			// definitions then point at old lines, and a rename or code action
 			// writes its edits onto them. Sync them all after the waits, right
 			// before the request. An action that writes edits fails on an open file

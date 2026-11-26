@@ -243,7 +243,7 @@ export function isChromiumBrowserExecutable(exe: string): boolean {
  * `--remote-debugging-port` when the default user-data-dir is in use: the
  * browser opens as usual, nothing listens, and attach waits out its timeout.
  * Chromium-family browsers therefore get a stable omp-owned profile under
- * `~/.omp/browser-profiles/<exe slug>` unless the caller already picked one.
+ * `~/.omsk/browser-profiles/<exe slug>` unless the caller already picked one.
  * That profile is also what lets a second instance start beside the user's
  * running default-profile browser instead of handing off to it. Electron apps
  * are left untouched: `--user-data-dir` would relocate their app data.
@@ -497,7 +497,7 @@ const PAGE_ATTACH_TIMEOUT_MS = 10_000;
 const FRAME_READY_TIMEOUT_MS = 8_000;
 const FRAME_READY_POLL_MS = 120;
 const RELAY_JSON_TIMEOUT_MS = 3_000;
-// A tab opened outside omp reaches the relay's /json, and gets its URL, a few ms after Chrome reports it created.
+// A tab opened outside omsk reaches the relay's /json, and gets its URL, a few ms after Chrome reports it created.
 const RELAY_MATCH_SETTLE_MS = 2_000;
 const RELAY_MATCH_POLL_MS = 100;
 
@@ -669,7 +669,7 @@ function selectRelayEntry(entries: RelayJsonEntry[], options: PickTargetOptions)
 		}
 		const summary = entries.map(e => `- ${e.id}  ${e.title || "(untitled)"}  ${e.url}`).join("\n");
 		throw new ToolError(
-			`No page target matched ${JSON.stringify(options.matcher)} after waiting ${RELAY_MATCH_SETTLE_MS / 1000}s for a newly opened tab. Pass a target id, URL or title substring (browser.targets() lists URLs before adopting), or omit target to open omp's own tab, with url to load the page there. Available pages:\n${summary}`,
+			`No page target matched ${JSON.stringify(options.matcher)} after waiting ${RELAY_MATCH_SETTLE_MS / 1000}s for a newly opened tab. Pass a target id, URL or title substring (browser.targets() lists URLs before adopting), or omit target to open omsk's own tab, with url to load the page there. Available pages:\n${summary}`,
 		);
 	}
 	const usable = entries.filter(isAdoptableRelayEntry);
@@ -717,7 +717,7 @@ export async function pickElectronTarget(browser: Browser, options: PickTargetOp
 						throwIfAborted(options.signal);
 						if (isPuppeteerTimeout(error)) {
 							throw new ToolError(
-								"Selected tab did not become available before omp could attach; retry, or reopen it if it closed",
+								"Selected tab did not become available before omsk could attach; retry, or reopen it if it closed",
 							);
 						}
 						throw error;

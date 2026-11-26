@@ -1,11 +1,11 @@
 /**
- * `omp browser-relay` — drive the user's own Chrome tabs.
+ * `omsk browser-relay` — drive the user's own Chrome tabs.
  */
 import { Args, Command, Flags } from "@oh-my-pi/pi-utils/cli";
 import { BROWSER_RELAY_ACTIONS, runBrowserRelayCommand } from "../cli/browser-relay-cli";
 import { browserRelayHelp } from "../cli/command-help";
 
-/** Install or sync the omp Chrome extension; Chrome launches its native host. */
+/** Install or sync the omsk Chrome extension; Chrome launches its native host. */
 export default class BrowserRelay extends Command {
 	static description = browserRelayHelp.description;
 
@@ -19,7 +19,7 @@ export default class BrowserRelay extends Command {
 
 	static flags = {
 		dir: Flags.string({
-			description: "Extension install directory (install; default ~/.omp/browser-relay/extension)",
+			description: "Extension install directory (install; default ~/.omsk/browser-relay/extension)",
 		}),
 		"no-chrome": Flags.boolean({
 			description: "Skip the unattended install into Chrome and print the manual steps",
@@ -31,8 +31,8 @@ export default class BrowserRelay extends Command {
 	};
 
 	static examples = [
-		"omp browser-relay install    # install the omp extension, register it in Chrome and add its native host",
-		"omp browser-relay sync       # sync every registered extension directory",
+		"omsk browser-relay install    # install the omsk extension, register it in Chrome and add its native host",
+		"omsk browser-relay sync       # sync every registered extension directory",
 	];
 
 	async run(): Promise<void> {

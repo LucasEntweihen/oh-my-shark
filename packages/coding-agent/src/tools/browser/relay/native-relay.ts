@@ -1,10 +1,10 @@
 /**
  * The browser relay half of the native host: what a `link` port does (`native-host.ts` hands it over).
  *
- * Every browser running the omp extension keeps one link port open, so each has a native host on this path. The
+ * Every browser running the omsk extension keeps one link port open, so each has a native host on this path. The
  * first to bind the relay port leads: it runs the relay server (`server.ts`) and links its own browser into the
  * bridge in-process. Any other browser's host follows: it forwards its browser's relay messages to the leader's
- * `/ext` websocket. When the leader goes away (its browser quit, or it restarted for an omp upgrade) the followers
+ * `/ext` websocket. When the leader goes away (its browser quit, or it restarted for an omsk upgrade) the followers
  * elect again: one binds the port, the rest follow it. The extension hears `linked` each time it has a relay (and
  * says hello) and `unlinked` when it lost one.
  *
@@ -21,7 +21,7 @@ import { type RelayServer, startRelayServer } from "./server";
 const RELINK_MIN_MS = 250;
 /** Longest pause between elections while something that is not a relay holds the port. */
 const RELINK_MAX_MS = 5_000;
-/** Time the 202 of an accepted restart gets to reach the asking omp before the server stops. */
+/** Time the 202 of an accepted restart gets to reach the asking omsk before the server stops. */
 const RESTART_GRACE_MS = 100;
 
 /** What {@link serveRelayLink} needs from the host's port. */
@@ -178,9 +178,9 @@ class BrowserLink {
 		return { send: line => ws.send(line), close: () => ws.close(), ended: ended.promise };
 	}
 
-	/** A newer omp asks this leader to make way; it stops shortly after accepting, and `run` resolves. */
+	/** A newer omsk asks this leader to make way; it stops shortly after accepting, and `run` resolves. */
 	#restart(request: { version: string; idleOnly: boolean }): boolean {
-		// Only an older relay gives way, or two omp versions would keep replacing each other's.
+		// Only an older relay gives way, or two omsk versions would keep replacing each other's.
 		if (this.#restarting || !isOlderOmpVersion(VERSION, request.version)) return false;
 		if (request.idleOnly && (this.#server?.bridge.cdpClientCount ?? 0) > 0) return false;
 		this.#restarting = true;

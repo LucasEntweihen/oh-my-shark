@@ -362,7 +362,7 @@ export interface ServerConfig {
 	isLinter?: boolean;
 	/**
 	 * Advertise `workspace/didChangeWatchedFiles` dynamic registration, so the
-	 * server hands file watching to omp instead of running its own watcher.
+	 * server hands file watching to omsk instead of running its own watcher.
 	 * On unless `false`.
 	 */
 	watchFiles?: boolean;
@@ -420,9 +420,9 @@ export interface OpenFile {
 	 * unchanged and `hash` equals `syncedHash`, the server already holds the disk text.
 	 */
 	disk?: { stamp: string; hash: number | bigint };
-	/** When an OMP operation last used this document; long-unused documents close before the next open. */
+	/** When an OMSK operation last used this document; long-unused documents close before the next open. */
 	lastUsedAt: number;
-	/** When OMP last reopened this document (an idle close, or a diagnostics reopen); absent for a first open. */
+	/** When OMSK last reopened this document (an idle close, or a diagnostics reopen); absent for a first open. */
 	reopenedAt?: number;
 }
 
@@ -478,7 +478,7 @@ export interface LspClient {
 	watchedFiles?: WatchedFilesForwarder;
 	openFiles: Map<string, OpenFile>;
 	/**
-	 * Documents OMP closed and will reopen (for idleness, or mid diagnostics reopen),
+	 * Documents OMSK closed and will reopen (for idleness, or mid diagnostics reopen),
 	 * with the last version the server saw. A reopen resumes past that version; absent
 	 * until the client closes one.
 	 */

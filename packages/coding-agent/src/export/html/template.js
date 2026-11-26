@@ -566,8 +566,8 @@
       }
 
       /**
-       * Split an OMP interleaved assistant into sidebar text/tool rows.
-       * Pi stores those continuations as separate entries; OMP keeps one
+       * Split an OMSK interleaved assistant into sidebar text/tool rows.
+       * Pi stores those continuations as separate entries; OMSK keeps one
        * content array. Do not mutate session entries or parentIds.
        */
       function buildInterleavedAssistantRows(flatNode, toolResultNodes, includeTools) {
@@ -1325,7 +1325,7 @@
 
       function renderHeader() {
         const title = header?.title || (activeSessionKey ? subSessions[activeSessionKey].agentId : 'Session transcript');
-        document.title = `${title} · omp`;
+        document.title = `${title} · omsk`;
         const totalCost = globalStats.cost.input + globalStats.cost.output + globalStats.cost.cacheRead + globalStats.cost.cacheWrite;
 
         const tokenParts = [];

@@ -43,7 +43,7 @@ function coldReasonText(reason: PromptCacheColdReason, nowMs?: number): string {
 			if (nowMs === undefined) return "expired";
 			return `expired ${sameDay(reason.at, nowMs) ? "at " : ""}${when(reason.at, nowMs)}${relative(reason.at, nowMs)}`;
 		case "refresh-missed":
-			return "omp's refresh found the entry gone";
+			return "omsk's refresh found the entry gone";
 		case "model":
 			return `model changed: ${sanitizeStatusText(reason.from)} → ${sanitizeStatusText(reason.to)}`;
 		case "thinking":
@@ -79,7 +79,7 @@ function warmingText(warming: PromptCacheWarming, nowMs: number): string {
  * What the next message re-sends uncached. A lapsed entry, a missed refresh, another
  * model or another tool set (the first cached block) leaves nothing to read. Any
  * other change keeps the cached blocks ahead of it (tools, then the system prompt),
- * whose share omp cannot see, so the whole prompt is only the most it re-sends.
+ * whose share omsk cannot see, so the whole prompt is only the most it re-sends.
  */
 function resendText(status: PromptCacheStatus): string {
 	const tokens = `~${formatNumber(status.nextTokens)}`;

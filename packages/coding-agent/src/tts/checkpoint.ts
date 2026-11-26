@@ -1,7 +1,7 @@
 /**
  * On-disk checkpoints of the local TTS models: `<tiny-models>/tts/<key>/`,
  * filled with the model's pinned files by {@link installPinnedHubFiles}. The
- * TTS worker installs on first load; `omp setup speech` drives the same path
+ * TTS worker installs on first load; `omsk setup speech` drives the same path
  * through the worker's `download` request.
  */
 import * as fs from "node:fs/promises";

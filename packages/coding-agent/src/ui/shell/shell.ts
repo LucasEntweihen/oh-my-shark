@@ -11,7 +11,7 @@
  * ```ignore
  * const shell = new Shell();
  * shell.dock.slot("composer").set(() => <Composer model={composer} />);
- * await shell.start({ theme: currentTheme, title: "omp" });
+ * await shell.start({ theme: currentTheme, title: "omsk" });
  * const block = shell.transcript.append(() => <UserMessage message={message} />);
  * shell.transcript.settle(block);
  * ```
@@ -56,7 +56,7 @@ import { Transcript } from "./transcript";
 export interface ShellStartOptions {
 	readonly theme: Accessor<Theme>;
 	readonly title?: string;
-	/** The native surface's role (Tern treats `omp.session` as omp's chat session). */
+	/** The native surface's role (Tern treats `omp.session` as omsk's chat session). */
 	readonly role?: string;
 	readonly version?: string;
 	/** Keys nothing on the focus path consumed: the app's global bindings. Return true when handled. */
@@ -150,8 +150,8 @@ export class Shell {
 			theme: options.theme,
 			separator: this.transcript.separator,
 			...(options.title ? { title: options.title } : {}),
-			// Tern names every omp surface "omp"; the terminal title is the session's own business.
-			surfaceTitle: "omp",
+			// Tern names every omsk surface "omsk"; the terminal title is the session's own business.
+			surfaceTitle: "omsk",
 			...(options.role ? { role: options.role } : {}),
 			...(options.version ? { version: options.version } : {}),
 			onKey: key => (options.onKey?.(key) ?? false) || this.#globalKeys.toReversed().some(handler => handler(key)),

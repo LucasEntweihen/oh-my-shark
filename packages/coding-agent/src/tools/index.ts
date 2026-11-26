@@ -235,7 +235,7 @@ export interface ToolSession {
 	/** The user approves `cfg://` writes for this session (top-level TUI session only). */
 	settingsApproval?: boolean;
 	/**
-	 * Replies render in omp's own transcript (the top-level interactive session, terminal or Tern);
+	 * Replies render in omsk's own transcript (the top-level interactive session, terminal or Tern);
 	 * false for print, RPC, ACP, and subagent sessions. See `CreateAgentSessionOptions.tuiTranscript`.
 	 */
 	tuiTranscript?: boolean;
@@ -316,7 +316,7 @@ export interface ToolSession {
 	 */
 	effectiveExtensionRoots?: () => EffectiveExtensionRoots;
 	/**
-	 * Pre-discovered custom-tool source paths from `.omp/tools/`, `.claude/tools/`,
+	 * Pre-discovered custom-tool source paths from `.omsk/tools/`, `.claude/tools/`,
 	 * plugins, etc. Forwarded to subagents so they skip the FS scan but still
 	 * re-bind tools to their own session-scoped `CustomToolAPI`.
 	 */

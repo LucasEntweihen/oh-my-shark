@@ -20,7 +20,7 @@ interface DiskEntry {
 	parentRepo?: string;
 	/** Branch name extracted from the parent's tracking file, when available. */
 	branch?: string;
-	/** When set, the entry is unhealthy and `omp worktree clear` will remove it. */
+	/** When set, the entry is unhealthy and `omsk worktree clear` will remove it. */
 	orphanReason?: string;
 }
 
@@ -54,7 +54,7 @@ async function stopRetainedMount(dir: string): Promise<boolean> {
 	return false;
 }
 
-/** Discover entries in the OMP worktree directory, including legacy nested entries. */
+/** Discover entries in the OMSK worktree directory, including legacy nested entries. */
 export async function managedGitWorktrees(): Promise<ManagedWorktree[]> {
 	return (await scanWorktrees()).map(entry => ({ ...entry, remove: () => removeEntry(entry) }));
 }
@@ -93,7 +93,7 @@ async function scanWorktrees(): Promise<DiskEntry[]> {
 			continue;
 		}
 
-		// Legacy nesting: ~/.omp/wt/<encoded-project>/<branch-or-id>
+		// Legacy nesting: ~/.omsk/wt/<encoded-project>/<branch-or-id>
 		let children: string[];
 		try {
 			children = await fs.readdir(dir);

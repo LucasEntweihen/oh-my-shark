@@ -134,7 +134,7 @@ export function computerApproval(args: unknown): ToolApprovalDecision {
 
 /**
  * Computer prompts rendered for who decides takeover: the model, under the default `computer.takeover` modes, or
- * omp, under `foreground` and `always`. Each template has those two variants, rendered once.
+ * omsk, under `foreground` and `always`. Each template has those two variants, rendered once.
  */
 const modelTakeoverRenders = new Map<string, string>();
 const ompTakeoverRenders = new Map<string, string>();

@@ -1,5 +1,5 @@
 /**
- * Client side of the single per-user omp daemon: one process-shared control
+ * Client side of the single per-user omsk daemon: one process-shared control
  * connection ({@link daemonClient}) plus per-unit tunnels from `attach`.
  *
  * The client spawns the daemon when nothing answers, asks an older daemon to
@@ -72,7 +72,7 @@ const ABANDONED_LIMIT = 256;
 const DAEMON_RESTARTING = "Daemon is restarting";
 const DAEMON_SHUTTING_DOWN = "Daemon is shutting down";
 /**
- * The daemon must outlive whichever omp process spawned it. Bun on Windows puts
+ * The daemon must outlive whichever omsk process spawned it. Bun on Windows puts
  * every non-detached child in a kill-on-close job object owned by the parent,
  * so it is detached; it then has no console and its units spawn hidden.
  */
@@ -214,9 +214,9 @@ function untilAborted<T>(promise: Promise<T>, signal: AbortSignal | undefined, o
 function unreachableError(lastError: Error | undefined): Error {
 	const where = daemonTcpAddress() ? `${DAEMON_TCP_ENV}=${process.env[DAEMON_TCP_ENV]}` : daemonEndpoint();
 	return new Error(
-		`The omp daemon did not answer at ${where} within ${START_TIMEOUT_MS / 1000}s: ` +
+		`The omsk daemon did not answer at ${where} within ${START_TIMEOUT_MS / 1000}s: ` +
 			`${lastError?.message ?? "endpoint unavailable"}. Runtime dir: ${daemonDir()}. ` +
-			"Run `omp --smoke-test` to verify daemon startup, or `omp ps` to inspect it.",
+			"Run `omsk --smoke-test` to verify daemon startup, or `omsk ps` to inspect it.",
 	);
 }
 
@@ -250,7 +250,7 @@ function handshake(conn: IpcConnection, token: string, handlers: LinkHandlers): 
 	let welcomed = false;
 	const timer = setTimeout(() => {
 		conn.destroy();
-		reject(new DaemonTimeoutError("The omp daemon did not answer the hello"));
+		reject(new DaemonTimeoutError("The omsk daemon did not answer the hello"));
 	}, HELLO_TIMEOUT_MS);
 	conn.start(
 		line => {
@@ -286,7 +286,7 @@ function handshake(conn: IpcConnection, token: string, handlers: LinkHandlers): 
 				// Accepted, then dropped by a daemon that is closing its transport.
 				reject(
 					new DaemonTransientError(
-						`The omp daemon closed the connection during the hello${reason ? `: ${reason}` : ""}`,
+						`The omsk daemon closed the connection during the hello${reason ? `: ${reason}` : ""}`,
 					),
 				);
 				return;
@@ -667,7 +667,7 @@ class DaemonConnection implements DaemonClient {
 		} else {
 			// Never create anything for a daemon that may not exist.
 			const existing = await readToken();
-			if (!existing) throw new Error("No omp daemon is running");
+			if (!existing) throw new Error("No omsk daemon is running");
 			token = existing;
 		}
 		let link = await this.#establish(token, this.#options.spawn ? "start" : "probe");
@@ -735,7 +735,7 @@ class DaemonConnection implements DaemonClient {
 
 	/** Ask an older daemon to re-exec into this build, then dial its successor. */
 	async #upgrade(link: Link, token: string): Promise<Link> {
-		logger.debug("Upgrading the omp daemon", { from: link.welcome.daemon.build, to: daemonBuildId() });
+		logger.debug("Upgrading the omsk daemon", { from: link.welcome.daemon.build, to: daemonBuildId() });
 		try {
 			const { reexec } = await this.#request({ op: "upgrade" });
 			// The daemon does not consider this build newer: it stays, nothing closes.
@@ -746,7 +746,7 @@ class DaemonConnection implements DaemonClient {
 		}
 		const closed = await Promise.race([link.closed.then(() => true), Bun.sleep(START_TIMEOUT_MS).then(() => false)]);
 		if (!closed) {
-			logger.warn("The omp daemon did not restart after an upgrade request; keeping the older build", {
+			logger.warn("The omsk daemon did not restart after an upgrade request; keeping the older build", {
 				build: link.welcome.daemon.build,
 			});
 			return link;
@@ -765,7 +765,7 @@ class DaemonConnection implements DaemonClient {
 			}
 		}
 		if (isOlderBuild(next.welcome.daemon.build)) {
-			logger.warn("The omp daemon is still an older build after an upgrade", {
+			logger.warn("The omsk daemon is still an older build after an upgrade", {
 				build: next.welcome.daemon.build,
 				client: daemonBuildId(),
 			});
@@ -1023,7 +1023,7 @@ export function daemonClient(): Promise<DaemonClient> {
 	return shared;
 }
 
-/** What {@link registerOnBoard} lists: a process this omp process owns and the daemon only displays. */
+/** What {@link registerOnBoard} lists: a process this omsk process owns and the daemon only displays. */
 export interface BoardEntryInit {
 	kind: string;
 	scope: UnitScope;
@@ -1112,7 +1112,7 @@ function unregisterBoardUnit(client: DaemonConnection, unitId: string): void {
 }
 
 /**
- * List a process this omp process owns on the daemon board (an `external`
+ * List a process this omsk process owns on the daemon board (an `external`
  * unit) until {@link BoardEntry.dispose}. Fire-and-forget: it never spawns
  * the daemon or waits for it. It uses the shared {@link daemonClient} only
  * once that is connected, now or later in this process, and re-registers
@@ -1168,7 +1168,7 @@ const SMOKE_DAEMON_EXIT_MS = 10_000;
  * environment, and removes the dir.
  */
 export async function isolateDaemonForSmokeTest(): Promise<() => Promise<void>> {
-	const root = await fs.mkdtemp(path.join(os.tmpdir(), "omp-daemon-smoke-"));
+	const root = await fs.mkdtemp(path.join(os.tmpdir(), "omsk-daemon-smoke-"));
 	const previousDir = process.env[DAEMON_DIR_ENV];
 	const previousTcp = process.env[DAEMON_TCP_ENV];
 	await closeDaemonClient();

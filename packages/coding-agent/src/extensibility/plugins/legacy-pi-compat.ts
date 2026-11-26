@@ -579,9 +579,9 @@ function getExtensionParseCacheDb(): Database | null {
 		try {
 			if (fs.statSync(cachePath).size > EXTENSION_PARSE_CACHE_MAX_BYTES) {
 				// Remove the full WAL set, not just the main db. A leftover
-				// `-wal`/`-shm` pair still owned by a concurrent omp process is
+				// `-wal`/`-shm` pair still owned by a concurrent omsk process is
 				// adopted by this fresh connection; when that `-wal` has
-				// uncheckpointed frames (the normal case while another omp is
+				// uncheckpointed frames (the normal case while another omsk is
 				// writing its own cache entries), `journal_mode=WAL` fails with
 				// SQLITE_IOERR — disabling the parse cache for the whole process
 				// and forcing a reparse of every extension on startup. See #9549.
@@ -598,7 +598,7 @@ function getExtensionParseCacheDb(): Database | null {
 		// `PRAGMA journal_mode=WAL`, which takes an exclusive lock during WAL
 		// recovery). See #2421. WAL + synchronous=NORMAL avoids the per-entry
 		// journal create/delete + fsync churn that serialized this cache behind
-		// concurrent omp startups and blocked the event loop for ~20s (#9549).
+		// concurrent omsk startups and blocked the event loop for ~20s (#9549).
 		db.run(`PRAGMA busy_timeout = ${getDbBusyTimeoutMs()}`);
 		db.run("PRAGMA journal_mode=WAL");
 		db.run("PRAGMA synchronous=NORMAL");
@@ -757,7 +757,7 @@ let bundledModuleLoadersPromise: Promise<BundledModuleLoaders> | null = null;
 /** Load the build-supplied registry without evaluating unrelated host modules. */
 function ensureBundledModuleLoadersLoaded(): Promise<BundledModuleLoaders> {
 	if (!USE_BUNDLED_PI_MODULES) {
-		return Promise.reject(new Error("omp:legacy-pi-shim: bundled modules are only available in bundled mode"));
+		return Promise.reject(new Error("omsk:legacy-pi-shim: bundled modules are only available in bundled mode"));
 	}
 	if (!bundledModuleLoadersPromise) {
 		// This virtual module exists only in compiled/npm builds; source mode cannot import it statically.
@@ -772,7 +772,7 @@ async function loadBundledModule(moduleKey: string): Promise<BundledModule> {
 	const loaders = await ensureBundledModuleLoadersLoaded();
 	const loader = loaders[moduleKey];
 	if (!loader) {
-		throw new Error(`omp:legacy-pi-shim: no bundled module registered for ${moduleKey}`);
+		throw new Error(`omsk:legacy-pi-shim: no bundled module registered for ${moduleKey}`);
 	}
 	const module = await loader();
 	loadedBundledModules[moduleKey] = module;
@@ -801,7 +801,7 @@ function resolveBundledVirtualSpecifier(specifier: string): BundledVirtualResolv
 		? specifier.slice(BUNDLED_VIRTUAL_SCHEME.length)
 		: specifier;
 	if (!registryKey) {
-		throw new Error("omp:legacy-pi-shim: bundled virtual specifier has no registry key");
+		throw new Error("omsk:legacy-pi-shim: bundled virtual specifier has no registry key");
 	}
 	return { path: registryKey, namespace: BUNDLED_VIRTUAL_NAMESPACE };
 }
@@ -809,7 +809,7 @@ function resolveBundledVirtualSpecifier(specifier: string): BundledVirtualResolv
 // Canonical scope for in-process pi packages. Plugins published against any of
 // the aliased scopes below (mariozechner's original publish, earendil-works'
 // fork, or the canonical @oh-my-pi scope itself) are remapped to this scope and
-// resolved against the bundled copy that ships inside the omp binary. This
+// resolved against the bundled copy that ships inside the omsk binary. This
 // keeps plugins running against the exact runtime state of the host (single
 // module registry, single tool registry, etc.) regardless of which historical
 // scope name they happened to declare in their peerDependencies.
@@ -821,7 +821,7 @@ const CANONICAL_PI_SCOPE = "@oh-my-pi";
 // path instead of pulling a duplicate copy from plugin node_modules.
 const PI_SCOPE_ALIASES = ["oh-my-pi", "mariozechner", "earendil-works"] as const;
 
-// Internal host package basenames bundled inside the omp binary.
+// Internal host package basenames bundled inside the omsk binary.
 const PI_PACKAGE_NAMES = [
 	"pi-agent-core",
 	"pi-ai",
@@ -845,14 +845,14 @@ const PI_TUI_SPECIFIER = new RegExp(
 /** Docs section describing the pi-tui → pi-tui migration. */
 export const PI_TUI_MIGRATION_DOC = "docs/extensions.md#migrating-from-pi-tui";
 
-/** An extension module imports upstream pi-tui, whose API omp no longer provides. */
+/** An extension module imports upstream pi-tui, whose API omsk no longer provides. */
 export class PiTuiImportError extends Error {
 	constructor(
 		readonly specifier: string,
 		readonly importerPath: string,
 	) {
 		super(
-			`${importerPath} imports "${specifier}", which omp no longer provides: its component API was ` +
+			`${importerPath} imports "${specifier}", which omsk no longer provides: its component API was ` +
 				`replaced by the reactive @oh-my-pi/pi-tui. Return pi-tui nodes (JSX from "@oh-my-pi/pi-tui") or a { render(width): string[] } ` +
 				`rows object from renderers, ctx.ui.custom and ctx.ui.setWidget; replace ctx.ui.setEditorComponent ` +
 				`with the ctx.ui.composer hooks; import Theme types from "@oh-my-pi/pi-coding-agent". ` +
@@ -1169,7 +1169,7 @@ function toImportSpecifier(resolvedPath: string): string {
 }
 
 /**
- * Rewrite the extension-owned specifiers OMP must host-resolve — legacy
+ * Rewrite the extension-owned specifiers OMSK must host-resolve — legacy
  * `@(scope)/pi-*`, bare TypeBox packages, package `imports` aliases like
  * `#src/*`, and extension-local bare dependencies — to absolute `file://` URLs
  * or compiled-mode virtual specifiers. Relative siblings and built-in modules
@@ -2297,7 +2297,7 @@ interface ExtensionModuleGraph {
 
 /**
  * Walk the extension's import graph starting at `entryRealPath`, returning the
- * realpath of every reachable source module OMP must rewrite at load time.
+ * realpath of every reachable source module OMSK must rewrite at load time.
  * Relative imports, package `imports` aliases, and ESM bare dependencies are
  * graph-owned recursively because compiled Bun cannot resolve runtime
  * `node_modules` from those modules. Graph-owned CommonJS modules also own
@@ -2568,7 +2568,7 @@ function prepareGraphCommonJsDefinition(modulePath: string, source: string, targ
 }
 
 /**
- * Linkedom's canvas bridge uses its bundled fallback because OMP does not ship
+ * Linkedom's canvas bridge uses its bundled fallback because OMSK does not ship
  * native canvas.
  */
 async function prepareGraphCommonJsModule(modulePath: string, source: string): Promise<void> {
@@ -2612,7 +2612,7 @@ async function installExtensionGraphHook(
 		const filter = new RegExp(`^(?:${alternation})(?:\\?mtime=\\d+)?$`);
 		const hookId = Bun.hash(`${entryRealPath}\0async\0${[...asyncModules.keys()].join("\0")}`).toString(36);
 		Bun.plugin({
-			name: `omp:legacy-pi-ext:${hookId}`,
+			name: `omsk:legacy-pi-ext:${hookId}`,
 			setup(build) {
 				build.onLoad({ filter, namespace: "file" }, args => {
 					const queryIndex = args.path.indexOf("?mtime=");
@@ -2653,7 +2653,7 @@ async function installExtensionGraphHook(
 		const filter = new RegExp(`^(?:${alternation})(?:\\?mtime=\\d+)?$`);
 		const hookId = Bun.hash(`${entryRealPath}\0commonjs\0${[...commonJsPaths].join("\0")}`).toString(36);
 		Bun.plugin({
-			name: `omp:legacy-pi-ext:${hookId}`,
+			name: `omsk:legacy-pi-ext:${hookId}`,
 			setup(build) {
 				build.onLoad({ filter, namespace: "file" }, args => {
 					const queryIndex = args.path.indexOf("?mtime=");
@@ -2682,7 +2682,7 @@ async function installExtensionGraphHook(
 		const filter = new RegExp(`^(?:${alternation})(?:\\?mtime=\\d+)?$`);
 		const hookId = Bun.hash(`${entryRealPath}\0sync-source\0${[...synchronousSourcePaths].join("\0")}`).toString(36);
 		Bun.plugin({
-			name: `omp:legacy-pi-ext:${hookId}`,
+			name: `omsk:legacy-pi-ext:${hookId}`,
 			setup(build) {
 				build.onLoad({ filter, namespace: "file" }, args => {
 					const queryIndex = args.path.indexOf("?mtime=");
@@ -2921,7 +2921,7 @@ export function installLegacyPiSpecifierShim(): void {
 	isLegacyPiSpecifierShimInstalled = true;
 
 	Bun.plugin({
-		name: "omp:legacy-pi-shim",
+		name: "omsk:legacy-pi-shim",
 		setup(build) {
 			build.onResolve({ filter: LEGACY_PI_SPECIFIER_FILTER, namespace: "file" }, resolveLegacyPiSpecifier);
 			build.onResolve({ filter: TYPEBOX_SPECIFIER_FILTER, namespace: "file" }, resolveTypeBoxSpecifier);

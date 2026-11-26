@@ -1,9 +1,9 @@
 /**
- * Ownership marker for task-isolation sandboxes under `~/.omp/wt/`.
+ * Ownership marker for task-isolation sandboxes under `~/.omsk/wt/`.
  *
  * Each isolation base dir (`ensureIsolation` in {@link ./worktree}) holds a
- * compact `m` mount plus this marker file naming the omp process that created
- * it. `omp worktree clear` consults the marker so it can distinguish a live
+ * compact `m` mount plus this marker file naming the omsk process that created
+ * it. `omsk worktree clear` consults the marker so it can distinguish a live
  * subagent's sandbox from a crashed run's leftover instead of deleting both.
  */
 import * as path from "node:path";
@@ -17,7 +17,7 @@ export const ISOLATION_OWNER_FILE = ".omp-isolation-owner.json";
 
 /** Recorded owner of a task-isolation sandbox. */
 export interface IsolationOwner {
-	/** PID of the omp process that created and owns the sandbox. */
+	/** PID of the omsk process that created and owns the sandbox. */
 	pid: number;
 	/** Task id the sandbox was materialised for. */
 	id: string;
@@ -68,7 +68,7 @@ let ownStartToken: Promise<string | null> | undefined;
  * Record the current process as owner of the sandbox rooted at `baseDir`.
  *
  * Written before the isolation backend materialises `m` so a concurrent
- * `omp worktree clear` never sees an owner-less sandbox mid-creation.
+ * `omsk worktree clear` never sees an owner-less sandbox mid-creation.
  */
 export async function writeIsolationOwner(baseDir: string, id: string): Promise<void> {
 	ownStartToken ??= processStartToken(process.pid);
@@ -78,7 +78,7 @@ export async function writeIsolationOwner(baseDir: string, id: string): Promise<
 }
 
 /**
- * Whether a live omp process still owns the sandbox at `baseDir`.
+ * Whether a live omsk process still owns the sandbox at `baseDir`.
  *
  * A missing or malformed marker means no verifiable owner — a crashed run or a
  * sandbox from before markers existed, both safe to reclaim. `process.kill(pid,
@@ -117,7 +117,7 @@ export async function hasLiveIsolationOwner(baseDir: string): Promise<boolean> {
 export const RETAINED_BACKEND_FILE = ".omp-retained-backend.json";
 
 /**
- * Backends whose workspaces `omp worktree clear` must not remove with plain
+ * Backends whose workspaces `omsk worktree clear` must not remove with plain
  * recursive `rm`, but route through native `isoStop` teardown instead:
  * mounts (overlayfs, projfs), where `rm` destroys the preserved layer and
  * fails on the mountpoint, and Btrfs subvolumes, whose root is only removable

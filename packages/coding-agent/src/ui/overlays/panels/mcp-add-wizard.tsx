@@ -215,7 +215,7 @@ export function MCPAddWizard(props: { readonly model: MCPAddWizardModel }): JSXN
 	const head = () => {
 		const view = model.view;
 		const title = view.kind === "confirm" ? "Review and save" : view.title;
-		const lead = view.kind === "confirm" ? "omp connects to the server as soon as it is saved." : view.lead;
+		const lead = view.kind === "confirm" ? "omsk connects to the server as soon as it is saved." : view.lead;
 		return (
 			<col key="head" role="omp.mcpAdd.head" gap="xs">
 				<row gap="sm" align="center">

@@ -1,5 +1,5 @@
 /**
- * `get_model_picker`: omp's session model picker (alt+p, `/switch`) served over RPC, so a remote picker such as the
+ * `get_model_picker`: omsk's session model picker (alt+p, `/switch`) served over RPC, so a remote picker such as the
  * Chrome side panel lists models exactly as the TUI does. Browsing puts the Recent block (role-held and recently used
  * models) ahead of the rest; a query ranks by relevance, then the user's role and usage affinity (`provider/` limits it
  * to a provider); a query starting with `@` lists the ctrl+p quick roles. Rows carry the roles a model holds and its

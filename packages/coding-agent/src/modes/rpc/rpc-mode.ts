@@ -1465,7 +1465,7 @@ export function requestRpcDialog<T>(
 		opts?.signal?.removeEventListener("abort", onAbort);
 		pendingRequests.delete(id);
 	};
-	// Tells the host to close a dialog omp has already settled, so a late answer
+	// Tells the host to close a dialog omsk has already settled, so a late answer
 	// cannot look actionable after abort or timeout.
 	const cancelHostDialog = () =>
 		output({
@@ -2803,7 +2803,7 @@ export async function runRpcMode(session: AgentSession, options: RpcModeOptions 
 				// Pi-compatible discovery: the selectable levels for the live model,
 				// including `off` (which `set_thinking_level` accepts but the
 				// effort-only helper excludes). OMP-only `auto`/`inherit` are
-				// intentionally omitted — that selector stays an OMP dialect.
+				// intentionally omitted — that selector stays an OMSK dialect.
 				return success(id, "get_available_thinking_levels", {
 					levels: [ThinkingLevel.Off, ...session.getAvailableThinkingLevels()],
 				});

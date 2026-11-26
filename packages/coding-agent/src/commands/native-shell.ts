@@ -1,7 +1,7 @@
 /**
- * `omp zsh|bash|sh [args...]` as registered commands. `cli.ts` runs them
+ * `omsk zsh|bash|sh [args...]` as registered commands. `cli.ts` runs them
  * before the command framework (raw argv passthrough); these classes give
- * them their `omp --help` and completion entries, and run the shell when a
+ * them their `omsk --help` and completion entries, and run the shell when a
  * leading launch flag routed the argv through the framework.
  */
 
@@ -23,9 +23,9 @@ export function nativeShellCommand(name: "zsh" | "bash" | "sh"): CommandCtor {
 	};
 }
 
-/** `omp zsh`. */
+/** `omsk zsh`. */
 export const Zsh = nativeShellCommand("zsh");
-/** `omp bash`. */
+/** `omsk bash`. */
 export const Bash = nativeShellCommand("bash");
-/** `omp sh`. */
+/** `omsk sh`. */
 export const Sh = nativeShellCommand("sh");

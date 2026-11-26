@@ -1,13 +1,13 @@
 /**
  * Speculative state for the next launch's first frame, kept in one SQLite store
- * (`~/.omp/agent/cache/composer.db`): the resolved theme inputs and the
+ * (`~/.omsk/agent/cache/composer.db`): the resolved theme inputs and the
  * composer preferences the prepaint frame is built with before settings load
  * (kind `ui`), the background the terminal last reported (kind `terminal`), and
  * the status bar a fresh session will show (kind `status`, see
  * {@link StatusPrediction}).
  *
  * Each row is one JSON payload keyed by project (the resolved cwd) and kind;
- * it is also written under the empty project, so a folder that never ran omp
+ * it is also written under the empty project, so a folder that never ran omsk
  * still paints with the user's theme and composer.
  *
  * ```text

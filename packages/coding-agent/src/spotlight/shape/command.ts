@@ -23,9 +23,9 @@ const READ_SEGMENT = /^(?:cat|sed\s+-n|head|tail|nl|less|more|bat)\b(?!\s*(?:>|<
 /** The agent's own program: a heredoc or an interpreter run, whose output it shaped itself. */
 const PROGRAM = /<<-?\s*['"]?\w+|(?:^|[;&|\n]\s*)(?:python3?|node|perl|Rscript|ruby|julia)\b/;
 
-/** A segment that runs a coding agent non-interactively (`omp -p`, `claude -p`, `codex exec`, `bun src/cli.ts -p`). */
+/** A segment that runs a coding agent non-interactively (`omsk -p`, `claude -p`, `codex exec`, `bun src/cli.ts -p`). */
 const AGENT_SEGMENT =
-	/^(?:\w+=\S*\s+)*(?:(?:omp|claude)\b[^|]*\s(?:-p|--print)\b|codex\s+exec\b|bun\s+(?:run\s+)?\S*cli\.ts\b[^|]*\s(?:-p|--print)\b)/;
+	/^(?:\w+=\S*\s+)*(?:(?:omsk|claude)\b[^|]*\s(?:-p|--print)\b|codex\s+exec\b|bun\s+(?:run\s+)?\S*cli\.ts\b[^|]*\s(?:-p|--print)\b)/;
 
 /** A segment that runs tests or lint: the runner is the command word (after env vars / npx / uv run / python -m …). */
 const TEST_SEGMENT =

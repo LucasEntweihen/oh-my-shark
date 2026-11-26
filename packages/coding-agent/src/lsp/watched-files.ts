@@ -1,7 +1,7 @@
 /**
  * Client side of LSP file watching (`workspace/didChangeWatchedFiles`).
  *
- * OMP advertises dynamic registration for watched files, so language servers
+ * OMSK advertises dynamic registration for watched files, so language servers
  * hand watching to the client instead of running their own watchers (whose
  * failure modes, such as tsgo's re-arm loop on SMB drives, the client cannot
  * contain). A forwarder belongs to whoever owns the server process: the mux

@@ -465,7 +465,7 @@ export const cfgTodoEager = register({
 	},
 });
 
-/** `todo.backend` value for omp's own todo list, with no extension backend. */
+/** `todo.backend` value for omsk's own todo list, with no extension backend. */
 export const NATIVE_TODO_BACKEND = "native";
 
 export const cfgTodoBackend = register({
@@ -670,9 +670,9 @@ export const cfgLaunchEnabled = register({
 	},
 });
 
-// A service normally ends with the last omp process in its project: the broker shuts
+// A service normally ends with the last omsk process in its project: the broker shuts
 // down once no client remains and stops every non-persistent service. Print, RPC and
-// ACP hosts override this on: their caller outlives the omp process and uses the
+// ACP hosts override this on: their caller outlives the omsk process and uses the
 // servers a run left running.
 export const cfgLaunchPersist = register({
 	id: "launch.persist",
@@ -813,13 +813,13 @@ export const cfgComputerTakeover = register({
 				value: "foreground",
 				label: "Foreground",
 				description:
-					"omp, never the agent, decides: take over input to a window already in front of you, and a call whose background route is unavailable; stay in the background otherwise",
+					"omsk, never the agent, decides: take over input to a window already in front of you, and a call whose background route is unavailable; stay in the background otherwise",
 			},
 			{
 				value: "always",
 				label: "Always",
 				description:
-					"omp, never the agent, decides: take over every window and element input call, bringing the target forward for that call and then returning focus to your app",
+					"omsk, never the agent, decides: take over every window and element input call, bringing the target forward for that call and then returning focus to your app",
 			},
 			{
 				value: "refuse",
@@ -910,7 +910,7 @@ export const cfgGithubCacheEnabled = register({
 		tab: "tools",
 		group: "GitHub",
 		label: "GitHub View Cache",
-		description: "Cache rendered issue/PR view output in ~/.omp/cache/github-cache.db so repeated reads are free",
+		description: "Cache rendered issue/PR view output in ~/.omsk/cache/github-cache.db so repeated reads are free",
 	},
 });
 

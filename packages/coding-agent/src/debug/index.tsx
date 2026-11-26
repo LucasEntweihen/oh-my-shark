@@ -418,7 +418,7 @@ export class DebugTools {
 		const suppressed = isNotificationSuppressed(Bun.env);
 		if (!suppressed && driver) {
 			const notification: TerminalNotification = {
-				title: this.#host.sessionManager.getSessionName() || "omp",
+				title: this.#host.sessionManager.getSessionName() || "omsk",
 				body: "Terminal protocol test",
 				type: "test",
 				actions: "focus",

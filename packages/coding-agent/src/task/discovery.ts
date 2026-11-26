@@ -2,9 +2,9 @@
  * Agent discovery from filesystem.
  *
  * Discovers agent definitions from OMP-native task-agent roots:
- *   - ~/.omp/agent/agents/*.md (user-level)
- *   - .omp/agents/*.md (project-level)
- *   - <ext>/agents/*.md for every OMP extension package wired through
+ *   - ~/.omsk/agent/agents/*.md (user-level)
+ *   - .omsk/agents/*.md (project-level)
+ *   - <ext>/agents/*.md for every OMSK extension package wired through
  *     `listOmpExtensionRoots` (CLI `--extension` roots, `extensions:` in
  *     settings, and enabled npm/link plugins under `<plugins>/node_modules/`).
  *     Mirrors the same sub-discovery convention applied to `skills/`,
@@ -12,7 +12,7 @@
  *
  * Claude Code marketplace plugin agents are discovered separately via the
  * claude-plugins provider. Direct cross-harness roots such as .claude/agents
- * are intentionally skipped because their frontmatter schema is not the OMP
+ * are intentionally skipped because their frontmatter schema is not the OMSK
  * task-agent contract.
  *
  * Agent files use markdown with YAML frontmatter.
@@ -81,7 +81,7 @@ async function loadAgentsFromDir({
 					if (pluginRoot !== undefined) agent.systemPrompt = substitutePluginRoot(agent.systemPrompt, pluginRoot);
 					if (claudeDialect) {
 						// Claude-format frontmatter: `model:` is a Claude alias, not an
-						// OMP selector, and `tools:` uses Claude names (#7966).
+						// OMSK selector, and `tools:` uses Claude names (#7966).
 						agent.model = undefined;
 						if (agent.tools) agent.tools = normalizeToolNames(agent.tools.map(normalizeClaudeCodeToolName));
 						// `parseAgent` inferred spawns from the untranslated names, so `Agent`
@@ -101,8 +101,8 @@ async function loadAgentsFromDir({
 
 /**
  * Discover agents from filesystem and merge with bundled agents.
- * Precedence (highest wins): project `.omp/agents`, user `.omp/agents`,
- * OMP extension-package agents from the effective `extensions` setting,
+ * Precedence (highest wins): project `.omsk/agents`, user `.omsk/agents`,
+ * OMSK extension-package agents from the effective `extensions` setting,
  * installed npm/link plugins, Claude marketplace plugin agents (project scope
  * before user), then bundled.
  * @param cwd - Current working directory for project agent discovery
@@ -146,7 +146,7 @@ export async function discoverAgents(
 	}
 
 	// Load agents from Claude Code marketplace plugins (respects disabledProviders and opt-in).
-	// User-scope roots whose origin is not the foreign ~/.claude/plugins tree (omp's own
+	// User-scope roots whose origin is not the foreign ~/.claude/plugins tree (omsk's own
 	// installs and `--plugin-dir` roots) survive the claude-plugins opt-in gate, mirroring
 	// isSourceEnabled in extensibility/skills.ts (#10743). Without this, `--plugin-dir` and
 	// omp-installed agents are dropped at user scope whenever the Claude source is disabled.
@@ -166,7 +166,7 @@ export async function discoverAgents(
 		// not the registry that supplied it: foreign Claude roots (origin "claude")
 		// always use Claude aliases, and an omp-installed or --plugin-dir root can
 		// still ship a `.claude-plugin` package. Claude-dialect frontmatter is
-		// translated so its aliases and tool names are not misread as OMP ones
+		// translated so its aliases and tool names are not misread as OMSK ones
 		// (#7966); OMP-native and Agent-Plugins-standard plugin agents keep theirs
 		// (#12028).
 		sortedPluginRoots.map(

@@ -151,7 +151,7 @@ export class SchedulerHost {
 	}
 
 	/**
-	 * omp gates host tools as exec, so a tab below yolo asks before a
+	 * omsk gates host tools as exec, so a tab below yolo asks before a
 	 * scheduler tool runs. The user asked for the change in the conversation
 	 * and runs stay read-only, so the prompt is answered here.
 	 */

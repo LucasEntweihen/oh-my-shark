@@ -1,9 +1,9 @@
 /**
  * Client for the Tern session daemon: a byte stream (the daemon's Unix socket,
- * or any other {@link TernTransport}: omp's own WebKit host answers the same
+ * or any other {@link TernTransport}: omsk's own WebKit host answers the same
  * protocol over its standard streams) speaking Tern's JSON
  * script protocol (`crates/tern/src/daemon/json.rs` in the stencil
- * repository), frames of a `u32` LE length then one UTF-8 JSON object. omp
+ * repository), frames of a `u32` LE length then one UTF-8 JSON object. omsk
  * greets with `{"hello":{}}` and waits for `{"welcome":{"ops":[…]}}`, whose
  * `ops` list the request kinds this Tern answers (an older Tern lists none
  * and answers only `browser`). Requests are `{"id":N,KIND:REQUEST}`, answered
@@ -11,12 +11,12 @@
  * or `{"error": {"kind", "message"}}`:
  * - `browser`: Tern's browser op protocol, REQUEST `{"op": …}`.
  * - `fork`: REQUEST `{"block":P,"dir":"right"|"down","tab":true}` opens
- *   `omp --fork` of pane P's session in a new pane beside it, or with
+ *   `omsk --fork` of pane P's session in a new pane beside it, or with
  *   `"tab":true` in a tab of its own after P's (a Tern from before `tab`
  *   splits instead); result `{"block":M}`, plus `"tab":T` when it opened tab T.
  *
  * Members and message kinds either side does not know are skipped, so the
- * protocol does not tie omp to a Tern build. A Tern from before it cannot read
+ * protocol does not tie omsk to a Tern build. A Tern from before it cannot read
  * the hello and hangs up.
  */
 import * as net from "node:net";
@@ -46,7 +46,7 @@ export type TernErrorKind =
 /**
  * A failed request or connection of the Tern protocol, carrying the protocol's
  * error kind. Its `name` stays `ToolError`: page-run code can print it, and
- * omp's WebKit host raises these too, so it must not name Tern.
+ * omsk's WebKit host raises these too, so it must not name Tern.
  */
 export class TernError extends ToolError {
 	/** Why it failed (the protocol's `error.kind`, or the client's own). */
@@ -58,7 +58,7 @@ export class TernError extends ToolError {
 	}
 }
 
-/** Error kinds meaning "this Tern cannot host a browser for omp right now". */
+/** Error kinds meaning "this Tern cannot host a browser for omsk right now". */
 const UNAVAILABLE_KINDS: Partial<Record<TernErrorKind, true>> = {
 	no_window: true,
 	unsupported: true,
@@ -222,9 +222,9 @@ export interface TernRequestOptions {
 	onLateAnswer?: (value: unknown) => void;
 }
 
-/** A `fork` request: open `omp --fork` of pane `block`'s session in a new pane beside it, or in a tab of its own. */
+/** A `fork` request: open `omsk --fork` of pane `block`'s session in a new pane beside it, or in a tab of its own. */
 export interface TernForkRequest {
-	/** The pane whose omp session to fork (`TERN_PANE`). */
+	/** The pane whose omsk session to fork (`TERN_PANE`). */
 	block: number;
 	/** Where the new pane goes beside `block`, unless `tab` (Tern's default: `right`). */
 	dir?: "right" | "down";
@@ -269,14 +269,14 @@ export interface TernTransportEvents {
 export interface TernTransport {
 	/**
 	 * The backend's display name, one word: `Tern` for the daemon, `WebKit` for
-	 * omp's own host. Every message a user or the model reads names the backend
+	 * omsk's own host. Every message a user or the model reads names the backend
 	 * by it (`WebKit browser open failed (…)`), in the client and in the tab driver.
 	 */
 	readonly product: string;
 	/** The peer as errors name it, after "the": `Tern daemon at /run/tern.sock`. */
 	readonly peer: string;
 	/**
-	 * Whether the peer holds an `events` call with `wait: true` until the block has an event after `after` (omp's
+	 * Whether the peer holds an `events` call with `wait: true` until the block has an event after `after` (omsk's
 	 * WebKit host does; the Tern daemon answers it at once, like any `events` call).
 	 */
 	readonly waitsForEvents: boolean;
@@ -297,7 +297,7 @@ class TernSocketTransport implements TernTransport {
 	readonly product = "Tern";
 	readonly waitsForEvents = false;
 	readonly peer: string;
-	readonly greetingHint = "a Tern without omp's JSON protocol cannot read its hello (update Tern)";
+	readonly greetingHint = "a Tern without omsk's JSON protocol cannot read its hello (update Tern)";
 	readonly #socketPath: string;
 	#socket: net.Socket | undefined;
 
@@ -356,7 +356,7 @@ const PROTOCOL_ERROR_KINDS: Record<string, TernErrorKind> = {
 	unsupported: "unsupported",
 	js: "js",
 	failed: "failed",
-	// omp's WebKit host: the page's web process stopped answering (a script keeps it busy).
+	// omsk's WebKit host: the page's web process stopped answering (a script keeps it busy).
 	unresponsive: "unresponsive",
 };
 

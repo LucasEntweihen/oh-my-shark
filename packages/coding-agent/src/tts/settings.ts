@@ -33,7 +33,7 @@ export const cfgTtsLocalSpeed = register({
 		tab: "providers",
 		group: "Services",
 		label: "Local TTS Speed",
-		description: "Speaking rate of the local TTS backend (tts tool, omp say). 1 = normal; clamped to 0.8–1.3",
+		description: "Speaking rate of the local TTS backend (tts tool, omsk say). 1 = normal; clamped to 0.8–1.3",
 		options: TTS_SPEED_OPTIONS,
 	},
 });

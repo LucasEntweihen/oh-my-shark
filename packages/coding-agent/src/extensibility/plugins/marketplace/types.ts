@@ -181,7 +181,7 @@ export interface InstalledPluginEntry {
 	lastUpdated: string;
 	/** For git-sourced plugins. */
 	gitCommitSha?: string;
-	/** OMP extension — not in Claude Code's type. CLI/UI concern only in v1. */
+	/** OMSK extension — not in Claude Code's type. CLI/UI concern only in v1. */
 	enabled?: boolean;
 }
 

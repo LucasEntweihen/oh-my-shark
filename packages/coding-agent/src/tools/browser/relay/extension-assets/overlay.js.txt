@@ -657,7 +657,7 @@
   var LABEL_EXIT_MS = 150;
   var LABEL_ENTER_DELAY_MS = 210;
   var LABEL_ENTER_MS = 250;
-  var STOP_FAILED = "Stop didn’t reach omp — open the panel";
+  var STOP_FAILED = "Stop didn’t reach omsk — open the panel";
   function button(className, label, ...children) {
     const node = el("button", className, ...children);
     node.type = "button";
@@ -711,18 +711,18 @@
       });
       const stopGlyph = el("span", "stop-glyph");
       stopGlyph.setAttribute("aria-hidden", "true");
-      this.#stop = button("stop", "Stop omp", stopGlyph, this.#stopText);
+      this.#stop = button("stop", "Stop omsk", stopGlyph, this.#stopText);
       this.#stop.addEventListener("click", () => this.#pressStop());
       this.#live.append(this.#liveText);
       this.#tag.setAttribute("role", "group");
-      this.#tag.setAttribute("aria-label", "omp");
-      this.#tag.append(ompMark(), el("span", "tag-label", el("span", "tag-title", "omp is working"), this.#live), this.#move, this.#openButton(), this.#stop);
+      this.#tag.setAttribute("aria-label", "omsk");
+      this.#tag.append(ompMark(), el("span", "tag-label", el("span", "tag-title", "omsk is working"), this.#live), this.#move, this.#openButton(), this.#stop);
       const dot = el("span", "dot");
       dot.setAttribute("aria-hidden", "true");
       this.#ask.setAttribute("role", "group");
-      this.#ask.setAttribute("aria-label", "omp");
-      this.#ask.append(dot, "omp needs you", this.#openButton());
-      const open = button("", "Open omp", panelIcon(), el("span", "tip", "Open omp"));
+      this.#ask.setAttribute("aria-label", "omsk");
+      this.#ask.append(dot, "omsk needs you", this.#openButton());
+      const open = button("", "Open omsk", panelIcon(), el("span", "tip", "Open omsk"));
       open.addEventListener("click", () => this.#emit("open"));
       const dismiss = button("", "Dismiss", icon(svg("path", { d: "M4 4l8 8M12 4l-8 8" })), el("span", "tip", "Dismiss"));
       dismiss.addEventListener("click", () => {
@@ -734,7 +734,7 @@
       const rule = el("span", "rule");
       rule.setAttribute("aria-hidden", "true");
       this.#pill.setAttribute("role", "group");
-      this.#pill.setAttribute("aria-label", "omp");
+      this.#pill.setAttribute("aria-label", "omsk");
       this.#pill.append(this.#pillLead, this.#pillText, rule, open, dismiss);
       this.#toast.setAttribute("role", "status");
       this.#syncEdgeLabels();
@@ -793,7 +793,7 @@
       return this.#preferred === "top" ? point.y < height + 12 : point.y > window.innerHeight - height - 44;
     }
     #openButton() {
-      const open = button("open", "Open omp", "Open omp");
+      const open = button("open", "Open omsk", "Open omsk");
       open.addEventListener("click", () => this.#emit("open"));
       return open;
     }
@@ -816,7 +816,7 @@
         lead.setAttribute("aria-hidden", "true");
         this.#pillLead.classList.toggle("on", !working);
         this.#pillLead.replaceChildren(lead);
-        this.#pillText.textContent = working ? "omp is working in this group" : "omp needs you in this group";
+        this.#pillText.textContent = working ? "omsk is working in this group" : "omsk needs you in this group";
       }
     }
     #syncEdge() {
@@ -1212,7 +1212,7 @@ kbd{
       sheet.replaceSync(OVERLAY_CSS);
       shadow.adoptedStyleSheets = [sheet];
       const presence = new Presence((op) => {
-        const event = { omp: "overlay-event", op };
+        const event = { omsk: "overlay-event", op };
         try {
           chrome.runtime.sendMessage(event).catch(() => {});
         } catch {}
@@ -1293,7 +1293,7 @@ kbd{
   // extension/overlay/main.ts
   var LIVENESS_MS = 2000;
   function isOverlayCommand(message) {
-    return typeof message === "object" && message !== null && "omp" in message && message.omp === "overlay";
+    return typeof message === "object" && message !== null && "omsk" in message && message.omp === "overlay";
   }
   function alive() {
     try {

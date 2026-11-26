@@ -596,7 +596,7 @@ export interface ExecutorOptions {
 	preloadedPreparedExtensions?: readonly PreparedExtension[];
 	/**
 	 * Parent's discovered custom-tool source paths. Forwarded to skip the
-	 * `.omp/tools/` FS scan in the subagent; the subagent then re-binds each
+	 * `.omsk/tools/` FS scan in the subagent; the subagent then re-binds each
 	 * tool against its own `CustomToolAPI` (cwd, exec, pushPendingAction, UI).
 	 */
 	preloadedCustomToolPaths?: ToolPathWithSource[];
@@ -1599,7 +1599,7 @@ function createSubagentRunMonitor(args: RunMonitorArgs): SubagentRunMonitor {
 		const session = activeSession;
 		if (!session) return Promise.resolve();
 		// A process shutdown cuts the turn off instead of stopping it: label it as
-		// interrupted so `omp --restore` (and `/restart`) goes on with it.
+		// interrupted so `omsk --restore` (and `/restart`) goes on with it.
 		const options = abortReason === "shutdown" ? { reason: INTERRUPTED_TURN_ERROR } : undefined;
 		activeSessionAbortPromise ??= session.abort(options).catch(error => {
 			logger.debug("Subagent session abort cleanup failed", {
@@ -3959,7 +3959,7 @@ export async function finalizeSubagentLifecycle(args: {
 	// a kept-alive agent with a reviver stays resumable like a finished one.
 	// Manager shutdown also preserves the transcript, but disposes and unregisters
 	// the process-local session (restorable as parked); its exit is recorded as a
-	// process exit, so `omp --restore` goes on with the turn the shutdown cut off.
+	// process exit, so `omsk --restore` goes on with the turn the shutdown cut off.
 	// An explicit kill (Agent Hub, RPC `cancel_subagent`, collab, vibe) publishes
 	// the `aborted` tombstone before the run observes its abort, and stays terminal.
 	const resumableAbort =
@@ -4034,7 +4034,7 @@ export interface FollowUpTurnOptions {
 	message: string;
 	/**
 	 * Go on with the turn the previous process left unfinished instead of sending
-	 * `message` (`omp --restore`: {@link AgentSession.restoreInterruptedTurn}).
+	 * `message` (`omsk --restore`: {@link AgentSession.restoreInterruptedTurn}).
 	 */
 	restore?: boolean;
 	/** With {@link restore}: the interrupted run's step progress; its unsent prompts follow the restored turn. */

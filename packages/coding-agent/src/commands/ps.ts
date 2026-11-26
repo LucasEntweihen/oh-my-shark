@@ -1,5 +1,5 @@
 /**
- * Inspect and control the omp daemon's units from outside the harness.
+ * Inspect and control the omsk daemon's units from outside the harness.
  */
 
 import { Args, Command, Flags } from "@oh-my-pi/pi-utils/cli";
@@ -41,15 +41,15 @@ export default class Ps extends Command {
 	};
 
 	static examples = [
-		"omp ps",
-		"omp ps --all",
-		"omp ps logs web --follow",
-		"omp ps stop web",
-		"omp ps kill web",
-		"omp ps send web 'rs\\n'",
-		"omp ps send web --signal SIGINT",
-		"omp ps mode web persist",
-		"omp ps info web",
+		"omsk ps",
+		"omsk ps --all",
+		"omsk ps logs web --follow",
+		"omsk ps stop web",
+		"omsk ps kill web",
+		"omsk ps send web 'rs\\n'",
+		"omsk ps send web --signal SIGINT",
+		"omsk ps mode web persist",
+		"omsk ps info web",
 	];
 
 	async run(): Promise<void> {

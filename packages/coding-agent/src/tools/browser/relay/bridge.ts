@@ -1,7 +1,7 @@
 /**
  * CDP façade over `chrome.debugger`.
  *
- * Puppeteer clients (the omp browser tool: one supervisor connection plus one
+ * Puppeteer clients (the omsk browser tool: one supervisor connection plus one
  * per tab worker) connect to this bridge as if it were Chrome's browser
  * debugging endpoint. Chrome only allows a single debugger attachment per tab,
  * so the bridge owns ONE `chrome.debugger` attachment per tab (via the
@@ -67,7 +67,7 @@ interface CdpCommand {
 /**
  * Per-pseudo-session Runtime domain state.
  * - `default`: never toggled Runtime — still receives the relay's legacy
- *   root-event fan-out, so omp's own patched-puppeteer client (which
+ *   root-event fan-out, so omsk's own patched-puppeteer client (which
  *   pull-acquires contexts and never sends `Runtime.enable`) keeps getting
  *   `Runtime.executionContextCreated`.
  * - `enabled`: ran `Runtime.enable`; gets the existing-context replay.
@@ -147,7 +147,7 @@ class CdpConnection {
 }
 
 /**
- * Local state a side panel's calls read: the collab registry (live omp sessions it can attach to, and their control
+ * Local state a side panel's calls read: the collab registry (live omsk sessions it can attach to, and their control
  * links) and the extension install registry. The bridge reads this machine's unless a test substitutes its own.
  */
 export interface RelayBridgePanelSources {
@@ -170,13 +170,13 @@ const LOCAL_PANEL_SOURCES: RelayBridgePanelSources = {
 class ExtensionReplacedError extends Error {}
 
 /**
- * Rewrites the files of the extension Chrome knows as `extensionId` to this omp's, when that is the copy this relay
- * may update; resolves whether the files on disk are now this omp's (then the bridge asks the extension to reload).
+ * Rewrites the files of the extension Chrome knows as `extensionId` to this omsk's, when that is the copy this relay
+ * may update; resolves whether the files on disk are now this omsk's (then the bridge asks the extension to reload).
  */
 export type RelayBridgeExtensionUpdater = (extensionId: string) => Promise<boolean>;
 
 /**
- * The stamp of the files in the folder Chrome loads as `extensionId`, or null when that folder is not one omp manages.
+ * The stamp of the files in the folder Chrome loads as `extensionId`, or null when that folder is not one omsk manages.
  * A connected extension running another stamp is reloaded into these files once it is idle.
  */
 export type RelayBridgeInstalledStamp = (extensionId: string) => Promise<RelayExtensionStamp | null>;
@@ -253,7 +253,7 @@ class TabState {
 	/** Whether `chrome.debugger` is currently attached to this tab. */
 	attached = false;
 	/**
-	 * Why Chrome refused omp this tab (its attach error, or the user cancelling the debugger bar); while set the
+	 * Why Chrome refused omsk this tab (its attach error, or the user cancelling the debugger bar); while set the
 	 * tab is not adoptable. Cleared on navigation.
 	 */
 	refusal: string | undefined;
@@ -274,14 +274,14 @@ class TabState {
 	closing = false;
 	/** Tab-wide switches whose last change never reached the extension (its socket was down or the send failed). */
 	readonly unsettledSwitches = new Set<TabWideSwitch>();
-	/** True after the relay put this tab in the omp group; `ompGroupId` holds that group. */
+	/** True after the relay put this tab in the omsk group; `ompGroupId` holds that group. */
 	grouped = false;
 	/** Group RPC in flight — suppresses duplicate requests from load-time tabUpdated bursts. */
 	grouping = false;
 	ompGroupId: number | undefined;
-	/** User pulled the tab out of the omp group — never re-group it. */
+	/** User pulled the tab out of the omsk group — never re-group it. */
 	groupOptOut = false;
-	/** The app in front of the user when omp's input last reached this tab, and when; a window the tab opens uses it once. */
+	/** The app in front of the user when omsk's input last reached this tab, and when; a window the tab opens uses it once. */
 	frontAtInput: { app: FrontApp; at: number } | null = null;
 	/**
 	 * Real Chrome sessions (OOPIF/worker children) under this tab's attachment: the child session
@@ -366,17 +366,17 @@ const CHROME_DETACH_REPORT_MS = 1_000;
 class RpcTimeoutError extends Error {}
 /**
  * Deadline for a command whose answer waits on the page itself (a promise it settles, a navigation it commits),
- * where {@link RPC_TIMEOUT_MS} is for one Chrome answers at once. omp's own clients give up at
+ * where {@link RPC_TIMEOUT_MS} is for one Chrome answers at once. omsk's own clients give up at
  * `BROWSER_PAGE_PROTOCOL_TIMEOUT_MS`, as on a launched Chrome; the relay waits a little longer so their error, not the
  * relay's, reaches the call.
  */
 const PAGE_BOUND_RPC_TIMEOUT_MS = BROWSER_PAGE_PROTOCOL_TIMEOUT_MS + 5_000;
-/** A window a tab opens this long after omp's input reached it is still taken to be that input's doing. */
+/** A window a tab opens this long after omsk's input reached it is still taken to be that input's doing. */
 const POPUP_AFTER_INPUT_MS = 1_000;
-/** How long the user's app is held in front after omp's input opened a window; Chrome activates within milliseconds. */
+/** How long the user's app is held in front after omsk's input opened a window; Chrome activates within milliseconds. */
 const KEEP_FRONT_MS = 500;
 /**
- * omp's CDP inputs a page can open a window on, by method and event `type`: those that give the page user activation
+ * omsk's CDP inputs a page can open a window on, by method and event `type`: those that give the page user activation
  * (a button or key going down, a release, a tap). Moves, wheels, key-ups and inserted text never do, so they read no
  * front app. `true`: every event of that method.
  */
@@ -499,7 +499,7 @@ export class RelayBridge {
 	#socketInstance = new Map<RelaySocket, string>();
 	/** Chrome extension id each extension socket's upgrade named in its `Origin`. */
 	#socketExtensionId = new Map<RelaySocket, string>();
-	/** Rewrites the files of the extension with this id to this omp's; resolves whether it did (see {@link RelayBridgeExtensionUpdater}). */
+	/** Rewrites the files of the extension with this id to this omsk's; resolves whether it did (see {@link RelayBridgeExtensionUpdater}). */
 	#updateExtension: RelayBridgeExtensionUpdater | null;
 	#installedStamp: RelayBridgeInstalledStamp | null;
 	/** Instances whose installed-files lookup is in flight. */
@@ -509,7 +509,7 @@ export class RelayBridge {
 	/** Instance whose hello ran last: answers browser-wide requests and owns created tabs. */
 	#lastHelloInstance: string | null = null;
 	/**
-	 * Tabs omp opened whose close failed while their browser was offline (see {@link #closeTab}), by tab key, with
+	 * Tabs omsk opened whose close failed while their browser was offline (see {@link #closeTab}), by tab key, with
 	 * the URL the tab showed: closed at that browser's next hello, unless the tab is gone or shows another page.
 	 */
 	#closeOnHello = new Map<string, string>();
@@ -522,7 +522,7 @@ export class RelayBridge {
 		}
 	>();
 	/**
-	 * Timed-out RPCs whose late success still needs undoing (a tab Chrome created after omp gave up), by
+	 * Timed-out RPCs whose late success still needs undoing (a tab Chrome created after omsk gave up), by
 	 * `instance:id`.
 	 */
 	#lateRpc = new Map<string, { onResult: (result: unknown) => void; timer: NodeJS.Timeout }>();
@@ -541,7 +541,7 @@ export class RelayBridge {
 	#readFrontApp: (() => FrontApp | null) | undefined;
 	/**
 	 * When the running hold on the user's app ends (`Date.now()` ms), at its deadline or once it settles, whichever is
-	 * first; 0 with none. A window opened meanwhile shares it, and omp's input reads no front app then: the browser may
+	 * first; 0 with none. A window opened meanwhile shares it, and omsk's input reads no front app then: the browser may
 	 * be in front, and a later hold would keep it there.
 	 */
 	#keepingFrontUntil = 0;
@@ -555,7 +555,7 @@ export class RelayBridge {
 			group?: { title: string; color: string } | null;
 			/** Enables extension self-update; absent, the relay never rewrites or reloads an extension. */
 			updateExtension?: RelayBridgeExtensionUpdater;
-			/** Enables reloading an extension into newer files another omp wrote to its folder (a rebuilt source checkout). */
+			/** Enables reloading an extension into newer files another omsk wrote to its folder (a rebuilt source checkout). */
 			installedStamp?: RelayBridgeInstalledStamp;
 			/** What side-panel calls read; this machine's registries when absent. */
 			panelSources?: RelayBridgePanelSources;
@@ -590,7 +590,7 @@ export class RelayBridge {
 
 	/**
 	 * The browser the caller's tabs live in: the one named by `nearTargetId` (a tab the caller drives on another
-	 * connection; omp gives every tab its own), else one holding a tab this connection drives. Offline or not.
+	 * connection; omsk gives every tab its own), else one holding a tab this connection drives. Offline or not.
 	 */
 	#affineInstance(conn: CdpConnection, nearTargetId: unknown): ExtInstance | undefined {
 		const near = typeof nearTargetId === "string" ? parseTargetId(nearTargetId) : null;
@@ -634,7 +634,7 @@ export class RelayBridge {
 		return this.#lastHello();
 	}
 
-	/** Downstream CDP clients (omp browser sessions, puppeteer) connected right now. */
+	/** Downstream CDP clients (omsk browser sessions, puppeteer) connected right now. */
 	get cdpClientCount(): number {
 		return this.#conns.size;
 	}
@@ -643,7 +643,7 @@ export class RelayBridge {
 	versionInfo(wsUrl: string): Record<string, string | number> {
 		const info = this.#lastHello()?.info;
 		let hasCompatibleExtension = false;
-		// The oldest connected extension's installing omp, so a current browser cannot hide a stale one.
+		// The oldest connected extension's installing omsk, so a current browser cannot hide a stale one.
 		// A stamp of unknown age yields to any other, so it cannot hide one either.
 		let oldestExtensionOmp: string | undefined;
 		for (const instance of this.#instances.values()) {
@@ -733,7 +733,7 @@ export class RelayBridge {
 			tab.attached = false;
 			tab.attaching = null;
 			this.#resetRuntime(tab);
-			// The extension dissolves omp groups on disconnect (or died along
+			// The extension dissolves omsk groups on disconnect (or died along
 			// with them); grouping state is unknowable until the next hello.
 			tab.grouped = false;
 			tab.grouping = false;
@@ -980,7 +980,7 @@ export class RelayBridge {
 			instanceId,
 			tabs: msg.tabs.length,
 			version: msg.browserVersion,
-			omp: inst.info.ompVersion,
+			omsk: inst.info.ompVersion,
 		});
 		this.#maybeUpdateExtension(inst);
 	}
@@ -988,8 +988,8 @@ export class RelayBridge {
 	// ---- extension self-update ------------------------------------------------
 
 	/**
-	 * The older omp version this extension runs, when the relay may replace it: the extension reloads on request,
-	 * its script carries an omp version older than this relay's, its socket named its Chrome id, and the relay has
+	 * The older omsk version this extension runs, when the relay may replace it: the extension reloads on request,
+	 * its script carries an omsk version older than this relay's, its socket named its Chrome id, and the relay has
 	 * not already reloaded it from that version (a reload that brings the same version back must not loop).
 	 */
 	#outdatedReloadable(inst: ExtInstance): string | null {
@@ -1004,7 +1004,7 @@ export class RelayBridge {
 	 * socket and every debugger attachment it holds, so it waits for no CDP client to be connected (no claimed
 	 * tab, no held session) and none of the extension's tabs to be attached, attaching or detaching. It also waits
 	 * out the extension's calls in flight and the tab closes queued for its next hello: the reloaded extension
-	 * reports a new browser session, which retires the target ids they name, so a tab omp opened would stay open. And
+	 * reports a new browser session, which retires the target ids they name, so a tab omsk opened would stay open. And
 	 * it waits while the extension reports itself busy: a reload would end its panel turn or recording.
 	 */
 	#reloadBlocker(inst: ExtInstance): string | null {
@@ -1016,7 +1016,7 @@ export class RelayBridge {
 				return "tabs attached";
 			}
 		}
-		// A call past its timeout whose late result still closes what it made (a tab created after omp gave up) counts.
+		// A call past its timeout whose late result still closes what it made (a tab created after omsk gave up) counts.
 		for (const key of [...this.#pendingRpc.keys(), ...this.#lateRpc.keys()]) {
 			if (key.startsWith(`${inst.instanceId}:`)) return "extension calls pending";
 		}
@@ -1027,7 +1027,7 @@ export class RelayBridge {
 	}
 
 	/**
-	 * Re-run the update checks for every connected extension, e.g. after `omp browser-relay install` rewrote their
+	 * Re-run the update checks for every connected extension, e.g. after `omsk browser-relay install` rewrote their
 	 * folders: each reloads into its folder's files once idle.
 	 */
 	recheckExtensions(): void {
@@ -1035,7 +1035,7 @@ export class RelayBridge {
 	}
 
 	/**
-	 * Rewrite an outdated extension's files to this omp's and ask it to reload, when that costs nothing; otherwise
+	 * Rewrite an outdated extension's files to this omsk's and ask it to reload, when that costs nothing; otherwise
 	 * reload it into its folder when that holds another build ({@link RelayBridgeInstalledStamp}).
 	 */
 	#maybeUpdateExtension(inst: ExtInstance): void {
@@ -1084,7 +1084,7 @@ export class RelayBridge {
 
 	/**
 	 * Reload an extension whose folder holds other files than it runs, typically a source checkout's rebuild that
-	 * `omp browser-relay install` or omp's startup sync wrote at the same omp version. Never writes files itself, so
+	 * `omsk browser-relay install` or omsk's startup sync wrote at the same omsk version. Never writes files itself, so
 	 * relays from two checkouts cannot take turns rewriting a folder.
 	 */
 	#maybeReloadIntoInstalled(inst: ExtInstance): void {
@@ -1158,7 +1158,7 @@ export class RelayBridge {
 	// ---- downstream (puppeteer) lifecycle -------------------------------------
 
 	/**
-	 * Register a downstream CDP websocket; returns the connection id. `claim` is the target the connecting omp tab
+	 * Register a downstream CDP websocket; returns the connection id. `claim` is the target the connecting omsk tab
 	 * worker drives (`/cdp?claim=`), claimed before puppeteer sends anything to it.
 	 */
 	cdpConnected(socket: RelaySocket, claim?: string): number {
@@ -1192,7 +1192,7 @@ export class RelayBridge {
 			if (ref.autoAttach) armedTabs.add(ref.tabKey);
 		}
 		for (const tabKey of armedTabs) this.#releaseAutoAttach(tabKey);
-		// Tabs this client claimed leave the omp group unless another claimant
+		// Tabs this client claimed leave the omsk group unless another claimant
 		// remains — session holders don't count: the long-lived registry
 		// connection holds sessions on every tab without driving any of them.
 		for (const tabId of conn.claims) {
@@ -1475,7 +1475,7 @@ export class RelayBridge {
 			this.#reply(conn, msg, {});
 			return true;
 		}
-		// Relay-private claim the omp tab worker sends on the page it adopted. A worker of this version claims at
+		// Relay-private claim the omsk tab worker sends on the page it adopted. A worker of this version claims at
 		// connect already (`/cdp?claim=`); one of an older version, sharing this relay, claims only here. Never
 		// forwarded — real Chrome rejects the unknown method.
 		if (msg.method === "OMP.claimTarget") {
@@ -1527,7 +1527,7 @@ export class RelayBridge {
 			}
 			beforeReply?.();
 			this.#reply(conn, msg, response);
-			// Chrome acknowledged the input, so the overlay may draw it; only the client driving the tab moves omp's
+			// Chrome acknowledged the input, so the overlay may draw it; only the client driving the tab moves omsk's
 			// pointer, never one that merely holds a session on it (the registry connection, another tool).
 			if (realSessionId === undefined && tab.overlayMounted && conn.claims.has(tabKey)) {
 				const input = overlayInputOf(msg.method, msg.params);
@@ -1587,7 +1587,7 @@ export class RelayBridge {
 	}
 
 	/**
-	 * Read the app in front of the user with `read` as omp's input reaches a tab, to put it back when that input opens a
+	 * Read the app in front of the user with `read` as omsk's input reaches a tab, to put it back when that input opens a
 	 * window and Chrome brings itself forward to show it. Only where the relay can put it back (macOS).
 	 */
 	keepFrontAppWith(read: () => FrontApp | null): void {
@@ -1595,7 +1595,7 @@ export class RelayBridge {
 	}
 
 	/**
-	 * The app in front of the user now, for omp's input to a tab. A read that throws (a stale native addon without
+	 * The app in front of the user now, for omsk's input to a tab. A read that throws (a stale native addon without
 	 * `macOSFrontApp`) turns the reads off for good, so the input itself still goes out.
 	 */
 	#readFrontAtInput(read: () => FrontApp | null): { app: FrontApp; at: number } | null {
@@ -1612,7 +1612,7 @@ export class RelayBridge {
 	}
 
 	/**
-	 * Hold the app that was in front at omp's last input to `tab`, if that input can have opened the window the tab's
+	 * Hold the app that was in front at omsk's last input to `tab`, if that input can have opened the window the tab's
 	 * page is opening: Chrome makes itself the active app to show it.
 	 */
 	#keepFrontApp(tab: TabState): void {
@@ -1897,7 +1897,7 @@ export class RelayBridge {
 					});
 				})) as { tab: TabSnapshot };
 				this.#onTabUpsert(result.tab, inst.instanceId);
-				// The client left while Chrome created the tab (omp gave up on a slow open), so nobody
+				// The client left while Chrome created the tab (omsk gave up on a slow open), so nobody
 				// can learn its id to close it later: close it now instead of leaving it in the user's browser.
 				if (this.#conns.get(conn.id) !== conn) {
 					await this.#closeTab(tabKeyOf(inst.code, result.tab.tabId), result.tab.tabId, inst);
@@ -1980,7 +1980,7 @@ export class RelayBridge {
 				this.#reply(conn, msg, {});
 				return;
 			case "Target.createBrowserContext":
-				this.#replyError(conn, msg, "Browser contexts are not supported by the omp browser relay");
+				this.#replyError(conn, msg, "Browser contexts are not supported by the omsk browser relay");
 				return;
 			default:
 				this.#replyError(conn, msg, `'${msg.method}' wasn't found`, CDP_ERROR_METHOD_NOT_FOUND);
@@ -2106,7 +2106,7 @@ export class RelayBridge {
 	}
 
 	/**
-	 * The extension emptied and hid other extensions' frames in a tab omp drives. They wait on the tab for a worker to
+	 * The extension emptied and hid other extensions' frames in a tab omsk drives. They wait on the tab for a worker to
 	 * take them; one driving the attached tab now is told to, and the next one takes them when it adopts the tab.
 	 */
 	#onFramesHidden(tabKey: string, frames: unknown): void {
@@ -2201,7 +2201,7 @@ export class RelayBridge {
 			this.#tabs.set(key, tab);
 		} else {
 			if (tab.url !== snap.url) tab.refusal = undefined;
-			// The user dragging a tab out of the omp group is an opt-out; the
+			// The user dragging a tab out of the omsk group is an opt-out; the
 			// relay never fights the user over grouping.
 			if (tab.grouped && tab.ompGroupId !== undefined && snap.groupId !== tab.ompGroupId) {
 				tab.grouped = false;
@@ -2292,7 +2292,7 @@ export class RelayBridge {
 
 	// ---- tab grouping -----------------------------------------------------------
 
-	/** A tab belongs in the omp group when claimed by a client, controllable, unpinned, not user-opted-out, and not already in a user group. */
+	/** A tab belongs in the omsk group when claimed by a client, controllable, unpinned, not user-opted-out, and not already in a user group. */
 	#groupWorthy(tab: TabState): boolean {
 		if (!this.#claimed(tab.tabKey) || !this.#eligible(tab) || tab.pinned || tab.groupOptOut) return false;
 		return tab.grouped || tab.groupId === -1;
@@ -2322,7 +2322,7 @@ export class RelayBridge {
 	/**
 	 * Queue tabs for grouping and drain serially. Overlapping group RPCs race
 	 * the extension's non-atomic query→create→set-title sequence and mint
-	 * duplicate omp groups, so at most one group RPC is ever in flight.
+	 * duplicate omsk groups, so at most one group RPC is ever in flight.
 	 */
 	#requestGroup(tabs: TabState[]): void {
 		if (!this.#group) return;
@@ -2747,7 +2747,7 @@ export class RelayBridge {
 			this.#replyError(
 				conn,
 				msg,
-				"the omp relay extension in this browser predates download tracking; run `omp browser-relay install` and reload the extension in chrome://extensions",
+				"the omsk relay extension in this browser predates download tracking; run `omsk browser-relay install` and reload the extension in chrome://extensions",
 			);
 			return false;
 		}
@@ -2801,7 +2801,7 @@ export class RelayBridge {
 			reject,
 			timer,
 		});
-		// Only in a tab omp drives may the extension empty another extension's frames to get past Chrome's refusal.
+		// Only in a tab omsk drives may the extension empty another extension's frames to get past Chrome's refusal.
 		const sent =
 			req.op === "attach" || req.op === "send"
 				? {
@@ -2820,7 +2820,7 @@ export class RelayBridge {
 	}
 
 	/**
-	 * Close a tab omp opened. The extension retries a close Chrome refuses before answering, so the caller holds
+	 * Close a tab omsk opened. The extension retries a close Chrome refuses before answering, so the caller holds
 	 * its relay lease through the retry. One whose close still fails (its browser offline, the socket dropping
 	 * mid-call, or Chrome refusing every try) is closed at that browser's next hello, unless the user closed it.
 	 */

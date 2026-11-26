@@ -101,13 +101,13 @@ function readSessionExit(entry: SessionEntry): SessionExitData | undefined {
 }
 
 /** Why an interrupted-turn abort record ends a turn its process never finished. */
-export const INTERRUPTED_TURN_ERROR = "Previous OMP process exited before completing the turn.";
+export const INTERRUPTED_TURN_ERROR = "Previous OMSK process exited before completing the turn.";
 
 /** How exit recovery reads a branch whose last process may have died without recording its exit. */
 export interface InterruptedTurnOptions {
 	/**
 	 * The branch's writer is gone even without a `session_exit` after its tail (a
-	 * crash, SIGKILL or power loss records none): `omp --restore` says so.
+	 * crash, SIGKILL or power loss records none): `omsk --restore` says so.
 	 */
 	assumeExit?: boolean;
 }
@@ -238,7 +238,7 @@ function isFalseAbortAfterSnapshot(entries: readonly SessionEntry[], abortIndex:
 }
 
 /**
- * Whether `omp --restore` has a turn to go on with on this branch: one its last
+ * Whether `omsk --restore` has a turn to go on with on this branch: one its last
  * process left unfinished ({@link findUnfinishedTurn}, the exit assumed), or one exit
  * recovery already closed that nothing followed, not even a normal exit, unless that
  * abort only closed an idle eval snapshot ({@link isFalseAbortAfterSnapshot}).
@@ -345,7 +345,7 @@ export function createInterruptedToolResults(
 					text:
 						context === "fork"
 							? "The parent session may still be running this tool; its outcome is unknown."
-							: "Previous OMP process exited before this tool returned; its outcome is unknown.",
+							: "Previous OMSK process exited before this tool returned; its outcome is unknown.",
 				},
 			],
 			isError: true,
@@ -495,7 +495,7 @@ export function describePendingToolCalls(entries: readonly SessionEntry[]): stri
 	if (pending.length === 0) return undefined;
 	const formatted = pending.map(formatPendingToolCall).join(", ");
 	const noun = pending.length === 1 ? "tool call" : "tool calls";
-	return `Previous session ended while ${pending.length} ${noun} remained pending: ${formatted}. The prior OMP process exited before recording tool result(s).`;
+	return `Previous session ended while ${pending.length} ${noun} remained pending: ${formatted}. The prior OMSK process exited before recording tool result(s).`;
 }
 
 interface InterruptedBashJob {
@@ -589,7 +589,7 @@ export function restoreTerminatedBashJobs(
 		manager.publishFailed(
 			"bash",
 			job.label,
-			`Previous OMP process exited before background job ${job.id} delivered its final result; its outcome is unknown. Its subprocess may still be running or may have partially completed — verify before rerunning.`,
+			`Previous OMSK process exited before background job ${job.id} delivered its final result; its outcome is unknown. Its subprocess may still be running or may have partially completed — verify before rerunning.`,
 			{ id: job.id, ownerId },
 		);
 	}

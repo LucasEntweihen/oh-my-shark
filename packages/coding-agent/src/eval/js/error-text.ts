@@ -2,8 +2,8 @@ import * as path from "node:path";
 import { walkUpForPackageDir } from "../../config";
 
 /**
- * The tree omp's code runs from: the `node_modules` holding an installed omp, or a source checkout's root, so
- * frames in omp's own code and in its dependencies both fall under it. Taken from this module's location, not
+ * The tree omsk's code runs from: the `node_modules` holding an installed omsk, or a source checkout's root, so
+ * frames in omsk's own code and in its dependencies both fall under it. Taken from this module's location, not
  * `getPackageDir()`, whose `PI_PACKAGE_DIR` override names an asset folder. Compiled binaries run from `$bunfs`.
  */
 const OMP_ROOT = (() => {
@@ -11,7 +11,7 @@ const OMP_ROOT = (() => {
 	return packageDir ? path.dirname(path.dirname(packageDir)) : undefined;
 })();
 
-/** Frame locations that are never the cell's code: engine internals, omp's preludes, a compiled omp. */
+/** Frame locations that are never the cell's code: engine internals, omsk's preludes, a compiled omp. */
 const HOST_LOCATION = /^(?:native\b|unknown$|node:|bun:|\[eval-prelude:)|\$bunfs|~BUN/;
 const FRAME_LINE = /^\s+at (?:.*? \((.*)\)|(.*))$/;
 
@@ -22,12 +22,12 @@ export interface CellErrorSource {
 	header?: string;
 	/** The cell's working directory; frames under it include the user's project dependencies. */
 	cwd: string;
-	/** Defaults to the tree this omp runs from. */
+	/** Defaults to the tree this omsk runs from. */
 	ompRoot?: string;
 }
 
 /**
- * The text a failed cell prints for an uncaught error: its stack without the frames from omp's own runtime,
+ * The text a failed cell prints for an uncaught error: its stack without the frames from omsk's own runtime,
  * its dependencies and engine internals, which say nothing about the cell. Message lines, the cell's frames,
  * functions the cell sent to a page or worker, and the user's own code are kept, and one line counts the hidden
  * frames; the error's own `stack` is left whole, so a cell that catches it can print them.
@@ -44,7 +44,7 @@ export function formatCellError(stack: string, source: CellErrorSource): string 
 	const ompRoot = "ompRoot" in source ? source.ompRoot : OMP_ROOT;
 	const rootPrefix = ompRoot === undefined ? undefined : path.join(ompRoot, path.sep);
 	const cwdPrefix = path.join(source.cwd, path.sep);
-	// Only a project-local install or work inside omp's tree shares the cell's dependency ownership.
+	// Only a project-local install or work inside omsk's tree shares the cell's dependency ownership.
 	const userPrefix =
 		rootPrefix !== undefined &&
 		(cwdPrefix.startsWith(rootPrefix) || rootPrefix === path.join(source.cwd, "node_modules", path.sep))
@@ -77,7 +77,7 @@ export function formatCellError(stack: string, source: CellErrorSource): string 
 		kept.push(line);
 	}
 	if (hidden === 0) return stack;
-	const count = `${hidden} omp frame${hidden === 1 ? "" : "s"} hidden`;
+	const count = `${hidden} omsk frame${hidden === 1 ? "" : "s"} hidden`;
 	// Only an error raised through the cell can be caught by it; a worker exit or a failed install cannot.
 	kept.push(
 		stack.includes(source.filename)

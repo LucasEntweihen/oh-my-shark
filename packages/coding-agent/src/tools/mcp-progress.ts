@@ -1,6 +1,6 @@
 /**
  * MCP progress values, apart from the MCP details in `./details/mcp` so the MCP
- * transports (which run inside the omp daemon) parse progress without loading
+ * transports (which run inside the omsk daemon) parse progress without loading
  * the TUI rendering stack.
  */
 import { isRecord } from "@oh-my-pi/pi-utils";

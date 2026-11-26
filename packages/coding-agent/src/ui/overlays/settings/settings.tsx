@@ -1268,7 +1268,7 @@ export function SettingsWindow(props: {
 
 	return (
 		<prefs
-			title="omp settings"
+			title="omsk settings"
 			pages={pages}
 			page={() => (searching() ? preSearchTab() : tab())}
 			lead={() => {

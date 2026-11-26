@@ -553,8 +553,8 @@ export async function legacyProviderAllowed(rootPath: string, surface: "skills" 
 /**
  * Whether a plugin root's task-agent `model:` frontmatter is written in the
  * Claude Code dialect (provider aliases such as `sonnet`/`opus`) rather than as
- * OMP model selectors. Claude-dialect frontmatter must be dropped during
- * discovery so its aliases are not misread as OMP selectors (#7966); OMP-native
+ * OMSK model selectors. Claude-dialect frontmatter must be dropped during
+ * discovery so its aliases are not misread as OMSK selectors (#7966); OMP-native
  * and Agent-Plugins-standard packages keep their selectors (#12028).
  *
  * The dialect is decided by the plugin's declared manifest, not by which

@@ -1,6 +1,6 @@
 /**
  * Static output: paint a node tree once to terminal rows, for CLI commands
- * that print a view and exit (`omp q`, `omp gallery`) instead of running a
+ * that print a view and exit (`omsk q`, `omsk gallery`) instead of running a
  * live surface.
  */
 import { createRoot, type JSXNode, resolveChildren } from "@oh-my-pi/pi-tui";

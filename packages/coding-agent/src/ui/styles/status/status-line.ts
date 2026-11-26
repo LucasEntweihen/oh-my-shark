@@ -136,7 +136,7 @@ class LookPainter {
 
 	brand(since: number | null, tokens: string, awaiting: boolean | undefined, profile: string | undefined): string {
 		const tag = (glyph: string) => (profile ? (glyph ? `${glyph}-${profile}` : profile) : glyph);
-		if (since === null) return this.style(tokens, tag(this.#theme.symbols.icon("omp")));
+		if (since === null) return this.style(tokens, tag(this.#theme.symbols.icon("omsk")));
 		const cx = this.#cx;
 		const now = cx.now();
 		let glyph = this.#theme.symbols.symbol("cmd.question") || "?";

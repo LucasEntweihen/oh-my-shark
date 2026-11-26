@@ -445,8 +445,8 @@ export interface ScanSkillsFromDirOptions {
 	includeSelf?: boolean;
 	/**
 	 * Registry/CLI origin of the plugin root supplying these skills, forwarded
-	 * to {@link SourceMeta.origin} so user-scope gating can tell omp's own
-	 * installs (`omp`, `plugin-dir`) from the foreign Claude tree (`claude`).
+	 * to {@link SourceMeta.origin} so user-scope gating can tell omsk's own
+	 * installs (`omsk`, `plugin-dir`) from the foreign Claude tree (`claude`).
 	 */
 	origin?: string;
 	/**
@@ -831,7 +831,7 @@ async function readExtensionModuleManifest(
 	const content = await readFile(packageJsonPath);
 	if (!content) return null;
 
-	const pkg = tryParseJson<{ omp?: ExtensionModuleManifest; pi?: ExtensionModuleManifest }>(content);
+	const pkg = tryParseJson<{ omsk?: ExtensionModuleManifest; pi?: ExtensionModuleManifest }>(content);
 	const manifest = pkg?.omp ?? pkg?.pi;
 	if (manifest && typeof manifest === "object") {
 		return manifest;
@@ -845,7 +845,7 @@ async function readExtensionModuleManifest(
  * Discovery rules:
  * 1. Direct files: `extensions/*.ts` or `*.js` → load
  * 2. Subdirectory with index: `extensions/<ext>/index.ts` or `index.js` → load
- * 3. Subdirectory with package.json: `extensions/<ext>/package.json` with "omp"/"pi" field → load declared paths
+ * 3. Subdirectory with package.json: `extensions/<ext>/package.json` with "omsk"/"pi" field → load declared paths
  *
  * No recursion beyond one level. Complex packages must use package.json manifest.
  * Uses native glob for fast filesystem scanning with gitignore support.
@@ -1022,7 +1022,7 @@ export interface ClaudePluginRoot {
 	/** Whether this is a user or project scope plugin */
 	scope: "user" | "project";
 	/** Registry or explicit CLI source that supplied this root. */
-	origin: "claude" | "omp" | "plugin-dir";
+	origin: "claude" | "omsk" | "plugin-dir";
 }
 
 /**
@@ -1080,13 +1080,13 @@ export async function isForeignUserConfigRoot(root: string, configDirName: strin
  * Resolve the active project registry path by walking up from `cwd`.
  *
  * Walk order:
- * 1. Walk up from `cwd` looking for the nearest directory containing `.omp/`.
- *    The first match returns `<dir>/.omp/plugins/installed_plugins.json`.
- * 2. If no `.omp/` is found, rescan from `cwd` upward looking for `.git`.
- *    The git root is used as an anchor: `<gitRoot>/.omp/plugins/installed_plugins.json`.
+ * 1. Walk up from `cwd` looking for the nearest directory containing `.omsk/`.
+ *    The first match returns `<dir>/.omsk/plugins/installed_plugins.json`.
+ * 2. If no `.omsk/` is found, rescan from `cwd` upward looking for `.git`.
+ *    The git root is used as an anchor: `<gitRoot>/.omsk/plugins/installed_plugins.json`.
  * 3. Stop before home or a temporary root in either pass. If neither anchor is
  *    found below that ceiling, return `null` — no project context is active.
- * Inactive `.omp/agent/` layouts are skipped only above the nearest git root,
+ * Inactive `.omsk/agent/` layouts are skipped only above the nearest git root,
  * or throughout an unanchored walk, so repo-local agent directories stay project scope.
  *
  * This is the single source of truth for "active project root" used by install,
@@ -1117,7 +1117,7 @@ async function resolveProjectRegistryPath(cwd: string, ceilings: ReadonlySet<str
 		dir = parent;
 	}
 
-	// Existing .omp/ directories still win, even above the git root, except foreign user roots.
+	// Existing .omsk/ directories still win, even above the git root, except foreign user roots.
 	const configDirName = SOURCE_PATHS.native.projectDir;
 	let aboveGitRoot = nearestGitRoot === null;
 	dir = path.resolve(cwd);
@@ -1182,11 +1182,11 @@ async function hasProjectInstallState(configDir: string): Promise<boolean> {
 }
 
 /**
- * Like resolveActiveProjectRegistryPath, but falls back to `<cwd>/.omp/plugins/installed_plugins.json`
- * when no project anchor (.omp/ or .git/) is found.
+ * Like resolveActiveProjectRegistryPath, but falls back to `<cwd>/.omsk/plugins/installed_plugins.json`
+ * when no project anchor (.omsk/ or .git/) is found.
  *
  * Use this when the caller accepts an explicit --scope project so that installing into a freshly
- * bootstrapped directory (no .omp/ or .git/ yet) works: writeInstalledPluginsRegistry auto-creates
+ * bootstrapped directory (no .omsk/ or .git/ yet) works: writeInstalledPluginsRegistry auto-creates
  * the directory tree on first write.
  *
  * Returns undefined when cwd is a discovery ceiling or user config root, so the
@@ -1197,7 +1197,7 @@ export async function resolveOrDefaultProjectRegistryPath(cwd: string): Promise<
 	const resolved = await resolveProjectRegistryPath(cwd, ceilings);
 	if (resolved) return resolved;
 	const configDirName = SOURCE_PATHS.native.projectDir;
-	// A cwd containing .omp/ at or below a git root already resolved above.
+	// A cwd containing .omsk/ at or below a git root already resolved above.
 	if (
 		ceilings.has(normalizePathForComparison(cwd)) ||
 		isUserConfigRoot(cwd) ||
@@ -1355,9 +1355,9 @@ export async function isSupersededPluginPath(filePath: string, home: string, cwd
 
 /**
  * List all installed Claude Code plugin roots from its active plugin cache and
- * ~/.omp/plugins/installed_plugins.json, plus the nearest project registry when present.
+ * ~/.omsk/plugins/installed_plugins.json, plus the nearest project registry when present.
  *
- * Results are cached per Claude and OMP config directories, project registry, and canonical active project.
+ * Results are cached per Claude and OMSK config directories, project registry, and canonical active project.
  */
 export function listClaudePluginRoots(
 	home: string,
@@ -1488,12 +1488,12 @@ async function loadClaudePluginRoots({
 		}
 	}
 
-	// ── OMP installed plugins registry ───────────────────────────────────────
-	// OMP registry is authoritative: its entries replace Claude's entries for the same plugin ID.
+	// ── OMSK installed plugins registry ───────────────────────────────────────
+	// OMSK registry is authoritative: its entries replace Claude's entries for the same plugin ID.
 	// In production `home` is `os.homedir()`, so `getPluginsDir(home)` resolves to the
 	// same XDG-aware path the marketplace writer uses (reads and writes always agree).
 	// Tests pass a temp dir, which short-circuits the resolver for deterministic isolation.
-	// Computed before the cache lookup because isolated SDK homes select distinct OMP registries.
+	// Computed before the cache lookup because isolated SDK homes select distinct OMSK registries.
 	const ompContent = await readFile(ompRegistryPath);
 	if (ompContent) {
 		const ompRegistry = parseClaudePluginsRegistry(ompContent);
@@ -1509,7 +1509,7 @@ async function loadClaudePluginRoots({
 				const pluginName = pluginId.slice(0, atIndex);
 				const marketplace = pluginId.slice(atIndex + 1);
 
-				// OMP is authoritative: drop all Claude-sourced entries for this plugin ID
+				// OMSK is authoritative: drop all Claude-sourced entries for this plugin ID
 				const filtered = roots.filter(r => r.id !== pluginId);
 				roots.length = 0;
 				roots.push(...filtered);
@@ -1530,17 +1530,17 @@ async function loadClaudePluginRoots({
 						version: entry.version || "unknown",
 						path: entry.installPath,
 						scope: entry.scope === "local" ? "project" : entry.scope || "user",
-						origin: "omp",
+						origin: "omsk",
 					});
 				}
 			}
 		} else {
-			warnings.push(`Failed to parse OMP plugin registry: ${ompRegistryPath}`);
+			warnings.push(`Failed to parse OMSK plugin registry: ${ompRegistryPath}`);
 		}
 	}
 
-	// ── Project-scoped OMP registry ────────────────────────────────────────
-	// Loaded from the nearest .omp/plugins/installed_plugins.json relative to cwd.
+	// ── Project-scoped OMSK registry ────────────────────────────────────────
+	// Loaded from the nearest .omsk/plugins/installed_plugins.json relative to cwd.
 	// Project entries take precedence over user entries for the same plugin ID.
 	if (resolvedProjectPath) {
 		const projectContent = await readFile(resolvedProjectPath);
@@ -1569,7 +1569,7 @@ async function loadClaudePluginRoots({
 							version: entry.version || "unknown",
 							path: entry.installPath,
 							scope: "project",
-							origin: "omp",
+							origin: "omsk",
 						});
 					}
 				}

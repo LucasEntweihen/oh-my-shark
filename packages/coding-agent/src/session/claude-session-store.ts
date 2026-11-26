@@ -362,7 +362,7 @@ function uniqueEntryId(base: string, used: Set<string>): string {
 	return id;
 }
 
-/** Imports Claude Code JSONL sessions into non-persistent OMP session managers. */
+/** Imports Claude Code JSONL sessions into non-persistent OMSK session managers. */
 export class ClaudeSessionStore implements ForeignSessionStore {
 	readonly source = "claude";
 	readonly #root: string;

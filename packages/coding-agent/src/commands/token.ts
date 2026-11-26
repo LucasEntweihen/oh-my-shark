@@ -76,11 +76,11 @@ export default class Token extends Command {
 	};
 
 	static examples = [
-		"# Get API key for Anthropic\n  omp token anthropic",
-		"# Get raw Copilot credential JSON\n  omp token github-copilot --raw",
-		"# Force refresh and get an Antigravity token\n  omp token google-antigravity --force-refresh",
-		"# List Anthropic OAuth accounts\n  omp token anthropic --list",
-		"# Get the 2nd Anthropic OAuth account's token\n  omp token anthropic --account 2",
+		"# Get API key for Anthropic\n  omsk token anthropic",
+		"# Get raw Copilot credential JSON\n  omsk token github-copilot --raw",
+		"# Force refresh and get an Antigravity token\n  omsk token google-antigravity --force-refresh",
+		"# List Anthropic OAuth accounts\n  omsk token anthropic --list",
+		"# Get the 2nd Anthropic OAuth account's token\n  omsk token anthropic --account 2",
 	];
 
 	async run(): Promise<void> {

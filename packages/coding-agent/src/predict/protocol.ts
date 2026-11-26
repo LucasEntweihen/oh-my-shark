@@ -1,9 +1,9 @@
 /**
- * Contract between omp processes and the daemon's `predict` module
+ * Contract between omsk processes and the daemon's `predict` module
  * (`daemon/modules/predict.ts`).
  *
  * One `predict` unit (global scope) per agent directory serves ghost-text word
- * completion to every omp process through `call("predict", method, params, { unit })`.
+ * completion to every omsk process through `call("predict", method, params, { unit })`.
  */
 import * as path from "node:path";
 import type { PredictedWord } from "@oh-my-pi/pi-natives";

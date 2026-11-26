@@ -103,7 +103,7 @@ export function ProtocolProbe(props: ProtocolProbeProps): JSXNode {
 					{ t: " — " },
 					support(caps.hyperlinks),
 					{ t: "\n  " },
-					{ t: "omp repo", href: REPO_URL },
+					{ t: "omsk repo", href: REPO_URL },
 				]}
 			/>
 			<spacer size="sm" />

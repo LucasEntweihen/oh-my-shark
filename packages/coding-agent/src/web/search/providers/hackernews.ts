@@ -26,7 +26,7 @@ const MAX_ERROR_BYTES = 8 * 1024;
 /** Item kinds searched, as Algolia `tags` values. */
 type HNKind = "story" | "comment";
 
-/** One hit of the HN Search API, as far as omp reads it. */
+/** One hit of the HN Search API, as far as omsk reads it. */
 interface HNHit {
 	objectID?: string | null;
 	author?: string | null;

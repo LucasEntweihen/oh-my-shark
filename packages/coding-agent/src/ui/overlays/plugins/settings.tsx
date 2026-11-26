@@ -327,10 +327,10 @@ function ListPanel(props: { entries: readonly PluginListEntry[]; selected: numbe
 			{ k: "gap" },
 			{ k: "text", spans: [{ s: "muted", t: "No plugins installed" }] },
 			{ k: "gap" },
-			{ k: "text", spans: [{ s: "dim", t: "Install npm plugins:        omp plugin install <package>" }] },
+			{ k: "text", spans: [{ s: "dim", t: "Install npm plugins:        omsk plugin install <package>" }] },
 			{
 				k: "text",
-				spans: [{ s: "dim", t: "Install marketplace plugins: omp plugin install <name>@<marketplace>" }],
+				spans: [{ s: "dim", t: "Install marketplace plugins: omsk plugin install <name>@<marketplace>" }],
 			},
 			{ k: "gap" },
 		];
@@ -339,10 +339,10 @@ function ListPanel(props: { entries: readonly PluginListEntry[]; selected: numbe
 				<text spans={[{ s: "muted", t: "No plugins installed" }]} />
 				<kv
 					items={[
-						{ k: "Install npm plugins", v: [{ s: "code", t: "omp plugin install <package>" }] },
+						{ k: "Install npm plugins", v: [{ s: "code", t: "omsk plugin install <package>" }] },
 						{
 							k: "Install marketplace plugins",
-							v: [{ s: "code", t: "omp plugin install <name>@<marketplace>" }],
+							v: [{ s: "code", t: "omsk plugin install <name>@<marketplace>" }],
 						},
 					]}
 				/>
@@ -902,7 +902,7 @@ export function createPluginSettings(
 				lead:
 					rows.length > 0
 						? "Plugins installed for you and this project. Configure one to turn it or its features on and off."
-						: "No plugins installed. Install one with omp plugin install <package>, or <name>@<marketplace>.",
+						: "No plugins installed. Install one with omsk plugin install <package>, or <name>@<marketplace>.",
 				sections: rows.length > 0 ? [{ id: "installed", title: "Installed", rows }] : [],
 				focus: current.entries[current.selected] ? entryValue(current.entries[current.selected]!) : null,
 				editing: null,

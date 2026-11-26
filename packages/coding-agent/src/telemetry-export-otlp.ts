@@ -44,7 +44,7 @@ import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
 import type { TelemetryModelPricingResolver, TelemetrySignalConfig } from "./telemetry-export";
 
 /**
- * Periodic flush interval. A long-lived `omp` process (the ACP server is
+ * Periodic flush interval. A long-lived `omsk` process (the ACP server is
  * spawned once and reused across many turns) would otherwise hold finished
  * telemetry until a batch window elapses or the process exits.
  */
@@ -153,7 +153,7 @@ export function createTelemetryExportConfig(
  *
  * The OpenTelemetry SDK reads its `OTEL_*` configuration (exporter endpoint,
  * headers, timeouts, resource attributes, sampler, batch limits) from
- * `process.env` at construction. OMP keeps the values from its own `.env` files
+ * `process.env` at construction. OMSK keeps the values from its own `.env` files
  * out of the process environment, so everything that constructs SDK objects runs
  * in one synchronous {@link withOmpOtelEnv} window. Nothing here awaits, and the
  * SDK reads no `OTEL_*` setting at export time; `test/otel-env-window.test.ts`

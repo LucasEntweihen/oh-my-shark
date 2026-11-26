@@ -52,7 +52,7 @@ export interface SelectSheetProps {
 	readonly columns?: readonly TspPickerColumn[];
 	/** The primary action's label (default `Select`). */
 	readonly confirmLabel?: string;
-	/** The search text (omp's filter); absent: no search field. */
+	/** The search text (omsk's filter); absent: no search field. */
 	readonly query?: Reactive<string>;
 	/** The search caret (UTF-16 offset). */
 	readonly cursor?: Reactive<number>;

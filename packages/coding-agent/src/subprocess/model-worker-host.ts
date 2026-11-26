@@ -18,7 +18,7 @@ import { resolveWorkerSpawnCmd } from "./worker-client";
 
 /**
  * Client-side plumbing for the warm model workers (speech-to-text and
- * text-to-speech). The worker process lives in the omp daemon's `speech`
+ * text-to-speech). The worker process lives in the omsk daemon's `speech`
  * module, keyed on the tiny-model device/dtype env and shared by every
  * session; this host opens (find-or-start) that unit, attaches a tunnel, and
  * speaks the binary frame protocol over it. It owns pending-request

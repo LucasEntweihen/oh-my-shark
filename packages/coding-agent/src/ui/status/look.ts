@@ -36,7 +36,7 @@ export interface StatusesPiece {
 }
 
 /**
- * The brand: the `omp` glyph while idle (`brand: null`); while a turn runs, a
+ * The brand: the `omsk` glyph while idle (`brand: null`); while a turn runs, a
  * spinner frame (`?` while awaiting an answer) and the turn timer since
  * `brand` (terminal-clock ms). `profile` tags the glyph (`π-work`).
  */

@@ -4,7 +4,7 @@
  * like the Chromium log. Bodies of fetch/XHR responses stay in the page until
  * asked for; navigation bodies are not observable.
  *
- * A server that lists `network` in its welcome (omp's WebKit host) reports
+ * A server that lists `network` in its welcome (omsk's WebKit host) reports
  * every resource load itself, as `request` / `response` / `requestFinished` /
  * `requestFailed` events. Those are then the log's only source for loads that
  * reach the network: of what a capture script reports, only the requests it
@@ -276,7 +276,7 @@ export class TernNetworkLog {
 				if (length !== undefined && (length > 0 || entry.responseHeaders?.["content-length"] !== undefined)) {
 					entry.sizes.responseBody = length;
 				}
-				// Only a server that stamps its events gives a duration: omp reads them in batches.
+				// Only a server that stamps its events gives a duration: omsk reads them in batches.
 				if (num(event.ts) !== undefined) entry.durationMs = Math.max(0, ts - entry.ts);
 				return undefined;
 			}

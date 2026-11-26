@@ -157,7 +157,7 @@ export function isPuppeteerTargetClose(error: unknown): boolean {
 }
 
 /**
- * Build Puppeteer's `TimeoutError` for a deadline omp enforces in place of one of Puppeteer's waits.
+ * Build Puppeteer's `TimeoutError` for a deadline omsk enforces in place of one of Puppeteer's waits.
  * Its `name` stays "TimeoutError" in release builds: back/forward/reload pass this error to the agent's cell as is.
  */
 export function puppeteerTimeoutError(message: string): Error {
@@ -292,7 +292,7 @@ async function debuggerEndpointOf(browserURL: string): Promise<string | undefine
 }
 
 /**
- * The connection's root session, which answers browser-level `Target.*` commands. The omp relay serves
+ * The connection's root session, which answers browser-level `Target.*` commands. The omsk relay serves
  * those but exposes no attachable browser target, so `browser.target().createCDPSession()` fails there.
  */
 export function browserConnection(browser: Browser): Connection {
@@ -345,7 +345,7 @@ async function loadBrowsers(): Promise<typeof BrowsersNs> {
  * system Chrome is used on macOS only when Chrome for Testing cannot be
  * obtained. Other platforms keep the download-avoiding system Chrome
  * preference and fall back to Chrome for Testing. The managed browser is
- * cached under ~/.omp/puppeteer (getPuppeteerDir). Returns undefined when
+ * cached under ~/.omsk/puppeteer (getPuppeteerDir). Returns undefined when
  * platform detection fails (puppeteer default resolution takes over).
  * Exported so real-browser tests can probe launchability and skip on hosts
  * missing Chrome's system libraries.
@@ -413,7 +413,7 @@ export async function ensureSignInChromiumExecutable(): Promise<string | undefin
  * Whether launching managed Chromium would first download Chrome for Testing,
  * as {@link ensureChromiumExecutable} decides: no `PUPPETEER_EXECUTABLE_PATH`,
  * no usable system Chrome where one is preferred (every platform but macOS),
- * and no Chrome for Testing under ~/.omp/puppeteer yet.
+ * and no Chrome for Testing under ~/.omsk/puppeteer yet.
  */
 export async function chromiumNeedsDownload(): Promise<boolean> {
 	if (process.env.PUPPETEER_EXECUTABLE_PATH) return false;
@@ -422,7 +422,7 @@ export async function chromiumNeedsDownload(): Promise<boolean> {
 	return managed !== undefined && !fs.existsSync(managed.executablePath);
 }
 
-/** Where this host's Chrome for Testing build lives under ~/.omp/puppeteer; undefined when platform detection fails. */
+/** Where this host's Chrome for Testing build lives under ~/.omsk/puppeteer; undefined when platform detection fails. */
 async function managedChromiumLocation() {
 	const browsers = await loadBrowsers();
 	const platform = browsers.detectBrowserPlatform();
@@ -435,7 +435,7 @@ async function managedChromiumLocation() {
 }
 
 let managedChromiumPromise: Promise<string | undefined> | undefined;
-/** Chrome for Testing under ~/.omp/puppeteer, downloaded on first use; undefined when platform detection fails. */
+/** Chrome for Testing under ~/.omsk/puppeteer, downloaded on first use; undefined when platform detection fails. */
 function ensureManagedChromium(): Promise<string | undefined> {
 	managedChromiumPromise ??= (async () => {
 		const managed = await managedChromiumLocation();
@@ -642,7 +642,7 @@ export interface LaunchHeadlessResult {
 	/**
 	 * OMP-owned temporary Chromium profile directory to remove after the browser
 	 * process tree exits, or `undefined` when the caller supplied its own
-	 * `--user-data-dir` (which OMP must not delete).
+	 * `--user-data-dir` (which OMSK must not delete).
 	 */
 	userDataDir?: string;
 }
@@ -813,7 +813,7 @@ async function readActivePort(file: BunFile): Promise<string | undefined> {
 }
 
 /**
- * Pin automation-safe preferences in a Chromium profile OMP owns. Password leak
+ * Pin automation-safe preferences in a Chromium profile OMSK owns. Password leak
  * detection answers a password form submit with a tab-modal "Change your
  * password" dialog; while it is open Chromium drops `Input.dispatchMouseEvent`
  * input for the tab, and a hidden browser offers no way to close it. A page's
@@ -862,11 +862,11 @@ async function writeOwnedProfilePreferences(file: string): Promise<void> {
 }
 
 /**
- * Discard Chromium's session-restore state in a persistent profile OMP owns.
+ * Discard Chromium's session-restore state in a persistent profile OMSK owns.
  * When the first window of a new Chromium process opens, it reopens every page
  * recorded in `Default/Sessions`, however the previous process exited. On the
  * project-shared browser that resurrects whatever was open when its
- * predecessor stopped or was killed, and no omp process owns those pages:
+ * predecessor stopped or was killed, and no omsk process owns those pages:
  * target ownership dies with the browser instance, so neither idle-close nor
  * the orphan reaper ever closes them. Call this before a Chromium process
  * starts on the profile. Best-effort: a failure is logged and never blocks the

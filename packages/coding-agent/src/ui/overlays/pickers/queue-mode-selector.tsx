@@ -1,5 +1,5 @@
 /** @jsxImportSource @oh-my-pi/pi-tui */
-/** The queue mode selector: whether messages sent while omp works go one per turn or together. */
+/** The queue mode selector: whether messages sent while omsk works go one per turn or together. */
 import type { JSXNode } from "@oh-my-pi/pi-tui";
 import { SelectSheet } from "./select-sheet";
 
@@ -15,7 +15,7 @@ export function QueueModeSelector(props: QueueModeSelectorProps): JSXNode {
 	return (
 		<SelectSheet
 			title="Queue mode"
-			subtitle="How messages you send while omp works are delivered"
+			subtitle="How messages you send while omsk works are delivered"
 			icon="list"
 			noun="modes"
 			items={[

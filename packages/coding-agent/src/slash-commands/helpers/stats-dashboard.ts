@@ -71,7 +71,7 @@ export function parseStatsDashboardArgs(args: string): StatsDashboardArgs | { er
 
 /**
  * Start (or reuse) the dashboard and open it (in a Tern pane, in a browser
- * block beside omp's; elsewhere in the system browser), without waiting for
+ * block beside omsk's; elsewhere in the system browser), without waiting for
  * ingest: the server syncs sessions in the background and streams progress to the page.
  * `judge` powers the Frustration page's judge runs; a later launch replaces
  * the registered one, so the dashboard always judges through the most recent

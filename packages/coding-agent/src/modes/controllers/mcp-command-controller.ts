@@ -582,9 +582,9 @@ export class MCPCommandController {
 					openPath(info.url);
 					// Stage the FULL authorization URL on the clipboard via OSC 52.
 					// The full URL works from any machine (unlike `launchUrl`, which
-					// only resolves against the OMP host), and OSC 52 is a
+					// only resolves against the OMSK host), and OSC 52 is a
 					// wire-level protocol — the terminal writes it to the user's
-					// LOCAL clipboard even when OMP is on a remote SSH box.
+					// LOCAL clipboard even when OMSK is on a remote SSH box.
 					// Best-effort: the visible copy-URL rows remain the fallback
 					// whether or not the terminal honors OSC 52.
 					void copyToClipboard(info.url).catch(() => {});

@@ -79,10 +79,10 @@ export interface TernBrowserHandle extends BrowserHandleCommon {
 	tern: TernSocketClient;
 }
 
-/** omp's own WebKit host process, whose headless web views (one block each) are this handle's tabs. */
+/** omsk's own WebKit host process, whose headless web views (one block each) are this handle's tabs. */
 export interface WebKitBrowserHandle extends BrowserHandleCommon {
 	kind: WebKitKind;
-	/** The host process omp started and stops with the handle. */
+	/** The host process omsk started and stops with the handle. */
 	webkit: WebKitHost;
 }
 
@@ -136,7 +136,7 @@ export interface AcquireBrowserOptions {
 	cwd: string;
 	viewport?: { width: number; height: number; deviceScaleFactor?: number };
 	signal?: AbortSignal;
-	/** Ask a relay served by an older omp to restart from the installed one. Default true. */
+	/** Ask a relay served by an older omsk to restart from the installed one. Default true. */
 	restartRelay?: boolean;
 }
 
@@ -262,11 +262,11 @@ async function openBrowserHandle(kind: BrowserKind, opts: AcquireBrowserOptions)
 		};
 	}
 	if (kind.kind === "headless") {
-		// Every real omp process (session, subagent, worker — anything with a CLI
+		// Every real omsk process (session, subagent, worker — anything with a CLI
 		// worker host) MUST go through the project-shared daemon-supervised Chromium:
 		// per-process launches are what produced launch storms and orphaned
 		// process trees. The process-local launch survives only for hosts that
-		// cannot spawn the omp daemon (bun test, SDK embedding without a CLI entry).
+		// cannot spawn the omsk daemon (bun test, SDK embedding without a CLI entry).
 		if (isCompiledBinary() || workerHostEntry() !== null) {
 			return await openSharedHeadlessHandle(kind, opts);
 		}
@@ -308,12 +308,12 @@ async function openBrowserHandle(kind: BrowserKind, opts: AcquireBrowserOptions)
 	if (kind.kind === "relay") {
 		if (!kind.cdpUrl)
 			throw new ToolError(
-				"No local omp browser relay found. Open Chrome with the omp extension, or configure browser.relayUrl.",
+				"No local omsk browser relay found. Open Chrome with the omsk extension, or configure browser.relayUrl.",
 			);
 		const cdpUrl = normalizeConnectedCdpUrl(kind.cdpUrl);
-		// The omp extension's native host serves the relay while Chrome runs; nothing here starts it.
+		// The omsk extension's native host serves the relay while Chrome runs; nothing here starts it.
 		let outcome = await waitForRelayExtension(cdpUrl, opts.signal);
-		// A host from an older omp keeps serving across upgrades. Restart an incompatible one from the installed omp,
+		// A host from an older omsk keeps serving across upgrades. Restart an incompatible one from the installed omsk,
 		// and a compatible older one only while no CDP client uses it; an older one that stays is still usable.
 		if ((outcome === "outdated-relay" || outcome === "idle-older-relay") && opts.restartRelay !== false) {
 			const idleOnly = outcome === "idle-older-relay";
@@ -322,21 +322,21 @@ async function openBrowserHandle(kind: BrowserKind, opts: AcquireBrowserOptions)
 		}
 		if (outcome === "unreachable") {
 			throw new ToolError(
-				`Nothing serves the omp browser relay at ${cdpUrl}: Chrome is not running with the omp extension. Open Chrome; if the extension is loaded, run \`omp browser-relay install\` to register its native host.`,
+				`Nothing serves the omsk browser relay at ${cdpUrl}: Chrome is not running with the omsk extension. Open Chrome; if the extension is loaded, run \`omsk browser-relay install\` to register its native host.`,
 			);
 		}
 		if (outcome === "no-extension") {
 			throw new ToolError(
-				`The omp browser relay at ${cdpUrl} is up, but its browser never said hello. Reload the omp extension in Chrome.`,
+				`The omsk browser relay at ${cdpUrl} is up, but its browser never said hello. Reload the omsk extension in Chrome.`,
 			);
 		}
 		if (outcome === "outdated-relay") {
 			throw new ToolError(
-				`The browser relay at ${cdpUrl} comes from an older omp. Run \`omp browser-relay install\` with this omp, then reload the omp extension in Chrome.`,
+				`The browser relay at ${cdpUrl} comes from an older omp. Run \`omsk browser-relay install\` with this omsk, then reload the omsk extension in Chrome.`,
 			);
 		}
 		if (outcome === "outdated-extension") {
-			throw new ToolError(`The omp extension is out of date. ${UPDATE_RELAY_EXTENSION}`);
+			throw new ToolError(`The omsk extension is out of date. ${UPDATE_RELAY_EXTENSION}`);
 		}
 		const puppeteer = await loadPuppeteer();
 		const browser = await connectPuppeteer(puppeteer, {
@@ -443,7 +443,7 @@ async function disposeBrowserHandle(handle: BrowserHandle, opts: ReleaseBrowserO
 		return;
 	}
 	if ("webkit" in handle) {
-		// The host is omp's own process whoever asked: it stops with its last tab, `kill` or not.
+		// The host is omsk's own process whoever asked: it stops with its last tab, `kill` or not.
 		await handle.webkit.close();
 		return;
 	}
@@ -452,7 +452,7 @@ async function disposeBrowserHandle(handle: BrowserHandle, opts: ReleaseBrowserO
 			// The daemon owns the Chromium; this process only drops its CDP
 			// connection and its lease. `kill` is scoped to spawned-app browsers —
 			// stopping the shared unit here would tear down every other session's
-			// tabs. Chrome dies shortly after the last omp client in the project
+			// tabs. Chrome dies shortly after the last omsk client in the project
 			// releases its lease (unit idle policy), when its CDP endpoint stops
 			// answering after a failed tab cleanup
 			// (`stopSharedBrowserIfUnreachable`), or via an explicit stop
@@ -470,7 +470,7 @@ async function disposeBrowserHandle(handle: BrowserHandle, opts: ReleaseBrowserO
 		if (handle.browser.connected) {
 			await closeLaunchedBrowser({ browser: handle.browser, userDataDir: handle.userDataDir });
 		}
-		// OMP owns the profile directory (puppeteer's temp cleanup is disabled by
+		// OMSK owns the profile directory (puppeteer's temp cleanup is disabled by
 		// our explicit --user-data-dir), so remove it now the process tree has
 		// exited. Tolerant of the Windows lock-held window (issue #7058).
 		if (handle.userDataDir) await removeUserDataDir(handle.userDataDir);
@@ -534,7 +534,7 @@ async function openSharedHeadlessHandle(
 			protocolTimeout: BROWSER_PROTOCOL_TIMEOUT_MS,
 		});
 		// Attaching to the shared daemon is the natural point to sweep targets
-		// left behind by omp processes that died without teardown — bounds
+		// left behind by omsk processes that died without teardown — bounds
 		// accumulation without a background timer. Best-effort and detached so a
 		// slow reap never delays the open (issue #10022).
 		void reapOrphanSharedTargets(browser, { projectDir: shared.projectDir, daemonName: shared.daemonName });

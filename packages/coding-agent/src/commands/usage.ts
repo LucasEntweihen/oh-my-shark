@@ -15,7 +15,7 @@ export default class Usage extends Command {
 			options: ["invalidate", "clients", "accounts", "reset"],
 		}),
 		target: Args.string({
-			description: "Saved reset to spend with `reset`: <provider>/<credential id> as `omp usage reset` lists it",
+			description: "Saved reset to spend with `reset`: <provider>/<credential id> as `omsk usage reset` lists it",
 			required: false,
 		}),
 	};
@@ -44,17 +44,17 @@ export default class Usage extends Command {
 	};
 
 	static examples = [
-		"# Detailed per-account usage breakdown across all providers\n  omp usage",
-		"# Only Anthropic accounts\n  omp usage --provider anthropic",
-		"# Redact account identifiers for screenshots\n  omp usage --redact",
-		"# Machine-readable output\n  omp usage --json",
-		"# Usage-limit trend over the last 30 days\n  omp usage --history --days 30",
-		"# Per-client token burn (which machine/app spent what) over the last 30 days\n  omp usage clients --days 30",
-		"# OAuth identity keys for task.agentAccountPools (no tokens)\n  omp usage accounts",
-		"# Saved Codex and Claude rate-limit resets per account, with each account's credential id\n  omp usage reset",
-		"# Spend one saved reset on a listed account\n  omp usage reset codex/3",
-		"# Invalidate cached usage reports for all providers\n  omp usage invalidate",
-		"# Invalidate cached usage reports for a specific provider\n  omp usage invalidate --provider anthropic",
+		"# Detailed per-account usage breakdown across all providers\n  omsk usage",
+		"# Only Anthropic accounts\n  omsk usage --provider anthropic",
+		"# Redact account identifiers for screenshots\n  omsk usage --redact",
+		"# Machine-readable output\n  omsk usage --json",
+		"# Usage-limit trend over the last 30 days\n  omsk usage --history --days 30",
+		"# Per-client token burn (which machine/app spent what) over the last 30 days\n  omsk usage clients --days 30",
+		"# OAuth identity keys for task.agentAccountPools (no tokens)\n  omsk usage accounts",
+		"# Saved Codex and Claude rate-limit resets per account, with each account's credential id\n  omsk usage reset",
+		"# Spend one saved reset on a listed account\n  omsk usage reset codex/3",
+		"# Invalidate cached usage reports for all providers\n  omsk usage invalidate",
+		"# Invalidate cached usage reports for a specific provider\n  omsk usage invalidate --provider anthropic",
 	];
 
 	async run(): Promise<void> {

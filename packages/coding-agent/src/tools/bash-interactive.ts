@@ -28,7 +28,7 @@ export interface BashInteractiveResult extends OutputSummary {
  * shell's exports. Those carry the guards unattended commands run under
  * (pagers and editors off, `CI`, `NO_COLOR`, a dumb `TERM`, a pinned locale):
  * each one still at its guard value is left out, which hands the command the
- * value omp itself was launched with, and a `TERM` left out that way names the
+ * value omsk itself was launched with, and a `TERM` left out that way names the
  * terminal the command gets. A value the session set itself stays.
  */
 function terminalEnv(exports: Record<string, string>): Record<string, string> {
@@ -114,7 +114,7 @@ class InputWaitWatch {
 		if (Date.now() - this.#lastInput < USER_PRESENT_MS) return;
 		if (cfgPtyNotify.get(this.#settings) === "off") return;
 		notifyTerminal({
-			title: "omp",
+			title: "omsk",
 			body: "Console waiting for input",
 			type: "console",
 			urgency: "normal",

@@ -1,9 +1,9 @@
 /**
- * ONNX tiny-model worker: one process per local model, a child of the omp
+ * ONNX tiny-model worker: one process per local model, a child of the omsk
  * daemon's `infer` module (`daemon/modules/infer.ts`). Entered from `cli.ts`
  * via {@link TINY_WORKER_ARG} with {@link TINY_WORKER_MODEL_ENV} set; speaks
  * LF-delimited JSON over stdin/stdout (logs go to stderr) and serializes its
- * work. Runs `onnxruntime-node` outside every omp process; the daemon
+ * work. Runs `onnxruntime-node` outside every omsk process; the daemon
  * SIGKILLs it, and it SIGKILLs itself when stdin closes, so the NAPI finalizer
  * never runs (issue #1606).
  */
@@ -262,7 +262,7 @@ export async function startTinyWorkerFromEnvironment(): Promise<void> {
 	if (!isTinyLocalModelKey(modelKey)) throw new Error(`Unknown tiny local model: ${modelKey}`);
 	const spec = getTinyLocalModelSpec(modelKey);
 	if (!spec) throw new Error(`Unknown tiny local model: ${modelKey}`);
-	setProcessName(`omp tiny ${modelKey}`);
+	setProcessName(`omsk tiny ${modelKey}`);
 	const model = new OnnxModel(modelKey, spec, resolveTinyModelDevicePreference(), resolveTinyModelDtypeOverride());
 	const handle = async (request: Extract<TinyWorkerRequest, { type: "load" | "chat" }>): Promise<void> => {
 		try {

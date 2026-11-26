@@ -120,7 +120,7 @@ export interface AssistantTextRenderContext {
 export type AssistantTextRenderer = (context: AssistantTextRenderContext) => string | undefined;
 
 /**
- * One transcript block a {@link TranscriptPresenter} decides the display of. Later omp versions
+ * One transcript block a {@link TranscriptPresenter} decides the display of. Later omsk versions
  * add block types; answer `undefined` for a `type` you do not know.
  *
  * - `toolCall`: a model tool call, `id` its `toolCallId`. `result` arrives with the call's first
@@ -137,7 +137,7 @@ export type AssistantTextRenderer = (context: AssistantTextRenderContext) => str
  *   the same `type`. These exist only in the session that raised them; `id` is unique per process.
  *
  * Read-only, and not a copy: `args`, `result`'s `content` and `details`, `message` and `event`
- * are the live objects omp draws the block from, often the session's own message data. Never
+ * are the live objects omsk draws the block from, often the session's own message data. Never
  * mutate them: the change would reach the block and possibly the session.
  */
 export type TranscriptBlock =
@@ -170,8 +170,8 @@ export type TranscriptBlock =
 
 /**
  * How a transcript block is drawn: `undefined` defers to the next presenter (and, after the
- * last, to `"full"`); `"full"` is omp's own card; `"hidden"` draws nothing, as hidden tool
- * activity does; `"compact"` is one row from omp's own summary. `{ compact: { label, rows } }`
+ * last, to `"full"`); `"full"` is omsk's own card; `"hidden"` draws nothing, as hidden tool
+ * activity does; `"compact"` is one row from omsk's own summary. `{ compact: { label, rows } }`
  * replaces that row's text with `label` and adds one row per `rows` entry below it. Spans use the
  * semantic tokens and theme colour names of {@link TspText}.
  */

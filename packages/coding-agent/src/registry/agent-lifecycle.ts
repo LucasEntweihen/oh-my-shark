@@ -754,7 +754,7 @@ export class AgentLifecycleManager implements AgentLifecycleApi {
 		const ids = [...new Set([...this.#adopted.keys(), ...this.#parks.keys()])];
 		// A turn still running (a revived or woken agent) is cut off by this
 		// teardown, not stopped: its session records a process exit, so
-		// `omp --restore` goes on with it.
+		// `omsk --restore` goes on with it.
 		const cutOff: AgentReleaseOptions = { dispose: { reason: postmortem.Reason.EXIT } };
 		await Promise.all(
 			ids.map(async id => {

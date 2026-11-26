@@ -1,9 +1,9 @@
 /**
- * Contract between omp processes and the daemon's `disasm` module (`daemon/modules/disasm.ts`).
+ * Contract between omsk processes and the daemon's `disasm` module (`daemon/modules/disasm.ts`).
  *
- * Each open database is one global-scope `disasm` unit keyed {@link disasmUnitKey} in the omp
- * daemon (so it shows up in `omp ps`). The unit owns the database lock and one Python worker;
- * omp processes speak NDJSON {@link HostRequest}s to it over an attached daemon tunnel.
+ * Each open database is one global-scope `disasm` unit keyed {@link disasmUnitKey} in the omsk
+ * daemon (so it shows up in `omsk ps`). The unit owns the database lock and one Python worker;
+ * omsk processes speak NDJSON {@link HostRequest}s to it over an attached daemon tunnel.
  */
 import { type } from "@oh-my-pi/omptype";
 import { ToolError } from "../tools/tool-errors";
@@ -77,7 +77,7 @@ export function parseDatabaseHandle(value: string): DatabaseHandle | undefined {
 	return { backend, id: parts[1], instance: parts[2] };
 }
 
-/** RPC methods an omp process may forward to the worker through `call`. */
+/** RPC methods an omsk process may forward to the worker through `call`. */
 export const HOST_CALL_METHODS = ["view", "exec", "rename", "comment", "set_type", "make_function", "save"] as const;
 
 /** A method forwarded with `call`. */
@@ -152,7 +152,7 @@ const hostStatusSchema = type({
 
 /**
  * A unit's database as reported by `open`/`status`. `busy` counts queued and running requests
- * from every omp process; `references` pins against idle/LRU close; `handle` identifies this
+ * from every omsk process; `references` pins against idle/LRU close; `handle` identifies this
  * incarnation; `lastUsed` is when it last ran a request (or started opening); `dirty` means a
  * close would save.
  */
@@ -195,7 +195,7 @@ const unitParamsSchema = type({
 	maxOpen: "number",
 });
 
-/** `open` params of a `disasm` unit; built by the omp process that opens it (worker runtime included). */
+/** `open` params of a `disasm` unit; built by the omsk process that opens it (worker runtime included). */
 export type DisasmUnitParams = typeof unitParamsSchema.infer;
 
 /** Validate `disasm` unit params; throws on a malformed value. */

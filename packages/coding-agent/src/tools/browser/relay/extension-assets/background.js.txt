@@ -41,12 +41,12 @@
       const id = this.#nextId++;
       const { promise, resolve, reject } = Promise.withResolvers();
       if (!send({ t: "call", id, call })) {
-        reject(new Error("omp relay is not connected"));
+        reject(new Error("omsk relay is not connected"));
         return promise;
       }
       const timer = setTimeout(() => {
         this.#pending.delete(id);
-        reject(new Error(`omp relay did not answer ${call.op} within ${this.#timeoutMs / 1000}s`));
+        reject(new Error(`omsk relay did not answer ${call.op} within ${this.#timeoutMs / 1000}s`));
       }, this.#timeoutMs);
       this.#pending.set(id, { resolve, reject, timer });
       return promise;
@@ -60,7 +60,7 @@
       if (message.ok)
         pending.resolve(message.result);
       else
-        pending.reject(new Error(message.error ?? "omp relay call failed"));
+        pending.reject(new Error(message.error ?? "omsk relay call failed"));
     }
     failAll(reason) {
       for (const pending of this.#pending.values()) {
@@ -219,7 +219,7 @@
   }
   function callRelay(call) {
     if (!link)
-      return Promise.reject(new Error("omp relay is not connected"));
+      return Promise.reject(new Error("omsk relay is not connected"));
     return link.calls.start(call, post);
   }
   function relayStatus() {
@@ -307,7 +307,7 @@
   }
   function linked() {
     if (link)
-      unlinked("omp relay changed");
+      unlinked("omsk relay changed");
     reconnectDelay = RECONNECT_MIN_MS;
     const epoch = new Link;
     link = epoch;
@@ -376,7 +376,7 @@
       if (hostPort !== port)
         return;
       hostPort = null;
-      unlinked(detail ? `omp native host disconnected: ${detail}` : "omp native host disconnected");
+      unlinked(detail ? `omsk native host disconnected: ${detail}` : "omsk native host disconnected");
       scheduleReconnect();
     });
     const request = { t: "link", extensionId: chrome.runtime.id };
@@ -449,7 +449,7 @@
     const tabs = await mounted.get();
     switch (action) {
       case "mount":
-        await overlay(tabId, { omp: "overlay", op: "mount" });
+        await overlay(tabId, { omsk: "overlay", op: "mount" });
         if (!tabs.includes(tabId)) {
           tabs.push(tabId);
           mounted.save();
@@ -461,12 +461,12 @@
           tabs.splice(index, 1);
           mounted.save();
         }
-        await overlayIfPresent(tabId, { omp: "overlay", op: "unmount" }, true);
+        await overlayIfPresent(tabId, { omsk: "overlay", op: "unmount" }, true);
         break;
       }
       case "hide":
       case "show":
-        await overlayIfPresent(tabId, { omp: "overlay", op: action }, true);
+        await overlayIfPresent(tabId, { omsk: "overlay", op: action }, true);
         break;
     }
     return {};
@@ -475,14 +475,14 @@
     mounted.get().then((tabs) => {
       if (!tabs.includes(tabId))
         return;
-      overlay(tabId, { omp: "overlay", op: "input", input }).catch(() => {});
+      overlay(tabId, { omsk: "overlay", op: "input", input }).catch(() => {});
     });
   }
   async function unmountAll() {
     const tabs = await mounted.get();
     const released = tabs.splice(0);
     mounted.save();
-    await Promise.allSettled(released.map((tabId) => overlayIfPresent(tabId, { omp: "overlay", op: "unmount" }, true)));
+    await Promise.allSettled(released.map((tabId) => overlayIfPresent(tabId, { omsk: "overlay", op: "unmount" }, true)));
   }
   async function setActivity(tabId, activity) {
     const [stored, dismissed, tab] = await Promise.all([activities.get(), dismissedGroups.get(), chrome.tabs.get(tabId)]);
@@ -490,12 +490,12 @@
     const deliveries = [];
     if (activity.state === "idle") {
       delete stored[tabId];
-      deliveries.push(overlayIfPresent(tabId, { omp: "overlay", op: "activity", activity, role: "main" }, true));
+      deliveries.push(overlayIfPresent(tabId, { omsk: "overlay", op: "activity", activity, role: "main" }, true));
       for (const peer of peers) {
         if (stored[peer]?.role !== "secondary")
           continue;
         delete stored[peer];
-        deliveries.push(overlayIfPresent(peer, { omp: "overlay", op: "activity", activity, role: "secondary" }, true));
+        deliveries.push(overlayIfPresent(peer, { omsk: "overlay", op: "activity", activity, role: "secondary" }, true));
       }
       const index = dismissed.indexOf(tab.groupId);
       if (index >= 0) {
@@ -504,14 +504,14 @@
       }
     } else {
       stored[tabId] = { activity, role: "main" };
-      deliveries.push(overlay(tabId, { omp: "overlay", op: "activity", activity, role: "main" }));
+      deliveries.push(overlay(tabId, { omsk: "overlay", op: "activity", activity, role: "main" }));
       for (const peer of peers) {
         if (stored[peer]?.role === "main")
           continue;
         stored[peer] = { activity, role: "secondary" };
         if (dismissed.includes(tab.groupId))
           continue;
-        deliveries.push(overlay(peer, { omp: "overlay", op: "activity", activity, role: "secondary" }));
+        deliveries.push(overlay(peer, { omsk: "overlay", op: "activity", activity, role: "secondary" }));
       }
     }
     activities.save();
@@ -522,10 +522,10 @@
     const [tabs, stored, dismissed] = await Promise.all([mounted.get(), activities.get(), dismissedGroups.get()]);
     const restores = [];
     if (tabs.includes(tabId))
-      restores.push(overlay(tabId, { omp: "overlay", op: "mount" }));
+      restores.push(overlay(tabId, { omsk: "overlay", op: "mount" }));
     const shown = stored[tabId];
     if (shown && !(shown.role === "secondary" && dismissed.includes(groupId))) {
-      restores.push(overlay(tabId, { omp: "overlay", op: "activity", activity: shown.activity, role: shown.role }));
+      restores.push(overlay(tabId, { omsk: "overlay", op: "activity", activity: shown.activity, role: shown.role }));
     }
     await Promise.allSettled(restores);
   }
@@ -543,7 +543,7 @@
     }
   }
   function isOverlayEvent(message) {
-    return typeof message === "object" && message !== null && "omp" in message && message.omp === "overlay-event" && "op" in message && (message.op === "stop" || message.op === "open" || message.op === "dismiss");
+    return typeof message === "object" && message !== null && "omsk" in message && message.omp === "overlay-event" && "op" in message && (message.op === "stop" || message.op === "open" || message.op === "dismiss");
   }
   function installOverlayEvents(deps) {
     activities.get().then(reportWorking);
@@ -562,7 +562,7 @@
         case "stop": {
           deps.emit({ event: "overlay", tabId, action: "stop" });
           const toPanel = deps.panelConnected();
-          (toPanel ? Promise.resolve(true) : deps.abortTab(tabId)).catch(() => false).then((delivered) => overlayIfPresent(tabId, { omp: "overlay", op: "stopAck", delivered }, true)).catch(() => {});
+          (toPanel ? Promise.resolve(true) : deps.abortTab(tabId)).catch(() => false).then((delivered) => overlayIfPresent(tabId, { omsk: "overlay", op: "stopAck", delivered }, true)).catch(() => {});
           break;
         }
         case "dismiss":
@@ -630,19 +630,19 @@
     }
   }
   async function withOverlayHidden(tabId, capture) {
-    const hidden = await chrome.tabs.sendMessage(tabId, { omp: "overlay", op: "hide" }, { frameId: 0 }).then(() => true).catch(() => false);
+    const hidden = await chrome.tabs.sendMessage(tabId, { omsk: "overlay", op: "hide" }, { frameId: 0 }).then(() => true).catch(() => false);
     try {
       return await capture();
     } finally {
       if (hidden)
-        await chrome.tabs.sendMessage(tabId, { omp: "overlay", op: "show" }, { frameId: 0 }).catch(() => {});
+        await chrome.tabs.sendMessage(tabId, { omsk: "overlay", op: "show" }, { frameId: 0 }).catch(() => {});
     }
   }
   async function captureTab(tabId, mode) {
     const tab = await chrome.tabs.get(tabId);
     if (!tab.active)
       await chrome.tabs.update(tabId, { active: true });
-    const pick = mode === "viewport" ? null : await overlay(tabId, { omp: "overlay", op: "pick", mode });
+    const pick = mode === "viewport" ? null : await overlay(tabId, { omsk: "overlay", op: "pick", mode });
     if (mode !== "viewport" && !pick)
       return null;
     const png = await withOverlayHidden(tabId, () => pick && pick.kind !== "viewport" ? captureCropped(tab.windowId, pick.rect, pick.viewport) : captureVisible(tab.windowId));
@@ -679,7 +679,7 @@
           });
         }
         try {
-          const message = { omp: "encode-gif", frames };
+          const message = { omsk: "encode-gif", frames };
           const reply = await chrome.runtime.sendMessage(message);
           if (!reply)
             throw new Error("The GIF encoder did not reply");
@@ -815,26 +815,26 @@
     ctx.handle("collabHosts", async () => {
       const hosts = await callRelay({ op: "collabHosts" });
       if (!isCollabHosts(hosts))
-        throw new Error("omp relay answered collabHosts with an unexpected shape");
+        throw new Error("omsk relay answered collabHosts with an unexpected shape");
       return hosts;
     });
     ctx.handle("collabLink", async ({ instanceId }) => {
       const link = await callRelay({ op: "collabLink", instanceId });
       if (!hasString(link, "url"))
-        throw new Error("omp relay answered collabLink without a url");
+        throw new Error("omsk relay answered collabLink without a url");
       return { url: link.url };
     });
     ctx.handle("installs", async () => {
       const installs = await callRelay({ op: "installs" });
       if (!isInstalls(installs))
-        throw new Error("omp relay answered installs with an unexpected shape");
+        throw new Error("omsk relay answered installs with an unexpected shape");
       return installs;
     });
     ctx.handle("activeTab", ({ windowId }) => activeTabContext(windowId));
     ctx.handle("tabContext", ({ tabId }) => tabContext(tabId));
     ctx.handle("capture", ({ tabId, mode }) => captureTab(tabId, mode));
     ctx.handle("cancelCapture", async ({ tabId }) => {
-      await chrome.tabs.sendMessage(tabId, { omp: "overlay", op: "cancelPick" }, { frameId: 0 }).catch(() => {});
+      await chrome.tabs.sendMessage(tabId, { omsk: "overlay", op: "cancelPick" }, { frameId: 0 }).catch(() => {});
     });
     ctx.handle("setActivity", ({ tabId, activity }) => ctx.setActivity(tabId, activity));
     ctx.handle("focusTab", ({ tabId }) => focusTab(tabId));
@@ -1259,7 +1259,7 @@
       const ready = Promise.withResolvers();
       let started = false;
       const timer = setTimeout(() => {
-        ready.reject(new Error(`omp native host did not start omp within ${READY_TIMEOUT_MS / 1000}s`));
+        ready.reject(new Error(`omsk native host did not start omsk within ${READY_TIMEOUT_MS / 1000}s`));
         port.disconnect();
         this.#live.delete(info.sessionKey);
       }, READY_TIMEOUT_MS);
@@ -1269,7 +1269,7 @@
         this.#live.delete(info.sessionKey);
         clearTimeout(timer);
         if (!started) {
-          ready.reject(new Error(stderr.trim() || `omp native host exited (${code ?? "disconnected"})`));
+          ready.reject(new Error(stderr.trim() || `omsk native host exited (${code ?? "disconnected"})`));
           return;
         }
         info.exited = { code, stderr };
@@ -1305,7 +1305,7 @@
         }
       });
       port.onDisconnect.addListener(() => {
-        exit(null, chrome.runtime.lastError?.message ?? "omp native host disconnected");
+        exit(null, chrome.runtime.lastError?.message ?? "omsk native host disconnected");
       });
       const open = { t: "open", cwd: options.cwd };
       port.postMessage(open);
@@ -1494,7 +1494,7 @@ ${text}`;
         return;
       if (frame.type === "rpc_exit") {
         const stderr = typeof frame.stderr === "string" ? frame.stderr.trim() : "";
-        result.reject(new Error(stderr || "omp exited before the shortcut finished"));
+        result.reject(new Error(stderr || "omsk exited before the shortcut finished"));
         return;
       }
       if (frame.id !== cmd.id)
@@ -1556,14 +1556,14 @@ ${text}`;
           chrome.notifications.create(`${NOTICE_PREFIX}${tab?.id ?? "none"}:${crypto.randomUUID()}`, {
             type: "basic",
             iconUrl: "icons/omp-128.png",
-            title: failure === undefined ? `omp · /${shortcut.name} finished` : `omp · /${shortcut.name} failed`,
+            title: failure === undefined ? `omsk · /${shortcut.name} finished` : `omsk · /${shortcut.name} failed`,
             message: failure === undefined ? "Click to open the session." : failure.slice(0, 250)
           })
         ]);
       }
     }
     function report(error) {
-      console.error("omp shortcut:", error);
+      console.error("omsk shortcut:", error);
     }
     async function run(shortcut) {
       const startedAt = Date.now();
@@ -1575,10 +1575,10 @@ ${text}`;
         const tabId = tab.id;
         if (tabId === undefined)
           throw new Error("Chrome did not assign the shortcut tab an id");
-        await enqueueGroupOp(() => groupPanelTabs([tabId], `omp · ${shortcut.name}`));
+        await enqueueGroupOp(() => groupPanelTabs([tabId], `omsk · ${shortcut.name}`));
         const context = await ctx.tabContext(tabId);
         if (!context.targetId)
-          throw new Error("Chrome has not initialized the omp tab target");
+          throw new Error("Chrome has not initialized the omsk tab target");
         if (!context.url || context.url === "about:blank")
           context.url = tab.pendingUrl || startUrl;
         const block = tabContextBlock(context, await tabViewport(context));
@@ -1720,7 +1720,7 @@ ${text}`;
     });
     if (!main)
       throw new Error("Could not start Teach in this tab");
-    const command = { omp: "teach", op: "start" };
+    const command = { omsk: "teach", op: "start" };
     const started = await chrome.tabs.sendMessage(tabId, command, { documentId: main.documentId });
     if (started !== true)
       throw new Error("Teach recorder did not start");
@@ -1794,7 +1794,7 @@ ${text}`;
         await state.installation.catch(() => {
           return;
         });
-        const command = { omp: "teach", op: "stop" };
+        const command = { omsk: "teach", op: "stop" };
         await chrome.tabs.sendMessage(state.tabId, command, { frameId: 0 }).catch(() => {
           return;
         });

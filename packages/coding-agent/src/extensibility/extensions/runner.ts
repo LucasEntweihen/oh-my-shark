@@ -1507,7 +1507,7 @@ export class ExtensionRunner {
 		this.runtime.flagValues.set(name, value);
 	}
 
-	/** Chords omp keeps for itself, canonicalized so every modifier spelling matches. */
+	/** Chords omsk keeps for itself, canonicalized so every modifier spelling matches. */
 	static readonly #RESERVED_SHORTCUTS: ReadonlySet<string> = new Set(
 		[
 			"ctrl+c",

@@ -757,7 +757,7 @@ export function createLsTool(cwd: string, options?: LsToolOptions): ToolDefiniti
 export function createEditToolDefinition(cwd: string, options?: EditToolOptions): ToolDefinition {
 	if (options?.operations) {
 		throw new Error(
-			"Legacy EditToolOptions.operations is not supported: OMP's built-in edit tool writes the local " +
+			"Legacy EditToolOptions.operations is not supported: OMSK's built-in edit tool writes the local " +
 				"filesystem natively and exposes no pluggable operations seam. Register a custom edit tool via " +
 				"defineTool() instead of passing operations to createEditTool()/createEditToolDefinition().",
 		);
@@ -774,7 +774,7 @@ export function createEditTool(cwd: string, options?: EditToolOptions): ToolDefi
 export function createWriteToolDefinition(cwd: string, options?: WriteToolOptions): ToolDefinition {
 	if (options?.operations) {
 		throw new Error(
-			"Legacy WriteToolOptions.operations is not supported: OMP's built-in write tool writes the local " +
+			"Legacy WriteToolOptions.operations is not supported: OMSK's built-in write tool writes the local " +
 				"filesystem natively and exposes no pluggable operations seam. Register a custom write tool via " +
 				"defineTool() instead of passing operations to createWriteTool()/createWriteToolDefinition().",
 		);
@@ -807,7 +807,7 @@ export function createReadOnlyTools(cwd: string): ToolDefinition[] {
  *
  * Upstream Pi's `SettingsManager.create(cwd)` is **synchronous** and returns a
  * manager exposing `getGlobalSettings()`/`getProjectSettings()`, shell
- * accessors, and the typed `get(path)`. OMP's `Settings` backs that manager;
+ * accessors, and the typed `get(path)`. OMSK's `Settings` backs that manager;
  * the shim resolves the active extension session's instance first, then falls
  * back to a live instance matching the requested `cwd`/`agentDir`, or an
  * isolated instance when nothing matches. Returning the promise from
@@ -888,7 +888,7 @@ export interface DefaultPackageManagerOptions {
 }
 
 /**
- * Enumerates the extensions OMP would load through the historical package
+ * Enumerates the extensions OMSK would load through the historical package
  * manager surface used by legacy extensions.
  */
 export class DefaultPackageManager {
@@ -902,7 +902,7 @@ export class DefaultPackageManager {
 		this.#settingsManager = options.settingsManager;
 	}
 
-	/** Resolve enabled extension paths with their OMP plugin provenance. */
+	/** Resolve enabled extension paths with their OMSK plugin provenance. */
 	async resolve(_onMissing?: (source: string) => Promise<MissingSourceAction>): Promise<ResolvedPaths> {
 		const settings = await this.#settingsManager;
 		const configuredPaths = cfgExtensions.get(settings);
@@ -956,18 +956,18 @@ export class DefaultPackageManager {
  * import the class at module scope; a missing export takes the whole
  * extension down at parse time (issue #4567).
  *
- * OMP does the same discovery inline inside `createAgentSession()`, so this
+ * OMSK does the same discovery inline inside `createAgentSession()`, so this
  * shim intentionally does NOT re-implement pi's ResourceLoader plumbing.
  * Instead the loader captures the caller's intent (`no*` flags, `*Override`
  * callbacks, `additional*Paths`, `extensionFactories`, `settingsManager`,
  * `eventBus`) plus the discovery results, and the sibling `createAgentSession`
- * override below translates them into OMP's native session options
+ * override below translates them into OMSK's native session options
  * (`disableExtensionDiscovery`, prepared/path extension preloads, `extensions`,
  * `skills`, `promptTemplates`, `contextFiles`, `settings`, `eventBus`,
  * `systemPrompt`) before delegating to `../sdk`.
  *
  * The pi surface it emulates is the intersection actually used by real
- * extensions in the wild — themes are silently dropped (OMP has no
+ * extensions in the wild — themes are silently dropped (OMSK has no
  * session-level themes surface); `extendResources`, `loadProjectTrustExtensions`,
  * and provider-trust hooks are omitted.
  */
@@ -1397,15 +1397,15 @@ export class DefaultResourceLoader implements ResourceLoader {
 }
 
 /**
- * Legacy pi extensions call `createAgentSession({ resourceLoader })`. OMP's
+ * Legacy pi extensions call `createAgentSession({ resourceLoader })`. OMSK's
  * native option surface has no such field — extension / skill / prompt /
  * context-file discovery are configured directly on the session options — so
  * an untranslated call would silently ignore the loader (including its
- * `noExtensions`/`noSkills` opt-outs), re-run OMP's own discovery, and
+ * `noExtensions`/`noSkills` opt-outs), re-run OMSK's own discovery, and
  * happily re-load the calling extension into the subagent. That's exactly
  * the recursion the caller passed the loader to prevent.
  *
- * Translate the loader's captured state into OMP's option fields, then
+ * Translate the loader's captured state into OMSK's option fields, then
  * delegate to the underlying SDK. Explicit fields on `options` override the
  * loader (matches upstream pi semantics — a caller can partially override a
  * shared loader).
@@ -1543,7 +1543,7 @@ export { getProjectDir } from "@oh-my-pi/pi-utils";
  * `getPackageDir()` contract (extensions do `path.join(getPackageDir(), ...)`
  * to auto-allow bundled docs/resources).
  *
- * omp's canonical `getPackageDir()` (`../config`) returns `undefined` inside a
+ * omsk's canonical `getPackageDir()` (`../config`) returns `undefined` inside a
  * `bun --compile` binary — `import.meta.dir` is `/$bunfs/root` and no owning
  * `package.json` exists (issue #1423). Returning `undefined` there would crash
  * every legacy `path.join(getPackageDir(), ...)` at runtime in the shipped
@@ -1558,7 +1558,7 @@ export function getPackageDir(): string {
 
 // Legacy pi's `@earendil-works/pi-coding-agent` re-exported `estimateTokens`,
 // `compact`, `serializeConversation`, and `calculateContextTokens` from its
-// package root (via `./core/compaction/index.ts`). In omp these live in
+// package root (via `./core/compaction/index.ts`). In omsk these live in
 // `@oh-my-pi/pi-agent-core/compaction`, and the coding-agent barrel below does
 // not forward them, so legacy extensions importing them fail Bun's static
 // export check during validation (issues #6583, #7174, #7403, #10278).
@@ -1607,7 +1607,7 @@ export function findCutPoint(
 /**
  * Legacy `sessionEntryToContextMessages(entry)` export: project one session entry
  * into its LLM/runtime messages. Plain custom/state entries do not participate in
- * context and yield `[]`. omp's `buildSessionContext` only projects whole branches,
+ * context and yield `[]`. omsk's `buildSessionContext` only projects whole branches,
  * so this ports upstream Pi's per-entry mapper.
  */
 export function sessionEntryToContextMessages(entry: SessionEntry): AgentMessage[] {
@@ -1647,7 +1647,7 @@ export function sessionEntryToContextMessages(entry: SessionEntry): AgentMessage
 }
 
 // Same barrel gap for two more legacy package-root exports: pi re-exported the
-// `CONFIG_DIR_NAME` constant and the CLI parser `parseArgs`. In omp
+// `CONFIG_DIR_NAME` constant and the CLI parser `parseArgs`. In omsk
 // `CONFIG_DIR_NAME` lives in `@oh-my-pi/pi-utils` and `parseArgs` in
 // `../cli/args`, neither of which the barrel below forwards, so legacy
 // extensions importing either fail Bun's static export check during validation.
@@ -1667,12 +1667,12 @@ export { Type } from "./legacy-typebox";
 
 // Legacy pi's `@earendil-works/pi-coding-agent` root exported an `is<Tool>ToolResult`
 // family of type guards that narrow a `tool_result` event (`ToolResultEvent`) by
-// tool name. omp removed them from the public API in 10.2.3, and the barrel above
+// tool name. omsk removed them from the public API in 10.2.3, and the barrel above
 // does not forward them, so legacy extensions importing them (e.g.
 // `pi-lean-ctx@3.9.18`, which uses `isEditToolResult`/`isWriteToolResult` to
 // invalidate its read cache after a native edit/write) fail Bun's static export
 // check during validation (issue #8161). Restore the full guard family; legacy
-// `find`/`ls` tool results arrive through omp's custom-event branch, so those
+// `find`/`ls` tool results arrive through omsk's custom-event branch, so those
 // guards narrow the tool name while leaving their details unknown.
 
 /** Narrow a `tool_result` event to the `bash` tool. */
@@ -1700,7 +1700,7 @@ export function isGrepToolResult(e: ToolResultEvent): e is GrepToolResultEvent {
 	return e.toolName === "grep";
 }
 
-/** Legacy `find` result event represented by omp's custom-event branch. */
+/** Legacy `find` result event represented by omsk's custom-event branch. */
 export type FindToolResultEvent = ToolResultEvent & { toolName: "find" };
 
 /** Narrow a `tool_result` event to the legacy `find` tool. */
@@ -1708,7 +1708,7 @@ export function isFindToolResult(e: ToolResultEvent): e is FindToolResultEvent {
 	return e.toolName === "find";
 }
 
-/** Legacy `ls` result event represented by omp's custom-event branch. */
+/** Legacy `ls` result event represented by omsk's custom-event branch. */
 export type LsToolResultEvent = ToolResultEvent & { toolName: "ls" };
 
 /** Narrow a `tool_result` event to the legacy `ls` tool. */
@@ -1726,7 +1726,7 @@ export interface ParsedSkillBlock {
 
 /**
  * Parse a skill block from message text, ported verbatim from upstream
- * pi-coding-agent 1.0.2+ (`src/core/agent-session.ts`). omp folds skill
+ * pi-coding-agent 1.0.2+ (`src/core/agent-session.ts`). omsk folds skill
  * invocation into its own hook pipeline and never exports the parser, so
  * legacy extensions importing it from the package root fail Bun's static
  * named-export check (observed consumer: `pi-optchat`, which matches journaled
@@ -1747,12 +1747,12 @@ export function parseSkillBlock(text: string): ParsedSkillBlock | null {
 
 /**
  * Render the `<available_skills>` system-prompt block, ported from upstream
- * pi-coding-agent 1.x (`src/core/skills.ts`). omp renders skills through its
+ * pi-coding-agent 1.x (`src/core/skills.ts`). omsk renders skills through its
  * own prompt templates and never exports the formatter, so legacy extensions
  * importing it from the package root fail Bun's static named-export check
  * (observed consumer: `pi-claude-bridge`, which forwards the block to Claude
  * Code). Skills hidden from the prompt are skipped, whether hidden through
- * upstream's `disableModelInvocation` or omp's `hide`.
+ * upstream's `disableModelInvocation` or omsk's `hide`.
  */
 export function formatSkillsForPrompt(
 	skills: readonly (Skill & { disableModelInvocation?: boolean })[],

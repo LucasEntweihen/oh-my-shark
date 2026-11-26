@@ -1,6 +1,6 @@
 /**
  * The compact row of a presented transcript block (`tool` nodes built by
- * `PresentedBlock`): a dim `•`, omp's summary (title bold, target muted, a
+ * `PresentedBlock`): a dim `•`, omsk's summary (title bold, target muted, a
  * run's command in its mode color) or the presenter's label, then the
  * presenter's rows two cells in. A viewport allocation keeps the first rows.
  */

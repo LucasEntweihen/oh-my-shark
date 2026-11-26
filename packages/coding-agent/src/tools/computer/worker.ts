@@ -736,7 +736,7 @@ async function takesOver(
 
 /**
  * Sends one window input call. Under `computer.takeover` `foreground` and
- * `always` omp decides takeover, so a model-supplied `takeover` is refused
+ * `always` omsk decides takeover, so a model-supplied `takeover` is refused
  * and the mode may take the call over from the start ([`takesOver`]); under
  * the default `fallback` and `refuse` the model may pass it, and a
  * model-supplied `takeover: true` is refused
@@ -761,7 +761,7 @@ async function sendInput(
 	const mode = context.snapshot.takeover;
 	if (takeover !== undefined && !modelChoosesTakeover(mode)) {
 		throw new ToolError(
-			`${method} with takeover: ${takeover}: the user's computer.takeover setting is "${mode}", under which omp decides when input takes over; nothing was sent. Call it without takeover.`,
+			`${method} with takeover: ${takeover}: the user's computer.takeover setting is "${mode}", under which omsk decides when input takes over; nothing was sent. Call it without takeover.`,
 		);
 	}
 	if (takeover === undefined && (await takesOver(session, context, target))) {
@@ -2192,7 +2192,7 @@ export class ComputerWorkerCore {
 							"Open the containing folder with apps.open(folder) instead, which opens it behind the user's app.",
 						);
 					}
-					// A relative path names an item in the session's folder, not the omp process's.
+					// A relative path names an item in the session's folder, not the omsk process's.
 					const listed = async (value: string): Promise<boolean> =>
 						(await nativeCall(context.signal, () => session.listApplications())).some(
 							app => app.id === value || app.path === value,

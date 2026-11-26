@@ -34,13 +34,13 @@ export interface ComputerSessionSnapshot {
 /**
  * The user's `computer.takeover` setting. `fallback` (the default) reruns a call whose background route is
  * unavailable in takeover, and the model may pass `takeover` on a call; `refuse` never takes over, refusing the
- * model's `takeover: true`. Under `foreground` and `always` omp alone decides, and the model has no `takeover`
+ * model's `takeover: true`. Under `foreground` and `always` omsk alone decides, and the model has no `takeover`
  * option: `foreground` takes over a target window already in front, `always` every window and element input
  * call, and both rerun a call whose background route is unavailable in takeover.
  */
 export type ComputerTakeoverMode = "fallback" | "foreground" | "always" | "refuse";
 
-/** Whether the model may pass `takeover` on an input call: only in the modes that predate omp deciding. */
+/** Whether the model may pass `takeover` on an input call: only in the modes that predate omsk deciding. */
 export function modelChoosesTakeover(mode: ComputerTakeoverMode): boolean {
 	return mode === "fallback" || mode === "refuse";
 }

@@ -1,6 +1,6 @@
 /** @jsxImportSource @oh-my-pi/pi-tui */
 /**
- * The `omp git` app (see {@link GitAppModel}): natively the diff pane under a
+ * The `omsk git` app (see {@link GitAppModel}): natively the diff pane under a
  * toolbar (file, `+a −d`, scope, change navigation, the view switch,
  * whitespace and wrap toggles, Stage file, help, close) beside the changes
  * sheet, which narrow terminals stack under the diff. The terminal draws the

@@ -681,7 +681,7 @@ export async function ensureIsolation(
 		// Claim ownership before the backend materialises `m`. Backends only
 		// create/replace `mergedDir` (and overlay upper/work), never the base
 		// dir, so the marker survives `isoStart` — and a concurrent
-		// `omp worktree clear` never sees this sandbox without a live owner,
+		// `omsk worktree clear` never sees this sandbox without a live owner,
 		// even while a large clone is still in progress.
 		await fs.mkdir(baseDir, { recursive: true });
 		await writeIsolationOwner(baseDir, id);
@@ -718,7 +718,7 @@ export async function ensureIsolation(
 /**
  * Tear down a handle returned by {@link ensureIsolation}. When native teardown fails for a mount or
  * subvolume backend, the workspace is kept with a retained-backend sidecar (recursive `rm` would
- * traverse the live mount); `omp worktree clear` retries the teardown later.
+ * traverse the live mount); `omsk worktree clear` retries the teardown later.
  */
 export async function cleanupIsolation(handle: IsolationHandle): Promise<void> {
 	const baseDir = path.dirname(handle.mergedDir);

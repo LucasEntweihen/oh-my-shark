@@ -1,8 +1,8 @@
 /**
  * Cross-process contract for the daemon-hosted blob broker (`blob` module).
  *
- * One `blob` unit runs in the omp daemon per (project scope, config key), so
- * every omp process in a project with the same image URL settings shares one
+ * One `blob` unit runs in the omsk daemon per (project scope, config key), so
+ * every omsk process in a project with the same image URL settings shares one
  * exposure (tunnel or uploader) and one URL per blob. Control traffic is
  * `call("blob", method, params, { unit })` ({@link BlobBrokerCalls}); lazy
  * blobs render through a tunnel on {@link BLOB_RENDER_CHANNEL} back into the

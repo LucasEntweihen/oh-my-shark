@@ -975,7 +975,7 @@ const SESSION_CWD_CHANGE_REJECTED = Symbol("sessionCwdChangeRejected");
 export function powerAssertionOptions(mode: "off" | "idle" | "display" | "system"): PowerAssertionOptions | undefined {
 	if (mode === "off") return undefined;
 	return {
-		reason: "omp agent session",
+		reason: "omsk agent session",
 		idle: true,
 		display: mode === "display" || mode === "system",
 		system: mode === "system",
@@ -6969,7 +6969,7 @@ export class AgentSession implements SettingsScope, AgentViewSession {
 	 * `metadata.user_id` shaped like real Claude Code's `getAPIMetadata` output:
 	 * `{ session_id, account_uuid, device_id }`. `account_uuid` is included only
 	 * when an Anthropic OAuth credential with a known account UUID is loaded;
-	 * `device_id` is derived from both the persistent omp install id and that
+	 * `device_id` is derived from both the persistent omsk install id and that
 	 * account UUID. Resolving live keeps the value in sync with auth-state changes
 	 * (login/logout, token refresh that surfaces a new account UUID) without
 	 * needing to re-call `#syncAgentSessionId()` on every such event.
@@ -7272,7 +7272,7 @@ export class AgentSession implements SettingsScope, AgentViewSession {
 		this.#cancelExitRecorder = undefined;
 		this.#cancelFatalRecoveryHint?.();
 		this.#cancelFatalRecoveryHint = undefined;
-		// The last todo change may still be on its way to the backend: `omp -p` exits right after its final tool call.
+		// The last todo change may still be on its way to the backend: `omsk -p` exits right after its final tool call.
 		// From here on a backend gets no further list: its extension releases state on `session_shutdown`. Not asked
 		// of the setting: a list can still be queued for a backend the user has since switched away from. As with
 		// the shutdown event below, a failure here must not keep the session from being torn down.
@@ -7292,7 +7292,7 @@ export class AgentSession implements SettingsScope, AgentViewSession {
 		this.abortRetry();
 		this.abortCompaction();
 		// A process ending under a turn still in flight cuts it off instead of
-		// stopping it: label it as interrupted so `omp --restore` goes on with it.
+		// stopping it: label it as interrupted so `omsk --restore` goes on with it.
 		const abortReason = cutsTurnOff(options.reason) ? INTERRUPTED_TURN_ERROR : undefined;
 		const postPromptDrain = this.#cancelPostPromptTasks(abortReason);
 		this.agent.abort(abortReason);
@@ -12580,7 +12580,7 @@ export class AgentSession implements SettingsScope, AgentViewSession {
 	/**
 	 * Journal a title request as a `model_usage` entry on the branch it ran
 	 * from: its billed usage, so `/usage`, `getUsageStatistics()`, and
-	 * `omp stats` count title spend, and what it was sent and replied. The
+	 * `omsk stats` count title spend, and what it was sent and replied. The
 	 * title model (`title`) records its `prompt`; the fork (`title-fork`) has
 	 * none, since it reads the conversation at `owner.parentId`. Titles are
 	 * cosmetic: a stale session owner or a failed journal write is logged and
@@ -14031,7 +14031,7 @@ export class AgentSession implements SettingsScope, AgentViewSession {
 	}
 
 	/**
-	 * Go on with the turn the previous process was in when it ended (`omp --restore`).
+	 * Go on with the turn the previous process was in when it ended (`omsk --restore`).
 	 *
 	 * A turn cut off without an exit record (a crash, SIGKILL or power loss records
 	 * none) is first closed the way exit recovery closes one whose exit was recorded:

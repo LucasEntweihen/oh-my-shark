@@ -2,7 +2,7 @@
 /**
  * A transcript block (a message or an event) drawn the way the extension
  * transcript presenters ask: in full (its own face), as one compact tool row
- * (omp's summary, or the presenter's label and rows), or not at all.
+ * (omsk's summary, or the presenter's label and rows), or not at all.
  *
  * The compact form is an inline, collapsed `tool` node: a face that is
  * itself a `tool` lends its props and body to it; any other face becomes its
@@ -43,7 +43,7 @@ export const PRESENTED_ROLES = [
 /** Terminal facts of a compact presented row. */
 export type PresentedTerm = {
 	readonly role: "omp.presented";
-	/** The summary row (omp's), or undefined when the presenter gave a label. */
+	/** The summary row (omsk's), or undefined when the presenter gave a label. */
 	readonly summary?: readonly TspSpan[];
 };
 
@@ -81,7 +81,7 @@ function runFacts(
 	return { name, title, target, summary };
 }
 
-/** omp's own compact facts of a block, or undefined for a block type it does not know. */
+/** omsk's own compact facts of a block, or undefined for a block type it does not know. */
 export function presentedFacts(block: TranscriptBlock): PresentedFacts | undefined {
 	if (block.type === "event") {
 		const event = block.event;
@@ -186,7 +186,7 @@ function compactNode(
 	onToggle: (collapsed: boolean) => void,
 ): JSXNode {
 	const isTool = face.kind === "tool";
-	// A tool face lends its live head; the presenter's label, else the face's target, else omp's wins the target.
+	// A tool face lends its live head; the presenter's label, else the face's target, else omsk's wins the target.
 	const head = computed(() => {
 		const own = isTool ? (face.props() as Partial<TspToolProps>) : undefined;
 		const target: { target?: TspText; targetKind?: TspToolProps["targetKind"] } =

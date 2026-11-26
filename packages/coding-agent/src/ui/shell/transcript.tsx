@@ -71,7 +71,7 @@ export interface BlockOptions {
 	readonly head?: boolean;
 	/**
 	 * Natively the block's children stand in the main region themselves (the welcome card between
-	 * its spacers, as Tern lays out omp's start screen). Only with {@link spacedBelow}.
+	 * its spacers, as Tern lays out omsk's start screen). Only with {@link spacedBelow}.
 	 */
 	readonly inline?: boolean;
 }

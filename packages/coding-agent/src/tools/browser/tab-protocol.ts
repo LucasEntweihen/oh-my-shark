@@ -69,24 +69,24 @@ export interface SessionSnapshot {
  * The page an attach worker drives. `create`: open and own a background tab in a
  * spawned browser, relay or CDP endpoint; `nearTargetId` selects the relay browser when given,
  * and `reload` loads a URL once the page is set up (a recycle re-creating a page that closed with
- * its old worker's connection). `owned`: an omp tab adopted after recycle. `borrowed`: a user's
+ * its old worker's connection). `owned`: an omsk tab adopted after recycle. `borrowed`: a user's
  * page, never closed, and focus-emulated only in a browser the user drives (see `userDriven`).
  */
 export type AttachPage =
 	| { kind: "create"; nearTargetId?: string; reload?: { url: string; timeoutMs: number } }
 	| { kind: "owned" | "borrowed"; targetId: string };
 
-/** omp created the payload's page: closing the tab closes the page. */
+/** omsk created the payload's page: closing the tab closes the page. */
 export function ownsPage(payload: WorkerInitPayload): boolean {
 	return payload.mode === "headless" || payload.page.kind !== "borrowed";
 }
 
-/** Globals every page has and omp's Bun runtime lacks: run code that cannot find one was written for the page. */
+/** Globals every page has and omsk's Bun runtime lacks: run code that cannot find one was written for the page. */
 const PAGE_ONLY_GLOBAL_RE =
 	/^(document|window|location|history|localStorage|sessionStorage|customElements|getComputedStyle|CSS|HTML\w*Element|Element|Node) is not defined$/;
 
 /**
- * Whether run code itself, in omp's runtime, reached for a page-only global. An exception thrown in the page arrives
+ * Whether run code itself, in omsk's runtime, reached for a page-only global. An exception thrown in the page arrives
  * as a plain `Error` that Puppeteer names after it, so it never counts. A floating rejection arrives wrapped: one
  * reason as the wrapper's `cause`, or, once an in-process run returned, all of them in its `rejections`.
  */
@@ -160,7 +160,7 @@ export type WorkerInitPayload =
 			 * browser.
 			 */
 			userDriven?: boolean;
-			/** The browser is the omp relay: downloads arrive as page events, and the relay names where Chrome saved them. */
+			/** The browser is the omsk relay: downloads arrive as page events, and the relay names where Chrome saved them. */
 			relay?: boolean;
 			/**
 			 * The browser draws its windows on the user's screen, so a call can raise native ones, and this tab list says
@@ -185,7 +185,7 @@ export type WorkerInbound =
 	| { type: "run"; id: string; name: string; code: string; timeoutMs: number; session: SessionSnapshot }
 	| { type: "abort"; id: string; expectedCleanup?: boolean }
 	| { type: "tool-reply"; id: string; reply: ToolReply }
-	/** `keepPage` leaves a page omp created open in its browser; only the worker's hold on it goes. */
+	/** `keepPage` leaves a page omsk created open in its browser; only the worker's hold on it goes. */
 	| { type: "close"; keepPage?: boolean };
 
 export interface ReadyInfo {
@@ -193,7 +193,7 @@ export interface ReadyInfo {
 	title?: string;
 	viewport: { width: number; height: number; deviceScaleFactor?: number };
 	targetId: string;
-	/** Other extensions' frames the omp relay hid in the tab before this worker adopted it. */
+	/** Other extensions' frames the omsk relay hid in the tab before this worker adopted it. */
 	hiddenFrames?: HiddenFrame[];
 }
 
@@ -206,7 +206,7 @@ export interface RunResultOk {
 }
 
 /**
- * How a run ended, with the other extensions' frames the omp relay hid in the tab while it or an earlier run went on,
+ * How a run ended, with the other extensions' frames the omsk relay hid in the tab while it or an earlier run went on,
  * which the supervisor holds for the tab whether the run succeeded or not.
  */
 export type RunOutcome = ({ ok: true; payload: RunResultOk } | { ok: false; error: RunErrorPayload }) & {
@@ -228,7 +228,7 @@ export interface RunErrorPayload {
 	/** The page's renderer crashed; the worker runs nothing more and must be recycled. */
 	rendererCrashed?: boolean;
 	/**
-	 * Chrome ended the debugger attachment the page is driven through (omp browser relay) `during` this run, after
+	 * Chrome ended the debugger attachment the page is driven through (omsk browser relay) `during` this run, after
 	 * its code started, or `before` it, so nothing ran; the worker runs nothing more. `reason` is Chrome's
 	 * (`target_closed`, `canceled_by_user`): after a user cancel the relay hides the tab, otherwise it is re-adopted.
 	 */
@@ -260,7 +260,7 @@ export type WorkerOutbound =
 	  }
 	| {
 			/**
-			 * The page closed while omp was not closing it. Not sent once the worker stops; a supervisor that cannot
+			 * The page closed while omsk was not closing it. Not sent once the worker stops; a supervisor that cannot
 			 * see the page in the browser's target list (a connection-scoped page) releases the tab on it.
 			 */
 			type: "page-closed";

@@ -40,7 +40,7 @@ const TITLE_MARKER_INSTRUCTION = prompt.render(titleMarkerInstruction);
 // OS UI font, which has no nerd-font PUA coverage.
 const DEFAULT_TERMINAL_TITLE = "π";
 /** The native tab title without a session name. */
-const NATIVE_TERMINAL_TITLE = "omp";
+const NATIVE_TERMINAL_TITLE = "omsk";
 const TERMINAL_TITLE_CONTROL_CHARS = /[\u0000-\u001f\u007f-\u009f]/g;
 
 /**
@@ -104,7 +104,7 @@ function setWindowsConsoleTitle(title: string): boolean {
 }
 
 /**
- * Whether the live console title differs from `title`, the one omp last set.
+ * Whether the live console title differs from `title`, the one omsk last set.
  * The console title is shared by every process attached to the console, so a
  * child (a worker, `browser-relay`, an npm `.cmd` shim's `title`) can replace
  * it behind the dedupe cache. Unreadable titles and the latched OSC fallback
@@ -773,7 +773,7 @@ export function nerdGlyphsActive(): boolean {
 /** The OSC 1337 user variable Tern reads the session file from. */
 const TERN_SESSION_FILE_VAR = "omp_session_file";
 /**
- * The OSC 1337 user variable telling Tern this omp understands `--restore`, set to
+ * The OSC 1337 user variable telling Tern this omsk understands `--restore`, set to
  * `1` before each session file report: Tern's daemon then relaunches it after a
  * crash with `--restore <file>` instead of `--resume <file>`.
  */
@@ -798,8 +798,8 @@ let reportedCwd: string | undefined;
  * Name the live session's source. Every session title update (start, new
  * session, resume, cwd switch) and {@link reportTernSession} re-read it and, in
  * Tern, report what changed: the file, so Tern's daemon can relaunch
- * `omp --resume <file>` after it restarts, and the directory, which Tern names
- * in omp's composer bar.
+ * `omsk --resume <file>` after it restarts, and the directory, which Tern names
+ * in omsk's composer bar.
  */
 export function setTerminalSessionSource(source: TerminalSessionSource | undefined): void {
 	sessionSource = source;
@@ -987,7 +987,7 @@ export function buildTerminalTitleWithState(
 }
 
 /**
- * The tab title while a TSP terminal renders: the session name (`omp` before
+ * The tab title while a TSP terminal renders: the session name (`omsk` before
  * there is one) and the branch's pull request. The terminal shows run state
  * itself, so there is no brand or state separator.
  */
@@ -1144,7 +1144,7 @@ export function initTerminalTitleState(): void {
 	terminalTitleRuntime.nativeTitleFailed = false;
 	terminalTitleRuntime.nativeTitleRestored = false;
 	// `??=` keeps the shell's title across a repeat claim, which would otherwise
-	// read omp's own title back.
+	// read omsk's own title back.
 	try {
 		terminalTitleRuntime.initialWindowsConsoleTitle ??= getWindowsConsoleTitleApi()?.get();
 	} catch {
@@ -1216,7 +1216,7 @@ export function pushTerminalTitle(): void {
  * Clears the title (OSC 0) before popping the one {@link pushTerminalTitle} saved
  * (CSI 23;2t): a terminal with a title stack (xterm, iTerm2, VTE, mintty) restores
  * the saved title over the clear, and one without a stack ignores the pop and
- * keeps the clear instead of omp's title. Writes nothing when teardown already
+ * keeps the clear instead of omsk's title. Writes nothing when teardown already
  * restored a Windows console title natively.
  */
 export function popTerminalTitle(): void {

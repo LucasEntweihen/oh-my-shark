@@ -132,8 +132,8 @@ export function resolveExecutablePath(): string {
 			// Prefer the original launcher when invoked with an absolute path
 			isFullyQualifiedPath(argv0) ? argv0 : null,
 			!isPath ? $which(argv0, { requireAbsolutePaths: true, cache: WhichCachePolicy.Bypass }) : null,
-			// Generic fallback to finding "omp" on PATH
-			$which("omp", { requireAbsolutePaths: true, cache: WhichCachePolicy.Bypass }),
+			// Generic fallback to finding "omsk" on PATH
+			$which("omsk", { requireAbsolutePaths: true, cache: WhichCachePolicy.Bypass }),
 		];
 		for (const candidate of candidates) {
 			if (candidate && isExecutable(candidate)) {
@@ -168,7 +168,7 @@ export function resolveCliEntryCmd(): string[] {
  * re-execing `process.execPath` would bring the open session back on the old
  * version (issue #19454). Re-exec the launcher this process was started
  * through when it now points at a different executable: `argv0` itself when
- * it is a full path, else its PATH lookup. Never a different `omp` on PATH: a
+ * it is a full path, else its PATH lookup. Never a different `omsk` on PATH: a
  * build started by path restarts as itself. On Windows a bare `argv0` names no
  * launcher: `cmd.exe` runs a copy in the current directory before PATH and
  * still passes the bare name, while PowerShell passes the full path. Keep the
@@ -262,7 +262,7 @@ export function workerEnvFromParent(overlay?: Record<string, string>): Record<st
 
 /**
  * `LD_LIBRARY_PATH` overlay that lets a dlopen'd native addon find its C++
- * runtime. The ONNX addons installed on demand under `~/.omp/agent/cache/**`
+ * runtime. The ONNX addons installed on demand under `~/.omsk/agent/cache/**`
  * are `process.dlopen`'d and need `libstdc++.so.6` / `libgcc_s.so.1`; because
  * each addon carries its own `DT_RUNPATH`, an RPATH on our executable cannot
  * satisfy them, so the path has to come from the environment. On distros where
@@ -618,7 +618,7 @@ export function logWorkerMessage(message: WorkerLogMessage): void {
 }
 
 /**
- * Drive the ping/pong readiness probe wired into `omp --smoke-test`: send one
+ * Drive the ping/pong readiness probe wired into `omsk --smoke-test`: send one
  * `ping`, resolve on the first `pong` (ignoring `log` chatter), and reject on
  * any other message, a worker error, or the timeout. Always tears the handle
  * down on the way out. `label` prefixes the failure messages.

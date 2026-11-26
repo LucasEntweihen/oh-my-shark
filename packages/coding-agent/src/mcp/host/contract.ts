@@ -379,7 +379,7 @@ export interface McpAttachment {
 
 /** Where the units live. One implementation fronts the daemon, the other runs them in this process. */
 export interface McpHostAccess {
-	/** True when units are shared with other omp processes. */
+	/** True when units are shared with other omsk processes. */
 	readonly shared: boolean;
 	/** The server's era, probing it once when unknown. */
 	resolve(spec: McpServerSpec, signal?: AbortSignal): Promise<McpResolveResult>;

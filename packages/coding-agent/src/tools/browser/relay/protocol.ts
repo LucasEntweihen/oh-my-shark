@@ -23,7 +23,7 @@ export interface TabSnapshot {
 
 /** RPCs the relay may ask the extension to perform. */
 export type RelayRpcRequest =
-	/** `clearForeignFrames`: the tab is one omp drives, so another extension's frames may be emptied past a refusal. */
+	/** `clearForeignFrames`: the tab is one omsk drives, so another extension's frames may be emptied past a refusal. */
 	| { op: "attach"; tabId: number; clearForeignFrames?: boolean }
 	| { op: "detach"; tabId: number }
 	| {
@@ -38,7 +38,7 @@ export type RelayRpcRequest =
 	| { op: "createTab"; url: string; active?: boolean }
 	| { op: "removeTab"; tabId: number }
 	| { op: "activateTab"; tabId: number }
-	/** Add tabs to the per-window omp group (created/reused by title), remembering prior membership. */
+	/** Add tabs to the per-window omsk group (created/reused by title), remembering prior membership. */
 	| { op: "group"; tabIds: number[]; title: string; color: string }
 	/** Return tabs to their pre-omp group (or ungroup); no-op for tabs the relay never grouped. */
 	| { op: "ungroup"; tabIds: number[] }
@@ -56,7 +56,7 @@ export type RelayRpcRequest =
 	| { op: "overlay"; tabId: number; action: OverlayAction };
 
 /**
- * Where omp releases a cancelled mouse press, on both axes (`interactions.ts`): off the page, at a point no real
+ * Where omsk releases a cancelled mouse press, on both axes (`interactions.ts`): off the page, at a point no real
  * pointer reports, so page code and the relay can tell it apart. The relay draws no overlay input there.
  */
 export const CANCELLED_RELEASE_POINT = -7919;
@@ -81,23 +81,23 @@ export type OverlayInput =
 
 /** Side-panel requests the extension forwards to the relay ({@link PANEL_PROTOCOL_VERSION}). */
 export type PanelCall =
-	/** Live local omp sessions published to the collab registry, as {@link PanelCollabHost}s. */
+	/** Live local omsk sessions published to the collab registry, as {@link PanelCollabHost}s. */
 	| { op: "collabHosts" }
 	/** A full-control browser link for the host with `instanceId`, as `{ url: string }`. */
 	| { op: "collabLink"; instanceId: string }
 	/** Registered extension install folders, as {@link PanelInstall}s. */
 	| { op: "installs" };
 
-/** One registered extension install folder as the relay's omp sees it. */
+/** One registered extension install folder as the relay's omsk sees it. */
 export interface PanelInstall {
 	dir: string;
-	/** omp version last written there; null when never written by a registry-aware omp. */
+	/** omsk version last written there; null when never written by a registry-aware omp. */
 	version: string | null;
 	/** The folder no longer exists or has no manifest. */
 	missing: boolean;
 }
 
-/** One local omp session a panel can attach to; the relay's view of a collab registry entry, without links. */
+/** One local omsk session a panel can attach to; the relay's view of a collab registry entry, without links. */
 export interface PanelCollabHost {
 	instanceId: string;
 	generation: number;
@@ -157,7 +157,7 @@ export const EXTENSION_RELOAD_PROTOCOL_VERSION = 1;
 /** Chrome's refusal of a debugger request while another extension's frame (a password manager's menu) is in the tab. */
 export const FOREIGN_FRAME_REFUSAL = /chrome-extension:\/\/ URL of different extension/i;
 
-/** Another extension's frame the relay extension emptied and hid in a tab omp drives, so Chrome lets omp attach. */
+/** Another extension's frame the relay extension emptied and hid in a tab omsk drives, so Chrome lets omsk attach. */
 export interface HiddenFrame {
 	/** The id in the frame's `chrome-extension://<id>/` URL. */
 	extensionId: string;
@@ -183,7 +183,7 @@ export function isHiddenFrame(value: unknown): value is HiddenFrame {
 /** Hello capability of an extension that answers `findDownload`, advertised only while the browser exposes the `downloads` API. */
 export const DOWNLOADS_PROTOCOL_VERSION = 1;
 /**
- * Whether a relay or extension reported a well-formed omp release version.
+ * Whether a relay or extension reported a well-formed omsk release version.
  * Stricter than `Bun.semver.order`, which ranks strings with trailing text;
  * peers supply these and results quote them.
  */
@@ -192,8 +192,8 @@ export function isOmpVersion(version: string): boolean {
 }
 
 /**
- * Whether a reported omp version is provably older than `than`: unreported ("")
- * is older than anything reported; otherwise both must be omp versions, since
+ * Whether a reported omsk version is provably older than `than`: unreported ("")
+ * is older than anything reported; otherwise both must be omsk versions, since
  * anything else has no known age.
  */
 export function isOlderOmpVersion(version: string, than: string): boolean {
@@ -206,7 +206,7 @@ export function isOlderOmpVersion(version: string, than: string): boolean {
  * `OMP_INSTALL_BUILD`, which the extension reports in its hello. The stamp sits in the script, not only the manifest,
  * because after the files change a Chrome restart re-reads manifest.json but keeps running the service worker it
  * registered before. `build` names the exact extension files, so a relay can tell a stale running build apart from
- * its own even when both carry the same omp version (a source checkout between releases).
+ * its own even when both carry the same omsk version (a source checkout between releases).
  */
 export function stampRelayExtensionScript(script: string, ompVersion: string, build: string): string {
 	return `const OMP_INSTALL_VERSION = ${JSON.stringify(ompVersion)};\nconst OMP_INSTALL_BUILD = ${JSON.stringify(build)};\n${script}`;
@@ -217,7 +217,7 @@ export const RELAY_RECHECK_PATH = "/omp/extensions/recheck";
 
 /**
  * `POST` path on the relay asking the native host serving it to exit, so Chrome restarts it from the installed omp.
- * Query: `version` (the asking omp's), `idle=1` to restart only while no CDP client is connected.
+ * Query: `version` (the asking omsk's), `idle=1` to restart only while no CDP client is connected.
  */
 export const RELAY_RESTART_PATH = "/omp/relay/restart";
 
@@ -272,7 +272,7 @@ export type ExtToRelayMessage =
 			 * reuses tab ids: target ids embed it, so an old target id never names a new tab. Absent on older extensions.
 			 */
 			browserSession?: string;
-			/** The omp version that installed the running script ({@link stampRelayExtensionScript}). Absent on builds without the stamp. */
+			/** The omsk version that installed the running script ({@link stampRelayExtensionScript}). Absent on builds without the stamp. */
 			ompVersion?: string;
 			/** The extension build the running script belongs to ({@link stampRelayExtensionScript}). Absent on older extensions. */
 			ompBuild?: string;
@@ -313,12 +313,12 @@ export type ExtToRelayMessage =
 			error?: string;
 	  };
 
-/** Native messaging host name registered by `omp browser-relay install`. */
+/** Native messaging host name registered by `omsk browser-relay install`. */
 export const NATIVE_HOST = "sh.omp.browser";
 
 /**
  * Extension → native host. The first message picks what the port is for:
- * - `open`: a chat. The host starts `omp --mode rpc` in `cwd`; then `rpc` carries its stdin lines.
+ * - `open`: a chat. The host starts `omsk --mode rpc` in `cwd`; then `rpc` carries its stdin lines.
  * - `link`: the browser relay. The host serves the relay for this browser (or joins the one another browser's host
  *   serves); then `relay` carries the extension's relay protocol messages ({@link ExtToRelayMessage} JSON).
  */

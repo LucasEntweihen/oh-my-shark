@@ -1,6 +1,6 @@
 /**
- * `omp.app.ps`: the `omp ps` monitor in the terminal (`term.ps`), btop
- * style, filling the screen: a head line (`omp ps · 4 units in 2 scopes`
+ * `omp.app.ps`: the `omsk ps` monitor in the terminal (`term.ps`), btop
+ * style, filling the screen: a head line (`omsk ps · 4 units in 2 scopes`
  * with the refresh age at the right), the view's body in a scrolling window
  * (a scrollbar in the last column while it overflows), the status line and
  * the key hints.
@@ -109,7 +109,7 @@ defineRolePainter("col", "omp.app.ps", (node, cx): Block => {
 	const last = model.lastRefresh();
 
 	const header = (title: string): string => {
-		const left = ` ${pen.bold("omp ps")} ${pen.dim("·")} ${title}`;
+		const left = ` ${pen.bold("omsk ps")} ${pen.dim("·")} ${title}`;
 		const right = pen.dim(last ? `updated ${formatDuration(now - last)} ago` : "updating…");
 		const pad = Math.max(1, width - visibleWidth(left) - visibleWidth(right) - 1);
 		return truncate(`${left}${" ".repeat(pad)}${right}`, width);

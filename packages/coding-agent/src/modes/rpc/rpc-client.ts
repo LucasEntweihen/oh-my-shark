@@ -923,7 +923,7 @@ export class RpcClient {
 	/**
 	 * Start a GPT live voice session whose audio runs on the caller's own WebRTC peer
 	 * (one Opus audio track plus an `oai-events` data channel). Send the peer's SDP offer and
-	 * apply the returned answer; omp keeps signaling, delegation and transcripts, and opens
+	 * apply the returned answer; omsk keeps signaling, delegation and transcripts, and opens
 	 * no host microphone or speaker. Frames arrive through {@link onLive}; `live_levels` are not sent.
 	 */
 	async liveConnect(
@@ -1055,7 +1055,7 @@ export class RpcClient {
 	}
 
 	/**
-	 * Model picker rows as omp's session picker orders them; a query starting with `@` lists quick roles.
+	 * Model picker rows as omsk's session picker orders them; a query starting with `@` lists quick roles.
 	 */
 	async getModelPicker(query?: string, limit?: number): Promise<RpcModelPickerResult> {
 		const response = await this.#send({ type: "get_model_picker", query, limit });

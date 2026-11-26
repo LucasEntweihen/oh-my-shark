@@ -1643,7 +1643,7 @@ export class CommandController {
 	}
 
 	/**
-	 * `/fork` inside Tern pane `tern`: ask Tern to run `omp --fork` of this session in a new pane beside
+	 * `/fork` inside Tern pane `tern`: ask Tern to run `omsk --fork` of this session in a new pane beside
 	 * this one, or for `window` in a new tab after this one's, which keeps the original session (a Tern
 	 * from before fork tabs opens a pane). Resolves undefined once the fork is Tern's, else why Tern did
 	 * not take it (an unsaved session, Tern unreachable or without `fork`, or Tern refusing it) for bare
@@ -1663,7 +1663,7 @@ export class CommandController {
 				return message;
 			}
 			if (!client.supports("fork")) return "this Tern build cannot open forks; update Tern";
-			// The new pane's omp reads the session file as it starts.
+			// The new pane's omsk reads the session file as it starts.
 			await this.ctx.session.flushToDisk();
 			try {
 				forked = await client.fork(
@@ -1976,7 +1976,7 @@ export class CommandController {
 				if (shouldPersistCwd) return await this.#applyBashResultCwd(result);
 			} catch (error) {
 				this.ctx.showError(
-					`Bash command completed, but OMP failed to update its working directory: ${
+					`Bash command completed, but OMSK failed to update its working directory: ${
 						error instanceof Error ? error.message : "Unknown error"
 					}`,
 				);

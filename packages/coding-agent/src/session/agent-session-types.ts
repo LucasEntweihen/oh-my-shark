@@ -80,7 +80,7 @@ export interface AgentSessionDisposeOptions {
 	 * under the turn (`EXIT`, also a subagent cut off by its owner's shutdown;
 	 * `SIGTERM`/`SIGHUP` from the host, such as a terminal restarting; a fatal
 	 * error) additionally records a turn still in flight as interrupted, so
-	 * `omp --restore` goes on with it. `SIGINT` and `MANUAL` stop it, as a quit does.
+	 * `omsk --restore` goes on with it. `SIGINT` and `MANUAL` stop it, as a quit does.
 	 */
 	reason?: postmortem.Reason;
 }

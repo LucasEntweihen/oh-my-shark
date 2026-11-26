@@ -277,7 +277,7 @@
     let pending;
     const delivery = new Set;
     function send(step) {
-      const message = { omp: "teach-step", step };
+      const message = { omsk: "teach-step", step };
       const sent = chrome.runtime.sendMessage(message).catch(() => {
         return;
       });

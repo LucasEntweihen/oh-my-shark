@@ -1,6 +1,6 @@
 /** @jsxImportSource @oh-my-pi/pi-tui */
 /**
- * Fullscreen apps (`omp git`, `omp ps`, the debug viewers, the console
+ * Fullscreen apps (`omsk git`, `omsk ps`, the debug viewers, the console
  * monitor): one app view in a full-size overlay over a {@link Shell}, which
  * the terminal renderer draws on the alternate screen and Tern as a
  * fullscreen sheet.

@@ -35,10 +35,10 @@ import type { ExtensionRunner } from "./runner";
 import type { ExtensionAgentIdentity, RegisteredTool, ToolCallEventResult } from "./types";
 
 /**
- * Second `renderCall` argument that satisfies both the omp and the upstream-pi
+ * Second `renderCall` argument that satisfies both the omsk and the upstream-pi
  * renderer contracts.
  *
- * omp invokes renderers as `renderCall(args, options, theme)` (see
+ * omsk invokes renderers as `renderCall(args, options, theme)` (see
  * `src/ui/tools/legacy.ts`), while pi-era renderers — including
  * every third-party plugin written against pi's published example — are
  * declared `renderCall(args, theme, context)`. Both shapes take three

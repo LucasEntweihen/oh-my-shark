@@ -7,7 +7,7 @@
  * planning against the whole list. What the child delivers for each earlier prompt reaches the agent
  * that spawned it as a step report ({@link sendStepReport}); the last prompt's result is the run's result.
  *
- * A run records the prompts it sent as {@link TASK_STEPS_ENTRY} entries, so `omp --restore` goes on
+ * A run records the prompts it sent as {@link TASK_STEPS_ENTRY} entries, so `omsk --restore` goes on
  * with the prompts an interrupted run had left ({@link readStepProgress}).
  *
  * @example

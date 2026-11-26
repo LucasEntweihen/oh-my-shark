@@ -155,7 +155,7 @@ function piSeg(input: SegInput): SegView {
 		...(facts.awaitingAnswer ? { awaiting: true } : {}),
 		...(profile ? { profile } : {}),
 	};
-	return view(input, profile ? [span(profile, "muted")] : [], [piece], "omp", "muted");
+	return view(input, profile ? [span(profile, "muted")] : [], [piece], "omsk", "muted");
 }
 
 function statusSeg(input: SegInput): SegView | null {

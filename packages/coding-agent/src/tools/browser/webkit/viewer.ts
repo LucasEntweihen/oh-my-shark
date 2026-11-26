@@ -1,5 +1,5 @@
 /**
- * The window process of omp's WebKit host: the engine's `ABView`, which
+ * The window process of omsk's WebKit host: the engine's `ABView`, which
  * shows the blocks the host presents to it in windows (macOS). The host itself
  * never has a window; a tab gets one when its block is presented to this
  * process's Mach service, and loses it when the presentation stops. The
@@ -48,7 +48,7 @@ export class WebKitViewer {
 		} catch (error) {
 			throw new ToolError(`The WebKit browser's window program did not start: ${String(error)}`);
 		}
-		// Windows nobody closed must not hold omp open; the viewer exits with omp's end of its stdin.
+		// Windows nobody closed must not hold omsk open; the viewer exits with omsk's end of its stdin.
 		child.unref();
 		const ready = Promise.withResolvers<string>();
 		const decoder = new TextDecoder();
@@ -115,7 +115,7 @@ export class WebKitViewer {
 
 	/**
 	 * Name `block`'s window before the block is presented. The viewer sizes
-	 * the window for a block at scale 1, which is what omp's tabs are opened
+	 * the window for a block at scale 1, which is what omsk's tabs are opened
 	 * at (a tab's `deviceScaleFactor` only scales its captures).
 	 */
 	show(block: number, title: string): void {

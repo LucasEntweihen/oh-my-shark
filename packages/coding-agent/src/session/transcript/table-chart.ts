@@ -235,7 +235,7 @@ function drawChart(analysis: TableAnalysis, plan: ChartPlan, guessed = false): s
  * Chart `svg` as a Markdown ```svg fence, for Tern's `md` node. Its
  * figure tokens stay unresolved: the terminal draws the fence as a figure in
  * the palette it shows the prose in, so the chart cannot fall out of step with
- * the page when omp's own idea of the appearance does, and a theme switch
+ * the page when omsk's own idea of the appearance does, and a theme switch
  * recolors it without a resend.
  */
 export function chartFence(svg: string): string {

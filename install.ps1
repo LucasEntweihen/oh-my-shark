@@ -1,4 +1,4 @@
-﻿# OhMyShark Coding Agent Installer for Windows
+# OhMyShark Coding Agent Installer for Windows
 # Verify first: gh attestation verify install.ps1 --repo LucasEntweihen/oh-my-shark --signer-workflow LucasEntweihen/oh-my-shark/.github/workflows/release-ohms.yml --source-ref refs/tags/ohms-v0.0.3 --deny-self-hosted-runners
 # Then run: & ([scriptblock]::Create((Get-Content .\install.ps1 -Raw)))
 # Or quick: irm https://ohmyshark.vercel.app/install.ps1 | iex
@@ -374,7 +374,7 @@ function Install-Binary {
 
         # Seed the portable preset and model catalog, but never overwrite the
         # user's own files. Sources are the release assets pinned to this tag
-        # — never main, never ~/.omp.
+        # — never main, never ~/.omsk.
         New-Item -ItemType Directory -Force -Path $AgentDir | Out-Null
         $configYml = Join-Path $AgentDir "config.yml"
         if (-not (Test-Path $configYml) -and -not (Test-Path (Join-Path $AgentDir "config.yaml"))) {

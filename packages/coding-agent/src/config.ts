@@ -10,7 +10,7 @@ export * from "./config/config-file";
 
 /**
  * Config sources, highest priority first. `userBase` overrides the default
- * `~/<dir>` user-level location: omp's own user dir follows `getAgentDir()`
+ * `~/<dir>` user-level location: omsk's own user dir follows `getAgentDir()`
  * (profile, `PI_CONFIG_DIR`, and `PI_CODING_AGENT_DIR` aware), Claude's follows
  * its active config directory.
  */
@@ -57,8 +57,8 @@ export function walkUpForPackageDir(startDir: string): string | undefined {
  *
  * Callers MUST treat `undefined` as "no package assets available" and skip the
  * lookup. NEVER fall back to the user's `cwd` here: that conflates the host
- * project with omp's own assets and was the source of issue #1423 (the host
- * project's `CHANGELOG.md` rendered as omp's startup changelog).
+ * project with omsk's own assets and was the source of issue #1423 (the host
+ * project's `CHANGELOG.md` rendered as omsk's startup changelog).
  */
 export function getPackageDir(): string | undefined {
 	const envDir = process.env.PI_PACKAGE_DIR;
@@ -69,7 +69,7 @@ export function getPackageDir(): string | undefined {
 }
 
 /**
- * Path to omp's own `CHANGELOG.md`, or `undefined` when the package directory
+ * Path to omsk's own `CHANGELOG.md`, or `undefined` when the package directory
  * cannot be resolved (e.g. inside `bun --compile` binaries that don't bundle
  * package assets). Callers MUST skip changelog parsing when this is undefined;
  * see issue #1423.
@@ -84,7 +84,7 @@ export function getChangelogPath(): string | undefined {
 // =============================================================================
 
 /**
- * User-level: the omp agent dir (~/.omp/agent), Claude's active config directory, ~/.codex, ~/.gemini
+ * User-level: the omsk agent dir (~/.omsk/agent), Claude's active config directory, ~/.codex, ~/.gemini
  * Project-level: .omp, .claude, .codex, .gemini
  */
 const USER_CONFIG_BASES = priorityList.map(({ dir, userBase }) => ({
@@ -104,9 +104,9 @@ export interface ConfigDirEntry {
 }
 
 export interface GetConfigDirsOptions {
-	/** Include user-level directories (~/.omp/agent/...). Default: true */
+	/** Include user-level directories (~/.omsk/agent/...). Default: true */
 	user?: boolean;
-	/** Include project-level directories (.omp/...). Default: true */
+	/** Include project-level directories (.omsk/...). Default: true */
 	project?: boolean;
 	/** Current working directory for project paths. Default: getProjectDir() */
 	cwd?: string;
@@ -124,7 +124,7 @@ export interface GetConfigDirsOptions {
  * @example
  * // Get all command directories
  * getConfigDirs("commands")
- * // → [{ path: "~/.omp/agent/commands", source: ".omp", level: "user" }, ...]
+ * // → [{ path: "~/.omsk/agent/commands", source: ".omp", level: "user" }, ...]
  *
  * @example
  * // Get only existing project skill directories

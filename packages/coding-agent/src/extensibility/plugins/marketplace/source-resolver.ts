@@ -137,7 +137,7 @@ async function resolveRelativeSourceDir(
 ): Promise<string> {
 	const resolved = resolveRelativeSourcePath(source, context);
 	if (await directoryExists(resolved, { strict: true })) return resolved;
-	// Catalogs written for omp's earlier rule (`./foo` meaning `<pluginRoot>/foo`) keep installing.
+	// Catalogs written for omsk's earlier rule (`./foo` meaning `<pluginRoot>/foo`) keep installing.
 	const pluginRoot = context.catalogMetadata?.pluginRoot;
 	if (pluginRoot && source.startsWith("./")) {
 		const legacy = resolveInsideMarketplace(path.join(pluginRoot, source), source, context);

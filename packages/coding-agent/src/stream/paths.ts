@@ -4,8 +4,8 @@ import { getDaemonDir } from "@oh-my-pi/pi-utils";
 import { canonicalProjectDir } from "../daemon/client";
 
 /**
- * Resolve the local IPC endpoint `omp stream` listens on for one project
- * directory. Keyed on the canonical project dir so every omp process in the
+ * Resolve the local IPC endpoint `omsk stream` listens on for one project
+ * directory. Keyed on the canonical project dir so every omsk process in the
  * same directory agrees on the endpoint.
  */
 export async function streamSocketEndpoint(projectDir: string): Promise<string> {

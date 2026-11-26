@@ -22,7 +22,7 @@ export interface PluginFeature {
 }
 
 /**
- * Plugin manifest from package.json omp or pi field.
+ * Plugin manifest from package.json omsk or pi field.
  */
 export interface PluginManifest {
 	/** Plugin display name (defaults to package name) */
@@ -150,7 +150,7 @@ export interface PluginRuntimeConfig {
 // =============================================================================
 
 /**
- * Project-local plugin overrides (stored in .omp/plugin-overrides.json).
+ * Project-local plugin overrides (stored in .omsk/plugin-overrides.json).
  * Allows per-project plugin configuration without modifying global state.
  */
 export interface ProjectPluginOverrides {

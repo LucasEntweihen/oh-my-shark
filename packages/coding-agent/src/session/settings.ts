@@ -225,7 +225,7 @@ export const cfgProvidersMaxInFlightRequests = register({
 		group: "Services",
 		label: "Max In-Flight Requests",
 		description:
-			'Maximum concurrent LLM requests per provider id (for example "openai" or "anthropic"), shared across local OMP processes with this config root. Omitted providers are unlimited.',
+			'Maximum concurrent LLM requests per provider id (for example "openai" or "anthropic"), shared across local OMSK processes with this config root. Omitted providers are unlimited.',
 	},
 });
 effect(cfgProvidersMaxInFlightRequests, limits =>
@@ -1529,7 +1529,7 @@ export const cfgProvidersFetch = register({
 /**
  * Whether `web_search` and the URL reader may use third-party services the user
  * holds no credential for. Off, they stick to configured services; a per-request
- * `omp q --model` selector still runs.
+ * `omsk q --model` selector still runs.
  */
 export const cfgProvidersWebKeyless = register({
 	id: "providers.webKeyless",
@@ -1773,7 +1773,7 @@ function validateCostThreshold(id: string): (raw: unknown) => void {
 	};
 }
 
-/** Session-tree spend (USD) at which omp warns once; `--warn-cost` overrides it for one run. */
+/** Session-tree spend (USD) at which omsk warns once; `--warn-cost` overrides it for one run. */
 export const cfgSessionWarnCost = register({
 	id: "session.warnCost",
 	type: "number",
@@ -1781,7 +1781,7 @@ export const cfgSessionWarnCost = register({
 	validate: validateCostThreshold("session.warnCost"),
 });
 
-/** Session-tree spend (USD) at which omp stops sending model requests; `--max-cost` overrides it for one run. */
+/** Session-tree spend (USD) at which omsk stops sending model requests; `--max-cost` overrides it for one run. */
 export const cfgSessionMaxCost = register({
 	id: "session.maxCost",
 	type: "number",

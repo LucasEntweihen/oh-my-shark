@@ -1,7 +1,7 @@
 /**
  * Terminal look of the setup wizard (`omp.setup`), a full-screen frame:
  *
- * - a scene (`omp.setup.scene`): the logo, `omp`, "Setup step N of M", the
+ * - a scene (`omp.setup.scene`): the logo, `omsk`, "Setup step N of M", the
  *   title and subtitle, the body (indented four cells, at least 20 wide,
  *   cut with an ellipsis where the screen is narrower), and the key hints on
  *   the last row. Too few rows for a body: the head alone, cut to the screen.
@@ -51,7 +51,7 @@ function headRows(cx: PaintContext, term: SceneFrameTerm): string[] {
 	const room = Math.max(1, width - BODY_INDENT);
 	const rows = [""];
 	for (const row of gradientArt(LOGO, "truecolor")) rows.push(truncate(centered(row, width), width));
-	rows.push(centered(theme.style("strong", theme.fg("accent", "omp")), width));
+	rows.push(centered(theme.style("strong", theme.fg("accent", "omsk")), width));
 	rows.push(centered(theme.fg("muted", term.step), width));
 	rows.push("");
 	rows.push(`${indent}${truncate(theme.style("strong", term.title), room)}`);

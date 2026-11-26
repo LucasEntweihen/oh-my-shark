@@ -60,7 +60,7 @@ if (Bun.semver.order(Bun.version, MIN_BUN_VERSION) < 0) {
 }
 
 // On Windows `process.title` is the shared console title, not a process name
-// (see `setProcessName`): every omp child would retitle the pane's tab.
+// (see `setProcessName`): every omsk child would retitle the pane's tab.
 if (process.platform !== "win32") {
 	try {
 		process.title = APP_NAME;
@@ -456,9 +456,9 @@ async function runIpcSubprocessWorker<In, Out>(
 
 /**
  * Hidden subcommand that boots the ONNX tiny-model worker for one model over
- * stdin/stdout; the daemon's `infer` units host it, shared by every omp
+ * stdin/stdout; the daemon's `infer` units host it, shared by every omsk
  * process on the machine. It exists so `onnxruntime-node` (loaded transitively by
- * `@huggingface/transformers`) never runs in an omp address space — its NAPI
+ * `@huggingface/transformers`) never runs in an omsk address space — its NAPI
  * finalizer segfaults Bun on Windows (issue #1606).
  */
 async function runTinyWorker(): Promise<void> {
@@ -471,7 +471,7 @@ let runningCommand: string | undefined;
 
 /** Run the CLI with the given argv (no `process.argv` prefix). */
 export async function runCli(argv: string[]): Promise<void> {
-	// `omp zsh|bash|sh [args...]`: the whole argv belongs to the shell (`--help`,
+	// `omsk zsh|bash|sh [args...]`: the whole argv belongs to the shell (`--help`,
 	// `--profile`, `-c` included), so it dispatches before profile bootstrap,
 	// prepaint, network setup and the command table.
 	if (isNativeShell(argv[0])) {
@@ -497,7 +497,7 @@ export async function runCli(argv: string[]): Promise<void> {
 			// invalid value to avoid an uncaught throw before this try/catch is in
 			// scope (see `readProfileFromEnvSafe` in dirs.ts), and callers may set
 			// OMP_PROFILE after importing this module (profile aliases/tests). Surfacing
-			// validation here turns `OMP_PROFILE=.. omp --version` into a clean error;
+			// validation here turns `OMP_PROFILE=.. omsk --version` into a clean error;
 			// calling setProfile keeps every later path helper on the env-selected
 			// profile instead of the default agent directory.
 			setProfile(resolveProfileEnv(process.env.OMP_PROFILE, process.env.PI_PROFILE));
@@ -635,7 +635,7 @@ export async function runCli(argv: string[]): Promise<void> {
 if (isProcessEntry || !Bun.isMainThread) {
 	const postmortem: typeof Postmortem = require("@oh-my-pi/pi-utils/postmortem.js");
 	postmortem.installProcessHandlers();
-	// A one-shot CLI run (`omp --help | head`, `omp --version | true`, `omp <sub> | grep -m1`)
+	// A one-shot CLI run (`omsk --help | head`, `omsk --version | true`, `omsk <sub> | grep -m1`)
 	// whose stdout consumer closes before the write drains gets an EPIPE that Bun surfaces as
 	// an unhandled rejection. Treat a vanished stdout peer as an ordinary Unix disconnect
 	// (graceful exit) rather than the fatal path. Interactive launches register their own

@@ -1776,7 +1776,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		};
 		const host = this.shell.host;
 		if (!host) return;
-		// A confirmed Glyph Protocol handshake means omp's own icons render without a Nerd Font, so
+		// A confirmed Glyph Protocol handshake means omsk's own icons render without a Nerd Font, so
 		// the unconfigured `unicode` preset is upgraded to `nerd` for this session. The setting is
 		// left alone (it travels to terminals where the upgrade would show tofu); an explicit
 		// preset is never touched.
@@ -2270,7 +2270,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		// custom messages, branch summaries, and compaction summaries) and the user
 		// set no explicit `mode_change` (which #reconcileModeFromSession just
 		// restored). SDK startup metadata and extension `custom` state entries are
-		// ignored. This way `omp --continue` (or auto-resume) that finds no recent
+		// ignored. This way `omsk --continue` (or auto-resume) that finds no recent
 		// session and creates a fresh one still honors the default, while a session
 		// with restored context or an explicit mode keeps its reconciled mode. Not
 		// part of the switch reconciler above: the plan-approval → execution handoff
@@ -3767,7 +3767,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			if (text) replies.push({ id: entry.id, text });
 		}
 		const streaming = view.isStreaming ? this.streamingMessage : undefined;
-		if (streaming) replies.push({ id: "omp:link-browser-streaming-reply", text: drawn(streaming, true) });
+		if (streaming) replies.push({ id: "omsk:link-browser-streaming-reply", text: drawn(streaming, true) });
 		return replies;
 	}
 
@@ -7156,7 +7156,7 @@ export class InteractiveMode implements InteractiveModeContext {
 		// Do not force a final render during teardown: disposed session/UI state can
 		// collapse to an empty frame, clearing the viewport and leaving the parent
 		// shell prompt at row 0. Stop from the last committed frame so the terminal
-		// hands Bash the cursor immediately after visible OMP content.
+		// hands Bash the cursor immediately after visible OMSK content.
 		// Stop the run-state spinner interval BEFORE restoring the shell title, so a
 		// pending tick cannot re-emit an OSC title after `popTerminalTitle` hands the
 		// terminal back (which would leave the parent shell with a `π ⠋ …` tab).
@@ -8048,7 +8048,7 @@ export class InteractiveMode implements InteractiveModeContext {
 			await active.stop();
 			this.statusLine.setModes({ recording: false });
 			this.showStatus(
-				`Saved ${formatDuration(elapsed)} recording to ${active.path} · replay: omp play · share: omp clip`,
+				`Saved ${formatDuration(elapsed)} recording to ${active.path} · replay: omsk play · share: omsk clip`,
 			);
 			return;
 		}

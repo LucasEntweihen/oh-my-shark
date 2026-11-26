@@ -30,7 +30,7 @@ export interface ActiveRepoContext {
 /** Why the next request rewrites the cached prompt prefix instead of reading it. */
 export type PromptCacheColdReason =
 	| { kind: "expired"; at: number }
-	/** omp's warm refresh found the entry gone. */
+	/** omsk's warm refresh found the entry gone. */
 	| { kind: "refresh-missed" }
 	| { kind: "model"; from: string; to: string }
 	| { kind: "thinking"; from: string; to: string }
@@ -39,7 +39,7 @@ export type PromptCacheColdReason =
 	| { kind: "retention" }
 	| { kind: "compaction" };
 
-/** omp's cache warmer as it concerns the entry. */
+/** omsk's cache warmer as it concerns the entry. */
 export interface PromptCacheWarming {
 	/** `scheduled`: a refresh decision is armed; `refreshing`: a refresh was sent and is in flight. */
 	state: "scheduled" | "refreshing" | "inactive";

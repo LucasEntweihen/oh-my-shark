@@ -306,7 +306,7 @@ function isProvisionalColdPublish(
 	now: number,
 ): boolean {
 	if (expectedDocumentVersion === undefined) return false;
-	// A document OMP closed and reopened can still receive publishes from before the
+	// A document OMSK closed and reopened can still receive publishes from before the
 	// close: the empty one that cleared it, or one versioned for its earlier life.
 	const reopenedAt = client.openFiles.get(uri)?.reopenedAt;
 	if (reopenedAt !== undefined && now - reopenedAt < DEFERRED_DIAGNOSTICS_WAIT_TIMEOUT_MS) {

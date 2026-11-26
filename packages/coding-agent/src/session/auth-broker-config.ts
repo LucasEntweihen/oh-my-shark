@@ -1,5 +1,5 @@
 /**
- * Resolve auth-broker connection configuration for the local omp client.
+ * Resolve auth-broker connection configuration for the local omsk client.
  *
  * This is a thin coding-agent wrapper around the shared resolver in
  * `@oh-my-pi/pi-ai/auth-broker/discover` that preserves the process-lifetime
@@ -8,9 +8,9 @@
  *
  * Precedence (highest first):
  *   1. `OMP_AUTH_BROKER_URL` / `OMP_AUTH_BROKER_TOKEN` env vars.
- *   2. `auth.broker.url` / `auth.broker.token` in `~/.omp/agent/config.yml`
+ *   2. `auth.broker.url` / `auth.broker.token` in `~/.omsk/agent/config.yml`
  *      (hidden from the settings UI; `!command` resolution supported).
- *   3. Token file `~/.omp/auth-broker.token` (paired with URL from env or config).
+ *   3. Token file `~/.omsk/auth-broker.token` (paired with URL from env or config).
  *
  * Returns null when no broker URL is configured — caller falls back to the
  * local SQLite store.
@@ -269,7 +269,7 @@ export function createAuthStorageSettingsSync(
  * pi-ai so the CLI, subagents, and the catalog generator all see the same
  * credentials.
  *
- * Default `agentDir` is the current configured agent directory. Interactive omp
+ * Default `agentDir` is the current configured agent directory. Interactive omsk
  * fails at once when the broker is unreachable rather than hold the user for the
  * startup retry window; every other host retries and says so once on stderr.
  */
@@ -328,9 +328,9 @@ export async function describeAuthBrokerStartupError(error: unknown): Promise<st
 	const target = url ? ` at ${url}` : "";
 	return (
 		`Auth broker${target} is unreachable (${error.message}). ` +
-		"omp is configured to use this broker for credentials and will not fall back to local credentials automatically.\n" +
-		"Start the broker with `omp auth-broker serve`, or disable it with " +
-		"`omp config reset auth.broker.url` and `omp config reset auth.broker.token` " +
+		"omsk is configured to use this broker for credentials and will not fall back to local credentials automatically.\n" +
+		"Start the broker with `omsk auth-broker serve`, or disable it with " +
+		"`omsk config reset auth.broker.url` and `omsk config reset auth.broker.token` " +
 		"(or unset OMP_AUTH_BROKER_URL / OMP_AUTH_BROKER_TOKEN)."
 	);
 }

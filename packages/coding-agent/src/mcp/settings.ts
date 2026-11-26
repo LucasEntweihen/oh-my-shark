@@ -38,7 +38,7 @@ export const cfgMcpShared = register({
 		group: "Discovery & MCP",
 		label: "Shared MCP Servers",
 		description:
-			"Run MCP servers through the daemon so every omp instance shares one process per server and a cached tool catalog. Servers that hold a session keep one process per instance (falls back to private servers when unavailable)",
+			"Run MCP servers through the daemon so every omsk instance shares one process per server and a cached tool catalog. Servers that hold a session keep one process per instance (falls back to private servers when unavailable)",
 	},
 });
 
@@ -76,7 +76,7 @@ export const cfgMcpBuiltinTransforms = register({
 		group: "Discovery & MCP",
 		label: "MCP Built-in Transforms",
 		description:
-			"Skip recognized MCP servers that omp's own tools replace (Codex's node_repl while eval runs JavaScript)",
+			"Skip recognized MCP servers that omsk's own tools replace (Codex's node_repl while eval runs JavaScript)",
 	},
 });
 

@@ -49,7 +49,7 @@ import type {
 } from "./types";
 
 /**
- * A `agent://<pid>[/<id>[/<json-path>]]` URL: an agent of the omp instance
+ * A `agent://<pid>[/<id>[/<json-path>]]` URL: an agent of the omsk instance
  * with that pid. This process's own pid reads as a local address.
  */
 interface PidTarget {
@@ -339,12 +339,12 @@ export class AgentProtocolHandler implements ProtocolHandler {
 		});
 	}
 
-	/** Roster of the other omp instances in this project. */
+	/** Roster of the other omsk instances in this project. */
 	#resolvePeers(url: InternalUrl): InternalResource {
 		const peers = agentMesh()?.peers() ?? [];
 		const content =
 			peers.length === 0
-				? "No other omp instances in this project.\n"
+				? "No other omsk instances in this project.\n"
 				: `${peers.map(peer => `- agent://${peer.pid} (${peer.status})`).join("\n")}\n\nRead agent://<pid>/<id> for a subagent's output; write agent://<pid> to message its main agent.\n`;
 		return {
 			url: url.href,
@@ -356,11 +356,11 @@ export class AgentProtocolHandler implements ProtocolHandler {
 		};
 	}
 
-	/** An agent of another omp instance, read from that instance's session files. */
+	/** An agent of another omsk instance, read from that instance's session files. */
 	async #resolvePeer(url: InternalUrl, target: PidTarget): Promise<InternalResource> {
 		const { pid, id } = target.address;
 		const peer = agentMesh()?.peer(pid);
-		if (!peer) throw new Error(`No omp instance with pid ${pid} in this project. List them with agent://peers`);
+		if (!peer) throw new Error(`No omsk instance with pid ${pid} in this project. List them with agent://peers`);
 		const sessionFile = peer.sessionFile;
 		if (!sessionFile) throw new Error(`Instance ${pid} has no session file; its agents cannot be read.`);
 		if (!id) {
